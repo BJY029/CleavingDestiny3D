@@ -114,9 +114,9 @@ public class PlayerController : MonoBehaviour
 	private void LateUpdate()
 	{
 		//HandleRotation(Time.deltaTime);
-		//CameraRotation();
+		CameraRotation();
 		//AlignSmart();
-		AlignToCameraYaw_Fast();
+		//AlignToCameraYaw_Fast();
 	}
 
 	private void ReadInput()
@@ -249,11 +249,12 @@ public class PlayerController : MonoBehaviour
 		if (!cameraTransform) return;
 
 		Vector3 camF = Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up);
-		if (camF.sqrMagnitude < 1e-4f) return;
+		if (camF.sqrMagnitude < _threshold) return;
 
 		Quaternion target = Quaternion.LookRotation(camF, Vector3.up);
 		transform.rotation = Quaternion.RotateTowards(
 			transform.rotation, target, turnRateDegPerSec * Time.deltaTime);
+		//transform.rotation = Quaternion.RotateTowards(transform.rotation, target, turnRateDegPerSec * Time.deltaTime);
 	}
 
 
