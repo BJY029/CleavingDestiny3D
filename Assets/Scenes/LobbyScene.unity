@@ -482,13 +482,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbffea121acd03f479efe9c88ca28e77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ButtonController
-  MatchmakingBtn: {fileID: 1975935712}
-  PlayWithAIBtn: {fileID: 1363659615}
-  ExitBtn: {fileID: 686015252}
   LoadingPanel: {fileID: 859874826}
   LoadingText: {fileID: 1623552977}
   Timer: {fileID: 2056557557}
   StopMatching: {fileID: 2022517854}
+  MatchmakingBtn: {fileID: 1975935712}
+  PlayWithAIBtn: {fileID: 1363659615}
+  ExitBtn: {fileID: 686015252}
 --- !u!1 &686015251
 GameObject:
   m_ObjectHideFlags: 0
