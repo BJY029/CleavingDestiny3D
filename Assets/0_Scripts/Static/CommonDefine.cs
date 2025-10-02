@@ -6,3 +6,7 @@ public class CommonDefine
     public const string LOBBYSCENE = "LobbyScene";
     public const string GAMESCENE = "GameScene";
 }
+
+public enum PLAYER{
+   P1, P2, NONE,
+}

@@ -1,3 +1,4 @@
+using Photon.Pun;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -53,6 +54,8 @@ public class PlayerController : MonoBehaviour
 	private Vector2 lookInput;
 	private bool sprintPressed;
 	private bool jumpPressed;
+
+	[SerializeField]
 	private PlayerInput playerInput;
 	private InputAction moveAction, lookAction, sprintAction, jumpAction;
 
@@ -71,26 +74,72 @@ public class PlayerController : MonoBehaviour
 	private float Pitch;
 
 
+	private PhotonView photonView;
+
+
 	private void Awake()
 	{
+		photonView = GetComponent<PhotonView>();
+
+		//playerInput 가져오기
+		if (playerInput == null) playerInput = GetComponent<PlayerInput>();
+
 		//컨트롤러 받아오기
 		characterController = GetComponent<CharacterController>();
-		//바닥 감지용 구 반지름 가져오기
-		groundCheckRadius = groundCheck.GetComponent<SphereCollider>().radius;
-		//input system 살당
-		var pi = GetComponent<PlayerInput>();
-		if (pi != null)
+
+		//groundCheckRadius 안전 처리
+		groundCheckRadius = 0.2f;
+		if (groundCheck != null)
 		{
-			moveAction = pi.actions["Move"];
-			lookAction = pi.actions["Look"];
-			sprintAction = pi.actions["Sprint"];
-			jumpAction = pi.actions["Jump"];
+			var sc = groundCheck.GetComponent<SphereCollider>();
+			if (sc) groundCheckRadius = sc.radius;
+		}
+
+		//만약 내 플레이어가 아니라면
+		if (!photonView.IsMine)
+		{
+			if (playerInput != null)
+			{
+				//잘못된 페어링을 해제하고
+				playerInput.enabled = false;
+			}
+			//해당 플레이어의 카메라를 끈다.
+			if (_mainCamera != null) _mainCamera.SetActive(false); // 원격 카메라 끄기
+			enabled = true; // Update에서 조기 return 할 거라 스크립트는 켬
+			return;
+		}
+
+		//로컬 인스턴스, 즉 자기 자신이라면 장치 탈취 방지
+		if (playerInput != null)
+		{
+			playerInput.neverAutoSwitchControlSchemes = true;
+		}
+
+		//커서 설정
+		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.visible = false;
+
+		//애니메이터 할당(할당 실패시 false로 설정)
+		hasAnimator = TryGetComponent(out animator);
+
+		//애니메이션 접근 파라미터를 해시코드로 관리
+		AssignAnimationIDs();
+
+		//로컬에서만 액션 바인딩
+		if (playerInput != null && playerInput.actions != null)
+		{
+			var actions = playerInput.actions;
+			moveAction = actions.FindAction("Move");
+			lookAction = actions.FindAction("Look");
+			sprintAction = actions.FindAction("Sprint");
+			jumpAction = actions.FindAction("Jump");
 		}
 	}
 
 	//해당 캐릭터가 활성화 혹은 비활성화 되면 움직임을 제한
 	private void OnEnable()
 	{
+		if (!photonView.IsMine) return;
 		moveAction?.Enable();
 		lookAction?.Enable();
 		sprintAction?.Enable();
@@ -99,6 +148,7 @@ public class PlayerController : MonoBehaviour
 
 	private void OnDisable()
 	{
+		if (!photonView.IsMine) return;
 		moveAction?.Disable();
 		lookAction?.Disable();
 		sprintAction?.Disable();
@@ -107,6 +157,10 @@ public class PlayerController : MonoBehaviour
 
 	private void Start()
 	{
+		if (!photonView.IsMine)
+		{
+			return;
+		}
 		//애니메이터 할당(할당 실패시 false로 설정)
 		hasAnimator = TryGetComponent(out animator);
 		//마우스 고정 및 숨기기
@@ -129,6 +183,10 @@ public class PlayerController : MonoBehaviour
 	//움직임 및 점프 관련 코드 실행
 	private void Update()
 	{
+		if (!photonView.IsMine)
+		{
+			return;
+		}
 		//ApplyAnimation();
 		ReadInput();
 		GroundCheck();
@@ -139,6 +197,10 @@ public class PlayerController : MonoBehaviour
 	//회전 관련 코드 실행
 	private void LateUpdate()
 	{
+		if (!photonView.IsMine)
+		{
+			return;
+		}
 		CameraRotation();
 	}
 
