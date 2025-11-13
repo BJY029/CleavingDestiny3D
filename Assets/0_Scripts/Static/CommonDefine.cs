@@ -8,5 +8,13 @@ public class CommonDefine
 }
 
 public enum PLAYER{
-   P1, P2, NONE,
+   P1, P2, P3, P4, NONE,
+}
+
+public class PlayerInfo
+{
+    public int playerNum;
+    public string playerName;
+    public GameObject playerObject;
+    public PLAYER playerSeq;
 }
