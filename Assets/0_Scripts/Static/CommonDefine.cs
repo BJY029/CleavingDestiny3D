@@ -18,3 +18,11 @@ public class PlayerInfo
     public GameObject playerObject;
     public PLAYER playerSeq;
 }
+
+public class RuntimePlayer
+{
+    public int actorNumber;
+    public string playerName;
+    public int turnIdx;
+    public bool isMyTurn;
+}
