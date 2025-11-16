@@ -4,33 +4,32 @@ using Photon.Realtime;
 
 public class BranchController : MonoBehaviourPunCallbacks
 {
-    private GameObject myBranch;
-    private float myLength;
+	//자신의 길이 정보 및 순서 정보 저장
+	private float myLength;
 	private int myIndex = -1;
 
-	private void Start()
-	{
-		myBranch = GetComponent<GameObject>();
-	}
-	
+
+	//길이 및 위치 설정
 	public void setLength(float length)
 	{
-		myLength = length; 
-		if(myBranch != null)
-		{
-			myBranch.transform.localScale = new Vector3(1, myLength, 1);
-		}
+		myLength = length;
+
+		transform.localScale = new Vector3(1, myLength, 1);
+		transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z - myLength);
 	}
 
+	//순서 설정
 	public void setIndex(int index)
-		{ myIndex = index; }
+	{ myIndex = index; }
 
-
+	//해당 함수는 추후에 위치가 UI 관련 스크립트로 변경 될 가능성 있음
 	public void OnClickMyStick()
 	{
+		//예외 체크 후
 		if (myIndex == -1) return;
 		if (!PhotonNetwork.InRoom) return;
 
+		//나뭇가지 선택 함수 호출
 		StickGameController.Instance.OnClickStick(myIndex);
 	}
 

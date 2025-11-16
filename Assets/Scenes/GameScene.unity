@@ -394,7 +394,7 @@ GameObject:
   m_Component:
   - component: {fileID: 356860127}
   m_Layer: 6
-  m_Name: GameObject
+  m_Name: SpawnRoot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -408,13 +408,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 356860126}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -6.44, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 841695978}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &359709775
 GameObject:
   m_ObjectHideFlags: 0
@@ -814,7 +814,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BranchSpawner
   branchPrefab: {fileID: 3955626770737847526, guid: d2b4b65e540a30d49915fb27cdf242d6, type: 3}
   spawnRoot: {fileID: 356860127}
-  spacing: 1.25
+  spacing: 1.375
 --- !u!114 &742320128
 MonoBehaviour:
   m_ObjectHideFlags: 0

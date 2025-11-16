@@ -11,14 +11,7 @@ public enum PLAYER{
    P1, P2, P3, P4, NONE,
 }
 
-public class PlayerInfo
-{
-    public int playerNum;
-    public string playerName;
-    public GameObject playerObject;
-    public PLAYER playerSeq;
-}
-
+//플레이어 정보 저장 객체
 public class RuntimePlayer
 {
     public int actorNumber;
