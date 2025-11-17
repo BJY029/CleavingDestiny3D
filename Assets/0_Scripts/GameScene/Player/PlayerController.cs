@@ -116,8 +116,7 @@ public class PlayerController : MonoBehaviour
 		}
 
 		//커서 설정
-		Cursor.lockState = CursorLockMode.Locked;
-		Cursor.visible = false;
+		
 
 		//애니메이터 할당(할당 실패시 false로 설정)
 		hasAnimator = TryGetComponent(out animator);
@@ -164,8 +163,8 @@ public class PlayerController : MonoBehaviour
 		//애니메이터 할당(할당 실패시 false로 설정)
 		hasAnimator = TryGetComponent(out animator);
 		//마우스 고정 및 숨기기
-		Cursor.lockState = CursorLockMode.Locked;
-		Cursor.visible = false;
+		//Cursor.lockState = CursorLockMode.Locked;
+		//Cursor.visible = false;
 		//애니메이션 접근 파라미터를 해시코드로 관리
 		AssignAnimationIDs();
 	}

@@ -1,5 +1,7 @@
 using Photon.Pun;
 using Photon.Realtime;
+using System.Collections;
+using System.Linq;
 using UnityEngine;
 
 public class StickGameController : MonoBehaviourPunCallbacks
@@ -7,6 +9,15 @@ public class StickGameController : MonoBehaviourPunCallbacks
     //생성할 나뭇가지 수
     [SerializeField]
     private int branchCount;
+
+    private double selectDurarionDefault = 20.0f;
+    private double selectStartTime;
+    private double selectDuration;
+    private bool localResolved = false;
+    
+
+    public Canvas BranchGameCanvas;
+    public GameObject branchCurtain;
 
     //싱글턴
     public static StickGameController Instance;
@@ -23,11 +34,81 @@ public class StickGameController : MonoBehaviourPunCallbacks
 
     void Start()
     {
+        BranchGameCanvas.transform.localScale = Vector3.zero;
         //MasterClient만 나뭇가지 정보 설정
         if(PhotonNetwork.IsMasterClient)
         {
                InitSticks();
         }
+
+        var room = PhotonNetwork.CurrentRoom;
+        var props = room.CustomProperties;
+
+        if(props.ContainsKey("SelctStartTime"))
+        {
+            selectStartTime = (double)props["SelectStartTime"];
+            selectDuration = (double)props["SelectDuration"];
+            return;
+        }
+
+        //타이머 초기화 조건은 게임에서의 ActorNumber가 가장 낮은 플레이어가 수행
+        //(MasterClient)에 의존하지 않기 위한 설정
+        if(IsTimerInitializer())
+        {
+            double now = PhotonNetwork.Time;
+
+            var ht = new ExitGames.Client.Photon.Hashtable
+            {
+                ["SelectStartTime"] = now,
+                ["SelectDuration"] = selectDurarionDefault,
+                ["SelectionResolved"] = false
+            };
+
+            room.SetCustomProperties(ht);
+            selectStartTime = now;
+            selectDuration = selectDurarionDefault;
+        }
+        else
+        {
+			selectStartTime = (double)props["SelectStartTime"];
+			selectDuration = (double)props["SelectDuration"];
+		}
+    }
+
+	private void Update()
+	{
+        if (localResolved) return;
+        var room = PhotonNetwork.CurrentRoom;
+
+        if(room == null) return;
+
+        if(room.CustomProperties.TryGetValue("SelectionResolved", out var r) && (bool)r)
+        {
+            localResolved = true;
+            return;
+        }
+
+        double now = PhotonNetwork.Time;
+        double endTime = selectStartTime + selectDuration;
+        double remain = now - endTime;
+
+        if(remain <= 0.0)
+        {
+            ResolveSelection();
+        }
+	}
+
+    private void ResolveSelection()
+    {
+
+    }
+
+	private bool IsTimerInitializer()
+    {
+        var players = PhotonNetwork.PlayerList;
+        int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
+        int minActor = players.Min(p => p.ActorNumber);
+        return myActor == minActor;
     }
 
     //나뭇 가지 정보를 초기화 하는 함수
@@ -66,7 +147,8 @@ public class StickGameController : MonoBehaviourPunCallbacks
 
         //업데이트
         PhotonNetwork.CurrentRoom.SetCustomProperties(props);
-    }
+		BranchGameCanvas.transform.localScale = Vector3.zero;
+	}
 
     //특정 나뭇가지가 클릭될 경우 호출될 함수
 	public void OnClickStick(int stickIndex)
@@ -124,5 +206,6 @@ public class StickGameController : MonoBehaviourPunCallbacks
 		};
 		room.SetCustomProperties(newProps);
 
+        BranchSpawner.Instance.CallBackBranchClick(stickIndex);
 	}
 }

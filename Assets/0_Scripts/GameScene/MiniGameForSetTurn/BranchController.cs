@@ -2,6 +2,7 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 
+
 public class BranchController : MonoBehaviourPunCallbacks
 {
 	//자신의 길이 정보 및 순서 정보 저장
@@ -9,8 +10,14 @@ public class BranchController : MonoBehaviourPunCallbacks
 	private int myIndex = -1;
 
 
+	public void InitBranch(int idx, int length)
+	{
+		setIndex(idx);
+		setLength(length);
+	}
+
 	//길이 및 위치 설정
-	public void setLength(float length)
+	private void setLength(float length)
 	{
 		myLength = length;
 
@@ -19,8 +26,12 @@ public class BranchController : MonoBehaviourPunCallbacks
 	}
 
 	//순서 설정
-	public void setIndex(int index)
+	private void setIndex(int index)
 	{ myIndex = index; }
+
+
+	public float getLength() {  return myLength; }
+	public int getIdx() { return myIndex; }
 
 	//해당 함수는 추후에 위치가 UI 관련 스크립트로 변경 될 가능성 있음
 	public void OnClickMyStick()
@@ -32,5 +43,4 @@ public class BranchController : MonoBehaviourPunCallbacks
 		//나뭇가지 선택 함수 호출
 		StickGameController.Instance.OnClickStick(myIndex);
 	}
-
 }

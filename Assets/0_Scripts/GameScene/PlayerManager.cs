@@ -27,6 +27,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	{
 		//게임 시작 시, 미니게임 시작
 		StickGameController.Instance.InitSticks();
+
+		//Cursor.lockState = CursorLockMode.Locked;
+		//Cursor.visible = false;
 	}
 
 	//미니게임으로부터 turn 순서가 정해지면, 해당 정보 기반으로 플레이어 정보 채워넣을 예정
