@@ -1,8 +1,10 @@
 using Photon.Pun;
 using Photon.Realtime;
-using System.Collections;
 using System.Linq;
 using UnityEngine;
+using ExitGames.Client.Photon;
+using Unity.VisualScripting;
+using System.Collections.Generic;
 
 public class StickGameController : MonoBehaviourPunCallbacks
 {
@@ -13,11 +15,14 @@ public class StickGameController : MonoBehaviourPunCallbacks
     private double selectDurarionDefault = 20.0f;
     private double selectStartTime;
     private double selectDuration;
+    private double endTime;
     private bool localResolved = false;
     
-
     public Canvas BranchGameCanvas;
     public GameObject branchCurtain;
+    public int selectCount;
+    private int playerCount;
+    private bool isUpdatedTimer;
 
     //싱글턴
     public static StickGameController Instance;
@@ -29,12 +34,16 @@ public class StickGameController : MonoBehaviourPunCallbacks
 			return;
 		}
 		Instance = this;
+
+        selectCount = 0;
 	}
 
+	
 
-    void Start()
+	void Start()
     {
         BranchGameCanvas.transform.localScale = Vector3.zero;
+        playerCount = PhotonNetwork.PlayerList.Length;
         //MasterClient만 나뭇가지 정보 설정
         if(PhotonNetwork.IsMasterClient)
         {
@@ -44,10 +53,12 @@ public class StickGameController : MonoBehaviourPunCallbacks
         var room = PhotonNetwork.CurrentRoom;
         var props = room.CustomProperties;
 
-        if(props.ContainsKey("SelctStartTime"))
+        isUpdatedTimer = false;
+        if(props.ContainsKey("SelectStartTime"))
         {
             selectStartTime = (double)props["SelectStartTime"];
             selectDuration = (double)props["SelectDuration"];
+            isUpdatedTimer = true;
             return;
         }
 
@@ -55,6 +66,7 @@ public class StickGameController : MonoBehaviourPunCallbacks
         //(MasterClient)에 의존하지 않기 위한 설정
         if(IsTimerInitializer())
         {
+            //모든 클라이언트가 동일한 값 기반 동작하기 위해 Photon 서버 시간이용
             double now = PhotonNetwork.Time;
 
             var ht = new ExitGames.Client.Photon.Hashtable
@@ -67,17 +79,36 @@ public class StickGameController : MonoBehaviourPunCallbacks
             room.SetCustomProperties(ht);
             selectStartTime = now;
             selectDuration = selectDurarionDefault;
+            endTime = selectStartTime + selectDuration;
+            isUpdatedTimer = true;
         }
-        else
-        {
-			selectStartTime = (double)props["SelectStartTime"];
-			selectDuration = (double)props["SelectDuration"];
-		}
     }
+
+	public override void OnRoomPropertiesUpdate(Hashtable changedProps)
+	{
+        Debug.Log("in1");
+		if (changedProps.ContainsKey("SelectStartTime"))
+		{
+            Debug.Log("in2");
+			var room = PhotonNetwork.CurrentRoom;
+			selectStartTime = (double)room.CustomProperties["SelectStartTime"];
+			selectDuration = (double)room.CustomProperties["SelectDuration"];
+			endTime = selectStartTime + selectDuration;
+
+            Debug.Log(selectStartTime + " " + selectDuration + " " + endTime);
+		}
+	}
+
+	//예외 처리
+	public override void OnPlayerLeftRoom(Player otherPlayer)
+	{
+		playerCount = PhotonNetwork.PlayerList.Length;
+	}
 
 	private void Update()
 	{
-        if (localResolved) return;
+        if (localResolved) return;;
+        if (!isUpdatedTimer) return;
         var room = PhotonNetwork.CurrentRoom;
 
         if(room == null) return;
@@ -89,10 +120,10 @@ public class StickGameController : MonoBehaviourPunCallbacks
         }
 
         double now = PhotonNetwork.Time;
-        double endTime = selectStartTime + selectDuration;
-        double remain = now - endTime;
+        //double endTime = selectStartTime + selectDuration;
+        double remain = endTime - now;
 
-        if(remain <= 0.0)
+        if(remain <= 0.0 || selectCount >= playerCount)
         {
             ResolveSelection();
         }
@@ -100,9 +131,64 @@ public class StickGameController : MonoBehaviourPunCallbacks
 
     private void ResolveSelection()
     {
+        Debug.LogError("time 0 or all selected");
+        if (!IsTimerInitializer())
+        {
+            localResolved = true;
+            return;
+        }
 
-    }
+        var room = PhotonNetwork.CurrentRoom;
+        var props = room.CustomProperties;
+		var owners = (int[])props["StickOwner"];
+		var lengths = (int[])props["StickLengths"];
+		var rand = new System.Random();
+		int randIdx;
 
+        //key: actorNum, value: selected length
+		Dictionary<int, int> setTurns = new Dictionary<int, int>();
+
+        //각 플레이어를 돌면서
+		foreach (Player p in PhotonNetwork.PlayerList)
+		{
+            //플레이어들의 식별 번호를 가져온다.
+			int playerActNum = p.ActorNumber;
+            //owner 리스트를 돌아보면서
+			for (int i = 0; i < owners.Length; i++)
+			{
+                //해당 플레이어가 선택한 나뭇가지가 있으면
+				if (owners[i] == playerActNum)
+				{
+                    //딕셔너리 삽입
+					setTurns.Add(playerActNum, lengths[i]);
+					continue;
+				}
+			}
+            //만약 해당 플레이어가 선택한 나뭇가지가 없으면
+			do
+			{
+                //무작위 숫자 선택
+				randIdx = rand.Next(0, branchCount);
+			} while (owners[randIdx] != -1); //중복되지 않도록 설정
+            //해당 랜덤 나뭇가지를 플레이어게 임의로 배치
+			owners[randIdx] = playerActNum;
+            //딕셔너리 삽입
+			setTurns.Add(playerActNum, lengths[randIdx]);
+		}
+        //value를 기반으로 딕셔너리 정렬 및 배열로 변환
+        var sortedTurnInfo = setTurns.OrderByDescending(t => t.Value).ToList();
+        int[] turnOrder = sortedTurnInfo.Select(t =>t.Value).ToArray();
+        //Properties에 삽입
+        var newProps = new ExitGames.Client.Photon.Hashtable
+        {
+            ["TurnInfo"] = turnOrder,
+            ["StickOwner"] = owners,
+            ["SelectionResolved"] = true,
+        };
+		room.SetCustomProperties(newProps);
+	}
+
+    //Masterclient가 아닌 가장 낮은 번호의 ActorNumber를 가진 사람이 타이머 및 처리 진행
 	private bool IsTimerInitializer()
     {
         var players = PhotonNetwork.PlayerList;

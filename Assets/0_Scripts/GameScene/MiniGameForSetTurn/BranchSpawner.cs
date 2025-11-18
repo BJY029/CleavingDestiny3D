@@ -87,6 +87,7 @@ public class BranchSpawner : MonoBehaviourPunCallbacks
 	public void CallbackBranchClickRPC(int index)
 	{
         UIButtons[index].GetComponent<Button>().interactable = false;
-        UIButtons[index].GetComponent<Renderer>().material.color = Color.yellow;
+        //UIButtons[index].GetComponent<Renderer>().material.color = Color.yellow;
+        StickGameController.Instance.selectCount += 1;
 	}
 }
