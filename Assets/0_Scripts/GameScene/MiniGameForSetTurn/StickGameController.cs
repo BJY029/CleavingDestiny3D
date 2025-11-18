@@ -86,10 +86,8 @@ public class StickGameController : MonoBehaviourPunCallbacks
 
 	public override void OnRoomPropertiesUpdate(Hashtable changedProps)
 	{
-        Debug.Log("in1");
 		if (changedProps.ContainsKey("SelectStartTime"))
 		{
-            Debug.Log("in2");
 			var room = PhotonNetwork.CurrentRoom;
 			selectStartTime = (double)room.CustomProperties["SelectStartTime"];
 			selectDuration = (double)room.CustomProperties["SelectDuration"];
@@ -153,6 +151,7 @@ public class StickGameController : MonoBehaviourPunCallbacks
 		{
             //플레이어들의 식별 번호를 가져온다.
 			int playerActNum = p.ActorNumber;
+            int flag = 0;
             //owner 리스트를 돌아보면서
 			for (int i = 0; i < owners.Length; i++)
 			{
@@ -161,9 +160,11 @@ public class StickGameController : MonoBehaviourPunCallbacks
 				{
                     //딕셔너리 삽입
 					setTurns.Add(playerActNum, lengths[i]);
-					continue;
+                    flag = 1;
+                    break;
 				}
 			}
+            if (flag == 1) continue;
             //만약 해당 플레이어가 선택한 나뭇가지가 없으면
 			do
 			{
@@ -177,7 +178,11 @@ public class StickGameController : MonoBehaviourPunCallbacks
 		}
         //value를 기반으로 딕셔너리 정렬 및 배열로 변환
         var sortedTurnInfo = setTurns.OrderByDescending(t => t.Value).ToList();
-        int[] turnOrder = sortedTurnInfo.Select(t =>t.Value).ToArray();
+        int[] turnOrder = sortedTurnInfo.Select(t =>t.Key).ToArray();
+        for(int i = 0;i < turnOrder.Length; i++)
+        {
+            Debug.LogError($"turn order :  {i + 1} = player{turnOrder[i]}");
+        }
         //Properties에 삽입
         var newProps = new ExitGames.Client.Photon.Hashtable
         {

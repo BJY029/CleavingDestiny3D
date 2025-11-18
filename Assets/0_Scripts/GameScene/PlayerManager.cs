@@ -2,7 +2,7 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using System.Collections.Generic;
-using JetBrains.Annotations;
+using ExitGames.Client.Photon;
 public class PlayerManager : MonoBehaviourPunCallbacks
 {
 	//전역 접근
@@ -32,13 +32,23 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		//Cursor.visible = false;
 	}
 
+	public override void OnRoomPropertiesUpdate(Hashtable changedProps)
+	{
+		if (changedProps.ContainsKey("TurnInfo"))
+			InitPlayersInfo();
+	}
+
 	//미니게임으로부터 turn 순서가 정해지면, 해당 정보 기반으로 플레이어 정보 채워넣을 예정
-	private void InitPlayersFromPhoton()
+	private void InitPlayersInfo()
 	{
 		players.Clear();
+		var room = PhotonNetwork.CurrentRoom;
+		var props = room.CustomProperties;
+		int[] TurnList =  (int[])props["TurnInfo"];
+		if (TurnList == null) Debug.LogError("TurnListt is null");
 
 		//각 플레이어에 대해서
-		foreach(Player p in PhotonNetwork.PlayerList)
+		foreach (Player p in PhotonNetwork.PlayerList)
 		{
 			//정보 삽입
 			var rp = new RuntimePlayer();
@@ -48,9 +58,27 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 			rp.playerName = ht.TryGetValue("playerName", out var name) ? (string)name : "player"+rp.actorNumber;
 			rp.isMyTurn = false;
-			rp.turnIdx = -1;
+
+			int playerTurn = getIndex(TurnList, p.ActorNumber);
+			if(playerTurn == -1)
+			{
+				Debug.LogError("No Player Turn");
+				rp.turnIdx = -1;
+			}
+			rp.turnIdx = playerTurn;
+			Debug.LogError($"playerActorNum : {playerTurn}, turn:{rp.turnIdx}");
 
 			players.Add(rp.actorNumber, rp);
 		}
+	}
+
+	private int getIndex(int[] list, int value)
+	{
+		for (int i = 0; i < list.Length; i++)
+		{
+			if (list[i] == value)
+				return i;
+		}
+		return -1;
 	}
 }
