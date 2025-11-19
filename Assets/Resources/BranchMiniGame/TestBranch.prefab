@@ -110,10 +110,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
+  m_Radius: 0.53
+  m_Height: 2.18
   m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &5172953960587019971
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,3 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d390205758537c4f81ee3094daaad1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BranchController
+  isSelected: 0
+  normalMat: {fileID: 2100000, guid: 5987b65f4cfdb014bbaf1554be6804f9, type: 2}
+  highlightMat: {fileID: 2100000, guid: 006132227a96625498e1ce92c7a72b76, type: 2}
+  selectedMat: {fileID: 2100000, guid: 8badef810fe17ab4a86ecc8b70f33f2f, type: 2}

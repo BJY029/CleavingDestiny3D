@@ -1,8 +1,9 @@
-using UnityEngine;
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
 using System.Collections.Generic;
-using ExitGames.Client.Photon;
+using System.Linq;
+using UnityEngine;
 public class PlayerManager : MonoBehaviourPunCallbacks
 {
 	//전역 접근
@@ -12,6 +13,8 @@ public class PlayerManager : MonoBehaviourPunCallbacks
     private Dictionary<int, RuntimePlayer> players = new();
 	//읽기 전용 딕셔너리
     public IReadOnlyDictionary<int, RuntimePlayer> Players => players;
+
+	private bool isAlreadyInitialized;
 
 	private void Awake()
 	{
@@ -25,22 +28,35 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 	private void Start()
 	{
-		//게임 시작 시, 미니게임 시작
-		StickGameController.Instance.InitSticks();
+		isAlreadyInitialized = false;
+		if (IsInitializer())
+		{
+			//게임 시작 시, 미니게임 시작
+			StickGameController.Instance.InitSticks();
+		}
 
 		//Cursor.lockState = CursorLockMode.Locked;
 		//Cursor.visible = false;
 	}
 
+	private bool IsInitializer()
+	{
+		var players = PhotonNetwork.PlayerList;
+		int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
+		int minActor = players.Min(p => p.ActorNumber);
+		return myActor == minActor;
+	}
+
 	public override void OnRoomPropertiesUpdate(Hashtable changedProps)
 	{
-		if (changedProps.ContainsKey("TurnInfo"))
+		if (changedProps.ContainsKey("TurnInfo") && isAlreadyInitialized == false)
 			InitPlayersInfo();
 	}
 
 	//미니게임으로부터 turn 순서가 정해지면, 해당 정보 기반으로 플레이어 정보 채워넣을 예정
 	private void InitPlayersInfo()
 	{
+		isAlreadyInitialized = true;
 		players.Clear();
 		var room = PhotonNetwork.CurrentRoom;
 		var props = room.CustomProperties;
@@ -66,7 +82,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 				rp.turnIdx = -1;
 			}
 			rp.turnIdx = playerTurn;
-			Debug.LogError($"playerActorNum : {playerTurn}, turn:{rp.turnIdx}");
+			Debug.LogError($"playerActorNum : {rp.actorNumber}, turn:{rp.turnIdx}");
 
 			players.Add(rp.actorNumber, rp);
 		}

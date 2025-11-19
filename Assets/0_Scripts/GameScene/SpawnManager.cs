@@ -11,8 +11,8 @@ public class SpawnManager : MonoBehaviour
 
 	void Start()
     {
-		myRole = PhotonHelper.GetMyRole();
-        SpawnPlayerByRole();   
+		//myRole = PhotonHelper.GetMyRole();
+        //SpawnPlayerByRole();   
     }
 
     private void SpawnPlayerByRole()
