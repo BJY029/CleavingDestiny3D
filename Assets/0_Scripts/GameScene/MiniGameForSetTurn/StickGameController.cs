@@ -20,7 +20,6 @@ public class StickGameController : MonoBehaviourPunCallbacks
     private bool localResolved = false;
     
     public Canvas BranchGameCanvas;
-    public GameObject branchCurtain;
     public int selectCount;
     public Slider Timer;
     private int playerCount;

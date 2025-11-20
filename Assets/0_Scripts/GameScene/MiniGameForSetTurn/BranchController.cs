@@ -67,7 +67,7 @@ public class BranchController : MonoBehaviourPunCallbacks, IPointerEnterHandler,
 	{
 		if (isSelected) return;
 
-		Debug.LogError("mouse in");
+		//Debug.LogError("mouse in");
 		if(rend != null && highlightMat != null)
 		{
 			rend.material = highlightMat;
@@ -79,7 +79,7 @@ public class BranchController : MonoBehaviourPunCallbacks, IPointerEnterHandler,
 	{
 		if (isSelected) return;
 
-		Debug.LogError("mouse out");
+		//Debug.LogError("mouse out");
 		if (rend != null && normalMat != null)
 		{
 			rend.material = normalMat;
@@ -89,7 +89,7 @@ public class BranchController : MonoBehaviourPunCallbacks, IPointerEnterHandler,
 	//해당 브랜치가 클릭되는 경우
 	public void OnPointerClick(PointerEventData eventData)
 	{
-		Debug.LogError("mouse click");
+		//Debug.LogError("mouse click");
 		//예외 체크 후
 		if (myIndex == -1) return;
 		if (!PhotonNetwork.InRoom) return;

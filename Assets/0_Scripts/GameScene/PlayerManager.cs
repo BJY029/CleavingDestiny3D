@@ -1,6 +1,7 @@
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,7 +15,14 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	//읽기 전용 딕셔너리
     public IReadOnlyDictionary<int, RuntimePlayer> Players => players;
 
+	//중복 초기화 방지 플래그
 	private bool isAlreadyInitialized;
+
+	public Transform CenterObject;
+	private float radius = 4.5f;
+	private Vector3[] spawnPos;
+	private Quaternion[] spawnRot;
+
 
 	private void Awake()
 	{
@@ -47,10 +55,26 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		return myActor == minActor;
 	}
 
-	public override void OnRoomPropertiesUpdate(Hashtable changedProps)
+	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable changedProps)
 	{
 		if (changedProps.ContainsKey("TurnInfo") && isAlreadyInitialized == false)
-			InitPlayersInfo();
+			StartCoroutine(PrepareStartGame());
+	}
+
+	private IEnumerator PrepareStartGame()
+	{
+		IEnumerator handelUI = BranchUIController.Instance.FadeoutCurtain_GameStart();
+		StartCoroutine(handelUI);
+
+		InitPlayersInfo();
+		SpawnPlayersOnCircle();
+
+		yield return handelUI;
+		CameraSwitchManager.Instance.Branch_to_Game();
+
+		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
+		PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum-1], spawnRot[myActNum-1]);
+		CameraSwitchManager.Instance.Off_ExceptPlayerCam();
 	}
 
 	//미니게임으로부터 turn 순서가 정해지면, 해당 정보 기반으로 플레이어 정보 채워넣을 예정
@@ -96,5 +120,25 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 				return i;
 		}
 		return -1;
+	}
+
+	private void SpawnPlayersOnCircle()
+	{
+		spawnPos = new Vector3[players.Count];
+		spawnRot = new Quaternion[players.Count];
+
+		for(int i = 0; i < players.Count; i++)
+		{
+			float angle = 2f * Mathf.PI * i / players.Count;
+
+			Vector3 offset = new Vector3(
+				Mathf.Cos(angle) * radius,
+				0f,
+				Mathf.Sin(angle)* radius);
+
+			spawnPos[i] = offset + CenterObject.position;
+
+			spawnRot[i] = Quaternion.LookRotation(CenterObject.position - spawnPos[i]); 
+		}
 	}
 }

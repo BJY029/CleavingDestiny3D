@@ -17,8 +17,21 @@ public class ButtonController : MatchController
 	{
         MatchmakingBtn.GetComponent<Button>().onClick.AddListener(FindMatch);
         StopMatching.GetComponent<Button>().onClick.AddListener(CancelMatch);
-        
+
+		SetButtonText(MatchmakingBtn, "UI_PVP");
+		SetButtonText(PlayWithAIBtn, "UI_PVE");
+		SetButtonText(ExitBtn, "UI_EXIT");
         if(LoadingPanel != null)
             LoadingPanel.transform.localScale = Vector3.zero;
 	}	
+
+    void SetButtonText(Button btn, string textID)
+    {
+        Text text = btn.GetComponentInChildren<Text>();
+        if(text != null)
+        {
+            text.text = LocalizationManager.Instance.GetText(textID);
+            return;
+        }
+    }
 }
