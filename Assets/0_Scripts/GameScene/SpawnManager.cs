@@ -1,6 +1,18 @@
 using Photon.Pun;
 using UnityEngine;
 
+
+
+
+
+//사용 안하는 스크립트
+//혹시 몰라서 일단은 남겨둠
+
+
+
+
+
+
 public class SpawnManager : MonoBehaviour
 {
     public GameObject Camera;

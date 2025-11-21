@@ -42,9 +42,6 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			//게임 시작 시, 미니게임 시작
 			StickGameController.Instance.InitSticks();
 		}
-
-		//Cursor.lockState = CursorLockMode.Locked;
-		//Cursor.visible = false;
 	}
 
 	private bool IsInitializer()
@@ -68,6 +65,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		InitPlayersInfo();
 		SpawnPlayersOnCircle();
+		InitPlayerProps();
 
 		yield return handelUI;
 		CameraSwitchManager.Instance.Branch_to_Game();
@@ -75,6 +73,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
 		PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum-1], spawnRot[myActNum-1]);
 		CameraSwitchManager.Instance.Off_ExceptPlayerCam();
+
+		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.visible = false;
 	}
 
 	//미니게임으로부터 turn 순서가 정해지면, 해당 정보 기반으로 플레이어 정보 채워넣을 예정
@@ -106,7 +107,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 				rp.turnIdx = -1;
 			}
 			rp.turnIdx = playerTurn;
-			Debug.LogError($"playerActorNum : {rp.actorNumber}, turn:{rp.turnIdx}");
+			Debug.Log($"playerActorNum : {rp.actorNumber}, turn:{rp.turnIdx}");
 
 			players.Add(rp.actorNumber, rp);
 		}
@@ -140,5 +141,21 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 			spawnRot[i] = Quaternion.LookRotation(CenterObject.position - spawnPos[i]); 
 		}
+	}
+
+
+	private void InitPlayerProps()
+	{
+		Player player = PhotonNetwork.LocalPlayer;
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageHP, CommonDefine.defaultTreeHP);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageBarrier, CommonDefine.defaultVillageBarrier);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageUpgrades, CommonDefine.defaultVillageUpgrades);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Gold, CommonDefine.defaultVillageGold);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.AtkPow, CommonDefine.defaultPlayerAtkPow);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Energy, CommonDefine.defaultPlayerEnergy);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.MaxEnergy, CommonDefine.defaultPlayerMaxEnergy);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.DayTimeDamage, CommonDefine.defaultDayTimeDamage);
+
+		Debug.Log("Init Player Props Success");
 	}
 }
