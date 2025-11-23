@@ -8,12 +8,12 @@ using UnityEngine;
 public class PlayerManager : MonoBehaviourPunCallbacks
 {
 	//전역 접근
-    public static PlayerManager Instance { get; private set; }
+	public static PlayerManager Instance { get; private set; }
 
 	//플레이어 정보 관리용 딕셔너리(각 클라이언트마다 관리한다.)
-    private Dictionary<int, RuntimePlayer> players = new();
+	private Dictionary<int, RuntimePlayer> players = new();
 	//읽기 전용 딕셔너리
-    public IReadOnlyDictionary<int, RuntimePlayer> Players => players;
+	public IReadOnlyDictionary<int, RuntimePlayer> Players => players;
 
 	//중복 초기화 방지 플래그
 	private bool isAlreadyInitialized;
@@ -26,7 +26,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 	private void Awake()
 	{
-		if(Instance != null)
+		if (Instance != null)
 		{
 			Destroy(Instance);
 			return;
@@ -71,7 +71,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		CameraSwitchManager.Instance.Branch_to_Game();
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
-		PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum-1], spawnRot[myActNum-1]);
+		PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
 		CameraSwitchManager.Instance.Off_ExceptPlayerCam();
 
 		Cursor.lockState = CursorLockMode.Locked;
@@ -85,7 +85,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		players.Clear();
 		var room = PhotonNetwork.CurrentRoom;
 		var props = room.CustomProperties;
-		int[] TurnList =  (int[])props["TurnInfo"];
+		int[] TurnList = (int[])props["TurnInfo"];
 		if (TurnList == null) Debug.LogError("TurnListt is null");
 
 		//각 플레이어에 대해서
@@ -97,11 +97,11 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 			var ht = p.CustomProperties;
 
-			rp.playerName = ht.TryGetValue("playerName", out var name) ? (string)name : "player"+rp.actorNumber;
+			rp.playerName = ht.TryGetValue("playerName", out var name) ? (string)name : "player" + rp.actorNumber;
 			rp.isMyTurn = false;
 
 			int playerTurn = getIndex(TurnList, p.ActorNumber);
-			if(playerTurn == -1)
+			if (playerTurn == -1)
 			{
 				Debug.LogError("No Player Turn");
 				rp.turnIdx = -1;
@@ -128,18 +128,18 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		spawnPos = new Vector3[players.Count];
 		spawnRot = new Quaternion[players.Count];
 
-		for(int i = 0; i < players.Count; i++)
+		for (int i = 0; i < players.Count; i++)
 		{
 			float angle = 2f * Mathf.PI * i / players.Count;
 
 			Vector3 offset = new Vector3(
 				Mathf.Cos(angle) * radius,
 				0f,
-				Mathf.Sin(angle)* radius);
+				Mathf.Sin(angle) * radius);
 
 			spawnPos[i] = offset + CenterObject.position;
 
-			spawnRot[i] = Quaternion.LookRotation(CenterObject.position - spawnPos[i]); 
+			spawnRot[i] = Quaternion.LookRotation(CenterObject.position - spawnPos[i]);
 		}
 	}
 

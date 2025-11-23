@@ -6,28 +6,40 @@ public class CommonDefine
     public const string LOBBYSCENE = "LobbyScene";
     public const string GAMESCENE = "GameScene";
 
-	//Room Property 기본 값
-	public const float defaultTreeHP = 10000f;
-	public const float defaultTreeAtkPow = 25f;
-	public const int defaultStartDay = 1;
-	public const int defaultTurn = 0;
-	public const GamePhaseValue defaultPhaseValue = GamePhaseValue.DAY;
+    //Room Property 기본 값
+    public const float defaultTreeHP = 10000f;
+    public const float defaultTreeAtkPow = 25f;
+    public const int defaultStartDay = 1;
+    public const int defaultTurn = 0;
+    public const GamePhaseValue defaultPhaseValue = GamePhaseValue.DAY;
 
-	//Player Property 기본 값
-	public const float defaultVillageHP = 1000f;
-	public const float defaultVillageBarrier = 0f;
-	public const int defaultVillageGold = 100;
-	public const float defaultPlayerAtkPow = 20f;
-	public const float defaultPlayerEnergy = 50f;
-	public const float defaultPlayerMaxEnergy = 50f;
-	public const float defaultDayTimeDamage = 0f;
+    //Player Property 기본 값
+    public const float defaultVillageHP = 1000f;
+    public const float defaultVillageBarrier = 0f;
+    public const int defaultVillageGold = 100;
+    public const float defaultPlayerAtkPow = 20f;
+    public const float defaultPlayerEnergy = 50f;
+    public const float defaultPlayerMaxEnergy = 50f;
+    public const float defaultPlayerRegenEnergyPerDay = 10f;
+    public const float defaultDayTimeDamage = 0f;
 
-	//Village 업그레이드 레벨(광산/집/대장간/상점/농장)
-	public static readonly int[] defaultVillageUpgrades = new int[5] { 0, 0, 0, 0, 0 };
+    //Village 업그레이드 레벨(광산/집/대장간/상점/농장)
+    public static readonly int[] defaultVillageUpgrades = new int[5] { 0, 0, 0, 0, 0 };
+
+    // Village 업그레이드 효과 값
+    public const int villageIncomePerLevel = 50; // 광산 레벨당 골드 수입 증가량
+    public const int villageMaxEnergyPerLevel = 20; // 집 레벨당 최대 에너지 증가량
+    public const float villageAtkPowerPerLevel = 5f; // 대장간 레벨당 공격력 보너스 증가량
+    public const int villageEnergyRegenPerDay = 20; // 농장 레벨당 하루 에너지 회복량
+
+    // Vilage 업그레이드 가격과 업그레이드 배율
+    public static readonly int[] villageUpgradeBaseCost = new int[5] { 100, 150, 200, 250, 150 };
+    public static readonly float villageUpgradeCostMultiplier = 2f;
 }
 
-public enum PLAYER{
-   P1, P2, P3, P4, NONE,
+public enum PLAYER
+{
+    P1, P2, P3, P4, NONE,
 }
 
 //플레이어 정보 저장 객체
