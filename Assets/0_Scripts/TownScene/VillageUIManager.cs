@@ -4,7 +4,7 @@ using System.Text;
 using TMPro;
 using UnityEngine;
 
-public class TownUIManager : MonoBehaviour
+public class VillageUIManager : MonoBehaviour
 {
 
     StringBuilder currentGoldText = new StringBuilder();
@@ -12,8 +12,8 @@ public class TownUIManager : MonoBehaviour
 
     void Start()
     {
-        TownManager.Instance.OnGoldChanged.AddListener(UpdateGoldText);
-        UpdateGoldText(TownManager.Instance.GetMyGold());
+        VillageManager.Instance.OnGoldChanged.AddListener(UpdateGoldText);
+        UpdateGoldText(VillageManager.Instance.GetMyGold());
     }
 
     private void UpdateGoldText(int gold)
@@ -26,12 +26,12 @@ public class TownUIManager : MonoBehaviour
 
     public void OnClickUpgradeHouseButton()
     {
-        TownManager.Instance.TryUpgradeFacility(VillageUpgradeIndex.House);
+        VillageManager.Instance.TryUpgradeLevel(VillageUpgradeIndex.House);
     }
 
     public void OnClickAddGoldButton()
     {
-        TownManager.Instance.AddGold(100);
+        VillageManager.Instance.AddGold(100);
     }
 
 

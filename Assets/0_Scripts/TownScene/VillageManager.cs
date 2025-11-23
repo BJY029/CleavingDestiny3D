@@ -5,9 +5,9 @@ using ExitGames.Client.Photon;
 using UnityEngine.Events;
 using System;
 
-public class TownManager : MonoBehaviourPunCallbacks
+public class VillageManager : MonoBehaviourPunCallbacks
 {
-    public static TownManager Instance { get; private set; }
+    public static VillageManager Instance { get; private set; }
 
     // 골드 및 업그레이드 관리를 위한 캐시
     private readonly Hashtable _propCache = new Hashtable();
@@ -41,31 +41,19 @@ public class TownManager : MonoBehaviourPunCallbacks
         OnGoldChanged?.Invoke(currentGold + amount);
     }
 
-    // 특정 시설의 현재 레벨 가져오기
-    public int GetFacilityLevel(VillageUpgradeIndex facilityType)
-    {
-        if (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue(PlayerPropKeys.VillageUpgrades, out object upgrades))
-        {
-            int[] upgradeList = (int[])upgrades;
-            return upgradeList[(int)facilityType];
-        }
-        return 0;
-    }
-
     // 업그레이드 시도 (UI 버튼 등에서 호출)
-    public void TryUpgradeFacility(VillageUpgradeIndex facilityType)
+    public void TryUpgradeLevel(VillageUpgradeIndex villageType)
     {
-        int currentLevel = GetFacilityLevel(facilityType);
+        int currentLevel = VillageStat.GetUpgradeLevel(villageType);
         int currentGold = GetMyGold();
 
-        // TODO: 밸런스에 맞는 가격 공식 적용 필요 (예: 레벨 * 100 + 100)
-        int upgradeCost = (currentLevel + 1) * 100;
+        int upgradeCost = VillageStat.GetLevelUpgradedCost(villageType);
 
         if (currentGold >= upgradeCost)
         {
             // 업그레이드 진행
-            ProcessUpgrade(facilityType, currentLevel, currentGold, upgradeCost);
-            Debug.Log($"{facilityType} 업그레이드 성공! Lv.{currentLevel} -> Lv.{currentLevel + 1}");
+            ProcessUpgrade(villageType, currentLevel, currentGold, upgradeCost);
+            Debug.Log($"{villageType} 업그레이드 성공! Lv.{currentLevel} -> Lv.{currentLevel + 1}");
         }
         else
         {
@@ -98,12 +86,8 @@ public class TownManager : MonoBehaviourPunCallbacks
         myPlayer.SetCustomProperties(_propCache);
     }
 
-    // 게임 씬으로 돌아가기
-    public void ReturnToGameScene()
+    void OnDestroy()
     {
-        if (PhotonNetwork.IsMasterClient)
-        {
-            PhotonNetwork.LoadLevel(CommonDefine.GAMESCENE);
-        }
+        if (Instance == this) Instance = null;
     }
 }
