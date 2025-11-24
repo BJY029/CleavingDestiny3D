@@ -168,7 +168,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 			GameManager.instance.nextScene = CommonDefine.GAMESCENE;
 
 			//역할 분배
-			RoleDistribution();
+			//RoleDistribution();
 			//씬 로딩
 			StartCoroutine(LoadScene());
 			//씬 전환 코루틴 실행
@@ -240,6 +240,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 	}
 
 	//플레이어에게 역할을 분배하는 함수
+	//수정 필요-------------------------
 	private void RoleDistribution()
 	{
 		//만약 MasterClient가 아니라면 해당 함수는 실행하지 않는다.
