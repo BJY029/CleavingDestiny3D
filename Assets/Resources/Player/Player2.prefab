@@ -185,7 +185,7 @@ Transform:
   m_GameObject: {fileID: 1155027164586732361}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.4, y: 1.14, z: -1.08}
+  m_LocalPosition: {x: 0.4, y: 1.14, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1582,12 +1582,16 @@ MonoBehaviour:
     m_Bits: 8
   pivotTransform: {fileID: 5673012440144213079}
   _mainCamera: {fileID: 5683257058955264670}
-  cameraDistance: 2
+  cameraDistance: 1
   mouseSensitivity: 0.1
   TopClamp: 35
   BottomClamp: -80
   playerInput: {fileID: 5390782575481684524}
   isGrounded: 0
+  RayDistance: 5
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!114 &2716088925901640895
 MonoBehaviour:
   m_ObjectHideFlags: 0

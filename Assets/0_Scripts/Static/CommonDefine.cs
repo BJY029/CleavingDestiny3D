@@ -6,12 +6,17 @@ public class CommonDefine
     public const string LOBBYSCENE = "LobbyScene";
     public const string GAMESCENE = "GameScene";
 
+    //Layer name
+    public const string TREELAYER = "Tree";
+
     //Room Property 기본 값
     public const float defaultTreeHP = 10000f;
     public const float defaultTreeAtkPow = 25f;
     public const int defaultStartDay = 1;
     public const int defaultTurn = 0;
     public const GamePhaseValue defaultPhaseValue = GamePhaseValue.DAY;
+    public const int defaultMaxWave = 3;
+    public const int defaultWave = 0;
 
     //Player Property 기본 값
     public const float defaultVillageHP = 1000f;
@@ -51,12 +56,26 @@ public class RuntimePlayer
     public bool isMyTurn;
 }
 
+public class UI_CSV
+{
+    public const string UI_PVP = "UI_PVP";
+    public const string UI_PVE = "UI_PVE";
+    public const string UI_EXIT = "UI_EXIT";
+    public const string UI_BranchDesc1 = "UI_BranchDesc_1";
+	public const string UI_BranchDesc2 = "UI_BranchDesc_2";
+	public const string UI_PlayerHit = "UI_PlayerHIT";
+    public const string UI_PlayerNHit = "UI_PlayerNotHIT";
+}
+
 //서버 CustomProperty Key
 public static class RoomPropKeys
 {
+    public const string TurnOrder = "TurnInfo";
     public const string CurrentTurn = "CurrentTurn";
     public const string NextTurn = "NextTurn";
     public const string CurrentDay = "CurrentDay";
+    public const string MaxWaveCnt = "MaxWaveCnt";
+    public const string CurrentWave = "CurrentWave";
     public const string GamePhase = "GamePhase"; // "DAY" / "NIGHT" / "END"
     public const string TreeHP = "TreeHP";
     public const string TreeAtkPow = "TreeAtkPow";
@@ -75,6 +94,7 @@ public static class PlayerPropKeys
     public const string Energy = "Energy";
     public const string MaxEnergy = "MaxEnergy";
     public const string DayTimeDamage = "DayTimeDamage";
+    public const string MyTurn = "MyTurn";
 }
 
 //VillageUpgrades Property에 저장될 리스트 객체의 각 인덱스 정의

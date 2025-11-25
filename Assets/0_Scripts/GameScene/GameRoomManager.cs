@@ -27,6 +27,8 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentDay, CommonDefine.defaultStartDay);
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurn, CommonDefine.defaultTurn);
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.GamePhase, CommonDefine.defaultPhaseValue);
+		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.MaxWaveCnt, CommonDefine.defaultMaxWave);
+		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentWave, CommonDefine.defaultWave);
 
 		Debug.Log("Init Room Props Success");
 	}

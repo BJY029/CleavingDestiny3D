@@ -55,7 +55,18 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable changedProps)
 	{
 		if (changedProps.ContainsKey("TurnInfo") && isAlreadyInitialized == false)
+		{
+			UploadTurnInfoPropertyToRoom();
 			StartCoroutine(PrepareStartGame());
+		}
+	}
+
+	private void UploadTurnInfoPropertyToRoom()
+	{
+		if (!IsInitializer())
+			return;
+
+
 	}
 
 	private IEnumerator PrepareStartGame()
@@ -107,8 +118,12 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 				rp.turnIdx = -1;
 			}
 			rp.turnIdx = playerTurn;
-			Debug.Log($"playerActorNum : {rp.actorNumber}, turn:{rp.turnIdx}");
 
+			if (p == PhotonNetwork.LocalPlayer)
+			{
+				PhotonPropertyHelper.SetPlayerProp(p, PlayerPropKeys.MyTurn, playerTurn);
+			}
+			Debug.Log($"playerActorNum : {rp.actorNumber}, turn:{rp.turnIdx}");
 			players.Add(rp.actorNumber, rp);
 		}
 	}

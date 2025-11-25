@@ -22,10 +22,13 @@ public class CameraLookController : MonoBehaviour
 	[Tooltip("카메라가 올려다볼 수 있는 최대 각도")]
 	[SerializeField] private float minTilt = -70.0f;
 
+
+
 	// 제어할 시네머신 컴포넌트
 	private CinemachinePanTilt panTilt;
 	// 입력 값을 저장할 변수
 	private Vector2 lookInput;
+
 
 	void Awake()
 	{
@@ -79,5 +82,7 @@ public class CameraLookController : MonoBehaviour
 		// 계산된 최종 각도를 PanTilt 컴포넌트에 다시 적용
 		panTilt.PanAxis.Value = currentPan;
 		panTilt.TiltAxis.Value = currentTilt;
+
+
 	}
 }

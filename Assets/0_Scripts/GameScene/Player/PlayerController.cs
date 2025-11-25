@@ -73,6 +73,12 @@ public class PlayerController : MonoBehaviour
 	private float Yaw;
 	private float Pitch;
 
+	private Camera cam;
+	[Header("Raycast")]
+	[SerializeField] private float RayDistance;
+	[SerializeField] private LayerMask targetLayer;
+	private Transform lastHitTarget = null;
+
 
 	private PhotonView photonView;
 
@@ -109,6 +115,7 @@ public class PlayerController : MonoBehaviour
 			return;
 		}
 
+		cam = _mainCamera.GetComponent<Camera>();
 		//로컬 인스턴스, 즉 자기 자신이라면 장치 탈취 방지
 		if (playerInput != null)
 		{
@@ -191,7 +198,55 @@ public class PlayerController : MonoBehaviour
 		GroundCheck();
 		HandleMovement(Time.deltaTime);
 		HandleJumpAndGravity(Time.deltaTime);
+
+		//카메라 정면 방향으로 Ray 발사
+		Ray ray = new Ray(cam.transform.position, cam.transform.forward);
+		//디버그용 Ray 그리기
+		Debug.DrawRay(ray.origin, ray.direction * RayDistance, Color.green);
+		//ray가 target layer를 감지하면
+		if (Physics.Raycast(ray, out RaycastHit hitInfo, RayDistance, targetLayer))
+		{
+			Transform currentHit = hitInfo.transform;
+
+			if(lastHitTarget != currentHit)
+			{
+				OnRayEnter(currentHit);
+			}
+			lastHitTarget = currentHit;
+			
+		}
+		else
+		{
+			if(lastHitTarget != null)
+			{
+				OnRayExit(lastHitTarget);
+				lastHitTarget = null;
+			}
+		}
 	}
+
+	void OnRayEnter(Transform transform)
+	{
+		LayerMask detectedLayer = transform.gameObject.layer;
+
+		//감지한 오브젝트의 레이어가 Tree인 경우
+		if (detectedLayer == LayerMask.NameToLayer(CommonDefine.TREELAYER))
+		{
+			PlayerCanvasController.Instance.SetHitTextActive();
+		}
+	}
+
+	void OnRayExit(Transform transform)
+	{
+		LayerMask outLayer = transform.gameObject.layer;
+
+		//감지한 오브젝트의 레이어가 Tree인 경우
+		if (outLayer == LayerMask.NameToLayer(CommonDefine.TREELAYER))
+		{
+			PlayerCanvasController.Instance.SetHitTextUnActive();
+		}
+	}
+		
 	
 	//회전 관련 코드 실행
 	private void LateUpdate()

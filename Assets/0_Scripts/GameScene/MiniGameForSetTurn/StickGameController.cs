@@ -235,10 +235,11 @@ public class StickGameController : MonoBehaviourPunCallbacks
             owners[i] = -1;
         }
 
-        for(int i = 0; i < branchCount; i++)
-        {
-            Debug.LogError($"index{i+1} length = {lengths[i]}");
-        }
+        //디버그용
+        //for(int i = 0; i < branchCount; i++)
+        //{
+        //    Debug.LogError($"index{i+1} length = {lengths[i]}");
+        //}
 
         //RoomProperty에 저장
         var props = new ExitGames.Client.Photon.Hashtable

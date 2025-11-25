@@ -18,9 +18,9 @@ public class ButtonController : MatchController
         MatchmakingBtn.GetComponent<Button>().onClick.AddListener(FindMatch);
         StopMatching.GetComponent<Button>().onClick.AddListener(CancelMatch);
 
-		SetButtonText(MatchmakingBtn, "UI_PVP");
-		SetButtonText(PlayWithAIBtn, "UI_PVE");
-		SetButtonText(ExitBtn, "UI_EXIT");
+		SetButtonText(MatchmakingBtn, UI_CSV.UI_PVP);
+		SetButtonText(PlayWithAIBtn, UI_CSV.UI_PVE);
+		SetButtonText(ExitBtn, UI_CSV.UI_EXIT);
         if(LoadingPanel != null)
             LoadingPanel.transform.localScale = Vector3.zero;
 	}	
