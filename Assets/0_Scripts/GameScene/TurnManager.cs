@@ -3,10 +3,14 @@ using Photon.Realtime;
 using UnityEngine;
 using System.Linq;
 using ExitGames.Client.Photon;
+using System;
+using UnityEngine.InputSystem;
 
 public class TurnManager : MonoBehaviourPunCallbacks
 {
 	public static TurnManager Instance;
+	public event Action OnInteractFKeyDown;
+	private bool TurnHasChanged = false;
 	private void Awake()
 	{
 		if (Instance != null)
@@ -15,6 +19,16 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			return;
 		}
 		Instance = this;
+	}
+
+	private void Update()
+	{
+		if (Keyboard.current == null) return;
+
+		if (Keyboard.current.fKey.wasPressedThisFrame)
+		{
+			OnInteractFKeyDown?.Invoke();
+		}
 	}
 
 	private bool IsInitializer()
@@ -30,20 +44,18 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber);
 	}
 
-	private void Update()
-	{
-		//나무를 보고 있으면서 ,내 턴이면서 , f키를 누른 경우 아래 rpc 호출
-	}
-
 	[PunRPC]
 	private void RPC_RequestChangeTurn(int requesterActorNumber, PhotonMessageInfo info)
 	{
 		if (!IsInitializer()) return;
 
-		int currentTurnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
+		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
+		int currentTurnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
+		int currentTurnActor = TurnOrder[currentTurnIndex];
+
 		if(currentTurnActor != requesterActorNumber)
 		{
-			Debug.LogError("Turn request ERROR!!");
+			Debug.LogError("Turn request ERROR!!\ncurrentTurnActor : " + currentTurnActor + " requestActor : " + requesterActorNumber);
 			return;
 		}
 
@@ -102,16 +114,26 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				Debug.Log("Wave " + currentWaveCnt + " Start");
 			}
 		}
+		photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 		//다음 턴 정보를 갱신한다.
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurn, nextIndex);
 		Debug.Log("Turn " + nextIndex + " Start");
 	}
 
+	[PunRPC]
+	public void TurnChanedInvoked()
+	{
+		TurnHasChanged = true;
+	}
+
 	public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
 	{
-		if(propertiesThatChanged.ContainsKey(RoomPropKeys.CurrentTurn))
+		if(propertiesThatChanged.ContainsKey(RoomPropKeys.CurrentTurn) && TurnHasChanged)
 		{
-			//내 턴인지 확인 후 관련 이벤트 처리 진행
+			PlayerCanvasController.Instance.UpdateGameHitText();
+			GameCanvasController.Instance.UpdateDayText();
+			GameCanvasController.Instance.UpdateWaveText();
+			TurnHasChanged=false;
 		}
 	}
 }

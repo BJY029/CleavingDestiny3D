@@ -78,6 +78,7 @@ public class PlayerController : MonoBehaviour
 	[SerializeField] private float RayDistance;
 	[SerializeField] private LayerMask targetLayer;
 	private Transform lastHitTarget = null;
+	private bool isLookingAtTree;
 
 
 	private PhotonView photonView;
@@ -140,6 +141,8 @@ public class PlayerController : MonoBehaviour
 			sprintAction = actions.FindAction("Sprint");
 			jumpAction = actions.FindAction("Jump");
 		}
+
+		isLookingAtTree = false;
 	}
 
 	//해당 캐릭터가 활성화 혹은 비활성화 되면 움직임을 제한
@@ -150,6 +153,8 @@ public class PlayerController : MonoBehaviour
 		lookAction?.Enable();
 		sprintAction?.Enable();
 		jumpAction?.Enable();
+
+		TurnManager.Instance.OnInteractFKeyDown += HandleInteractFKey;
 	}
 
 	private void OnDisable()
@@ -159,6 +164,8 @@ public class PlayerController : MonoBehaviour
 		lookAction?.Disable();
 		sprintAction?.Disable();
 		jumpAction?.Disable();
+
+		TurnManager.Instance.OnInteractFKeyDown -= HandleInteractFKey;
 	}
 
 	private void Start()
@@ -233,6 +240,7 @@ public class PlayerController : MonoBehaviour
 		if (detectedLayer == LayerMask.NameToLayer(CommonDefine.TREELAYER))
 		{
 			PlayerCanvasController.Instance.SetHitTextActive();
+			isLookingAtTree = true;
 		}
 	}
 
@@ -244,9 +252,18 @@ public class PlayerController : MonoBehaviour
 		if (outLayer == LayerMask.NameToLayer(CommonDefine.TREELAYER))
 		{
 			PlayerCanvasController.Instance.SetHitTextUnActive();
+			isLookingAtTree = false;
 		}
 	}
-		
+	
+	private void HandleInteractFKey()
+	{
+		if (!photonView.IsMine) return;
+		if (!GameHelper.IsMyTurn()) return;
+		if (!isLookingAtTree) return;
+
+		TurnManager.Instance.RequestChangeTurn();
+	}
 	
 	//회전 관련 코드 실행
 	private void LateUpdate()

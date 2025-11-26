@@ -85,6 +85,10 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
 		CameraSwitchManager.Instance.Off_ExceptPlayerCam();
 
+		GameCanvasController.Instance.gameObject.SetActive(true);
+		GameCanvasController.Instance.UpdateDayText();
+		GameCanvasController.Instance.UpdateWaveText();
+
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
 	}

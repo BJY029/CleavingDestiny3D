@@ -24,6 +24,21 @@ public class PlayerCanvasController : MonoBehaviour
 		HitText.text = "";
 	}
 
+	public void UpdateGameHitText()
+	{
+		if (HitText.IsActive())
+		{
+			if (GameHelper.IsMyTurn())
+			{
+				HitText.text = LocalizationManager.Instance.GetText(UI_CSV.UI_PlayerHit);
+			}
+			else
+			{
+				HitText.text = LocalizationManager.Instance.GetText(UI_CSV.UI_PlayerNHit);
+			}
+		}
+	}
+
 	public void SetHitTextActive()
 	{
 		//Debug.LogError("my turn: " + myTurn + ", In Game Turn: " + CurrentTurn);
