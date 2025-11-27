@@ -29,6 +29,7 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.GamePhase, CommonDefine.defaultPhaseValue);
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.MaxWaveCnt, CommonDefine.defaultMaxWave);
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentWave, CommonDefine.defaultWave);
+		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, false);
 
 		Debug.Log("Init Room Props Success");
 	}

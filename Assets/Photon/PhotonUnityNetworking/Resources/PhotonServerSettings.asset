@@ -45,6 +45,7 @@ MonoBehaviour:
   - InitPlayersFromPhoton
   - RPC_RequestChangeTurn
   - TurnChanedInvoked
+  - RPC_SetActiveCanvas
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

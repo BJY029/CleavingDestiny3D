@@ -3,6 +3,7 @@ using UnityEngine;
 
 public static class GameHelper
 {
+	//현재 내 턴인지 확인하는 함수
     public static bool IsMyTurn()
     {
 		var room = PhotonNetwork.CurrentRoom;

@@ -1,6 +1,7 @@
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ExitGames.Client.Photon;
 
 //CharacterController 컴포넌트 강제 할당
 [RequireComponent(typeof(CharacterController))]
@@ -80,8 +81,9 @@ public class PlayerController : MonoBehaviour
 	private Transform lastHitTarget = null;
 	private bool isLookingAtTree;
 
-
 	private PhotonView photonView;
+	//마을 업그레이드 중인지 여부를 저장할 플래그
+	private bool UpgradePhase;
 
 
 	private void Awake()
@@ -143,6 +145,7 @@ public class PlayerController : MonoBehaviour
 		}
 
 		isLookingAtTree = false;
+		UpgradePhase = false;
 	}
 
 	//해당 캐릭터가 활성화 혹은 비활성화 되면 움직임을 제한
@@ -154,6 +157,7 @@ public class PlayerController : MonoBehaviour
 		sprintAction?.Enable();
 		jumpAction?.Enable();
 
+		//F 키가 눌리는 이벤트에 해당 함수 삽입
 		TurnManager.Instance.OnInteractFKeyDown += HandleInteractFKey;
 	}
 
@@ -193,13 +197,59 @@ public class PlayerController : MonoBehaviour
 		_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
 	}
 
+	//마을 업그레이드에 돌입시 실행될 함수
+	private void VillageUpgradePahse()
+	{
+		//플레이어 카메라를 끄고
+		cam.enabled = false;
+		//메인 카메라 켜기
+		CameraSwitchManager.Instance.GameCameraToggle(true);
+	}
+
+	//마을 업그레이드가 끝나면 실행될 함수
+	private void VillageUpgradePahseOut()
+	{
+		//메인 카메라 끄고
+		CameraSwitchManager.Instance.GameCameraToggle(false);
+		//플레이어 카메라 켜기
+		cam.enabled = true;
+	}
+
 	//움직임 및 점프 관련 코드 실행
 	private void Update()
 	{
+		//내 photonView가 아니면 실행하지 않는다.
 		if (!photonView.IsMine)
 		{
 			return;
 		}
+
+		//만약 마을 업그레이드 페이즈에 돌입한 경우
+		if (TurnManager.Instance.isUpgradePhase)
+		{
+			//아직 관련 처리를 진행하지 않은 경우
+			if(!UpgradePhase)
+			{
+				//처리 진행후
+				VillageUpgradePahse();
+				//마을 업그레이드 페이즈에 돌입했음을 명시
+				UpgradePhase = true;
+			}
+			return;
+		}
+		else //마을 업그레이드 페이즈가 아닌 경우
+		{
+			//그런데 아직 마을 업그레이드 페이즈로 설정되어 있는 경우
+			if(UpgradePhase)
+			{
+				//관련 처리 진행 후
+				VillageUpgradePahseOut();
+				//마을 업그레이드 페이즈에서 빠져나왔음을 명시
+				UpgradePhase = false;
+			}
+		}
+
+
 		//ApplyAnimation();
 		ReadInput();
 		GroundCheck();
@@ -213,55 +263,75 @@ public class PlayerController : MonoBehaviour
 		//ray가 target layer를 감지하면
 		if (Physics.Raycast(ray, out RaycastHit hitInfo, RayDistance, targetLayer))
 		{
+			//해당 레이어에 해당되는 transform 객체 가져오기
 			Transform currentHit = hitInfo.transform;
 
+			//처음 감지하는 객체인 경우
 			if(lastHitTarget != currentHit)
 			{
+				//처리 진행
 				OnRayEnter(currentHit);
 			}
+			//현재 감지중인 객체로 설정
 			lastHitTarget = currentHit;
 			
 		}
-		else
+		else//target layer를 감지하지 못한 경우
 		{
+			//만약 감지중인 객체가 있었던 경우(즉, 방금 시선에서 해당 layer가 벗어난 경우)
 			if(lastHitTarget != null)
 			{
+				//관련 처리 진행
 				OnRayExit(lastHitTarget);
+				//감지 중인 객체가 없다고 설정
 				lastHitTarget = null;
 			}
 		}
 	}
 
+	//처음 ray로 감지했을 때 실행될 함수
 	void OnRayEnter(Transform transform)
 	{
+		//현재 감지중인 오브젝트의 레이어 가져오기
 		LayerMask detectedLayer = transform.gameObject.layer;
 
 		//감지한 오브젝트의 레이어가 Tree인 경우
 		if (detectedLayer == LayerMask.NameToLayer(CommonDefine.TREELAYER))
 		{
+			//Hit 관련 텍스트 표출
 			PlayerCanvasController.Instance.SetHitTextActive();
+			//현재 나무를 보고있다고 플래그 설정
 			isLookingAtTree = true;
 		}
 	}
 
+	//방금 ray에서 벗어난 경우
 	void OnRayExit(Transform transform)
 	{
+		//기존에 감지중이였던 오브젝트의 레이어 가져오기
 		LayerMask outLayer = transform.gameObject.layer;
 
-		//감지한 오브젝트의 레이어가 Tree인 경우
+		//방금까지 감지중이였던 레이어가 나무였으면
 		if (outLayer == LayerMask.NameToLayer(CommonDefine.TREELAYER))
 		{
+			//Hit 관련 텍스트를 끈다.
 			PlayerCanvasController.Instance.SetHitTextUnActive();
+			//나무를 보고 있지 않다고 플래그 설정
 			isLookingAtTree = false;
 		}
 	}
 	
+	//F키가 눌렸을 때 실행될 함수
 	private void HandleInteractFKey()
 	{
+		//내 객체가 아니면 return
 		if (!photonView.IsMine) return;
+		//내 턴이 아니면 return
 		if (!GameHelper.IsMyTurn()) return;
+		//현재 나무를 보고 있지 않은 경우 return
 		if (!isLookingAtTree) return;
 
+		//턴 전환 함수 호출
 		TurnManager.Instance.RequestChangeTurn();
 	}
 	

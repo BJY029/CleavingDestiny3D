@@ -79,6 +79,8 @@ public static class RoomPropKeys
     public const string GamePhase = "GamePhase"; // "DAY" / "NIGHT" / "END"
     public const string TreeHP = "TreeHP";
     public const string TreeAtkPow = "TreeAtkPow";
+    public const string IsVillageUpgradePhase = "IsVillageUpgradePhase"; // bool
+	public const string VillageUpgradeStartEndTime = "VillageUpgradeStartEndTime"; //float
     //public const string Weather = "Weather";
 }
 

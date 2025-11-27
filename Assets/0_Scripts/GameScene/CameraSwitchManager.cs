@@ -17,6 +17,12 @@ public class CameraSwitchManager : MonoBehaviour
 	public Camera mainCamera;
     public Camera branchCamera;
 
+    //메인 카메라를 켜고 끄는 함수
+    public void GameCameraToggle(bool toggle)
+    {
+		mainCamera.enabled = toggle;
+	}
+
     public void Off_ExceptPlayerCam()
     {
         mainCamera.enabled = false;
