@@ -1,4 +1,4 @@
-using ExitGames.Client.Photon.StructWrapping;
+ï»¿using ExitGames.Client.Photon.StructWrapping;
 using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class ButtonController : MatchController
 {
-    //¹öÆ° ¿ä¼Ò
+    //ë²„íŠ¼ ìš”ì†Œ
     [Header("Button Eelements")]
     public Button MatchmakingBtn;
     public Button PlayWithAIBtn;
@@ -17,8 +17,9 @@ public class ButtonController : MatchController
 	{
         MatchmakingBtn.GetComponent<Button>().onClick.AddListener(FindMatch);
         StopMatching.GetComponent<Button>().onClick.AddListener(CancelMatch);
+        ExitBtn.onClick.AddListener(OnClickExitGame);
 
-		SetButtonText(MatchmakingBtn, UI_CSV.UI_PVP);
+        SetButtonText(MatchmakingBtn, UI_CSV.UI_PVP);
 		SetButtonText(PlayWithAIBtn, UI_CSV.UI_PVE);
 		SetButtonText(ExitBtn, UI_CSV.UI_EXIT);
         if(LoadingPanel != null)
@@ -33,5 +34,14 @@ public class ButtonController : MatchController
             text.text = LocalizationManager.Instance.GetText(textID);
             return;
         }
+    }
+
+    void OnClickExitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 }

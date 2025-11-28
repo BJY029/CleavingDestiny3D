@@ -2551,6 +2551,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnManager
   VillageUpgradeLimitedTime: 15
+  isUpgradePhase: 0
 --- !u!1 &1415818744
 GameObject:
   m_ObjectHideFlags: 0

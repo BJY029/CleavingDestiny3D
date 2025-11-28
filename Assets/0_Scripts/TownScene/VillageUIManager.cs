@@ -1,12 +1,10 @@
-using ExitGames.Client.Photon;
+ï»¿using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
 using TMPro;
-using Unity.AppUI.UI;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,8 +16,8 @@ public class VillageUIManager : MonoBehaviourPunCallbacks
 
     [Header("UIs")]
     public Slider TimeSlider;
-    public UnityEngine.UI.Button OpenVillageBtn;
-    public UnityEngine.UI.Button CloseVillageBtn;
+    public Button OpenVillageBtn;
+    public Button CloseVillageBtn;
     public GameObject VillagePanel;
     private CanvasGroup canvasGroup;
 
@@ -32,20 +30,28 @@ public class VillageUIManager : MonoBehaviourPunCallbacks
     {
         if(Instance == null) Instance = this;
         else Destroy(Instance);
-
-        VillageManager.Instance.OnGoldChanged.AddListener(UpdateGoldText);
-        UpdateGoldText(VillageManager.Instance.GetMyGold());
-		canvasGroup = GetComponent<CanvasGroup>();
-		OpenVillageBtn.onClick.AddListener(OnClickOpenVillage);
-		CloseVillageBtn.onClick.AddListener(OnClickCloseVillage);
 	}
+
 
 	private void Start()
 	{
-		canvasGroup.alpha = 0f;       // ¿ÏÀü Åõ¸í
+        canvasGroup = GetComponent<CanvasGroup>();
+
+		canvasGroup.alpha = 0f;       // ì™„ì „ íˆ¬ëª…
 		canvasGroup.interactable = false;
 		canvasGroup.blocksRaycasts = false;
-	}
+
+        VillageManager.Instance.OnGoldChanged.AddListener(UpdateGoldText);
+
+        OpenVillageBtn.onClick.AddListener(OnClickOpenVillage);
+        CloseVillageBtn.onClick.AddListener(OnClickCloseVillage);
+    }
+
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        UpdateGoldText(VillageManager.Instance.GetMyGold());
+    }
 
 	private void Update()
 	{
@@ -62,11 +68,6 @@ public class VillageUIManager : MonoBehaviourPunCallbacks
         currentGoldText.Append("Gold: ");
         currentGoldText.Append(gold);
         goldText.text = currentGoldText.ToString();
-    }
-
-    public void OnClickUpgradeHouseButton()
-    {
-        VillageManager.Instance.TryUpgradeLevel(VillageUpgradeIndex.House);
     }
 
     public void OnClickAddGoldButton()

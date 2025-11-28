@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
@@ -9,8 +9,9 @@ public class VillageManager : MonoBehaviourPunCallbacks
 {
     public static VillageManager Instance { get; private set; }
 
-    // °ñµå ¹× ¾÷±×·¹ÀÌµå °ü¸®¸¦ À§ÇÑ Ä³½Ã
     private readonly Hashtable _propCache = new Hashtable();
+    private int _cachedGold = 0; // ìºì‹œëœ ê³¨ë“œ ê°’
+    private bool _goldChangedBySelf = false;
 
     public UnityEvent<int> OnGoldChanged;
 
@@ -18,10 +19,23 @@ public class VillageManager : MonoBehaviourPunCallbacks
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+        
     }
 
-    // ÇöÀç ³» °ñµå °¡Á®¿À±â
+    private void Start()
+    {
+        // ì´ˆê¸°í™”
+        _cachedGold = GetMyGold();
+    }
+
+    // ìºì‹œëœ ê³¨ë“œ ê°’ ë°˜í™˜ (Updateì—ì„œ ì‚¬ìš© ê°€ëŠ¥)
     public int GetMyGold()
+    {
+        return _cachedGold;
+    }
+
+    // Photon ì†ì„±ì—ì„œ ê³¨ë“œ ê°’ ë™ê¸°í™”
+    private int FetchGoldFromPhoton()
     {
         if (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue(PlayerPropKeys.Gold, out object gold))
         {
@@ -30,59 +44,69 @@ public class VillageManager : MonoBehaviourPunCallbacks
         return 0;
     }
 
-    // °ñµå Ãß°¡ÇÏ±â
     public void AddGold(int amount)
     {
-        int currentGold = GetMyGold();
+        int currentGold = _cachedGold;
+        _goldChangedBySelf = true;
 
         _propCache.Clear();
         _propCache[PlayerPropKeys.Gold] = currentGold + amount;
         PhotonNetwork.LocalPlayer.SetCustomProperties(_propCache);
-        OnGoldChanged?.Invoke(currentGold + amount);
+        
+        _cachedGold = currentGold + amount; // ìºì‹œ ì—…ë°ì´íŠ¸
+        OnGoldChanged?.Invoke(_cachedGold);
     }
 
-    // ¾÷±×·¹ÀÌµå ½Ãµµ (UI ¹öÆ° µî¿¡¼­ È£Ãâ)
-    public void TryUpgradeLevel(VillageUpgradeIndex villageType)
+    // CustomProperties ë³€ê²½ ì‹œ ìë™ ë™ê¸°í™”
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
     {
-        int currentLevel = VillageStat.GetUpgradeLevel(villageType);
-        int currentGold = GetMyGold();
-
-        int upgradeCost = VillageStat.GetLevelUpgradedCost(villageType);
-
-        if (currentGold >= upgradeCost)
+        if (!_goldChangedBySelf && targetPlayer == PhotonNetwork.LocalPlayer && changedProps.ContainsKey(PlayerPropKeys.Gold))
         {
-            // ¾÷±×·¹ÀÌµå ÁøÇà
-            ProcessUpgrade(villageType, currentLevel, currentGold, upgradeCost);
-            Debug.Log($"{villageType} ¾÷±×·¹ÀÌµå ¼º°ø! Lv.{currentLevel} -> Lv.{currentLevel + 1}");
+            _cachedGold = FetchGoldFromPhoton();
+            OnGoldChanged?.Invoke(_cachedGold);
+        }
+        _goldChangedBySelf = false;
+        
+    }
+
+    public bool TryUpgradeLevel(VillageUpgradeIndex facilityType)
+    {
+        Player myPlayer = PhotonNetwork.LocalPlayer;
+        int currentGold = GetMyGold();
+        int currentLevel = VillageStat.GetUpgradeLevel(facilityType);
+        int cost = VillageStat.GetLevelUpgradedCost(facilityType);
+        if (currentGold >= cost)
+        {
+            ProcessUpgrade(facilityType, currentLevel, currentGold, cost);
+            return true;
         }
         else
         {
-            Debug.Log("°ñµå°¡ ºÎÁ·ÇÕ´Ï´Ù.");
+            Debug.Log("Not enough gold to upgrade.");
+            return false;
         }
     }
 
-    // ¼­¹ö¿¡ µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ® ¿äÃ»
     private void ProcessUpgrade(VillageUpgradeIndex facilityType, int currentLevel, int currentGold, int cost)
     {
         Player myPlayer = PhotonNetwork.LocalPlayer;
 
         _propCache.Clear();
-
-        // 1. °ñµå Â÷°¨
         _propCache[PlayerPropKeys.Gold] = currentGold - cost;
 
-        // 2. ¾÷±×·¹ÀÌµå ¹è¿­ °»½Å
         int[] currentUpgrades = (int[])myPlayer.CustomProperties[PlayerPropKeys.VillageUpgrades];
         if (currentUpgrades == null || currentUpgrades.Length == 0)
         {
             currentUpgrades = new int[Enum.GetValues(typeof(VillageUpgradeIndex)).Length];
         }
         currentUpgrades[(int)facilityType] = currentLevel + 1;
-        OnGoldChanged?.Invoke(currentGold - cost);
+        
+        _cachedGold = currentGold - cost; // ìºì‹œ ì—…ë°ì´íŠ¸
+        OnGoldChanged?.Invoke(_cachedGold);
+
+        _goldChangedBySelf = true;
 
         _propCache[PlayerPropKeys.VillageUpgrades] = currentUpgrades;
-
-        // 3. ¼­¹ö Àü¼Û
         myPlayer.SetCustomProperties(_propCache);
     }
 

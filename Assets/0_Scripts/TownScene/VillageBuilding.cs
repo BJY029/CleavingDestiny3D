@@ -1,4 +1,4 @@
-
+ï»¿
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,7 +22,7 @@ public class VillageBuilding : MonoBehaviour
 
         VillageManager.Instance.OnGoldChanged.AddListener(CheckCostIsEnough);
 
-        // ÀÓ½Ã ÅØ½ºÆ® ¼³Á¤
+        // ì„ì‹œ í…ìŠ¤íŠ¸ ì„¤ì •
         nameText.text = $"Village_{buildingType}_Name";
         descriptionText.text = $"Village_{buildingType}_Description";
     }
