@@ -46,6 +46,7 @@ MonoBehaviour:
   - RPC_RequestChangeTurn
   - TurnChanedInvoked
   - RPC_SetActiveCanvas
+  - RPC_DamagedVillage
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

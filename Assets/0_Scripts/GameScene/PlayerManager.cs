@@ -170,10 +170,13 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageBarrier, CommonDefine.defaultVillageBarrier);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageUpgrades, CommonDefine.defaultVillageUpgrades);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Gold, CommonDefine.defaultVillageGold);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.AtkPow, CommonDefine.defaultPlayerAtkPow);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.MaxAtkPow, CommonDefine.defaultPlayerAtkPow);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.MinAtkPow, CommonDefine.defaultPlayerAtkPow);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Energy, CommonDefine.defaultPlayerEnergy);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.MaxEnergy, CommonDefine.defaultPlayerMaxEnergy);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.DayTimeDamage, CommonDefine.defaultDayTimeDamage);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.TotalDamage, CommonDefine.defaultTotalDamage);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.BarrierConversionRate, CommonDefine.defaultBarrierConversionRate);
 
 		Debug.Log("Init Player Props Success");
 	}

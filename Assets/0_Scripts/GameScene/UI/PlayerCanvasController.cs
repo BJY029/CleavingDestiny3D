@@ -8,7 +8,10 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	//캔버스를 껴고 킬때 사용할 캔버스 그룹
 	private CanvasGroup canvasGroup;
 
-	public Slider EnergySlider;
+	public Text EnergyValue;
+	public Text VillageHP;
+	public Text DamageValue;
+	public Text BarrierValue;
 	public GameObject HitTextObj;
 
 	private Text HitText;
@@ -73,6 +76,17 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		//HitText를 비활성화 하는 애니메이션에 이벤트로 비활성함수가 삽입되어 있어서 따로 비활성화는 하지 않음
 		HitTextAnim.Play("UI_Player_HitText_Down");
 		HitText.text = "";
+	}
+
+	//현재 플레이어 상태 UI를 업데이트 하는 함수
+	public void updatePlayerStatus(string Energy, string HP, string Damage, string Barrier)
+	{
+		if (!photonView.IsMine) return;
+
+		EnergyValue.text = Energy;
+		VillageHP.text = HP;
+		DamageValue.text = Damage;
+		BarrierValue.text = Barrier;
 	}
 
 	//캔버스를 켜고 끄는 RPC 함수를 실행할 함수

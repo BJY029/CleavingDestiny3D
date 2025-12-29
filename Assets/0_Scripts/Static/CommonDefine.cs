@@ -10,8 +10,8 @@ public class CommonDefine
     public const string TREELAYER = "Tree";
 
     //Room Property 기본 값
-    public const float defaultTreeHP = 10000f;
-    public const float defaultTreeAtkPow = 25f;
+    public const float defaultTreeHP = 300000f;
+    public const float defaultTreeAtkPow = 150f;
     public const int defaultStartDay = 1;
     public const int defaultTurn = 0;
     public const GamePhaseValue defaultPhaseValue = GamePhaseValue.DAY;
@@ -19,14 +19,16 @@ public class CommonDefine
     public const int defaultWave = 0;
 
     //Player Property 기본 값
-    public const float defaultVillageHP = 1000f;
+    public const float defaultVillageHP = 5000f;
     public const float defaultVillageBarrier = 0f;
+    public const float defaultBarrierConversionRate = 0.3f;
     public const int defaultVillageGold = 100;
-    public const float defaultPlayerAtkPow = 20f;
-    public const float defaultPlayerEnergy = 50f;
-    public const float defaultPlayerMaxEnergy = 50f;
+    public const float defaultPlayerAtkPow = 50;
+    public const int defaultPlayerEnergy = 5;
+    public const int defaultPlayerMaxEnergy = 5;
     public const float defaultPlayerRegenEnergyPerDay = 10f;
     public const float defaultDayTimeDamage = 0f;
+    public const float defaultTotalDamage = 0f;
 
     //Village 업그레이드 레벨(광산/집/대장간/상점/농장)
     public static readonly int[] defaultVillageUpgrades = new int[5] { 0, 0, 0, 0, 0 };
@@ -90,9 +92,12 @@ public static class PlayerPropKeys
     //public const string Name = "Name";
     public const string VillageHP = "VillageHP";
     public const string VillageBarrier = "VillageBarrier";
+    public const string BarrierConversionRate = "BarrierConversionRate";
     public const string VillageUpgrades = "VillageUpgrades";
     public const string Gold = "Gold";
-    public const string AtkPow = "AtkPow";
+    public const string MaxAtkPow = "MaxAtkPow";
+	public const string MinAtkPow = "MinAtkPow";
+	public const string TotalDamage = "TotalDamage";
     public const string Energy = "Energy";
     public const string MaxEnergy = "MaxEnergy";
     public const string DayTimeDamage = "DayTimeDamage";
