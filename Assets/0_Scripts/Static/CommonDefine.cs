@@ -11,7 +11,7 @@ public class CommonDefine
 
     //Room Property ±âº» °ª
     public const float defaultTreeHP = 300000f;
-    public const float defaultTreeAtkPow = 150f;
+    public const float defaultTreeAtkPow = 1500f;
     public const int defaultStartDay = 1;
     public const int defaultTurn = 0;
     public const GamePhaseValue defaultPhaseValue = GamePhaseValue.DAY;
@@ -23,7 +23,7 @@ public class CommonDefine
     public const float defaultVillageBarrier = 0f;
     public const float defaultBarrierConversionRate = 0.3f;
     public const int defaultVillageGold = 100;
-    public const float defaultPlayerAtkPow = 50;
+    public const int defaultPlayerAtkPow = 50;
     public const int defaultPlayerEnergy = 5;
     public const int defaultPlayerMaxEnergy = 5;
     public const float defaultPlayerRegenEnergyPerDay = 10f;

@@ -31,6 +31,8 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentWave, CommonDefine.defaultWave);
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, false);
 
+		TreeStatus.Instance.SetTreeStatusUI();
+
 		Debug.Log("Init Room Props Success");
 	}
 }

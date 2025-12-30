@@ -5,6 +5,7 @@ using System.Linq;
 using ExitGames.Client.Photon;
 using System;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class TurnManager : MonoBehaviourPunCallbacks
 {
@@ -23,6 +24,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	public event Action OnInteractFKeyDown;
 	//턴 변경 플래그
 	private bool TurnHasChanged = false;
+	private int _lastProcessedTrun = -1;
 	private void Awake()
 	{
 		if (Instance != null)
@@ -97,10 +99,27 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			return;
 		}
 
+		//나무 때리기 액션 수행, Hit 요청자가 해당 함수 실행
+		photonView.RPC(nameof(RPC_DoHitOnRequester), info.Sender);
 		//턴 변경 수행
 		ChangeToNextTurn();
 	}
 
+	//Hit 요청자 클라에서 실행될 Hit 처리
+	[PunRPC]
+	private void RPC_DoHitOnRequester()
+	{
+		int dmg = PlayerStatus.Instance.HitAction();
+		photonView.RPC(nameof(RPC_ApplyTreeDamage), RpcTarget.All, dmg);
+	}
+
+	[PunRPC]
+	private void RPC_ApplyTreeDamage(int dmg, PhotonMessageInfo info)
+	{
+		if(!IsInitializer()) return;
+
+		TreeStatus.Instance.getHitByPlayer(dmg);
+	}
 
 	//턴 전환 함수
 	private void ChangeToNextTurn()
@@ -133,8 +152,10 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			if (currentWaveCnt >= MaxWaveCnt)
 			{
 				//날짜 변경인 경우
-				//마을 페이즈를 시작한다.
-				StartVillageUpgradePhase();
+				//마을 공격 액션 수행
+				float treeDmg = TreeStatus.Instance.getTreeAtkPow();
+				photonView.RPC(nameof(TreeActionProcess), RpcTarget.All, treeDmg);
+				//StartVillageUpgradePhase();
 				return;
 			}
 			else//최대 웨이브 값이 아닌 경우
@@ -145,7 +166,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			}
 		}
 		//턴 변경 관련 처리를 한 번만 수행하기 위해 다음과 같은 RPC로 변수 초기화
-		photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
+		//photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 
 		//다음 턴 정보를 갱신한다.
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurn, nextIndex);
@@ -156,6 +177,28 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	public void TurnChanedInvoked()
 	{
 		TurnHasChanged = true;
+	}
+
+	[PunRPC]
+	public void TreeActionProcess(float dmg)
+	{
+		StartCoroutine(TreeAction(dmg));
+	}
+
+	IEnumerator TreeAction(float dmg)
+	{
+		//현재 딜레이를 주지 않으면, 밤이 되기 전의 hit이 처리가 안되고 씹히는 현상이 발생해서 임의의 딜레이 삽입
+		//체크 필요
+		yield return new WaitForSeconds(2f);
+
+
+
+		//관련 처리 진행
+		PlayerStatus.Instance.DamagedVillage(dmg);
+		//추후 딜레이 추가
+		yield return null;
+		//마을 페이즈를 시작한다.
+		StartVillageUpgradePhase();
 	}
 
 	//마을 업그레이드 페이즈를 설정한다.
@@ -235,17 +278,22 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	}
 
 	//프로퍼티 변경 감지
-	public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
+	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
 	{
 		//턴 관련 프로퍼티가 변경되었고, 아직 처리되지 않은 경우
-		if(propertiesThatChanged.ContainsKey(RoomPropKeys.CurrentTurn) && TurnHasChanged)
+		if(propertiesThatChanged.TryGetValue(RoomPropKeys.CurrentTurn, out var turnObj))
 		{
-			//관련 UI 처리를 진행해주고
-			PlayerCanvasController.Instance.UpdateGameHitText();
-			GameCanvasController.Instance.UpdateDayText();
-			GameCanvasController.Instance.UpdateWaveText();
+			int newTurn = Convert.ToInt32(turnObj);
+			if (newTurn != _lastProcessedTrun)
+			{
+				_lastProcessedTrun = newTurn;
+				//관련 UI 처리를 진행해주고
+				PlayerCanvasController.Instance.UpdateGameHitText();
+				GameCanvasController.Instance.UpdateDayText();
+				GameCanvasController.Instance.UpdateWaveText();
+			}
 			//중복 처리 방지위해 플래그를 설정한다.
-			TurnHasChanged=false;
+			//TurnHasChanged=false;
 		}
 
 		//마을 페이즈가 진행되는 여부를 저장한다.

@@ -81,7 +81,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	//현재 플레이어 상태 UI를 업데이트 하는 함수
 	public void updatePlayerStatus(string Energy, string HP, string Damage, string Barrier)
 	{
-		if (!photonView.IsMine) return;
+		//if (!photonView.IsMine) return;
 
 		EnergyValue.text = Energy;
 		VillageHP.text = HP;

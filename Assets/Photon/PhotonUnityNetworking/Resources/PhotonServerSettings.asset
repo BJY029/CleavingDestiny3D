@@ -47,6 +47,10 @@ MonoBehaviour:
   - TurnChanedInvoked
   - RPC_SetActiveCanvas
   - RPC_DamagedVillage
+  - TreeActionProcess
+  - RPC_DoHitOnRequester
+  - DamagedVillage
+  - RPC_ApplyTreeDamage
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

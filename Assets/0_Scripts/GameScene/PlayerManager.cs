@@ -26,13 +26,14 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 	private void Awake()
 	{
-		if (Instance != null)
+		if (Instance != null && Instance != this)
 		{
-			Destroy(Instance);
+			Destroy(gameObject);
 			return;
 		}
 		Instance = this;
 	}
+
 
 	private void Start()
 	{
@@ -178,6 +179,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.TotalDamage, CommonDefine.defaultTotalDamage);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.BarrierConversionRate, CommonDefine.defaultBarrierConversionRate);
 
+		PlayerStatus.Instance.SetPlayerStatusUI();
 		Debug.Log("Init Player Props Success");
 	}
 }
