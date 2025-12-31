@@ -1,4 +1,4 @@
-using ExitGames.Client.Photon;
+ï»¿using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
@@ -7,15 +7,15 @@ using System.Linq;
 using UnityEngine;
 public class PlayerManager : MonoBehaviourPunCallbacks
 {
-	//Àü¿ª Á¢±Ù
+	//ì „ì—­ ì ‘ê·¼
 	public static PlayerManager Instance { get; private set; }
 
-	//ÇÃ·¹ÀÌ¾î Á¤º¸ °ü¸®¿ë µñ¼Å³Ê¸®(°¢ Å¬¶óÀÌ¾ğÆ®¸¶´Ù °ü¸®ÇÑ´Ù.)
+	//í”Œë ˆì´ì–´ ì •ë³´ ê´€ë¦¬ìš© ë”•ì…”ë„ˆë¦¬(ê° í´ë¼ì´ì–¸íŠ¸ë§ˆë‹¤ ê´€ë¦¬í•œë‹¤.)
 	private Dictionary<int, RuntimePlayer> players = new();
-	//ÀĞ±â Àü¿ë µñ¼Å³Ê¸®
+	//ì½ê¸° ì „ìš© ë”•ì…”ë„ˆë¦¬
 	public IReadOnlyDictionary<int, RuntimePlayer> Players => players;
 
-	//Áßº¹ ÃÊ±âÈ­ ¹æÁö ÇÃ·¡±×
+	//ì¤‘ë³µ ì´ˆê¸°í™” ë°©ì§€ í”Œë˜ê·¸
 	private bool isAlreadyInitialized;
 
 	public Transform CenterObject;
@@ -40,7 +40,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		isAlreadyInitialized = false;
 		if (IsInitializer())
 		{
-			//°ÔÀÓ ½ÃÀÛ ½Ã, ¹Ì´Ï°ÔÀÓ ½ÃÀÛ
+			//ê²Œì„ ì‹œì‘ ì‹œ, ë¯¸ë‹ˆê²Œì„ ì‹œì‘
 			StickGameController.Instance.InitSticks();
 		}
 	}
@@ -94,7 +94,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		Cursor.visible = false;
 	}
 
-	//¹Ì´Ï°ÔÀÓÀ¸·ÎºÎÅÍ turn ¼ø¼­°¡ Á¤ÇØÁö¸é, ÇØ´ç Á¤º¸ ±â¹İÀ¸·Î ÇÃ·¹ÀÌ¾î Á¤º¸ Ã¤¿ö³ÖÀ» ¿¹Á¤
+	//ë¯¸ë‹ˆê²Œì„ìœ¼ë¡œë¶€í„° turn ìˆœì„œê°€ ì •í•´ì§€ë©´, í•´ë‹¹ ì •ë³´ ê¸°ë°˜ìœ¼ë¡œ í”Œë ˆì´ì–´ ì •ë³´ ì±„ì›Œë„£ì„ ì˜ˆì •
 	private void InitPlayersInfo()
 	{
 		isAlreadyInitialized = true;
@@ -104,10 +104,10 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		int[] TurnList = (int[])props["TurnInfo"];
 		if (TurnList == null) Debug.LogError("TurnListt is null");
 
-		//°¢ ÇÃ·¹ÀÌ¾î¿¡ ´ëÇØ¼­
+		//ê° í”Œë ˆì´ì–´ì— ëŒ€í•´ì„œ
 		foreach (Player p in PhotonNetwork.PlayerList)
 		{
-			//Á¤º¸ »ğÀÔ
+			//ì •ë³´ ì‚½ì…
 			var rp = new RuntimePlayer();
 			rp.actorNumber = p.ActorNumber;
 
@@ -170,7 +170,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageHP, CommonDefine.defaultTreeHP);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageBarrier, CommonDefine.defaultVillageBarrier);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageUpgrades, CommonDefine.defaultVillageUpgrades);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Gold, CommonDefine.defaultVillageGold);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Gold, CommonDefine.defaultGold);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.MaxAtkPow, CommonDefine.defaultPlayerMaxAtkPow);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.MinAtkPow, CommonDefine.defaultPlayerMinAtkPow);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Energy, CommonDefine.defaultPlayerEnergy);
