@@ -1451,6 +1451,7 @@ GameObject:
   - component: {fileID: 5390782575481684524}
   - component: {fileID: 4067812600072088979}
   - component: {fileID: 5015978434698562994}
+  - component: {fileID: -6779181724308204353}
   - component: {fileID: 2716088925901640895}
   - component: {fileID: 5684084460542150523}
   - component: {fileID: 2204694442329986084}
@@ -1592,6 +1593,22 @@ MonoBehaviour:
   targetLayer:
     serializedVersion: 2
     m_Bits: 128
+--- !u!114 &-6779181724308204353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b81647baef8bd94e8a070ce6ba64be9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
+  animator: {fileID: 2492846899768299628}
+  hitAnimCount: 4
+  avoidRepeat: 1
+  forceRestartEvenIfHitting: 0
 --- !u!114 &2716088925901640895
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1665,6 +1682,12 @@ MonoBehaviour:
   - Type: 1
     SynchronizeType: 2
     Name: MotionSpeed
+  - Type: 9
+    SynchronizeType: 0
+    Name: Hit
+  - Type: 3
+    SynchronizeType: 0
+    Name: HitIndex
   m_SynchronizeLayers:
   - SynchronizeType: 2
     LayerIndex: 0

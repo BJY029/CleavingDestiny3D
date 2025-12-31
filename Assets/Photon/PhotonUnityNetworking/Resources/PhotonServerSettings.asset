@@ -52,6 +52,7 @@ MonoBehaviour:
   - DamagedVillage
   - RPC_ApplyTreeDamage
   - RPC_initPlayerStatus
+  - RPC_PlayHit
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

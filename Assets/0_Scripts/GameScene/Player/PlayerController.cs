@@ -5,7 +5,7 @@ using ExitGames.Client.Photon;
 
 //CharacterController 컴포넌트 강제 할당
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IAnimNotify
 {
 	//움직임 관련 파라미터
 	[Header("Move")]
@@ -84,6 +84,7 @@ public class PlayerController : MonoBehaviour
 	private PhotonView photonView;
 	//마을 업그레이드 중인지 여부를 저장할 플래그
 	private bool UpgradePhase;
+	private bool WhileHittingMotion;
 
 
 	private void Awake()
@@ -146,6 +147,7 @@ public class PlayerController : MonoBehaviour
 
 		isLookingAtTree = false;
 		UpgradePhase = false;
+		WhileHittingMotion = false;
 	}
 
 	//해당 캐릭터가 활성화 혹은 비활성화 되면 움직임을 제한
@@ -223,6 +225,8 @@ public class PlayerController : MonoBehaviour
 		{
 			return;
 		}
+
+		if (WhileHittingMotion) return;
 
 		//만약 마을 업그레이드 페이즈에 돌입한 경우
 		if (TurnManager.Instance.isUpgradePhase)
@@ -320,6 +324,7 @@ public class PlayerController : MonoBehaviour
 			isLookingAtTree = false;
 		}
 	}
+
 	
 	//F키가 눌렸을 때 실행될 함수
 	private void HandleInteractFKey()
@@ -330,13 +335,37 @@ public class PlayerController : MonoBehaviour
 		if (!GameHelper.IsMyTurn()) return;
 		//현재 나무를 보고 있지 않은 경우 return
 		if (!isLookingAtTree) return;
+		if (WhileHittingMotion) return;
 
+		PlayHit();
 		//턴 전환 함수 호출
-		TurnManager.Instance.RequestChangeTurn(PlayerCanvasController.Instance.SelectNow());
+		//TurnManager.Instance.RequestChangeTurn(PlayerCanvasController.Instance.SelectNow());
 	}
 
+	private void PlayHit()
+	{
+		WhileHittingMotion = true;
+		PlayerCanvasController.Instance.SetHitTextUnActive();
+		int idx = gameObject.GetComponent<PlayerAnimationController>().PlayHit();
+		photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, idx);
+	}
 
-	
+	[PunRPC]
+	private void RPC_PlayHit(int idx)
+	{
+		gameObject.GetComponent<PlayerAnimationController>().PlayHit();
+	}
+
+	public void OnAnimStateExit(int stateKey)
+	{
+		if (stateKey == 1)
+		{
+			TurnManager.Instance.RequestChangeTurn(PlayerCanvasController.Instance.SelectNow());
+			WhileHittingMotion = false;
+			//PlayerCanvasController.Instance.SetHitTextActive();
+		}
+	}
+
 	//회전 관련 코드 실행
 	private void LateUpdate()
 	{

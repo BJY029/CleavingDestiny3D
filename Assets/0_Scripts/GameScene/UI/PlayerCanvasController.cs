@@ -17,6 +17,8 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public GameObject HitTextObj;
 	[SerializeField] private GameObject gaugeRoot;
 	[SerializeField] private Slider gaugeSlider;
+	public Text minDamage;
+	public Text maxDamage;
 
 	[Header("Gauge")]
 	[SerializeField] private float speed = 1.8f;
@@ -66,8 +68,9 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	{
 		gaugeRoot.SetActive(true);
 		selecting = true;
-
-		if(gaugeCo != null) StopCoroutine(gaugeCo);
+		maxDamage.text = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxAtkPow).ToString();
+		minDamage.text = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MinAtkPow).ToString();
+		if (gaugeCo != null) StopCoroutine(gaugeCo);
 		gaugeCo = StartCoroutine(GaugeLoop());
 	}
 
