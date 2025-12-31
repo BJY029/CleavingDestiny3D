@@ -51,6 +51,7 @@ MonoBehaviour:
   - RPC_DoHitOnRequester
   - DamagedVillage
   - RPC_ApplyTreeDamage
+  - RPC_initPlayerStatus
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

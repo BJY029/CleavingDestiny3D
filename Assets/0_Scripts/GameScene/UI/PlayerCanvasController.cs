@@ -1,4 +1,5 @@
 using Photon.Pun;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,11 +9,20 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	//캔버스를 껴고 킬때 사용할 캔버스 그룹
 	private CanvasGroup canvasGroup;
 
+	[Header("UI")]
 	public Text EnergyValue;
 	public Text VillageHP;
 	public Text DamageValue;
 	public Text BarrierValue;
 	public GameObject HitTextObj;
+	[SerializeField] private GameObject gaugeRoot;
+	[SerializeField] private Slider gaugeSlider;
+
+	[Header("Gauge")]
+	[SerializeField] private float speed = 1.8f;
+
+	private Coroutine gaugeCo;
+	private bool selecting;
 
 	private Text HitText;
 	private Animator HitTextAnim;
@@ -26,7 +36,8 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		HitTextAnim = HitTextObj.GetComponent<Animator>();
 		canvasGroup = GetComponent<CanvasGroup>();
 
-		HitTextObj.SetActive(false);          
+		HitTextObj.SetActive(false);
+		CloseGauge();
 		HitText.text = "";
 	}
 
@@ -41,13 +52,57 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 			{
 				//내 턴에 해당되는 텍스트로 변경
 				HitText.text = LocalizationManager.Instance.GetText(UI_CSV.UI_PlayerHit);
+				OpenGauge();
 			}
 			else
 			{
 				HitText.text = LocalizationManager.Instance.GetText(UI_CSV.UI_PlayerNHit);
+				CloseGauge();
 			}
 		}
 	}
+
+	public void OpenGauge()
+	{
+		gaugeRoot.SetActive(true);
+		selecting = true;
+
+		if(gaugeCo != null) StopCoroutine(gaugeCo);
+		gaugeCo = StartCoroutine(GaugeLoop());
+	}
+
+	public void CloseGauge()
+	{
+		selecting = false;
+		if(gaugeCo!= null) StopCoroutine(gaugeCo);
+		gaugeCo = null;
+		gaugeRoot.SetActive(false);
+	}
+
+	private IEnumerator GaugeLoop()
+	{
+		float t = gaugeSlider.maxValue; // 0~1 범위에서 시작
+
+		while (selecting)
+		{
+			t -= Time.deltaTime * speed;   // speed가 클수록 빨리 내려감
+			if (t <= gaugeSlider.minValue) t = gaugeSlider.maxValue;
+
+			gaugeSlider.value = t;        // 그대로 1 -> 0
+			yield return null;
+		}
+	}
+
+	public float SelectNow()
+	{
+		if (!selecting) return -1;
+
+		selecting = false;
+		if(gaugeCo != null) StopCoroutine (gaugeCo);
+
+		return gaugeSlider.maxValue - gaugeSlider.value;
+	}
+
 
 	//Hit text를 활성화 하는 함수
 	public void SetHitTextActive()
@@ -62,11 +117,13 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		{
 			//내 턴에 해당되는 텍스트로 변경
 			HitText.text = LocalizationManager.Instance.GetText(UI_CSV.UI_PlayerHit);
+			OpenGauge();
 		}
 		else
 		{
 			//내 턴이 아니면, 내 턴이 아니라는 텍스트로 변경
 			HitText.text = LocalizationManager.Instance.GetText(UI_CSV.UI_PlayerNHit);
+			CloseGauge();
 		}
 	}
 
@@ -75,6 +132,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	{
 		//HitText를 비활성화 하는 애니메이션에 이벤트로 비활성함수가 삽입되어 있어서 따로 비활성화는 하지 않음
 		HitTextAnim.Play("UI_Player_HitText_Down");
+		CloseGauge();
 		HitText.text = "";
 	}
 

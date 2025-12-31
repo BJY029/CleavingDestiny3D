@@ -49,6 +49,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		if (Keyboard.current.fKey.wasPressedThisFrame)
 		{
 			//'F'키 이벤트 실행
+			//관련 이벤트는 PlayerController.cs에서 처리(HandleInteractFKey())
 			OnInteractFKeyDown?.Invoke();
 		}
 
@@ -70,19 +71,19 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	}
 
 	//턴 변경 요청이 발생한 경우
-	public void RequestChangeTurn()
+	public void RequestChangeTurn(float damageRatio)
 	{
 		//만약 현재 마을 페이즈가 실행중인 경우, 턴 변경 요청은 무시한다.
 		bool isUpgradePhase = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		if (isUpgradePhase) return;
 
 		//RPC로 모든 플레이어에게 턴 변경 요청을 보낸다.
-		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber);
+		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, damageRatio);
 		
 	}
 
 	[PunRPC]
-	private void RPC_RequestChangeTurn(int requesterActorNumber, PhotonMessageInfo info)
+	private void RPC_RequestChangeTurn(int requesterActorNumber, float damageRatio, PhotonMessageInfo info)
 	{
 		//그러나 실제로 턴 변경 관련 처리를 하는 플레이어는 한명이며, 이는 가장 낮은 Actor Number를 가진 플레이어다.
 		if (!IsInitializer()) return;
@@ -100,16 +101,16 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		}
 
 		//나무 때리기 액션 수행, Hit 요청자가 해당 함수 실행
-		photonView.RPC(nameof(RPC_DoHitOnRequester), info.Sender);
+		photonView.RPC(nameof(RPC_DoHitOnRequester), info.Sender, damageRatio);
 		//턴 변경 수행
 		ChangeToNextTurn();
 	}
 
 	//Hit 요청자 클라에서 실행될 Hit 처리
 	[PunRPC]
-	private void RPC_DoHitOnRequester()
+	private void RPC_DoHitOnRequester(float damageRatio)
 	{
-		int dmg = PlayerStatus.Instance.HitAction();
+		int dmg = PlayerStatus.Instance.HitAction(damageRatio);
 		photonView.RPC(nameof(RPC_ApplyTreeDamage), RpcTarget.All, dmg);
 	}
 
@@ -192,7 +193,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		yield return new WaitForSeconds(2f);
 
 
-
 		//관련 처리 진행
 		PlayerStatus.Instance.DamagedVillage(dmg);
 		//추후 딜레이 추가
@@ -252,6 +252,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 		//마을 페이즈 종료 프로퍼티 초기화
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, false);
+		PlayerStatus.Instance.initPlayerStatus();
 
 		//관련 UI를 처리한다.
 		VillageUIManager.Instance.SetActiveCanvas(false);

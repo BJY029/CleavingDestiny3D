@@ -19,6 +19,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 
 	private int currentEnergy;
     private int currentMaxEnergy;
+	private int currentCarryOverEnergy;
     private int currentMaxAtkDamage;
     private int currentMinAtkDamage;
     private float currentVillageHP;
@@ -28,7 +29,8 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 
     public void GetCurrentPlayerStatus()
     {
-        currentEnergy = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.Energy);
+		currentCarryOverEnergy = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.CarryOverEnergy);
+		currentEnergy = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.Energy);
         currentMaxEnergy = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxEnergy);
 		currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxAtkPow);
 		currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MinAtkPow);
@@ -46,6 +48,25 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
         PlayerCanvasController.Instance.updatePlayerStatus(
             currentEnergy.ToString(), currentVillageHP.ToString(), currentTotalDamage.ToString(), currentBarrier.ToString());
     }
+
+	public void initPlayerStatus()
+	{
+		photonView.RPC(nameof(RPC_initPlayerStatus), RpcTarget.All);
+	}
+
+	[PunRPC]
+	public void RPC_initPlayerStatus()
+	{
+		GetCurrentPlayerStatus();
+		currentEnergy = currentMaxEnergy + currentCarryOverEnergy;
+		currentTotalDamage = CommonDefine.defaultTotalDamage;
+		currentBarrier = CommonDefine.defaultVillageBarrier;
+
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.Energy, currentEnergy);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.CarryOverEnergy, CommonDefine.defaultCarryOverEnergy);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage, currentTotalDamage);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, currentBarrier);
+	}
 
 	public override void OnPlayerPropertiesUpdate(Player target, ExitGames.Client.Photon.Hashtable changedProps)
 	{
@@ -65,11 +86,11 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	//UI 처리도 진행
 
 	//나무 HIT 발생시 호출 될 함수
-	public int HitAction()
+	public int HitAction(float damageRatio)
     {
 		GetCurrentPlayerStatus();
 
-		int randomHitDamage = Random.Range(currentMinAtkDamage, currentMaxAtkDamage + 1);
+		int randomHitDamage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
         currentTotalDamage += randomHitDamage;
         currentBarrier = currentTotalDamage * (1 + currentConBarrier);
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage, currentTotalDamage);
@@ -77,7 +98,6 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		return randomHitDamage;
     }
 
-    [PunRPC]
     public void DamagedVillage(float damage)
     {
 		GetCurrentPlayerStatus();

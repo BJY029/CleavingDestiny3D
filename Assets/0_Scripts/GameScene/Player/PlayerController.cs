@@ -332,8 +332,10 @@ public class PlayerController : MonoBehaviour
 		if (!isLookingAtTree) return;
 
 		//턴 전환 함수 호출
-		TurnManager.Instance.RequestChangeTurn();
+		TurnManager.Instance.RequestChangeTurn(PlayerCanvasController.Instance.SelectNow());
 	}
+
+
 	
 	//회전 관련 코드 실행
 	private void LateUpdate()

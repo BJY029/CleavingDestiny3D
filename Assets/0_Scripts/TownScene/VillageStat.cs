@@ -44,7 +44,8 @@ public static class VillageStat
     public static float GetPlayerAtkPow()
     {
         int level = GetUpgradeLevel(VillageUpgradeIndex.Forge);
-        return CommonDefine.defaultPlayerAtkPow + (level * CommonDefine.villageAtkPowerPerLevel);
+        //범위가 늘어나는 방식으로 수정 필요
+        return CommonDefine.defaultPlayerMaxAtkPow + (level * CommonDefine.villageAtkPowerPerLevel);
     }
 
     // 4. 일일 에너지 회복량 (Farm 레벨 비례)

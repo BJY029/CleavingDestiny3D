@@ -23,9 +23,11 @@ public class CommonDefine
     public const float defaultVillageBarrier = 0f;
     public const float defaultBarrierConversionRate = 0.3f;
     public const int defaultVillageGold = 100;
-    public const int defaultPlayerAtkPow = 50;
-    public const int defaultPlayerEnergy = 5;
+    public const int defaultPlayerMaxAtkPow = 1100;
+	public const int defaultPlayerMinAtkPow = 900;
+	public const int defaultPlayerEnergy = 5;
     public const int defaultPlayerMaxEnergy = 5;
+    public const int defaultCarryOverEnergy = 0;
     public const float defaultPlayerRegenEnergyPerDay = 10f;
     public const float defaultDayTimeDamage = 0f;
     public const float defaultTotalDamage = 0f;
@@ -100,6 +102,7 @@ public static class PlayerPropKeys
 	public const string TotalDamage = "TotalDamage";
     public const string Energy = "Energy";
     public const string MaxEnergy = "MaxEnergy";
+    public const string CarryOverEnergy = "CarryOverEnergy";
     public const string DayTimeDamage = "DayTimeDamage";
     public const string MyTurn = "MyTurn";
 }
