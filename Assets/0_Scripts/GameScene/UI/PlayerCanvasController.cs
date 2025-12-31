@@ -64,6 +64,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		}
 	}
 
+	//Hit 데미지 게이지 열기 
 	public void OpenGauge()
 	{
 		gaugeRoot.SetActive(true);
@@ -74,6 +75,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		gaugeCo = StartCoroutine(GaugeLoop());
 	}
 
+	//Hit 데미지 게이지 닫기
 	public void CloseGauge()
 	{
 		selecting = false;
@@ -82,6 +84,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		gaugeRoot.SetActive(false);
 	}
 
+	//데미지 게이지 값을 변경하는 루프 코루틴
 	private IEnumerator GaugeLoop()
 	{
 		float t = gaugeSlider.maxValue; // 0~1 범위에서 시작
@@ -96,6 +99,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		}
 	}
 
+	//특정 시점에 hit가 눌리면, 해당 시점의 데미지 게이지 값을 반환
 	public float SelectNow()
 	{
 		if (!selecting) return -1;

@@ -85,6 +85,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 	//마을 업그레이드 중인지 여부를 저장할 플래그
 	private bool UpgradePhase;
 	private bool WhileHittingMotion;
+	private float damageRatio;
 
 
 	private void Awake()
@@ -336,31 +337,50 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		//현재 나무를 보고 있지 않은 경우 return
 		if (!isLookingAtTree) return;
 		if (WhileHittingMotion) return;
-
+		
+		//Hit 순간의 게이지 데미지 값 받기
+		damageRatio = PlayerCanvasController.Instance.SelectNow();
+		//Hit 애니메이션 재생 
 		PlayHit();
 		//턴 전환 함수 호출
 		//TurnManager.Instance.RequestChangeTurn(PlayerCanvasController.Instance.SelectNow());
 	}
 
+	//Hit 애니메이션을 재생하는 함수
 	private void PlayHit()
 	{
+		//모션 재생 플래그 활성화
 		WhileHittingMotion = true;
+		//Hit 관련 UI 비활성화
 		PlayerCanvasController.Instance.SetHitTextUnActive();
+		//임의의 Hit 모션 재생 후 해당 모션 index 받아오기
 		int idx = gameObject.GetComponent<PlayerAnimationController>().PlayHit();
+		//받아온 Hit 모션 index로 전체 플레이어에게 RPC로 해당 애니메이션 재생(동기화)
 		photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, idx);
 	}
 
+	//HIT 애니메이션 동기화용 RPC 함수
 	[PunRPC]
 	private void RPC_PlayHit(int idx)
 	{
-		gameObject.GetComponent<PlayerAnimationController>().PlayHit();
+		gameObject.GetComponent<PlayerAnimationController>().PlayHit(idx);
 	}
 
+	//HIT 애니메이션이 종료된 후 behaviour에 등록된 NotifyOnAnimExit로 호출되는 함수
+	//IAnimNotify 인터페이스 상속으로 인해 다음 함수 구현
 	public void OnAnimStateExit(int stateKey)
 	{
+		//stateKey가 1이면, 즉 Hit 관련 모션이면
 		if (stateKey == 1)
 		{
-			TurnManager.Instance.RequestChangeTurn(PlayerCanvasController.Instance.SelectNow());
+			if(damageRatio == -1)
+			{
+				Debug.LogError("damageRatio init error");
+				return;
+			}
+			//Hit 한 순간의 데미지 값을 인자로 해서 턴 전환 함수 호출
+			TurnManager.Instance.RequestChangeTurn(damageRatio);
+			damageRatio = -1f;
 			WhileHittingMotion = false;
 			//PlayerCanvasController.Instance.SetHitTextActive();
 		}

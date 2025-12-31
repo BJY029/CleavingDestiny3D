@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
+//슬라이더 그라데이션 삽입을 위한 스크립트
+//AI 사용함..ㅋㅋ
+
 [AddComponentMenu("UI/Effects/Gradient")]
 public class UIGradient : BaseMeshEffect
 {
