@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class VillageBuilding : MonoBehaviour
 {
-    public VillageUpgradeIndex buildingType;
+    public VillageType buildingType;
 
     public TextMeshProUGUI levelText;
 
@@ -23,22 +23,22 @@ public class VillageBuilding : MonoBehaviour
         VillageManager.Instance.OnGoldChanged.AddListener(CheckCostIsEnough);
 
         // 임시 텍스트 설정
-        nameText.text = $"Village_{buildingType}_Name";
-        descriptionText.text = $"Village_{buildingType}_Description";
+        nameText.SetText($"Village_{buildingType}_Name");
+        descriptionText.SetText($"Village_{buildingType}_Description");
     }
 
     void SetLevelAndCostText()
     {
-        int currentLevel = VillageStat.GetUpgradeLevel(buildingType);
-        levelText.text = $"Level: {currentLevel}";
+        int currentLevel = VillageStatManager.Instance.GetVillageLevel(buildingType);
+        levelText.SetText("Level: {0}", currentLevel);
 
-        int upgradeCost = VillageStat.GetLevelUpgradedCost(buildingType);
-        upgradeCostText.text = $"Upgrade Cost: {upgradeCost} Gold";
+        int upgradeCost = VillageStatManager.Instance.GetLevelUpgradedCost(buildingType);
+        upgradeCostText.SetText("Upgrade Cost: {0} Gold", upgradeCost);
     }
 
     void CheckCostIsEnough(int gold)
     {
-        int upgradeCost = VillageStat.GetLevelUpgradedCost(buildingType);
+        int upgradeCost = VillageStatManager.Instance.GetLevelUpgradedCost(buildingType);
 
         if (gold >= upgradeCost)
         {

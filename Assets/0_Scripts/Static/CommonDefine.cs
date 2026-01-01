@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class CommonDefine
 {
@@ -9,7 +9,7 @@ public class CommonDefine
     //Layer name
     public const string TREELAYER = "Tree";
 
-    //Room Property ±âº» °ª
+    //Room Property ê¸°ë³¸ ê°’
     public const float defaultTreeHP = 300000f;
     public const float defaultTreeAtkPow = 1500f;
     public const int defaultStartDay = 1;
@@ -18,32 +18,22 @@ public class CommonDefine
     public const int defaultMaxWave = 3;
     public const int defaultWave = 0;
 
-    //Player Property ±âº» °ª
+    //Player Property ê¸°ë³¸ ê°’
     public const float defaultVillageHP = 5000f;
     public const float defaultVillageBarrier = 0f;
     public const float defaultBarrierConversionRate = 0.3f;
-    public const int defaultVillageGold = 100;
+    public const int defaultGold = 100;
     public const int defaultPlayerMaxAtkPow = 1100;
-	public const int defaultPlayerMinAtkPow = 900;
-	public const int defaultPlayerEnergy = 5;
+    public const int defaultPlayerMinAtkPow = 900;
+    public const int defaultPlayerEnergy = 5;
     public const int defaultPlayerMaxEnergy = 5;
     public const int defaultCarryOverEnergy = 0;
     public const float defaultPlayerRegenEnergyPerDay = 10f;
     public const float defaultDayTimeDamage = 0f;
     public const float defaultTotalDamage = 0f;
 
-    //Village ¾÷±×·¹ÀÌµå ·¹º§(±¤»ê/Áı/´ëÀå°£/»óÁ¡/³óÀå)
+    //Village ì—…ê·¸ë ˆì´ë“œ ë ˆë²¨(ê´‘ì‚°/ëŒ€ì¥ê°„/ìƒì /ë†ì¥/ë°©ë²½)
     public static readonly int[] defaultVillageUpgrades = new int[5] { 0, 0, 0, 0, 0 };
-
-    // Village ¾÷±×·¹ÀÌµå È¿°ú °ª
-    public const int villageIncomePerLevel = 50; // ±¤»ê ·¹º§´ç °ñµå ¼öÀÔ Áõ°¡·®
-    public const int villageMaxEnergyPerLevel = 20; // Áı ·¹º§´ç ÃÖ´ë ¿¡³ÊÁö Áõ°¡·®
-    public const float villageAtkPowerPerLevel = 5f; // ´ëÀå°£ ·¹º§´ç °ø°İ·Â º¸³Ê½º Áõ°¡·®
-    public const int villageEnergyRegenPerDay = 20; // ³óÀå ·¹º§´ç ÇÏ·ç ¿¡³ÊÁö È¸º¹·®
-
-    // Vilage ¾÷±×·¹ÀÌµå °¡°İ°ú ¾÷±×·¹ÀÌµå ¹èÀ²
-    public static readonly int[] villageUpgradeBaseCost = new int[5] { 100, 150, 200, 250, 150 };
-    public static readonly float villageUpgradeCostMultiplier = 2f;
 }
 
 public enum PLAYER
@@ -51,7 +41,7 @@ public enum PLAYER
     P1, P2, P3, P4, NONE,
 }
 
-//ÇÃ·¹ÀÌ¾î Á¤º¸ ÀúÀå °´Ã¼
+//í”Œë ˆì´ì–´ ì •ë³´ ì €ì¥ ê°ì²´
 public class RuntimePlayer
 {
     public int actorNumber;
@@ -66,12 +56,12 @@ public class UI_CSV
     public const string UI_PVE = "UI_PVE";
     public const string UI_EXIT = "UI_EXIT";
     public const string UI_BranchDesc1 = "UI_BranchDesc_1";
-	public const string UI_BranchDesc2 = "UI_BranchDesc_2";
-	public const string UI_PlayerHit = "UI_PlayerHIT";
+    public const string UI_BranchDesc2 = "UI_BranchDesc_2";
+    public const string UI_PlayerHit = "UI_PlayerHIT";
     public const string UI_PlayerNHit = "UI_PlayerNotHIT";
 }
 
-//¼­¹ö CustomProperty Key
+//ì„œë²„ CustomProperty Key
 public static class RoomPropKeys
 {
     public const string TurnOrder = "TurnInfo";
@@ -84,11 +74,11 @@ public static class RoomPropKeys
     public const string TreeHP = "TreeHP";
     public const string TreeAtkPow = "TreeAtkPow";
     public const string IsVillageUpgradePhase = "IsVillageUpgradePhase"; // bool
-	public const string VillageUpgradeStartEndTime = "VillageUpgradeStartEndTime"; //float
+    public const string VillageUpgradeStartEndTime = "VillageUpgradeStartEndTime"; //float
     //public const string Weather = "Weather";
 }
 
-//ÇÃ·¹ÀÌ¾î CustomProperty Key
+//í”Œë ˆì´ì–´ CustomProperty Key
 public static class PlayerPropKeys
 {
     //public const string Name = "Name";
@@ -98,8 +88,8 @@ public static class PlayerPropKeys
     public const string VillageUpgrades = "VillageUpgrades";
     public const string Gold = "Gold";
     public const string MaxAtkPow = "MaxAtkPow";
-	public const string MinAtkPow = "MinAtkPow";
-	public const string TotalDamage = "TotalDamage";
+    public const string MinAtkPow = "MinAtkPow";
+    public const string TotalDamage = "TotalDamage";
     public const string Energy = "Energy";
     public const string MaxEnergy = "MaxEnergy";
     public const string CarryOverEnergy = "CarryOverEnergy";
@@ -107,15 +97,15 @@ public static class PlayerPropKeys
     public const string MyTurn = "MyTurn";
 }
 
-//VillageUpgrades Property¿¡ ÀúÀåµÉ ¸®½ºÆ® °´Ã¼ÀÇ °¢ ÀÎµ¦½º Á¤ÀÇ
-//ex) ¸®½ºÆ® 3¹øÂ° ÀÎµ¦½º¿¡ ÀúÀåµÈ °ªÀÌ 5¶ó¸é, ShopÀÇ ¾÷±×·¹ÀÌµå ·¹º§ÀÌ 5ÀÓÀ» ¶æÇÔ
-public enum VillageUpgradeIndex
+// ê±´ë¬¼ì˜ ì¢…ë¥˜
+public enum VillageType
 {
-    Mine = 0,
-    House = 1,
-    Forge = 2,
-    Shop = 3,
-    Farm = 4,
+    House = -1, // HouseëŠ” í„´ ì¢…ë£Œìš© -> ì—…ê·¸ë ˆì´ë“œ ëŒ€ìƒ ì•„ë‹˜
+    Mine,
+    Forge,
+    Shop,
+    Farm,
+    Barrier,
 }
 
 public enum GamePhaseValue

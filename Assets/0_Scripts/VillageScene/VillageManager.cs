@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
@@ -7,6 +7,7 @@ using System;
 
 public class VillageManager : MonoBehaviourPunCallbacks
 {
+    // Scene Singleton - 해당 씬에서만 존재함 -> 사용에 주의
     public static VillageManager Instance { get; private set; }
 
     private readonly Hashtable _propCache = new Hashtable();
@@ -19,7 +20,7 @@ public class VillageManager : MonoBehaviourPunCallbacks
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
-        
+
     }
 
     private void Start()
@@ -52,7 +53,7 @@ public class VillageManager : MonoBehaviourPunCallbacks
         _propCache.Clear();
         _propCache[PlayerPropKeys.Gold] = currentGold + amount;
         PhotonNetwork.LocalPlayer.SetCustomProperties(_propCache);
-        
+
         _cachedGold = currentGold + amount; // 캐시 업데이트
         OnGoldChanged?.Invoke(_cachedGold);
     }
@@ -66,15 +67,15 @@ public class VillageManager : MonoBehaviourPunCallbacks
             OnGoldChanged?.Invoke(_cachedGold);
         }
         _goldChangedBySelf = false;
-        
+
     }
 
-    public bool TryUpgradeLevel(VillageUpgradeIndex facilityType)
+    public bool TryUpgradeLevel(VillageType facilityType)
     {
-        Player myPlayer = PhotonNetwork.LocalPlayer;
+        // Player myPlayer = PhotonNetwork.LocalPlayer;
         int currentGold = GetMyGold();
-        int currentLevel = VillageStat.GetUpgradeLevel(facilityType);
-        int cost = VillageStat.GetLevelUpgradedCost(facilityType);
+        int currentLevel = VillageStatManager.Instance.GetVillageLevel(facilityType);
+        int cost = VillageStatManager.Instance.GetLevelUpgradedCost(facilityType, currentLevel);
         if (currentGold >= cost)
         {
             ProcessUpgrade(facilityType, currentLevel, currentGold, cost);
@@ -87,7 +88,7 @@ public class VillageManager : MonoBehaviourPunCallbacks
         }
     }
 
-    private void ProcessUpgrade(VillageUpgradeIndex facilityType, int currentLevel, int currentGold, int cost)
+    private void ProcessUpgrade(VillageType facilityType, int currentLevel, int currentGold, int cost)
     {
         Player myPlayer = PhotonNetwork.LocalPlayer;
 
@@ -97,10 +98,10 @@ public class VillageManager : MonoBehaviourPunCallbacks
         int[] currentUpgrades = (int[])myPlayer.CustomProperties[PlayerPropKeys.VillageUpgrades];
         if (currentUpgrades == null || currentUpgrades.Length == 0)
         {
-            currentUpgrades = new int[Enum.GetValues(typeof(VillageUpgradeIndex)).Length];
+            currentUpgrades = new int[Enum.GetValues(typeof(VillageType)).Length];
         }
         currentUpgrades[(int)facilityType] = currentLevel + 1;
-        
+
         _cachedGold = currentGold - cost; // 캐시 업데이트
         OnGoldChanged?.Invoke(_cachedGold);
 
