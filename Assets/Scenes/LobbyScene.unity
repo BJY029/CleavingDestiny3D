@@ -468,6 +468,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizationManager
   UI_CSV: {fileID: 4900000, guid: da7861af316e05a45a29161013551f92, type: 3}
+  Item_CSV: {fileID: 4900000, guid: bd33c4977fe08cb40aecb4705e15f86d, type: 3}
   currentLanguage: 0
 --- !u!4 &335777660
 Transform:

@@ -9,6 +9,11 @@ public enum Language
     EN,
 }
 
+public enum CSV_Type
+{
+	UI, Item
+}
+
 public class LocalizationManager : MonoBehaviour
 {
 	//싱글턴
@@ -16,10 +21,12 @@ public class LocalizationManager : MonoBehaviour
 
 	//UI 관련 CSV 파일
 	public TextAsset UI_CSV;
+	public TextAsset Item_CSV;
 	//현재 설정된 언어
 	public Language currentLanguage = Language.KR;
 	//CSV 파일을 저장할 딕셔너리
 	private Dictionary<string, string> _UITable = new Dictionary<string, string>();
+	private Dictionary<string, string> _ItemTable = new Dictionary<string, string>();
 	//언어 변경시 Invoke 될 액션
 	public event Action OnLanguageChanged;
 
@@ -34,22 +41,23 @@ public class LocalizationManager : MonoBehaviour
 		Instance = this;
 		DontDestroyOnLoad(Instance);
 
-		LoadCSV();
+		LoadCSV(UI_CSV, _UITable);
+		LoadCSV(Item_CSV, _ItemTable);
 	}
 
-	private void LoadCSV()
+	private void LoadCSV(TextAsset ta, Dictionary<string,string> dic)
 	{
-		_UITable.Clear();
+		dic.Clear();
 
 		//예외 처리
-		if(UI_CSV == null)
+		if(ta == null)
 		{
 			Debug.LogError("Null UI CSV File");
 			return;
 		}
 
 		//각 줄을 lines에 저장
-		string[] lines = UI_CSV.text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+		string[] lines = ta.text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 		//헤더만 있고 값이 없는 경우
 		if(lines.Length <= 1)
 		{
@@ -101,14 +109,14 @@ public class LocalizationManager : MonoBehaviour
 			if (string.IsNullOrEmpty(id))
 				continue;
 
-			if(_UITable.ContainsKey(id))
+			if(dic.ContainsKey(id))
 			{
 				Debug.LogWarning($"Duplicate ID detected : {id} (line {i+1})");
 				continue;
 			}
 
 			//딕셔너리 삽입
-			_UITable.Add(id, text);
+			dic.Add(id, text);
 		}
 
 		Debug.Log($"Complited UI CSV Load. Component count = {_UITable.Count}");
@@ -116,13 +124,25 @@ public class LocalizationManager : MonoBehaviour
 
 	//id 기반 텍스트 반환
 	//만약 해당되는 id가 없으면 id 그대로 반환
-	public string GetText(string id)
+	public string GetText(CSV_Type type, string id)
 	{
 		if(string.IsNullOrEmpty(id))
 			return string.Empty;
 
-		if(_UITable.TryGetValue(id, out var value))
-			return value;
+		switch (type)
+		{
+			case CSV_Type.UI:
+				if (_UITable.TryGetValue(id, out var value))
+					return value;
+				break;
+			case CSV_Type.Item:
+				if (_ItemTable.TryGetValue(id, out var itemInfo))
+					return itemInfo;
+				break;
+			default:
+				break;
+		}
+
 
 		Debug.LogWarning("$No Found : {id}");
 		return id;
@@ -134,7 +154,8 @@ public class LocalizationManager : MonoBehaviour
 		if(currentLanguage == lang) return;
 
 		currentLanguage = lang;
-		LoadCSV();
+		LoadCSV(UI_CSV, _UITable);
+		LoadCSV(Item_CSV, _ItemTable);
 		OnLanguageChanged?.Invoke();
 	}
 }

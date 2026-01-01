@@ -26,8 +26,8 @@ public class BranchUIController : MonoBehaviour
 
 	private void Start()
 	{
-		Desc1.text = LocalizationManager.Instance.GetText("UI_BranchDesc_1");
-		Desc2.text = LocalizationManager.Instance.GetText("UI_BranchDesc_2");
+		Desc1.text = LocalizationManager.Instance.GetText(CSV_Type.UI, "UI_BranchDesc_1");
+		Desc2.text = LocalizationManager.Instance.GetText(CSV_Type.UI, "UI_BranchDesc_2");
 	}
 
 

@@ -1,0 +1,53 @@
+ID,KR,EN
+NAME_DMG_SHARPEN,날 갈기,Sharpen Blade
+NAME_DMG_DULL,날 죽이기,Dull Edge
+NAME_DMG_DOUBLE,연속 베기,Double Slash
+NAME_DMG_RUSTY,녹슨 쇳돌,Rusty Whetstone
+NAME_DMG_GREASED,기름 바른 도끼,Greased Axe
+NAME_DMG_TERMITE,흰개미 소환,Termite Swarm
+NAME_DMG_BLIND,눈 가리고 때리기,Blind Strike
+NAME_DMG_COMBO,콤보 수행,Combo Master
+NAME_DEF_RESIN,수액 코팅,Resin Coating
+NAME_DEF_SILVER,은빛 가호,Silver Grace
+NAME_DEF_SACRIFICE,제물 바치기,Sacrificial Rite
+NAME_DEF_SIPHON,교란기 작동,Defense Siphon
+NAME_REC_SAP,응급 수액,Emergency Sap
+NAME_REC_MIRACLE,신약 개발,Miracle Cure Project
+NAME_REC_BREW,기력 회복주,Vitality Brew
+NAME_REC_RESERVE,기력 이월,Energy Reserve
+NAME_GIM_LOCKPICK,락픽,Lockpick
+NAME_GIM_DOUBLELOCK,이중 잠금 장치,Double Lock
+NAME_GIM_SMOKE,불 지피기,Smoke Screen
+NAME_GIM_TAUNT,"쫄?" 시전,Provocation
+NAME_GIM_SPY,흰개미 첩자,Termite Spy
+NAME_GIM_CURSE,저주,Curse of Frailty
+NAME_GIM_GAMBLE,기력 도박,Energy Wager
+NAME_GIM_DONATION,기부 천사,Sacrificial Heal
+NAME_GIM_ACIDRAIN,부식성 산성비,Acid Rain
+NAME_GIM_DIVINE,신의 가호,Divine Protection
+DESC_DMG_SHARPEN,이번 턴에 가하는 데미지가 50% 증가합니다.,Increases damage dealt this turn by 50%.
+DESC_DMG_DULL,이번 턴에 가하는 데미지가 20% 감소합니다.,Decreases damage dealt this turn by 20%.
+DESC_DMG_DOUBLE,한 턴에 두 번의 공격 효과를 적용합니다.,Executes two slash attacks in a single turn.
+DESC_DMG_RUSTY,이번 턴에 가하는 데미지가 50% 감소합니다.,Decreases damage dealt this turn by 50%.
+DESC_DMG_GREASED,이번 턴의 기본 공격 데미지가 0이 됩니다.,Sets base attack damage to 0 for this turn.
+DESC_DMG_TERMITE,오늘 하루 동안 매 턴마다 나무에게 20~150의 방어 무시 피해를 입힙니다.,Deals 20-150 true damage to the Tree every turn for the duration of the day.
+DESC_DMG_BLIND,이번 턴에 나무에게 20 또는 200의 랜덤 데미지를 입힙니다.,Deals a random amount of damage (20 or 200) to the Tree this turn.
+DESC_DMG_COMBO,"효과 선택 후 콤보 성공 시 해당 효과 적용, 실패 시 반대 효과가 적용됩니다. (감소: 80% / 증가: 250%)","Choose an effect. Success applies it; failure applies the opposite. (Dmg Reduction: 80% / Dmg Increase: 250%)"
+DESC_DEF_RESIN,마을 방어력이 50 증가합니다.,Increases Village Defense by 50.
+DESC_DEF_SILVER,이번 턴에 나무에게 입힌 데미지의 100%를 방어력으로 전환합니다.,Converts 100% of damage dealt to the Tree into Defense this turn.
+DESC_DEF_SACRIFICE,"아이템을 희생하여 나무의 공격력을 감소시킵니다. (등급에 따라 감소율 상이, 웨이브당 1회)","Sacrifices an item to reduce the Tree's Attack Power. (Effect varies by rarity, once per wave)"
+DESC_DEF_SIPHON,상대 마을 방어력의 30%를 강탈하여 내 마을 방어력에 추가합니다.,Steals 30% of the enemy Village's Defense and adds it to yours.
+DESC_REC_SAP,나무의 체력(HP)을 200 회복합니다.,Restores 200 HP to the Tree.
+DESC_REC_MIRACLE,"미션을 시작합니다. 성공 시 나무 체력을 2000 회복하는 0코스트 신약을 획득합니다. (게임 중 1회)","Starts a mission. If successful, obtain a 0-cost potion that heals the Tree for 2000 HP. (Once per game)"
+DESC_REC_BREW,즉시 기력을 3 회복합니다.,Instantly restores 3 Energy.
+DESC_REC_RESERVE,이번 웨이브에 남은 기력을 다음 턴으로 이월합니다.,Carries over any unused Energy from this wave to the next turn.
+DESC_GIM_LOCKPICK,자물쇠 따기 미니게임 성공 시 상대의 아이템 1개를 랜덤으로 훔칩니다.,Steals a random item from the opponent if the lockpicking minigame is successful.
+DESC_GIM_DOUBLELOCK,"상자에 추가 잠금 장치를 설치합니다. (락픽 사용 시 n번 성공 필요)","Installs an extra lock. (Opponent must succeed n times when using Lockpick)"
+DESC_GIM_SMOKE,짙은 연기로 시야를 가려 이번 턴에 내가 사용하는 아이템과 데미지를 숨깁니다.,Obscures vision to hide your damage and item usage from the opponent this turn.
+DESC_GIM_TAUNT,상대를 도발하여 다음 턴 상대의 데미지를 30% 강화시킵니다.,Taunts the opponent increasing their damage by 30% next turn.
+DESC_GIM_SPY,오늘 밤 상대 마을의 방어력을 30% 깎습니다.,Reduces the enemy Village's Defense by 30% tonight.
+DESC_GIM_CURSE,상대방의 공격 데미지 대비 방어력 전환 효율을 일시적으로 낮춥니다.,Temporarily reduces the opponent's damage-to-defense conversion rate.
+DESC_GIM_GAMBLE,기력을 걸고 상대방과 미니게임을 진행합니다.,Initiates a minigame with the opponent wagering Energy.
+DESC_GIM_DONATION,내 마을 체력을 500 소모하여 나무 체력을 500 회복시킵니다.,Consumes 500 Village HP to restore 500 Tree HP.
+DESC_GIM_ACIDRAIN,상대 마을의 현재 방어막(방어력)을 50% 제거합니다.,"Removes 50% of the enemy Village's current Defense/Shield."
+DESC_GIM_DIVINE,"나에게 적용된 모든 부정적인 효과(도발, 저주 등)를 정화합니다. (웨이브당 1회)","Cleanses all negative status effects (Taunt, Curse, etc.). (Once per wave)"

@@ -53,12 +53,12 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 			if (GameHelper.IsMyTurn())
 			{
 				//내 턴에 해당되는 텍스트로 변경
-				HitText.text = LocalizationManager.Instance.GetText(UI_CSV.UI_PlayerHit);
+				HitText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_PlayerHit);
 				OpenGauge();
 			}
 			else
 			{
-				HitText.text = LocalizationManager.Instance.GetText(UI_CSV.UI_PlayerNHit);
+				HitText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_PlayerNHit);
 				CloseGauge();
 			}
 		}
@@ -123,13 +123,13 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		if (GameHelper.IsMyTurn())
 		{
 			//내 턴에 해당되는 텍스트로 변경
-			HitText.text = LocalizationManager.Instance.GetText(UI_CSV.UI_PlayerHit);
+			HitText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_PlayerHit);
 			OpenGauge();
 		}
 		else
 		{
 			//내 턴이 아니면, 내 턴이 아니라는 텍스트로 변경
-			HitText.text = LocalizationManager.Instance.GetText(UI_CSV.UI_PlayerNHit);
+			HitText.text = LocalizationManager.Instance.GetText(CSV_Type.UI,UI_CSV.UI_PlayerNHit);
 			CloseGauge();
 		}
 	}

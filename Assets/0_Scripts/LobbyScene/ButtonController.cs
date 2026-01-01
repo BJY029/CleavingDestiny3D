@@ -31,7 +31,7 @@ public class ButtonController : MatchController
         Text text = btn.GetComponentInChildren<Text>();
         if(text != null)
         {
-            text.text = LocalizationManager.Instance.GetText(textID);
+            text.text = LocalizationManager.Instance.GetText(CSV_Type.UI, textID);
             return;
         }
     }
