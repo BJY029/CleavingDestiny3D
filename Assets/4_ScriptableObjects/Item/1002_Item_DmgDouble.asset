@@ -10,12 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 14ac315f804f03b4aa04259351c0af86, type: 3}
-  m_Name: Item_sharpen
+  m_Name: 1002_Item_DmgDouble
   m_EditorClassIdentifier: Assembly-CSharp::ItemSO
-  itemId: 1000
-  displayName_ID: NAME_DMG_SHARPEN
-  itemDesc_ID: DESC_DMG_SHARPEN
+  itemId: 1002
+  displayName_ID: NAME_DMG_DOUBLE
+  itemDesc_ID: DESC_DMG_DOUBLE
   icon: {fileID: 0}
   type: 0
-  itemCost: 1
-  itemClass: 0
+  itemCost: 2
+  itemClass: 1
+  itemWeight: 1

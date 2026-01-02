@@ -228,6 +228,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		}
 
 		if (WhileHittingMotion) return;
+		if (ItemOfferCanvasController.instance.isOfferPanelOpened) return;
 
 		//만약 마을 업그레이드 페이즈에 돌입한 경우
 		if (TurnManager.Instance.isUpgradePhase)

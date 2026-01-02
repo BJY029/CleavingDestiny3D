@@ -1,11 +1,13 @@
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
-using UnityEngine;
-using System.Linq;
-using ExitGames.Client.Photon;
 using System;
-using UnityEngine.InputSystem;
 using System.Collections;
+using System.Linq;
+using Unity.InferenceEngine;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class TurnManager : MonoBehaviourPunCallbacks
 {
@@ -171,6 +173,14 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 		//다음 턴 정보를 갱신한다.
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurn, nextIndex);
+		//변경된 턴 플레이어의 ActorNum으로 초기화
+		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, GameHelper.getCurrentTurnActorNum());
+		//아이템 선택지 설정
+		OfferAuthority.Instance.MakeOfferForTurn();
+
+		//디버깅
+		string Turninfo = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor).ToString();
+		Debug.LogError($"current turn actor number : {Turninfo}");
 		Debug.Log("Turn " + nextIndex + " Start");
 	}
 
@@ -273,33 +283,60 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 		//다음 턴 정보를 갱신한다.
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurn, CommonDefine.defaultTurn);
+		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
+		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TurnIndex, turnIndex + 1);
+		//변경된 턴 플레이어의 ActorNum으로 초기화
+		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, GameHelper.getCurrentTurnActorNum());
 		Debug.Log("Turn " + 0 + " Start");
-
+		//아이템 선택지 설정
+		OfferAuthority.Instance.MakeOfferForTurn();
+		
+		//디버깅
+		string Turninfo = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor).ToString();
+		Debug.LogError($"current turn actor number : {Turninfo}");
 		startTime = endTime = -1.0f;
 	}
 
 	//프로퍼티 변경 감지
 	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
 	{
+		int me = PhotonNetwork.LocalPlayer.ActorNumber;
+		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+
 		//턴 관련 프로퍼티가 변경되었고, 아직 처리되지 않은 경우
-		if(propertiesThatChanged.TryGetValue(RoomPropKeys.CurrentTurn, out var turnObj))
+		if (propertiesThatChanged.TryGetValue(RoomPropKeys.CurrentTurn, out var turnObj))
 		{
 			int newTurn = Convert.ToInt32(turnObj);
 			if (newTurn != _lastProcessedTrun)
 			{
 				_lastProcessedTrun = newTurn;
+
 				//관련 UI 처리를 진행해주고
 				PlayerCanvasController.Instance.UpdateGameHitText();
 				GameCanvasController.Instance.UpdateDayText();
 				GameCanvasController.Instance.UpdateWaveText();
+
+
 			}
 			//중복 처리 방지위해 플래그를 설정한다.
 			//TurnHasChanged=false;
 		}
 
 		//마을 페이즈가 진행되는 여부를 저장한다.
-		if (propertiesThatChanged.ContainsKey(RoomPropKeys.IsVillageUpgradePhase)){
+		if (propertiesThatChanged.ContainsKey(RoomPropKeys.IsVillageUpgradePhase))
+		{
 			isUpgradePhase = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		}
+
+		if (propertiesThatChanged.ContainsKey(ItemPropKeys.OFFER(me)) && turnActor == me)
+		{
+			Debug.Log("Offer Updated");
+
+			string offers = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.OFFER(turnActor));
+			ItemOfferCanvasController.instance.initItemOfferPanel(offers, turnActor);
+		}
 	}
+
+	
+
 }

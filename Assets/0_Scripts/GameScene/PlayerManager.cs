@@ -80,6 +80,10 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		InitPlayerProps();
 
 		yield return handelUI;
+
+		if(IsInitializer())
+			OfferAuthority.Instance.MakeOfferForTurn();
+
 		CameraSwitchManager.Instance.Branch_to_Game();
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
@@ -111,22 +115,28 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			var rp = new RuntimePlayer();
 			rp.actorNumber = p.ActorNumber;
 
+			//플레이어 프로퍼티 불러오기
 			var ht = p.CustomProperties;
-
+			//플레이어 이름, 내 턴 정보 초기화
 			rp.playerName = ht.TryGetValue("playerName", out var name) ? (string)name : "player" + rp.actorNumber;
 			rp.isMyTurn = false;
-
+			//해당 플레이어의 턴 정보 불러오기
 			int playerTurn = getIndex(TurnList, p.ActorNumber);
 			if (playerTurn == -1)
 			{
 				Debug.LogError("No Player Turn");
 				rp.turnIdx = -1;
+				return;
 			}
 			rp.turnIdx = playerTurn;
 
 			if (p == PhotonNetwork.LocalPlayer)
 			{
 				PhotonPropertyHelper.SetPlayerProp(p, PlayerPropKeys.MyTurn, playerTurn);
+				if(playerTurn == CommonDefine.defaultTurn)
+				{
+					PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, p.ActorNumber);
+				}
 			}
 			Debug.Log($"playerActorNum : {rp.actorNumber}, turn:{rp.turnIdx}");
 			players.Add(rp.actorNumber, rp);
@@ -180,6 +190,14 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.TotalDamage, CommonDefine.defaultTotalDamage);
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.BarrierConversionRate, CommonDefine.defaultBarrierConversionRate);
 
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Item_CommonWeight, CommonDefine.defaultCommonItemWeight);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Item_HeroWeight, CommonDefine.defaultHeroItemWeight);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Item_RareWeight, CommonDefine.defaultRareItemWeight);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Item_LegendaryWeight, CommonDefine.defaultLegendaryItemWeight);
+
+		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.INV(player.ActorNumber), ItemInfoSerializer.MakeEmptyInv(CommonDefine.defaultInventoryCapacity));
+		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.INV_CAPACITY(player.ActorNumber), CommonDefine.defaultInventoryCapacity);
+		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.OFFER(player.ActorNumber),"");
 		PlayerStatus.Instance.SetPlayerStatusUI();
 		Debug.Log("Init Player Props Success");
 	}

@@ -10,4 +10,5 @@ public class ItemSO : ScriptableObject
     public ItemType type;       //아이템 Type
     public int itemCost;        //필요한 기력량
     public ItemClass itemClass; //아이템 등급
+    public float itemWeight = 1f; //아이템 등장 확률(같은 등급 내 확률, 기본 1)
 }

@@ -53,6 +53,8 @@ MonoBehaviour:
   - RPC_ApplyTreeDamage
   - RPC_initPlayerStatus
   - RPC_PlayHit
+  - RPC_TakeOffer
+  - RPC_MakeOfferForTurn
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

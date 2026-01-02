@@ -14,4 +14,11 @@ public static class GameHelper
 
 		return CurrentTurn == myTurn;
 	}
+
+	public static int getCurrentTurnActorNum()
+	{
+		int currentTurnIdx = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
+		int[] TurnInfos = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
+		return TurnInfos[currentTurnIdx];
+	}
 }
