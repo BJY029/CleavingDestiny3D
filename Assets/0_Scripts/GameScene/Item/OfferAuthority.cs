@@ -19,25 +19,15 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 		Instance = this;
 	}
 
-	public void MakeOfferForTurn()
-	{
-		photonView.RPC(nameof(RPC_MakeOfferForTurn), RpcTarget.MasterClient);
-	}
 
-	[PunRPC]
 	//각 턴에 호출될 아이템 3개 뽑기 함수
-	public void RPC_MakeOfferForTurn()
+	public string MakeOfferForTurn(int turnActor, int turnIndex)
 	{
 		//마스터 클라이언트만 실행
-		if (!PhotonNetwork.IsMasterClient) return;
+		if (!PhotonNetwork.IsMasterClient) return "";
 
-		//현재 턴의 actor 번호 받아오기
-		int actor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
-		//현재 턴의 인덱스 받아오기
-		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
-		//actor 번호 기반으로 Player 객체 받아오기
-		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actor);
-		if (player == null) return;
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(turnActor);
+		if (player == null) return "";
 
 		//아이템 리스트 받아오기
 		List<ItemSO> items = ItemDB.Instance.GetItemsList();
@@ -47,13 +37,13 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 
 
 		//아이템 3개 뽑아서 문자열 리스트 받아오기
-		List<string> offer = Pick3(player, turnIndex, actor, roomSeed, items);
+		List<string> offer = Pick3(player, turnIndex, turnActor, roomSeed, items);
 
 		//해당 문자열을 직렬화하기
-		string offerStr = string.Join("|", offer); // "potion|bomb|shield"
+		return string.Join("|", offer); // "potion|bomb|shield"
 		//OFFER_{actor}의 이름으르 Room 프로퍼티에 해당 제안 아이템 저장하기
-		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.OFFER(actor), offerStr);
-		Debug.Log($"Offer : {offerStr}, currentActorNumber : {actor}");
+		//PhotonPropertyHelper.SetRoomProp(ItemPropKeys.OFFER(actor), offerStr);
+		//Debug.Log($"Offer : {offerStr}, currentActorNumber : {actor}");
 	}
 
 	//MasterClient만 수행

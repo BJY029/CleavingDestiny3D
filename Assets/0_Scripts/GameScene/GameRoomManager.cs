@@ -12,13 +12,14 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 			InitRoomProps();
 		}
 	}
-	private bool IsInitializer()
-	{
-		var players = PhotonNetwork.PlayerList;
-		int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
-		int minActor = players.Min(p => p.ActorNumber);
-		return myActor == minActor;
-	}
+	private bool IsInitializer() => PhotonNetwork.IsMasterClient;
+	//private bool IsInitializer()
+	//{
+	//	var players = PhotonNetwork.PlayerList;
+	//	int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
+	//	int minActor = players.Min(p => p.ActorNumber);
+	//	return myActor == minActor;
+	//}
 
 	private void GenerateRoomSeed()
 	{
@@ -33,17 +34,21 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 	private void InitRoomProps()
 	{
 		GenerateRoomSeed();
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, CommonDefine.defaultTreeHP);
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeAtkPow, CommonDefine.defaultTreeAtkPow);
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentDay, CommonDefine.defaultStartDay);
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurn, CommonDefine.defaultTurn);
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TurnIndex, CommonDefine.defaultTurnIndex);
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.GamePhase, CommonDefine.defaultPhaseValue);
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.MaxWaveCnt, CommonDefine.defaultMaxWave);
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentWave, CommonDefine.defaultWave);
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, false);
-
-		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.NEXT_UID, CommonDefine.defaultUID);
+		var ht = new ExitGames.Client.Photon.Hashtable
+			{
+				{ RoomPropKeys.AllReady,false},
+				{ RoomPropKeys.TreeHP,CommonDefine.defaultTreeHP },
+				{ RoomPropKeys.TreeAtkPow, CommonDefine.defaultTreeAtkPow},
+				{ RoomPropKeys.CurrentDay, CommonDefine.defaultStartDay},
+				{ RoomPropKeys.CurrentTurn, CommonDefine.defaultTurn},
+				{ RoomPropKeys.TurnIndex, CommonDefine.defaultTurnIndex },
+				{ RoomPropKeys.GamePhase, CommonDefine.defaultPhaseValue },
+				{ RoomPropKeys.MaxWaveCnt, CommonDefine.defaultMaxWave },
+				{ RoomPropKeys.CurrentWave, CommonDefine.defaultWave},
+				{ RoomPropKeys.IsVillageUpgradePhase, false },
+				{ItemPropKeys.NEXT_UID, CommonDefine.defaultUID },
+			};
+		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
 
 		TreeStatus.Instance.SetTreeStatusUI();
 

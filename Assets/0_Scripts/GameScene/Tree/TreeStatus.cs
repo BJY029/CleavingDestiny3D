@@ -75,11 +75,13 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 		GetCurrentTreeStatus();
 		return currentTreeAtkPow;
 	}
-	private bool IsInitializer()
-	{
-		var players = PhotonNetwork.PlayerList;
-		int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
-		int minActor = players.Min(p => p.ActorNumber);
-		return myActor == minActor;
-	}
+
+	private bool IsInitializer() => PhotonNetwork.IsMasterClient;
+	//private bool IsInitializer()
+	//{
+	//	var players = PhotonNetwork.PlayerList;
+	//	int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
+	//	int minActor = players.Min(p => p.ActorNumber);
+	//	return myActor == minActor;
+	//}
 }

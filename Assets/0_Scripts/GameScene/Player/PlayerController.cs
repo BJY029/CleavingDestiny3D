@@ -85,7 +85,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 	//마을 업그레이드 중인지 여부를 저장할 플래그
 	private bool UpgradePhase;
 	private bool WhileHittingMotion;
-	private float damageRatio;
+	//private float damageRatio;
 
 
 	private void Awake()
@@ -175,6 +175,62 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		TurnManager.Instance.OnInteractFKeyDown -= HandleInteractFKey;
 	}
 
+	private bool inputLocked;
+
+	private void ResetInputState()
+	{
+		moveInput = Vector2.zero;
+		lookInput = Vector2.zero;
+		sprintPressed = false;
+		jumpPressed = false;
+	}
+
+	private void ResetMotionState()
+	{
+		currentSpeed = 0f;
+
+		// 수평 이동 끊기
+		velocity.x = 0f;
+		velocity.z = 0f;
+
+		// 바닥에 붙어있으면 아래로 살짝 눌러주는 값 유지(원하면 0으로 해도 됨)
+		if (isGrounded) velocity.y = -2f;
+	}
+
+	public void SetInputLocked(bool locked)
+	{
+		inputLocked = locked;
+
+		if (locked)
+		{
+			//입력 액션 꺼서 “누르고 있던 키” 이벤트가 더 이상 들어오지 않게
+			moveAction?.Disable();
+			lookAction?.Disable();
+			sprintAction?.Disable();
+			jumpAction?.Disable();
+
+			ResetInputState();
+			ResetMotionState();
+
+			// 애니메이션도 즉시 정지 느낌 주고 싶으면(선택)
+			if (hasAnimator)
+			{
+				animator.SetFloat(_animIDSpeedX, 0f);
+				animator.SetFloat(_animIDSpeedZ, 0f);
+			}
+		}
+		else
+		{
+			moveAction?.Enable();
+			lookAction?.Enable();
+			sprintAction?.Enable();
+			jumpAction?.Enable();
+
+			ResetInputState(); // 재개 시에도 0으로 시작(키 눌림은 다음 프레임 ReadInput으로 다시 잡힘)
+		}
+	}
+
+
 	private void Start()
 	{
 		if (!photonView.IsMine)
@@ -227,8 +283,16 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 			return;
 		}
 
-		if (WhileHittingMotion) return;
-		if (ItemOfferCanvasController.instance.isOfferPanelOpened) return;
+		if (WhileHittingMotion)
+		{
+			SetInputLocked(true);
+			return;
+		}
+		if (ItemOfferCanvasController.instance.isOfferPanelOpened)
+		{
+			SetInputLocked(true);
+			return;
+		}
 
 		//만약 마을 업그레이드 페이즈에 돌입한 경우
 		if (TurnManager.Instance.isUpgradePhase)
@@ -241,6 +305,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 				//마을 업그레이드 페이즈에 돌입했음을 명시
 				UpgradePhase = true;
 			}
+			SetInputLocked(true);
 			return;
 		}
 		else //마을 업그레이드 페이즈가 아닌 경우
@@ -255,7 +320,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 			}
 		}
 
-
+		SetInputLocked(false);
 		//ApplyAnimation();
 		ReadInput();
 		GroundCheck();
@@ -340,7 +405,8 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		if (WhileHittingMotion) return;
 		
 		//Hit 순간의 게이지 데미지 값 받기
-		damageRatio = PlayerCanvasController.Instance.SelectNow();
+		float damageRatio = PlayerCanvasController.Instance.SelectNow();
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.DamageRatio, damageRatio);
 		//Hit 애니메이션 재생 
 		PlayHit();
 		//턴 전환 함수 호출
@@ -374,6 +440,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		//stateKey가 1이면, 즉 Hit 관련 모션이면
 		if (stateKey == 1)
 		{
+			float damageRatio = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.DamageRatio);
 			if(damageRatio == -1)
 			{
 				Debug.LogError("damageRatio init error");
@@ -394,6 +461,13 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		{
 			return;
 		}
+		if (inputLocked)
+		{
+			lookInput = Vector2.zero; // 안전빵
+			return;
+		}
+
+
 		CameraRotation();
 	}
 

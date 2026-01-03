@@ -27,6 +27,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	//턴 변경 플래그
 	private bool TurnHasChanged = false;
 	private int _lastProcessedTrun = -1;
+	//한 번만 Offer 정보 관련 UI를 처리하기 위한 장치
+	private bool offerGenerated = false;
 	private void Awake()
 	{
 		if (Instance != null)
@@ -64,13 +66,15 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	}
 
 	//플레이어 중 가장 작은 actor number를 가진 플레이어가 각종 권한을 갖는다.
-	private bool IsInitializer()
-	{
-		var players = PhotonNetwork.PlayerList;
-		int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
-		int minActor = players.Min(p => p.ActorNumber);
-		return myActor == minActor;
-	}
+	//private bool IsInitializer()
+	//{
+	//	var players = PhotonNetwork.PlayerList;
+	//	int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
+	//	int minActor = players.Min(p => p.ActorNumber);
+	//	return myActor == minActor;
+	//}
+
+	private bool IsInitializer() => PhotonNetwork.IsMasterClient;
 
 	//턴 변경 요청이 발생한 경우
 	public void RequestChangeTurn(float damageRatio)
@@ -124,9 +128,22 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		TreeStatus.Instance.getHitByPlayer(dmg);
 	}
 
+	//처음 PlayerManager에서 초기화 된 후 Offer UI를 처리하기 위한 함수
+	public void setOfferGeneratedFromOutsied(bool flag)
+	{
+		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
+	}
+
+	[PunRPC]
+	public void setOfferGenerated(bool flag)
+	{
+		offerGenerated = flag;
+	}
+
 	//턴 전환 함수
 	private void ChangeToNextTurn()
 	{
+		if (!IsInitializer()) return;
 		//턴 정보를 담은 리스트를 불러온다.
 		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
 		if(TurnOrder == null || TurnOrder.Length == 0)
@@ -138,8 +155,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//현재 턴 순서 값을 가져온다.
 		int currentIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
 		Debug.Log("Turn " + currentIndex + " End");
-		//다음 턴 순서를 계산한다.
+		//다음 턴 순서, 다음 턴의 Actor 번호, 턴 카운트, 해당 턴에 제공할 Offer를 계산한다.
 		int nextIndex = (currentIndex + 1) % TurnOrder.Length;
+		int nextActor = TurnOrder[nextIndex];
+		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) + 1;
+		string offerStr = OfferAuthority.Instance.MakeOfferForTurn(nextActor, turnIndex);
+		
 
 		//만약 모든 턴을 돌고 한 웨이브가 끝난 경우
 		if(nextIndex == 0)
@@ -171,17 +192,18 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//턴 변경 관련 처리를 한 번만 수행하기 위해 다음과 같은 RPC로 변수 초기화
 		//photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 
-		//다음 턴 정보를 갱신한다.
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurn, nextIndex);
-		//변경된 턴 플레이어의 ActorNum으로 초기화
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, GameHelper.getCurrentTurnActorNum());
-		//아이템 선택지 설정
-		OfferAuthority.Instance.MakeOfferForTurn();
-
-		//디버깅
-		string Turninfo = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor).ToString();
-		Debug.LogError($"current turn actor number : {Turninfo}");
-		Debug.Log("Turn " + nextIndex + " Start");
+		//프로퍼티를 한번에 업데이트 한다.
+		var ht = new ExitGames.Client.Photon.Hashtable
+		{
+			{RoomPropKeys.CurrentTurn, nextIndex},
+			{RoomPropKeys.CurrentTurnActor, nextActor},
+			{RoomPropKeys.TurnIndex, turnIndex },
+			{ItemPropKeys.OFFER(nextActor), offerStr ?? "" }
+		};
+		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
+		//마을 페이즈에 돌입하게 되면, 중간에 return이 되서 offer가 반영이 안된다.
+		//따라서 꼭 실제로 프로퍼티가 업데이트 된 후에 해당 플레그를 true로 설정해야 한다.
+		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
 	}
 
 	[PunRPC]
@@ -250,9 +272,11 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			//시간이 모두 지난 경우
 			//마을 페이즈 종료
 			CompleteDayChangeAfterUpgrade();
+			isUpgradePhase = false;
 			endTime = -1.0f;
 		}
 	}
+
 
 	//마을 페이즈 종료
 	private void CompleteDayChangeAfterUpgrade()
@@ -260,8 +284,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//권한자만 실행
 		if (!IsInitializer()) return;
 
-		//마을 페이즈 종료 프로퍼티 초기화
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, false);
+
+		//플레이어 상태 정보 초기화
 		PlayerStatus.Instance.initPlayerStatus();
 
 		//관련 UI를 처리한다.
@@ -269,39 +294,43 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		GameCanvasController.Instance.SetActiveCanvas(true);
 		PlayerCanvasController.Instance.SetActiveCanvas(true);
 
-		//현재 날짝 값을 불러온다.
-		int currentDayCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentDay);
-		Debug.Log("Day " + currentDayCnt + " End");
-		//날짜 값을 하나 증가시킨다.
-		currentDayCnt += 1;
+		//다음 날짜 값을 계산.
+		int day = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentDay) + 1;
+		//다음 턴 순서, 다음 턴의 Actor 번호, 턴 카운트, 해당 턴에 제공할 Offer를 계산한다.
+		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
+		int nextIndex = CommonDefine.defaultTurn;
+		int nextActor = TurnOrder[nextIndex];
+		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) + 1;
+		string offerStr = OfferAuthority.Instance.MakeOfferForTurn(nextActor, turnIndex);
+		//해당 프로퍼티를 한번에 업데이트 한다.
+		var ht = new ExitGames.Client.Photon.Hashtable
+		{
+			{RoomPropKeys.CurrentDay, day },
+			{RoomPropKeys.CurrentWave, CommonDefine.defaultWave },
 
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentDay, currentDayCnt);
-		//웨이브 값은 0으로 초기화시킨다.
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentWave, CommonDefine.defaultWave);
-		Debug.Log("Day " + currentDayCnt + " Start");
+			{RoomPropKeys.CurrentTurn, nextIndex },
+			{RoomPropKeys.CurrentTurnActor, nextActor },
+			{RoomPropKeys.TurnIndex, turnIndex },
 
-		photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
-		//다음 턴 정보를 갱신한다.
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurn, CommonDefine.defaultTurn);
-		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TurnIndex, turnIndex + 1);
-		//변경된 턴 플레이어의 ActorNum으로 초기화
-		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, GameHelper.getCurrentTurnActorNum());
-		Debug.Log("Turn " + 0 + " Start");
-		//아이템 선택지 설정
-		OfferAuthority.Instance.MakeOfferForTurn();
+			{ItemPropKeys.OFFER(nextActor), offerStr ?? "" },
+		};
+		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
+		//Offer 플래그 설정
+		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
 		
-		//디버깅
-		string Turninfo = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor).ToString();
-		Debug.LogError($"current turn actor number : {Turninfo}");
-		startTime = endTime = -1.0f;
+		//?
+		photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 	}
 
 	//프로퍼티 변경 감지
 	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
 	{
+		//나의 Actor 번호
 		int me = PhotonNetwork.LocalPlayer.ActorNumber;
+		//현재 턴에 해당되는 Actor 번호(최신 값을 기준으로 한다.)
 		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+		if (propertiesThatChanged.TryGetValue(RoomPropKeys.CurrentTurnActor, out var taObj))
+			turnActor = Convert.ToInt32(taObj);
 
 		//턴 관련 프로퍼티가 변경되었고, 아직 처리되지 않은 경우
 		if (propertiesThatChanged.TryGetValue(RoomPropKeys.CurrentTurn, out var turnObj))
@@ -328,15 +357,31 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			isUpgradePhase = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		}
 
-		if (propertiesThatChanged.ContainsKey(ItemPropKeys.OFFER(me)) && turnActor == me)
+		//내 Offer RoomProperty Key 가져오기
+		string myOfferKey = ItemPropKeys.OFFER(me);
+		//변경된 Offer 프로퍼티가 내 것에 해당되는 경우
+		if(propertiesThatChanged.TryGetValue(myOfferKey, out var offerObj))
 		{
-			Debug.Log("Offer Updated");
+			//그리고 offer가 처음 제공되는 경우
+			if (offerGenerated)
+			{
+				//해당 프로퍼티로부터 offer string을 받아온다.
+				string offers = offerObj as string ?? "";
 
-			string offers = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.OFFER(turnActor));
-			ItemOfferCanvasController.instance.initItemOfferPanel(offers, turnActor);
+				//내 턴이고, offer가 유효하면
+				if(turnActor == me && !string.IsNullOrEmpty(offers))
+				{
+					//관련 UI를 처리한다.
+					ItemOfferCanvasController.instance.initItemOfferPanel(offers, me);
+				}
+				else
+				{
+					//내 턴이 아니면 UI를 닫는다.
+					ItemOfferCanvasController.instance.Close();
+				}
+				//플래그 처리
+				offerGenerated = false;
+			}
 		}
 	}
-
-	
-
 }

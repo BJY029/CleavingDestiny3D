@@ -53,12 +53,30 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			return;
 		}
 
-		//삽입 결과, 변경 결과 프로퍼티로 업데이트
-		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.INV(actor), ItemInfoSerializer.Encode(slots));
-		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.NEXT_UID, nextUid + 1);
-		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.OFFER(actor), "");
+		//삽입 결과, 변경 결과 프로퍼티로 한번에 업데이트
+		var ht = new ExitGames.Client.Photon.Hashtable
+		{
+			{ItemPropKeys.INV(actor),ItemInfoSerializer.Encode(slots)},
+			{ItemPropKeys.NEXT_UID, nextUid + 1},
+			{ItemPropKeys.OFFER(actor), "" },
 
-		Debug.Log($"Player{actor}'s inventory : {invSlots}");
+		};
+		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
+		
+
+		string inv = "";
+		foreach(var x in slots)
+		{
+			if(x.itemID == null)
+			{
+				inv += " _ ";
+			}
+			else
+			{
+				inv += $" {x.itemID} ";
+			}
+		}
+		Debug.Log($"Player{actor}'s inventory : {inv}");
 	}
 
 	//선택된 아이템이 실제 제안된 아이템 목록에 있는지 확인

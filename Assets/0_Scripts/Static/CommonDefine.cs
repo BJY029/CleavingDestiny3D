@@ -81,6 +81,7 @@ public class UI_CSV
 //서버 CustomProperty Key
 public static class RoomPropKeys
 {
+    public const string AllReady = "AllReady";
     public const string RoomSeed = "RoomSeed";
     public const string TurnOrder = "TurnInfo";
     public const string CurrentTurn = "CurrentTurn";
@@ -102,6 +103,7 @@ public static class RoomPropKeys
 public static class PlayerPropKeys
 {
     //public const string Name = "Name";
+    public const string IsReady = "IsReady";
     public const string VillageHP = "VillageHP";
     public const string VillageBarrier = "VillageBarrier";
     public const string BarrierConversionRate = "BarrierConversionRate";
@@ -110,6 +112,7 @@ public static class PlayerPropKeys
     public const string MaxAtkPow = "MaxAtkPow";
     public const string MinAtkPow = "MinAtkPow";
     public const string TotalDamage = "TotalDamage";
+    public const string DamageRatio = "DamageRatio";
     public const string Energy = "Energy";
     public const string MaxEnergy = "MaxEnergy";
     public const string CarryOverEnergy = "CarryOverEnergy";

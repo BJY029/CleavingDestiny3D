@@ -67,8 +67,9 @@ public class ItemOfferCanvasController : MonoBehaviour
 		foreach (Transform child in OffersPanel.transform)
 			Destroy(child.gameObject);
 
+		Debug.Log($"offered string : {offerList}");
 		// 3) Decode 예외 방어
-		var decoded = ItemInfoSerializer.Decode(offerList, CommonDefine.itemOfferCnt);
+		var decoded = offerList.Split("|");
 	
 
 		if (decoded == null)
@@ -87,7 +88,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 				Debug.LogError("offerPrefab has no ItemOfferUIController");
 				continue;
 			}
-			ui.SetItem(of.itemID);
+			ui.SetItem(of);
 		}
 
 		ActiveOfferPanel();
@@ -97,8 +98,8 @@ public class ItemOfferCanvasController : MonoBehaviour
 	private void ActiveOfferPanel()
 	{
 		//마우스 관련 설정
-		Cursor.lockState = CursorLockMode.Locked;
-		Cursor.visible = false;
+		Cursor.lockState = CursorLockMode.None;
+		Cursor.visible = true;
 
 		//UI 설정
 		OpenCloseText.SetActive(true);
@@ -124,7 +125,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 			Cursor.lockState = CursorLockMode.None;
 			Cursor.visible = true;
 			//UI 처리
-			OpenCloseText.GetComponent<CanvasGroup>().alpha = 0.5f;
+			OpenCloseText.GetComponent<CanvasGroup>().alpha = 1.0f;
 			//움직임 제한
 			isOfferPanelOpened = true;
 		}
@@ -134,7 +135,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
 			//UI 처리
-			OpenCloseText.GetComponent<CanvasGroup>().alpha = 1.0f;
+			OpenCloseText.GetComponent<CanvasGroup>().alpha = 0.5f;
 			//움직임 활성화
 			isOfferPanelOpened = false;
 		}
@@ -165,13 +166,12 @@ public class ItemOfferCanvasController : MonoBehaviour
 	public void SelectedItem(string itemId)
 	{
 		//패널 닫기
-		ToggleOfferPanel();
-		OpenCloseText.SetActive(true);
+		Close();
+
 		foreach (Transform child in OffersPanel.transform)
 		{
 			Destroy(child.gameObject);
 		}
-		isChoosingPhase = false;
 
 		InventoryAuthority.Instance.RequestTakeOffer(itemId);
 	}

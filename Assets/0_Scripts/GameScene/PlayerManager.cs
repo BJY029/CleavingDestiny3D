@@ -1,9 +1,11 @@
 ﻿using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 public class PlayerManager : MonoBehaviourPunCallbacks
 {
@@ -17,6 +19,8 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 	//중복 초기화 방지 플래그
 	private bool isAlreadyInitialized;
+	//MAsterClietn 에서만 사용
+	private bool AllReadyFlag = false;
 
 	public Transform CenterObject;
 	private float radius = 4.5f;
@@ -45,20 +49,57 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		}
 	}
 
-	private bool IsInitializer()
-	{
-		var players = PhotonNetwork.PlayerList;
-		int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
-		int minActor = players.Min(p => p.ActorNumber);
-		return myActor == minActor;
-	}
+	private bool IsInitializer() => PhotonNetwork.IsMasterClient;
+	//private bool IsInitializer()
+	//{
+	//	var players = PhotonNetwork.PlayerList;
+	//	int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
+	//	int minActor = players.Min(p => p.ActorNumber);
+	//	return myActor == minActor;
+	//}
 
 	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable changedProps)
 	{
 		if (changedProps.ContainsKey("TurnInfo") && isAlreadyInitialized == false)
 		{
+			isAlreadyInitialized = true;
 			UploadTurnInfoPropertyToRoom();
 			StartCoroutine(PrepareStartGame());
+		}
+	}
+
+	//플레이어 프로퍼티 감지
+	//모든 플레이어들이 준비가 되었는지 확인하기 위한 함수
+	public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
+	{
+		if (!IsInitializer()) return;     // 마스터만
+		if (AllReadyFlag) return;	//이미 모두 준비되었다고 감지 된 경우 아래 처리 안함
+
+		//플레이어들의 IsReady 프로퍼티가 업데이트 된 경우
+		if (changedProps.ContainsKey(PlayerPropKeys.IsReady))
+		{
+			//모든 플레이어들이 준비 되었는지 확인
+			if (AllPlayersReady())
+			{
+				//준비 된 경우, 플래그를 설정하고
+				AllReadyFlag = true;
+
+				//첫 턴/오퍼를 "원자적으로" 세팅
+				int[] turnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
+				int firstActor = turnOrder[0];
+				int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
+				string offers = OfferAuthority.Instance.MakeOfferForTurn(firstActor, turnIndex);
+				//프로퍼티 한 번에 업데이트
+				var ht = new ExitGames.Client.Photon.Hashtable
+			{
+				{ RoomPropKeys.CurrentTurn, 0 },
+				{ RoomPropKeys.CurrentTurnActor, firstActor },
+				{ ItemPropKeys.OFFER(firstActor), offers ?? "" },
+			};
+				PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
+				//UI 처리를 위한 함수 호출
+				TurnManager.Instance.setOfferGeneratedFromOutsied(true);
+			}
 		}
 	}
 
@@ -81,9 +122,6 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		yield return handelUI;
 
-		if(IsInitializer())
-			OfferAuthority.Instance.MakeOfferForTurn();
-
 		CameraSwitchManager.Instance.Branch_to_Game();
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
@@ -101,7 +139,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	//미니게임으로부터 turn 순서가 정해지면, 해당 정보 기반으로 플레이어 정보 채워넣을 예정
 	private void InitPlayersInfo()
 	{
-		isAlreadyInitialized = true;
+		
 		players.Clear();
 		var room = PhotonNetwork.CurrentRoom;
 		var props = room.CustomProperties;
@@ -133,10 +171,10 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			if (p == PhotonNetwork.LocalPlayer)
 			{
 				PhotonPropertyHelper.SetPlayerProp(p, PlayerPropKeys.MyTurn, playerTurn);
-				if(playerTurn == CommonDefine.defaultTurn)
-				{
-					PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, p.ActorNumber);
-				}
+			}
+			if (IsInitializer() && playerTurn == 0)
+			{
+				PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, p.ActorNumber);
 			}
 			Debug.Log($"playerActorNum : {rp.actorNumber}, turn:{rp.turnIdx}");
 			players.Add(rp.actorNumber, rp);
@@ -177,28 +215,45 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	private void InitPlayerProps()
 	{
 		Player player = PhotonNetwork.LocalPlayer;
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageHP, CommonDefine.defaultTreeHP);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageBarrier, CommonDefine.defaultVillageBarrier);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageUpgrades, CommonDefine.defaultVillageUpgrades);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Gold, CommonDefine.defaultGold);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.MaxAtkPow, CommonDefine.defaultPlayerMaxAtkPow);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.MinAtkPow, CommonDefine.defaultPlayerMinAtkPow);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Energy, CommonDefine.defaultPlayerEnergy);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.MaxEnergy, CommonDefine.defaultPlayerMaxEnergy);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.CarryOverEnergy, CommonDefine.defaultCarryOverEnergy);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.DayTimeDamage, CommonDefine.defaultDayTimeDamage);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.TotalDamage, CommonDefine.defaultTotalDamage);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.BarrierConversionRate, CommonDefine.defaultBarrierConversionRate);
 
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Item_CommonWeight, CommonDefine.defaultCommonItemWeight);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Item_HeroWeight, CommonDefine.defaultHeroItemWeight);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Item_RareWeight, CommonDefine.defaultRareItemWeight);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Item_LegendaryWeight, CommonDefine.defaultLegendaryItemWeight);
+		var ht = new ExitGames.Client.Photon.Hashtable
+		{
+			{ PlayerPropKeys.VillageHP, CommonDefine.defaultTreeHP},
+			{ PlayerPropKeys.VillageBarrier, CommonDefine.defaultVillageBarrier},
+			{  PlayerPropKeys.VillageUpgrades, CommonDefine.defaultVillageUpgrades},
+			{ PlayerPropKeys.Gold, CommonDefine.defaultGold },
+			{ PlayerPropKeys.MaxAtkPow, CommonDefine.defaultPlayerMaxAtkPow },
+			{  PlayerPropKeys.MinAtkPow, CommonDefine.defaultPlayerMinAtkPow},
+			{  PlayerPropKeys.Energy, CommonDefine.defaultPlayerEnergy},
+			{PlayerPropKeys.MaxEnergy, CommonDefine.defaultPlayerMaxEnergy },
+			{ PlayerPropKeys.CarryOverEnergy, CommonDefine.defaultCarryOverEnergy},
+			{PlayerPropKeys.DayTimeDamage, CommonDefine.defaultDayTimeDamage },
+			{PlayerPropKeys.TotalDamage, CommonDefine.defaultTotalDamage },
+			{PlayerPropKeys.BarrierConversionRate, CommonDefine.defaultBarrierConversionRate },
+			{PlayerPropKeys.Item_CommonWeight, CommonDefine.defaultCommonItemWeight },
+			{ PlayerPropKeys.Item_HeroWeight, CommonDefine.defaultHeroItemWeight },
+			{PlayerPropKeys.Item_RareWeight, CommonDefine.defaultRareItemWeight },
+			{ PlayerPropKeys.Item_LegendaryWeight, CommonDefine.defaultLegendaryItemWeight},
+		};
+		PhotonNetwork.LocalPlayer.SetCustomProperties(ht);
 
-		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.INV(player.ActorNumber), ItemInfoSerializer.MakeEmptyInv(CommonDefine.defaultInventoryCapacity));
-		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.INV_CAPACITY(player.ActorNumber), CommonDefine.defaultInventoryCapacity);
-		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.OFFER(player.ActorNumber),"");
-		PlayerStatus.Instance.SetPlayerStatusUI();
+		var rt = new ExitGames.Client.Photon.Hashtable
+		{
+			{ItemPropKeys.INV(player.ActorNumber), ItemInfoSerializer.MakeEmptyInv(CommonDefine.defaultInventoryCapacity) },
+			{ItemPropKeys.INV_CAPACITY(player.ActorNumber), CommonDefine.defaultInventoryCapacity },
+			{ItemPropKeys.OFFER(player.ActorNumber),"" },
+		};
+		PhotonNetwork.CurrentRoom.SetCustomProperties(rt);
+
+		//모든 프로퍼티가 준비 완료된 경우
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.IsReady, true);
+
 		Debug.Log("Init Player Props Success");
 	}
+
+	bool AllPlayersReady()
+	{
+		return PhotonNetwork.PlayerList.All(p => p.CustomProperties.TryGetValue(PlayerPropKeys.IsReady, out var v) && (bool)v);
+	}
+
 }
