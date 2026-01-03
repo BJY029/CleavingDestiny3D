@@ -3,6 +3,13 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using ExitGames.Client.Photon;
 
+public interface ILookInteractable
+{
+	void OnLookEnter(PlayerController pc);
+	void OnLookExit(PlayerController pc);
+	void OnInteract(PlayerController pc);
+}
+
 //CharacterController 컴포넌트 강제 할당
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour, IAnimNotify
@@ -78,14 +85,15 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 	[Header("Raycast")]
 	[SerializeField] private float RayDistance;
 	[SerializeField] private LayerMask targetLayer;
+	private ILookInteractable currentInteractable;
 	private Transform lastHitTarget = null;
-	private bool isLookingAtTree;
+	public bool isLookingAtTree;
 
 	private PhotonView photonView;
 	//마을 업그레이드 중인지 여부를 저장할 플래그
 	private bool UpgradePhase;
 	private bool WhileHittingMotion;
-	//private float damageRatio;
+	private float damageRatio;
 
 
 	private void Awake()
@@ -331,33 +339,59 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		Ray ray = new Ray(cam.transform.position, cam.transform.forward);
 		//디버그용 Ray 그리기
 		Debug.DrawRay(ray.origin, ray.direction * RayDistance, Color.green);
-		//ray가 target layer를 감지하면
-		if (Physics.Raycast(ray, out RaycastHit hitInfo, RayDistance, targetLayer))
+		//QueryTriggerInteraction.Collide : Trigger로 설정된 콜라이더와도 충돌을 감지
+		if(Physics.Raycast(ray, out var hit, RayDistance, targetLayer, QueryTriggerInteraction.Collide))
 		{
-			//해당 레이어에 해당되는 transform 객체 가져오기
-			Transform currentHit = hitInfo.transform;
+			//충돌한 물체 혹은 그 부모에게서 ILookInteractable 인터페이스 찾기
+			var next = hit.transform.GetComponentInParent<ILookInteractable>();
 
-			//처음 감지하는 객체인 경우
-			if(lastHitTarget != currentHit)
+			//보고있던 대상이 변경 되었는지 확인
+			if(!ReferenceEquals(next, currentInteractable))
 			{
-				//처리 진행
-				OnRayEnter(currentHit);
+				//기존에 보고 있던 것이 있으면, 시선 해제
+				currentInteractable?.OnLookExit(this);
+				//현재 대상을 새로운 것으로 교체
+				currentInteractable = next;
+				//새로운 대상에게 시선 진입 처리
+				currentInteractable?.OnLookEnter(this);
 			}
-			//현재 감지중인 객체로 설정
-			lastHitTarget = currentHit;
-			
 		}
-		else//target layer를 감지하지 못한 경우
+		else //Raycast 실패 시
 		{
-			//만약 감지중인 객체가 있었던 경우(즉, 방금 시선에서 해당 layer가 벗어난 경우)
-			if(lastHitTarget != null)
+			//보고 있던 것이 있었다면 해제
+			if (currentInteractable != null)
 			{
-				//관련 처리 진행
-				OnRayExit(lastHitTarget);
-				//감지 중인 객체가 없다고 설정
-				lastHitTarget = null;
+				currentInteractable.OnLookExit(this);
+				currentInteractable = null;
 			}
 		}
+		//ray가 target layer를 감지하면
+		//if (Physics.Raycast(ray, out RaycastHit hitInfo, RayDistance, targetLayer))
+		//{
+		//	//해당 레이어에 해당되는 transform 객체 가져오기
+		//	Transform currentHit = hitInfo.transform;
+
+		//	//처음 감지하는 객체인 경우
+		//	if(lastHitTarget != currentHit)
+		//	{
+		//		//처리 진행
+		//		OnRayEnter(currentHit);
+		//	}
+		//	//현재 감지중인 객체로 설정
+		//	lastHitTarget = currentHit;
+
+		//}
+		//else//target layer를 감지하지 못한 경우
+		//{
+		//	//만약 감지중인 객체가 있었던 경우(즉, 방금 시선에서 해당 layer가 벗어난 경우)
+		//	if(lastHitTarget != null)
+		//	{
+		//		//관련 처리 진행
+		//		OnRayExit(lastHitTarget);
+		//		//감지 중인 객체가 없다고 설정
+		//		lastHitTarget = null;
+		//	}
+		//}
 	}
 
 	//처음 ray로 감지했을 때 실행될 함수
@@ -403,14 +437,16 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		//현재 나무를 보고 있지 않은 경우 return
 		if (!isLookingAtTree) return;
 		if (WhileHittingMotion) return;
-		
+
+		currentInteractable?.OnInteract(this);
+	}
+
+	public void TryHit()
+	{
 		//Hit 순간의 게이지 데미지 값 받기
-		float damageRatio = PlayerCanvasController.Instance.SelectNow();
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.DamageRatio, damageRatio);
+		damageRatio = PlayerCanvasController.Instance.SelectNow();
 		//Hit 애니메이션 재생 
 		PlayHit();
-		//턴 전환 함수 호출
-		//TurnManager.Instance.RequestChangeTurn(PlayerCanvasController.Instance.SelectNow());
 	}
 
 	//Hit 애니메이션을 재생하는 함수
@@ -440,8 +476,9 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		//stateKey가 1이면, 즉 Hit 관련 모션이면
 		if (stateKey == 1)
 		{
-			float damageRatio = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.DamageRatio);
-			if(damageRatio == -1)
+			if(!photonView.IsMine) return;
+
+			if(damageRatio < 0f)
 			{
 				Debug.LogError("damageRatio init error");
 				return;

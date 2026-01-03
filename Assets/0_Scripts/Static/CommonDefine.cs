@@ -112,7 +112,7 @@ public static class PlayerPropKeys
     public const string MaxAtkPow = "MaxAtkPow";
     public const string MinAtkPow = "MinAtkPow";
     public const string TotalDamage = "TotalDamage";
-    public const string DamageRatio = "DamageRatio";
+    //public const string DamageRatio = "DamageRatio";
     public const string Energy = "Energy";
     public const string MaxEnergy = "MaxEnergy";
     public const string CarryOverEnergy = "CarryOverEnergy";

@@ -43,6 +43,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	{
 		startTime = -1.0f;
 		endTime = -1.0f;
+		TryOpenOfferFromRoomState();
 	}
 
 	private void Update()
@@ -330,7 +331,10 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//현재 턴에 해당되는 Actor 번호(최신 값을 기준으로 한다.)
 		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
 		if (propertiesThatChanged.TryGetValue(RoomPropKeys.CurrentTurnActor, out var taObj))
+		{
 			turnActor = Convert.ToInt32(taObj);
+			TryOpenOfferFromRoomState();
+		}
 
 		//턴 관련 프로퍼티가 변경되었고, 아직 처리되지 않은 경우
 		if (propertiesThatChanged.TryGetValue(RoomPropKeys.CurrentTurn, out var turnObj))
@@ -382,6 +386,22 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				//플래그 처리
 				offerGenerated = false;
 			}
+		}
+	}
+
+	//처음 게임이 시작 될 때, 네트워크 이슈로 프로퍼티가 아직 초기화 되지 않았는데 
+	//호출 되는 경우, CurrentTurnActor 설정 이슈 등등의 문제로 버그가 발생함
+	//이를 막기 위해서 CurrentTurnActor 프로퍼티가 변경될 시 별도의 체크를 수행하는 함수를 호출한다.
+	public void TryOpenOfferFromRoomState()
+	{
+		int me = PhotonNetwork.LocalPlayer.ActorNumber;
+		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+		string offer = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.OFFER(me));
+
+		if(turnActor == me && !string.IsNullOrEmpty (offer))
+		{
+			if (ItemOfferCanvasController.instance != null)
+				ItemOfferCanvasController.instance.initItemOfferPanel(offer, me);
 		}
 	}
 }

@@ -256,6 +256,7 @@ MonoBehaviour:
   targetLayer:
     serializedVersion: 2
     m_Bits: 128
+  isLookingAtTree: 0
 --- !u!114 &-7706094444651068393
 MonoBehaviour:
   m_ObjectHideFlags: 0
