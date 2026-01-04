@@ -301,7 +301,7 @@ public class StickGameController : MonoBehaviourPunCallbacks
 
 		// 주인 배정
 		owners[stickIndex] = actorNumber;
-        Debug.LogError($"Player {actorNumber} has picked {stickIndex+1} stick. Length : {lengths[stickIndex]}");
+        //Debug.LogError($"Player {actorNumber} has picked {stickIndex+1} stick. Length : {lengths[stickIndex]}");
 
         //업데이트 된 정보 업로드
 		var newProps = new ExitGames.Client.Photon.Hashtable

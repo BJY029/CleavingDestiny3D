@@ -9,6 +9,7 @@ public class ItemDB : MonoBehaviour
     [SerializeField] List<ItemSO> items;
 	//아이템 DB
     Dictionary<string, ItemSO> map;
+	[SerializeField] Dictionary<string, Material> itemMat;
 
 	private void Awake()
 	{
@@ -30,12 +31,24 @@ public class ItemDB : MonoBehaviour
 			if (!string.IsNullOrEmpty(it.itemId))
 				map[it.itemId] = it;
 		}
+
+		itemMat = new Dictionary<string, Material>();
+		Material[] mats = Resources.LoadAll<Material>("Material/item");
+		foreach (var mat in mats)
+		{
+			itemMat.Add(mat.name, mat);
+		}
 	}
 
 	//아이템 객체 얻기
 	public ItemSO Get(string id)
 	{
 		return (id != null && map.TryGetValue(id, out var it)) ? it : null;
+	}
+
+	public Material GetMat(string id)
+	{
+		return (id != null && itemMat.TryGetValue(id, out var it)) ? it : null;
 	}
 
 	public List<ItemSO> GetItemsList()

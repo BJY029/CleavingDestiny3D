@@ -19,7 +19,7 @@ public class InventoryEachSlot : MonoBehaviour
         }
 
         icon.enabled = true;
-        icon.sprite = item.icon;
+        icon.sprite = item.Icon;
         ItemName.text = LocalizationManager.Instance.GetText(CSV_Type.Item, item.displayName_ID);
         ItemDescription.text = LocalizationManager.Instance.GetText(CSV_Type.Item, item.itemDesc_ID);
     }

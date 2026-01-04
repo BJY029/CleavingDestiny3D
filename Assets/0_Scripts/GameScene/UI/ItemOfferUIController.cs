@@ -19,14 +19,15 @@ public class ItemOfferUIController : MonoBehaviour
         this.itemId = itemId;
 
         ItemSO item = ItemDB.Instance.Get(itemId);
-        //iconImage.sprite = null;
         if(item == null)
         {
             Debug.LogError("item is null");
             Debug.LogError($"item id : {itemId}");
             return;
         }
-        itemName.text = LocalizationManager.Instance.GetText(CSV_Type.Item, item.displayName_ID);
+
+		iconImage.sprite = item.Icon;
+		itemName.text = LocalizationManager.Instance.GetText(CSV_Type.Item, item.displayName_ID);
         itemRarity.text = item.itemClass.ToString();
         itemCost.text = "Cost : " + item.itemCost.ToString();
         itemDesc.text = LocalizationManager.Instance.GetText(CSV_Type.Item, item.itemDesc_ID);

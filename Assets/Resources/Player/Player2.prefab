@@ -1592,7 +1592,7 @@ MonoBehaviour:
   RayDistance: 5
   targetLayer:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 384
   isLookingAtTree: 0
 --- !u!114 &-6779181724308204353
 MonoBehaviour:

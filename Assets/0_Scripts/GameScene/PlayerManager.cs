@@ -24,8 +24,11 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 	public Transform CenterObject;
 	private float radius = 4.5f;
+	private float InvRadius = 16f;
 	private Vector3[] spawnPos;
+	private Vector3[] spawnInvPos;
 	private Quaternion[] spawnRot;
+	private Quaternion[] spawnInvRot;
 
 
 	private void Awake()
@@ -126,6 +129,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
 		PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
+		PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[myActNum - 1], spawnInvRot[myActNum - 1]);
 		CameraSwitchManager.Instance.Off_ExceptPlayerCam();
 
 		GameCanvasController.Instance.gameObject.SetActive(true);
@@ -194,20 +198,32 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	private void SpawnPlayersOnCircle()
 	{
 		spawnPos = new Vector3[players.Count];
+		spawnInvPos = new Vector3[players.Count];
 		spawnRot = new Quaternion[players.Count];
+		spawnInvRot = new Quaternion[players.Count];
+
+		float ang = 360 / (float)players.Count;
 
 		for (int i = 0; i < players.Count; i++)
 		{
 			float angle = 2f * Mathf.PI * i / players.Count;
 
+			//플레이어 스폰 위치 계산
 			Vector3 offset = new Vector3(
 				Mathf.Cos(angle) * radius,
 				0f,
 				Mathf.Sin(angle) * radius);
 
-			spawnPos[i] = offset + CenterObject.position;
+			//플레이어 인벤토리 스폰 위치 계산
+			Vector3 InvOffset = new Vector3(
+				Mathf.Cos(angle) * InvRadius,
+				0f,
+				Mathf.Sin(angle) * InvRadius);
 
+			spawnPos[i] = offset + CenterObject.position;
+			spawnInvPos[i] = InvOffset + CenterObject.position;
 			spawnRot[i] = Quaternion.LookRotation(CenterObject.position - spawnPos[i]);
+			spawnInvRot[i] = Quaternion.Euler(0f, (180f + (ang * i)) % 360f, 0f);
 		}
 	}
 
