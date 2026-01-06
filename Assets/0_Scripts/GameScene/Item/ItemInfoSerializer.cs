@@ -67,19 +67,17 @@ public static class ItemInfoSerializer
     }
 
     //주어진 아이템 슬롯에서, uniqueId를 기반으로 아이템을 삭제하고 삭제된 아이템 이름을 반환(out)하는 함수
-    public static bool TryRemoveByUniqueId((int uniqueId, string itemId)[] slots, int uniqueId, out string itemId)
+    public static int TryFindIndexByUniqueId((int uniqueId, string itemId)[] slots, int uniqueId)
     {
         for(int i = 0; i < slots.Length; i++)
         {
             if (slots[i].uniqueId == uniqueId)
             {
-                itemId = slots[i].itemId;
-                slots[i] = (0, null);
-                return true;
+                //slots[i] = (0, null);
+                return i;
             }
         }
-        itemId = null;
-        return false;
+        return -1;
     }
 
     public static string MakeEmptyInv(int cap)

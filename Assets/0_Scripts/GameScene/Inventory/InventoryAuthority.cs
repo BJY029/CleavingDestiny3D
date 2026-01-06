@@ -1,6 +1,9 @@
-using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using System.Collections;
+using System.Linq;
+using Unity.VisualScripting.Antlr3.Runtime.Misc;
+using UnityEngine;
 
 public class InventoryAuthority : MonoBehaviourPunCallbacks
 {
@@ -20,6 +23,11 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 	public void RequestTakeOffer(string itemId)
 	{
 		photonView.RPC(nameof(RPC_TakeOffer), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber, itemId);
+	}
+
+	public void RequestUseItem(int slotIdx)
+	{
+		photonView.RPC(nameof(RPC_UseItem), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber, slotIdx); ;
 	}
 
 	[PunRPC]
@@ -62,12 +70,12 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
-		
+
 
 		string inv = "";
-		foreach(var x in slots)
+		foreach (var x in slots)
 		{
-			if(x.itemID == null)
+			if (x.itemID == null)
 			{
 				inv += " _ ";
 			}
@@ -78,6 +86,93 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		}
 		Debug.Log($"Player{actor}'s inventory : {inv}");
 	}
+
+	[PunRPC]
+	void RPC_UseItem(int requestActor, int slotIdx, PhotonMessageInfo info)
+	{
+		//Master 검증
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		//Turn 검증
+		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+		if (turnActor != requestActor)
+		{
+			Debug.LogError("Requester isn't Current turn");
+			return;
+		}
+
+		//요청자 INV 정보 가져오기
+		string Inv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(turnActor));
+		int InvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(turnActor));
+
+		//요청자 INV 정보 검증
+		var slots = ItemInfoSerializer.Decode(Inv, InvCap);
+		if (slots == null || slots.Length != InvCap)
+		{
+			Debug.LogError("Slots Info Error");
+			return;
+		}
+		if (slotIdx < 0 || slotIdx >= slots.Length)
+		{
+			Debug.LogError("Slot Index Info Error");
+			return;
+		}
+
+		//슬롯 Idx 검증
+		string itemId = slots[slotIdx].itemID;
+		int uniqueId = slots[slotIdx].uniqueId;
+
+		//uniqueId 기반으로 슬롯 IDX 값 받아오기
+		int removaldx = ItemInfoSerializer.TryFindIndexByUniqueId(slots, uniqueId);
+		//IDX 다르면 에러
+		if(removaldx != slotIdx)
+		{
+			Debug.Log("SlotIdx Error");
+			return;
+		}
+
+		//TODO: 아이템 효과 적용
+		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
+		//ApplyItemEffect(requestActor, itemID);
+
+
+		//사용한 아이템 인벤토리에서 제거
+		slots[slotIdx] = (0, null);
+
+		//슬롯 Info 정보 업데이트
+		string updatedItemSlots = ItemInfoSerializer.Encode(slots);
+
+		string InvKey = ItemPropKeys.INV(requestActor);
+		//새롭게 업데이트할 프로퍼티
+		var newProps = new ExitGames.Client.Photon.Hashtable
+		{
+			{InvKey, updatedItemSlots }
+		};
+
+		//검증 프로퍼티
+		var expected = new ExitGames.Client.Photon.Hashtable
+		{
+			{InvKey,  Inv},
+			{RoomPropKeys.CurrentTurnActor, turnActor },
+		};
+
+		//현재 expected 프로퍼티인 경우에만 newProps로 업데이트
+		PhotonNetwork.CurrentRoom.SetCustomProperties(newProps, expected);
+		string inv = "";
+		foreach (var x in slots)
+		{
+			if (x.itemID == null)
+			{
+				inv += " _ ";
+			}
+			else
+			{
+				inv += $" {x.itemID} ";
+			}
+		}
+		Debug.Log($"Player{turnActor}'s inventory : {inv}");
+	}
+
 
 	//선택된 아이템이 실제 제안된 아이템 목록에 있는지 확인
 	bool Contains(string offer, string id)

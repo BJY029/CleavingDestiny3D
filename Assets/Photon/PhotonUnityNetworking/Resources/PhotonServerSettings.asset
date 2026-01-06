@@ -57,6 +57,7 @@ MonoBehaviour:
   - RPC_MakeOfferForTurn
   - setOfferGenerated
   - Handshaking
+  - RPC_UseItem
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

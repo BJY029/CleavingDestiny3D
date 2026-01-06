@@ -140,7 +140,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 		SetIcon(null);
 		ToolTipPanel.SetActive(false);
 		Debug.Log("Interacted!!");
-        //InventoryAuthority.Instance.RequestUseItem();
+        InventoryAuthority.Instance.RequestUseItem(slotIndex);
 		currentItem = null;
     }
 
