@@ -47,7 +47,7 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 	}
 
 	//MasterClient만 수행
-	//Efraimidis-Spirakis 알고리즘(AI 참고)
+	//Efraimidis-Spirakis 알고리즘
 	public List<string> Pick3(Player player, int turnIndex, int actor, int roomSeed ,List<ItemSO> items)
     {
         //결정론적 난수 생성

@@ -15,7 +15,7 @@ public class TreeInteractable : MonoBehaviour, ILookInteractable
 	}
 
 	public void OnInteract(PlayerController pc)
-	{
+	{ 
 		pc.TryHit();
 	}
 }

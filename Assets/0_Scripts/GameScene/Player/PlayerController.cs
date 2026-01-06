@@ -159,6 +159,8 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		WhileHittingMotion = false;
 	}
 
+
+
 	//해당 캐릭터가 활성화 혹은 비활성화 되면 움직임을 제한
 	private void OnEnable()
 	{
@@ -435,14 +437,21 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		//내 턴이 아니면 return
 		if (!GameHelper.IsMyTurn()) return;
 		//현재 나무를 보고 있지 않은 경우 return
-		if (!isLookingAtTree) return;
-		if (WhileHittingMotion) return;
 
 		currentInteractable?.OnInteract(this);
 	}
 
+	private bool checkTreeInteractable()
+	{
+		if (!isLookingAtTree) return false;
+		if (WhileHittingMotion) return false;
+		return true;
+	}
+
 	public void TryHit()
 	{
+		if(!checkTreeInteractable()) return;
+
 		//Hit 순간의 게이지 데미지 값 받기
 		damageRatio = PlayerCanvasController.Instance.SelectNow();
 		//Hit 애니메이션 재생 
