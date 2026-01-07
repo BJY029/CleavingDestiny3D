@@ -6,6 +6,7 @@ public class CommonDefine
     //Scene name
     public const string LOBBYSCENE = "LobbyScene";
     public const string GAMESCENE = "GameScene";
+    public const string VILLAGESCENE = "VillageScene";
 
     //Layer name
     public const string TREELAYER = "Tree";
@@ -23,11 +24,11 @@ public class CommonDefine
     public const int defaultMaxWave = 3;
     public const int defaultWave = 0;
     //Room Property 일부인 Item/inventory 관련 기본 값
-	public const int defaultInventoryCapacity = 8;
-	public const int defaultUID = 1;
+    public const int defaultInventoryCapacity = 8;
+    public const int defaultUID = 1;
 
-	//Player Property 기본 값
-	public const float defaultVillageHP = 5000f;
+    //Player Property 기본 값
+    public const float defaultVillageHP = 5000f;
     public const float defaultVillageBarrier = 0f;
     public const float defaultBarrierConversionRate = 0.3f;
     public const int defaultGold = 100;
