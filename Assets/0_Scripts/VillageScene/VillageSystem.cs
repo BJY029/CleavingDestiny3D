@@ -24,11 +24,6 @@ namespace Village
             _uiManager.Init();
         }
 
-        void Start()
-        {
-            _uiManager.SetActiveCanvas(true);
-        }
-
         public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
         {
             VillageLogic.SyncFromPhoton(targetPlayer, changedProps);

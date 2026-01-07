@@ -2,13 +2,16 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager instance;
+	public static GameManager Instance;
+
+	public PlayerSetting playerDefaultSetting;
+	public RoomSetting roomDefaultSetting;
 
 	private void Awake()
 	{
-		if (instance == null)
+		if (Instance == null)
 		{
-			instance = this;
+			Instance = this;
 			DontDestroyOnLoad(this.gameObject);
 		}
 		else

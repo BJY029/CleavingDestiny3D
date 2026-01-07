@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 
 	private void Awake()
 	{
-		if(Instance != null && Instance != this)
+		if (Instance != null && Instance != this)
 		{
 			Destroy(gameObject);
 			return;
@@ -20,41 +20,41 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 	}
 
 
-	//°¢ ÅÏ¿¡ È£ÃâµÉ ¾ÆÀÌÅÛ 3°³ »Ì±â ÇÔ¼ö
+	//ê° í„´ì— í˜¸ì¶œë  ì•„ì´í…œ 3ê°œ ë½‘ê¸° í•¨ìˆ˜
 	public string MakeOfferForTurn(int turnActor, int turnIndex)
 	{
-		//¸¶½ºÅÍ Å¬¶óÀÌ¾ğÆ®¸¸ ½ÇÇà
+		//ë§ˆìŠ¤í„° í´ë¼ì´ì–¸íŠ¸ë§Œ ì‹¤í–‰
 		if (!PhotonNetwork.IsMasterClient) return "";
 
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(turnActor);
 		if (player == null) return "";
 
-		//¾ÆÀÌÅÛ ¸®½ºÆ® ¹Ş¾Æ¿À±â
+		//ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸ ë°›ì•„ì˜¤ê¸°
 		List<ItemSO> items = ItemDB.Instance.GetItemsList();
 		Debug.Log("items length : " + items.Count);
-		//ROOM_SEED¸¦ °¡Á®¿À±â
-	    int roomSeed = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.RoomSeed);
+		//ROOM_SEEDë¥¼ ê°€ì ¸ì˜¤ê¸°
+		int roomSeed = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.RoomSeed);
 
 
-		//¾ÆÀÌÅÛ 3°³ »Ì¾Æ¼­ ¹®ÀÚ¿­ ¸®½ºÆ® ¹Ş¾Æ¿À±â
+		//ì•„ì´í…œ 3ê°œ ë½‘ì•„ì„œ ë¬¸ìì—´ ë¦¬ìŠ¤íŠ¸ ë°›ì•„ì˜¤ê¸°
 		List<string> offer = Pick3(player, turnIndex, turnActor, roomSeed, items);
 
-		//ÇØ´ç ¹®ÀÚ¿­À» Á÷·ÄÈ­ÇÏ±â
+		//í•´ë‹¹ ë¬¸ìì—´ì„ ì§ë ¬í™”í•˜ê¸°
 		return string.Join("|", offer); // "potion|bomb|shield"
-		//OFFER_{actor}ÀÇ ÀÌ¸§À¸¸£ Room ÇÁ·ÎÆÛÆ¼¿¡ ÇØ´ç Á¦¾È ¾ÆÀÌÅÛ ÀúÀåÇÏ±â
-		//PhotonPropertyHelper.SetRoomProp(ItemPropKeys.OFFER(actor), offerStr);
-		//Debug.Log($"Offer : {offerStr}, currentActorNumber : {actor}");
+										//OFFER_{actor}ì˜ ì´ë¦„ìœ¼ë¥´ Room í”„ë¡œí¼í‹°ì— í•´ë‹¹ ì œì•ˆ ì•„ì´í…œ ì €ì¥í•˜ê¸°
+										//PhotonPropertyHelper.SetRoomProp(ItemPropKeys.OFFER(actor), offerStr);
+										//Debug.Log($"Offer : {offerStr}, currentActorNumber : {actor}");
 	}
 
-	//MasterClient¸¸ ¼öÇà
-	//Efraimidis-Spirakis ¾Ë°í¸®Áò
-	public List<string> Pick3(Player player, int turnIndex, int actor, int roomSeed ,List<ItemSO> items)
-    {
-        //°áÁ¤·ĞÀû ³­¼ö »ı¼º
-        //turnIndex¿Í actor°¡ °°À¸¸é ÀçÇö °¡´ÉÇÑ ³­¼ö »ı¼º±â
-        var rng = new System.Random(roomSeed ^ (turnIndex * 73856093) ^ (actor * 19349663) ^ 12345);
+	//MasterClientë§Œ ìˆ˜í–‰
+	//Efraimidis-Spirakis ì•Œê³ ë¦¬ì¦˜
+	public List<string> Pick3(Player player, int turnIndex, int actor, int roomSeed, List<ItemSO> items)
+	{
+		//ê²°ì •ë¡ ì  ë‚œìˆ˜ ìƒì„±
+		//turnIndexì™€ actorê°€ ê°™ìœ¼ë©´ ì¬í˜„ ê°€ëŠ¥í•œ ë‚œìˆ˜ ìƒì„±ê¸°
+		var rng = new System.Random(roomSeed ^ (turnIndex * 73856093) ^ (actor * 19349663) ^ 12345);
 
-        //°¢ ÇÃ·¹ÀÌ¾îÀÇ ¾ÆÀÌÅÛ µîÀå È®·üÀ» ÇÁ·ÎÆÛÆ¼¿¡¼­ ºÒ·¯¿Í µñ¼Å³Ê¸®¿¡ ÀúÀå
+		//ê° í”Œë ˆì´ì–´ì˜ ì•„ì´í…œ ë“±ì¥ í™•ë¥ ì„ í”„ë¡œí¼í‹°ì—ì„œ ë¶ˆëŸ¬ì™€ ë”•ì…”ë„ˆë¦¬ì— ì €ì¥
 		Dictionary<ItemClass, float> RarityWeight = new()
 		{
 			{ItemClass.Common, PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.Item_CommonWeight) },
@@ -63,51 +63,52 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 			{ItemClass.Legendary, PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.Item_LegendaryWeight) },
 		};
 
-		//°¢ ¾ÆÀÌÅÛ¿¡ Á¡¼ö(key) ºÎ¿© ¾Ë°í¸®Áò
-        //Á¡¼ö¸¦ ÀúÀåÇÒ ¸®½ºÆ® ¼±¾ğ
+		//ê° ì•„ì´í…œì— ì ìˆ˜(key) ë¶€ì—¬ ì•Œê³ ë¦¬ì¦˜
+		//ì ìˆ˜ë¥¼ ì €ì¥í•  ë¦¬ìŠ¤íŠ¸ ì„ ì–¸
 		var scored = new List<(double key, string itemId)>(items.Count);
-        //°¢ ¾ÆÀÌÅÛÀ» µ¹¸é¼­
-        foreach(var it in items)
-        {
-            //¸¸¾à ¾ÆÀÌÅÛÀÌ ºó °æ¿ì Á¦¿Ü
-            if(string.IsNullOrEmpty(it.itemId)) continue;
-			// µî±Ş °¡ÁßÄ¡ 0ÀÌ¸é ±× µî±ŞÀº Àı´ë ¾È ³ª¿À°Ô Á¦¿Ü
+		//ê° ì•„ì´í…œì„ ëŒë©´ì„œ
+		foreach (var it in items)
+		{
+			//ë§Œì•½ ì•„ì´í…œì´ ë¹ˆ ê²½ìš° ì œì™¸
+			if (string.IsNullOrEmpty(it.itemId)) continue;
+			// ë“±ê¸‰ ê°€ì¤‘ì¹˜ 0ì´ë©´ ê·¸ ë“±ê¸‰ì€ ì ˆëŒ€ ì•ˆ ë‚˜ì˜¤ê²Œ ì œì™¸
 			if (!RarityWeight.TryGetValue(it.itemClass, out float rw) || rw <= 0f) continue;
 
-			// ¾ÆÀÌÅÛ °¡ÁßÄ¡µµ 0ÀÌ¸é Á¦¿Ü
+			// ì•„ì´í…œ ê°€ì¤‘ì¹˜ë„ 0ì´ë©´ ì œì™¸
 			if (it.itemWeight <= 0f) continue;
 
 			double w = rw * it.itemWeight;
 
-			//ÇÙ½É!
-			//(0,1] ¹üÀ§·Î ³­¼ö °ª Á¶Á¤
+			//í•µì‹¬!
+			//(0,1] ë²”ìœ„ë¡œ ë‚œìˆ˜ ê°’ ì¡°ì •
 			double u = 1.0 - rng.NextDouble();
-            //°¢ ¾ÆÀÌÅÛ Å° °ª °è»ê
-                //¾ÆÀÌÅÛÀÇ °¡ÁßÄ¡°¡ Å¬ ¼ö·Ï °á°ú°ªÀÌ ÀÛ¾ÆÁø´Ù.
-                //°á°ú°ªÀÌ ÀÛÀ»¼ö·Ï ¾ÆÀÌÅÛÀÌ »óÀ§±Ç¿¡ »ÌÈ÷°Ô µÈ´Ù.
-            double key = -Math.Log(u) / w;
+			//ê° ì•„ì´í…œ í‚¤ ê°’ ê³„ì‚°
+			//ì•„ì´í…œì˜ ê°€ì¤‘ì¹˜ê°€ í´ ìˆ˜ë¡ ê²°ê³¼ê°’ì´ ì‘ì•„ì§„ë‹¤.
+			//ê²°ê³¼ê°’ì´ ì‘ì„ìˆ˜ë¡ ì•„ì´í…œì´ ìƒìœ„ê¶Œì— ë½‘íˆê²Œ ëœë‹¤.
+			double key = -Math.Log(u) / w;
 
-            //°è»êÇÑ Á¡¼ö¸¦ ÀúÀåÇÑ´Ù.
-            scored.Add((key, it.itemId));
+			//ê³„ì‚°í•œ ì ìˆ˜ë¥¼ ì €ì¥í•œë‹¤.
+			scored.Add((key, it.itemId));
 
-            //¾Ë°í¸®Áò ¼³¸í
-            // Key = (-ln(Random)) / (Weight)
-            // ´Ş¸®±â ±â·Ï = (Æ®·¢ÀÇ ±æÀÌ(·£´ı) / (¼±¼öÀÇ ¼Óµµ(°¡ÁßÄ¡))
-                //Áï, ÀÏ¹İÀûÀ¸·Î´Â Common itemÀÇ °¡ÁßÄ¡°¡ Å©Áö¸¸ ¿î ³ª»Ú°Ô Å« ¼öÀÇ ·£´ı °ªÀÌ ³ª¿Ã ¼ö ÀÖ°í
-                //¹İ´ë·Î Legendary itemÀÇ °¡ÁßÄ¡°¡ ÀÛÁö¸¸, ¿î ÁÁ°Ô ÀÛÀº ¼öÀÇ ·£´ı °ªÀÌ ³ª¿Ã ¼ö ÀÖ´Ù.
-        }
+			//ì•Œê³ ë¦¬ì¦˜ ì„¤ëª…
+			// Key = (-ln(Random)) / (Weight)
+			// ë‹¬ë¦¬ê¸° ê¸°ë¡ = (íŠ¸ë™ì˜ ê¸¸ì´(ëœë¤) / (ì„ ìˆ˜ì˜ ì†ë„(ê°€ì¤‘ì¹˜))
+			//ì¦‰, ì¼ë°˜ì ìœ¼ë¡œëŠ” Common itemì˜ ê°€ì¤‘ì¹˜ê°€ í¬ì§€ë§Œ ìš´ ë‚˜ì˜ê²Œ í° ìˆ˜ì˜ ëœë¤ ê°’ì´ ë‚˜ì˜¬ ìˆ˜ ìˆê³ 
+			//ë°˜ëŒ€ë¡œ Legendary itemì˜ ê°€ì¤‘ì¹˜ê°€ ì‘ì§€ë§Œ, ìš´ ì¢‹ê²Œ ì‘ì€ ìˆ˜ì˜ ëœë¤ ê°’ì´ ë‚˜ì˜¬ ìˆ˜ ìˆë‹¤.
+		}
 
-        //3°³ÀÇ ¾ÆÀÌÅÛÀ» °í¸£´Â LINQ¹®
-        var picked = scored
-            .GroupBy(s => s.itemId)                     //°°Àº ¾ÆÀÌÅÛ ID³¢¸® ¹­±â(Áßº¹ ¾ÆÀÌÅÛ Á¦°Å)
-            .Select(g => g.OrderBy(x => x.key).First()) //°°Àº ID ¾ÆÀÌÅÛ Áß °¡Àå Á¡¼ö°¡ ÀÛÀº ¾ÆÀÌÅÛ ÇÏ³ª¸¸ ³²±è
-            .OrderBy(x => x.key)                        //ÀüÃ¼ ¾ÆÀÌÅÛÀ» Á¡¼ö ¼øÀ¸·Î Á¤·Ä
-            .Take(CommonDefine.itemOfferCnt)                                    //±× Áß »óÀ§ 3µî ±îÁö »Ì±â
-            .Select(x => x.itemId)                      //ÇØ´ç 3 ¾ÆÀÌÅÛÀÇ id °¡Á®¿À±â
-            .ToList();                                  //¸®½ºÆ®·Î ¸¸µé±â
+		var roomSetting = GameManager.Instance.roomDefaultSetting;
 
-        while (picked.Count < CommonDefine.itemOfferCnt) picked.Add("Error");   //¸¸¾à ºó ¿ä¼Ò°¡ ÀÖÀ¸¸é ¿¡·¯
+		//3ê°œì˜ ì•„ì´í…œì„ ê³ ë¥´ëŠ” LINQë¬¸
+		var picked = scored
+			.GroupBy(s => s.itemId)                     //ê°™ì€ ì•„ì´í…œ IDë¼ë¦¬ ë¬¶ê¸°(ì¤‘ë³µ ì•„ì´í…œ ì œê±°)
+			.Select(g => g.OrderBy(x => x.key).First()) //ê°™ì€ ID ì•„ì´í…œ ì¤‘ ê°€ì¥ ì ìˆ˜ê°€ ì‘ì€ ì•„ì´í…œ í•˜ë‚˜ë§Œ ë‚¨ê¹€
+			.OrderBy(x => x.key)                        //ì „ì²´ ì•„ì´í…œì„ ì ìˆ˜ ìˆœìœ¼ë¡œ ì •ë ¬
+			.Take(roomSetting.itemOfferCount)                                    //ê·¸ ì¤‘ ìƒìœ„ 3ë“± ê¹Œì§€ ë½‘ê¸°
+			.Select(x => x.itemId)                      //í•´ë‹¹ 3 ì•„ì´í…œì˜ id ê°€ì ¸ì˜¤ê¸°
+			.ToList();                                  //ë¦¬ìŠ¤íŠ¸ë¡œ ë§Œë“¤ê¸°
 
-        return picked; //»ÌÈù ¾ÆÀÌÅÛ ¸®½ºÆ® ¹İÈ¯
-    }
+		while (picked.Count < roomSetting.itemOfferCount) picked.Add("Error");   //ë§Œì•½ ë¹ˆ ìš”ì†Œê°€ ìˆìœ¼ë©´ ì—ëŸ¬
+		return picked; //ë½‘íŒ ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸ ë°˜í™˜
+	}
 }

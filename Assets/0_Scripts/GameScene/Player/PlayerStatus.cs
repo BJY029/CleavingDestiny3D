@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PlayerStatus : MonoBehaviourPunCallbacks
 {
-    public static PlayerStatus Instance;
+	public static PlayerStatus Instance;
 	private void Awake()
 	{
 		if (Instance != null && Instance != this)
@@ -16,44 +16,43 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		Instance = this;
 	}
 
-	//ÇÃ·¹ÀÌ¾î ÇÁ·ÎÆÛÆ¼ °ªµé
+	// í”Œë ˆì´ì–´ í”„ë¡œí¼í‹° ë³€ìˆ˜
 	private int currentEnergy;
-    private int currentMaxEnergy;
+	private int currentMaxEnergy;
 	private int currentCarryOverEnergy;
-    private int currentMaxAtkDamage;
-    private int currentMinAtkDamage;
-    private float currentVillageHP;
-    private float currentTotalDamage;
-    private float currentBarrier;
-    private float currentConBarrier;
+	private int currentMaxAtkDamage;
+	private int currentMinAtkDamage;
+	private float currentVillageHP;
+	private float currentTotalDamage;
+	private float currentBarrier;
+	private float currentConBarrier;
 
-	//ÇÃ·¹ÀÌ¾î ÇÁ·ÎÆÛÆ¼ °ª ºÒ·¯¿À±â
-    public void GetCurrentPlayerStatus()
-    {
+	// í”Œë ˆì´ì–´ í”„ë¡œí¼í‹° ê°’ ë¶ˆëŸ¬ì˜¤ê¸°
+	public void GetCurrentPlayerStatus()
+	{
 		currentCarryOverEnergy = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.CarryOverEnergy);
 		currentEnergy = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.Energy);
-        currentMaxEnergy = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxEnergy);
+		currentMaxEnergy = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxEnergy);
 		currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxAtkPow);
 		currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MinAtkPow);
 		currentVillageHP = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageHP);
-        currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier);
-        currentConBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.BarrierConversionRate);
+		currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier);
+		currentConBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.BarrierConversionRate);
 		currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage);
 	}
 
-	//UI ¾÷µ¥ÀÌÆ®
+	// UI ì—…ë°ì´íŠ¸
 	public void SetPlayerStatusUI()
-    {
-		//if (!photonView.IsMine) return;
+	{
 		GetCurrentPlayerStatus();
-        PlayerCanvasController.Instance.updatePlayerStatus(
-            currentEnergy.ToString(), currentVillageHP.ToString(), currentTotalDamage.ToString(), currentBarrier.ToString());
-    }
+		PlayerCanvasController.Instance.updatePlayerStatus(
+			currentEnergy.ToString(), currentVillageHP.ToString(), currentTotalDamage.ToString(), currentBarrier.ToString());
+	}
 
-	//ÅÏ ÀüÈ¯½Ã ½ÇÇàµÉ ½ºÅÈ °ª ÃÊ±âÈ­
-	//RPC·Î ¸ğµç ÇÃ·¹ÀÌ¾î¿¡°Ô Àû¿ë
+	// í„´ ì „í™˜ ì‹œ í”Œë ˆì´ì–´ ìƒíƒœ ì´ˆê¸°í™”
 	public void initPlayerStatus()
 	{
+		// RPCë¥¼ í†µí•´ ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ì—ì„œ ì‹¤í–‰
 		photonView.RPC(nameof(RPC_initPlayerStatus), RpcTarget.All);
 	}
 
@@ -61,17 +60,20 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	public void RPC_initPlayerStatus()
 	{
 		GetCurrentPlayerStatus();
-		currentEnergy = currentMaxEnergy + currentCarryOverEnergy;
-		currentTotalDamage = CommonDefine.defaultTotalDamage;
-		currentBarrier = CommonDefine.defaultVillageBarrier;
+		// ScriptableObject ê¸°ë°˜ ì´ˆê¸°í™”
+		var playerSet = GameManager.Instance.playerDefaultSetting;
+
+		currentEnergy = (currentMaxEnergy == 0 ? playerSet.initialEnergy : currentMaxEnergy) + currentCarryOverEnergy;
+		currentTotalDamage = 0;
+		currentBarrier = playerSet.villageBarrier;
 
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.Energy, currentEnergy);
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.CarryOverEnergy, CommonDefine.defaultCarryOverEnergy);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.CarryOverEnergy, playerSet.carryOverEnergy);
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage, currentTotalDamage);
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, currentBarrier);
 	}
 
-	//½ºÅÈ °ªÀÌ º¯°æµÉ ¶§¸¶´Ù ÇÁ·ÎÆÛÆ¼¿¡ Àû¿ë
+	// í”Œë ˆì´ì–´ í”„ë¡œí¼í‹°ê°€ ë³€ê²½ë  ë•Œ UIì— ë°˜ì˜
 	public override void OnPlayerPropertiesUpdate(Player target, ExitGames.Client.Photon.Hashtable changedProps)
 	{
 		if (target != PhotonNetwork.LocalPlayer) return;
@@ -85,48 +87,48 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		}
 	}
 
-
-	//To Do: ¾ÆÀÌÅÛ °ü·Ã ±â·Â ÇÔ¼ö
-	//UI Ã³¸®µµ ÁøÇà
-
-	//³ª¹« HIT ¹ß»ı½Ã È£Ãâ µÉ ÇÔ¼ö
-	//HitÀ» ´©¸¥ ½ÃÁ¡ÀÇ °­µµ °ªÀ» ÀÎÀÚ·Î ¹Ş´Â´Ù.
+	// í”Œë ˆì´ì–´ HIT ë°œìƒ ì‹œ í˜¸ì¶œë  í•¨ìˆ˜
+	// ë°ë¯¸ì§€ ë¹„ìœ¨(damageRatio)ì„ ì¸ìë¡œ ë°›ìŒ
 	public int HitAction(float damageRatio)
-    {
+	{
 		GetCurrentPlayerStatus();
 
-		//Hit Damager °è»ê
+		// Hit ë°ë¯¸ì§€ ê³„ì‚°
 		int HitDamage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
-		//Total Damage °è»ê
-        currentTotalDamage += HitDamage;
-		//Barrier °ª °è»ê
-        currentBarrier = currentTotalDamage * (1 + currentConBarrier);
-		//º¯°æµÈ ½ºÅÈ °ª ÇÁ·ÎÆÛÆ¼¿¡ ¾÷µ¥ÀÌÆ®
+		// ëˆ„ì  ë°ë¯¸ì§€ í•©ì‚°
+		currentTotalDamage += HitDamage;
+		// ë°°ë¦¬ì–´ ìˆ˜ì¹˜ ê³„ì‚°
+		currentBarrier = currentTotalDamage * (1 + currentConBarrier);
+
+		// ë³€ê²½ëœ ê°’ì„ ë„¤íŠ¸ì›Œí¬ í”„ë¡œí¼í‹°ì— ì—…ë°ì´íŠ¸
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage, currentTotalDamage);
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, currentBarrier);
-		//Hit µ¥¹ÌÁö ¹İÈ¯
-		return HitDamage;
-    }
 
-	//¿şÀÌºê º¯°æ ½Ã ½ÇÇàÇÒ ¸¶À» µ¥¹ÌÁö ÇÔ¼ö
-    public void DamagedVillage(float damage)
-    {
+		// ê³„ì‚°ëœ ë°ë¯¸ì§€ ë°˜í™˜
+		return HitDamage;
+	}
+
+	// ë§ˆì„ì´ ë°ë¯¸ì§€ë¥¼ ì…ì—ˆì„ ë•Œ ì²˜ë¦¬ í•¨ìˆ˜
+	public void DamagedVillage(float damage)
+	{
 		GetCurrentPlayerStatus();
 
-		//¹æº® ¸ÕÀú Á¦°Å
+		// ë°°ë¦¬ì–´ë¡œ ë°ë¯¸ì§€ ê²½ê°
 		damage -= currentBarrier;
-		if(damage < 0) damage = 0;
-		//¸¶À» µ¥¹ÌÁö ÀÔÈ÷±â
-        currentVillageHP -= damage;
+		if (damage < 0) damage = 0;
 
-		//Á¾·á Á¶°Ç È®ÀÎ
-        if(currentVillageHP <= 0)
-        {
-            currentVillageHP = 0;
-            //°ÔÀÓ Á¾·á
-            Debug.Log("Game End By VillageHP 0");
-        }
-		//ÇÁ·ÎÆÛÆ¼ ¾÷µ¥ÀÌÆ®
+		// ë‚¨ì€ ë°ë¯¸ì§€ë¥¼ ë§ˆì„ ì²´ë ¥ì—ì„œ ì°¨ê°
+		currentVillageHP -= damage;
+
+		// ê²Œì„ ì˜¤ë²„ í™•ì¸
+		if (currentVillageHP <= 0)
+		{
+			currentVillageHP = 0;
+			// íŒ¨ë°° ë˜ëŠ” ê²Œì„ ì¢…ë£Œ ë¡œì§
+			Debug.Log("Game End By VillageHP 0");
+		}
+
+		// í”„ë¡œí¼í‹° ì—…ë°ì´íŠ¸
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageHP, currentVillageHP);
 	}
 }

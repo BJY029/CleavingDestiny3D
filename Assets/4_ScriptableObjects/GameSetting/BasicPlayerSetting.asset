@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07e03c7c99e313c468ee6c0c3e3a8736, type: 3}
+  m_Name: BasicPlayerSetting
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSetting
+  villageHP: 5000
+  villageBarrier: 0
+  barrierConversionRate: 0.3
+  initialGold: 100
+  initialTotalDamage: 0
+  maxAtkPow: 1100
+  minAtkPow: 900
+  initialEnergy: 5
+  maxEnergy: 5
+  carryOverEnergy: 0
+  regenEnergyPerDay: 10
+  commonWeight: 50
+  heroWeight: 30
+  rareWeight: 20
+  legendaryWeight: 10
+  initialVillageUpgrades: 0000000000000000000000000000000000000000
+  inventoryCapacity: 8
+  dayTimeDamage: 0

@@ -1,9 +1,9 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 [CreateAssetMenu(fileName = "VillageLevelData", menuName = "Scriptable Objects/VillageLevelData")]
 public class VillageLevelData : ScriptableObject
 {
-    // Village ¾÷±×·¹ÀÌµå µ¥ÀÌÅÍ
+    // Village ì—…ê·¸ë ˆì´ë“œ ë°ì´í„°
     [SerializeField]
     private VillageType villageType;
     public VillageType VillageType => villageType;
@@ -12,7 +12,7 @@ public class VillageLevelData : ScriptableObject
     private int max_level;
     public int MaxLevel => max_level;
 
-    [SerializeField, Tooltip("°¢ ·¹º§ ¾÷±×·¹ÀÌµå¿¡ ÇÊ¿äÇÑ ºñ¿ë")]
+    [SerializeField, Tooltip("ê° ë ˆë²¨ ì—…ê·¸ë ˆì´ë“œì— í•„ìš”í•œ ë¹„ìš©")]
     private int[] upgradeCosts;
 
     public bool TryGetUpgradeCost(int level, out int cost)
@@ -26,7 +26,7 @@ public class VillageLevelData : ScriptableObject
         return true;
     }
 
-    [SerializeField, Tooltip("°¢ ·¹º§ ¾÷±×·¹ÀÌµå ½Ã Àû¿ëµÇ´Â È¿°ú °ª")]
+    [SerializeField, Tooltip("ê° ë ˆë²¨ ì—…ê·¸ë ˆì´ë“œ ì‹œ ì ìš©ë˜ëŠ” íš¨ê³¼ ê°’")]
     private int[] effectValues;
 
     public bool TryGetEffectValue(int level, out int effectValue)
@@ -46,7 +46,7 @@ public class VillageLevelData : ScriptableObject
         return true;
     }
 
-    [SerializeField, Tooltip("°Ç¹° ¼³¸í ID")]
+    [SerializeField, Tooltip("ê±´ë¬¼ ì„¤ëª… ID")]
     private string levelDescriptionID;
     public string LevelDescriptionID => levelDescriptionID;
 }

@@ -23,30 +23,33 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 
 	private void GenerateRoomSeed()
 	{
-			if (!PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey(RoomPropKeys.RoomSeed))
-			{
-				int seed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-				PhotonPropertyHelper.SetRoomProp(RoomPropKeys.RoomSeed, seed);
+		if (!PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey(RoomPropKeys.RoomSeed))
+		{
+			int seed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+			PhotonPropertyHelper.SetRoomProp(RoomPropKeys.RoomSeed, seed);
 
-			}
+		}
 	}
 
 	private void InitRoomProps()
 	{
+		var roomSet = GameManager.Instance.roomDefaultSetting;
+
 		GenerateRoomSeed();
 		var ht = new ExitGames.Client.Photon.Hashtable
 			{
 				{ RoomPropKeys.AllReady,false},
-				{ RoomPropKeys.TreeHP,CommonDefine.defaultTreeHP },
-				{ RoomPropKeys.TreeAtkPow, CommonDefine.defaultTreeAtkPow},
-				{ RoomPropKeys.CurrentDay, CommonDefine.defaultStartDay},
-				{ RoomPropKeys.CurrentTurn, CommonDefine.defaultTurn},
-				{ RoomPropKeys.TurnIndex, CommonDefine.defaultTurnIndex },
-				{ RoomPropKeys.GamePhase, CommonDefine.defaultPhaseValue },
-				{ RoomPropKeys.MaxWaveCnt, CommonDefine.defaultMaxWave },
-				{ RoomPropKeys.CurrentWave, CommonDefine.defaultWave},
+				{ RoomPropKeys.TreeHP,      roomSet.treeHP },
+				{ RoomPropKeys.TreeMaxHP,   roomSet.treeHP },
+				{ RoomPropKeys.TreeAtkPow,  roomSet.treeAtkPow},
+				{ RoomPropKeys.CurrentDay,  roomSet.startDay},
+				{ RoomPropKeys.CurrentTurn, roomSet.initialTurn},
+				{ RoomPropKeys.TurnIndex,   roomSet.initialTurnIndex },
+				{ RoomPropKeys.GamePhase,   roomSet.initialPhase },
+				{ RoomPropKeys.MaxWaveCnt,  roomSet.maxWave },
+				{ RoomPropKeys.CurrentWave, roomSet.initialWave},
 				{ RoomPropKeys.IsVillageUpgradePhase, false },
-				{ItemPropKeys.NEXT_UID, CommonDefine.defaultUID },
+				{ ItemPropKeys.NEXT_UID,    roomSet.initialUID },
 			};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
 

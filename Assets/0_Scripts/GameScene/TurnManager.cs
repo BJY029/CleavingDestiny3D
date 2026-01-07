@@ -300,23 +300,28 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		PlayerStatus.Instance.initPlayerStatus();
 
 		//관련 UI를 처리한다.
-		// VillageUIManager.Instance.SetActiveCanvas(false);
 		GameCanvasController.Instance.SetActiveCanvas(true);
 		PlayerCanvasController.Instance.SetActiveCanvas(true);
 
+		// 기본 세팅값 참조
+		var roomSet = GameManager.Instance.roomDefaultSetting;
+
 		//다음 날짜 값을 계산.
 		int day = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentDay) + 1;
-		//다음 턴 순서, 다음 턴의 Actor 번호, 턴 카운트, 해당 턴에 제공할 Offer를 계산한다.
+
+		//다음 턴 정보 계산
+		// ** 만약 방 설정을 추가할거라면 SO가 아닌 방 설정값을 참조하도록 변경 필요 **
 		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
-		int nextIndex = CommonDefine.defaultTurn;
+		int nextIndex = roomSet.initialTurn;
 		int nextActor = TurnOrder[nextIndex];
 		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) + 1;
 		string offerStr = OfferAuthority.Instance.MakeOfferForTurn(nextActor, turnIndex);
+
 		//해당 프로퍼티를 한번에 업데이트 한다.
 		var ht = new ExitGames.Client.Photon.Hashtable
 		{
 			{RoomPropKeys.CurrentDay, day },
-			{RoomPropKeys.CurrentWave, CommonDefine.defaultWave },
+			{RoomPropKeys.CurrentWave, roomSet.initialWave },
 
 			{RoomPropKeys.CurrentTurn, nextIndex },
 			{RoomPropKeys.CurrentTurnActor, nextActor },
@@ -325,10 +330,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			{ItemPropKeys.OFFER(nextActor), offerStr ?? "" },
 		};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
-		//Offer 플래그 설정
-		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
 
-		//?
+		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
 		photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 	}
 

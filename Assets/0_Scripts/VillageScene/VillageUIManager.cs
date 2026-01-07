@@ -29,6 +29,8 @@ namespace Village
         public void Init()
         {
             canvasGroup = GetComponent<CanvasGroup>();
+            // 씬 로드 시 초기 상태 설정
+            SetCanvasState(true);
 
             VillageSystem.VillageLogic.OnGoldChanged += UpdateGoldText;
 
@@ -77,13 +79,8 @@ namespace Village
         }
 
 
-        public void SetActiveCanvas(bool active)
-        {
-            photonView.RPC(nameof(RPC_SetActiveCanvas), RpcTarget.All, active);
-        }
-
-        [PunRPC]
-        private void RPC_SetActiveCanvas(bool active)
+        // 기존 SetActiveCanvas와 RPC를 하나로 통합 및 단순화
+        public void SetCanvasState(bool active)
         {
             if (active)
             {
@@ -96,6 +93,7 @@ namespace Village
             }
             else
             {
+                // 마을 페이즈 종료 시 (씬 언로드 전) 호출될 수도 있음
                 VillagePanel.SetActive(false);
                 OpenVillageBtn.gameObject.SetActive(true);
 

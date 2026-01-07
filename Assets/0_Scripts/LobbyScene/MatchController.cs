@@ -9,27 +9,27 @@ using System.Linq;
 public class MatchController : MonoBehaviourPunCallbacks
 {
 	/*  FLAGS  */
-	//ÇöÀç ¸ÅÄ¡¸ÅÀÌÅ· ÁßÀÎÁö È®ÀÎ
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½Å· ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 	private bool isFindingMatch = false;
-	//ÅØ½ºÆ® ¿¬Ãâ¿¡ »ç¿ëµÉ ÇÃ·¡±×
+	//ï¿½Ø½ï¿½Æ® ï¿½ï¿½ï¿½â¿¡ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½ï¿½
 	private bool spining;
-	//¾À ÀüÈ¯ °¡´É ¿©ºÎ ¼³Á¤
+	//ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	private bool allowSceneChange;
-	//¿ªÇÒ ºÐ¹è °ü·Ã ÇÃ·¡±×
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¹ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½ï¿½
 	private bool roleDistribution;
 
 
-	//¸ÅÄ¡¸ÅÀÌÅ· °ü·Ã Å¸ÀÌ¸Ó ¼³Á¤ ÄÚ·çÆ¾
+	//ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½Å· ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ú·ï¿½Æ¾
 	private Coroutine timerCoroutine;
-	//·Îµù ÅØ½ºÆ® °ü·Ã ÄÚ·çÆ¾
+	//ï¿½Îµï¿½ ï¿½Ø½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½Ú·ï¿½Æ¾
 	private Coroutine spiningCoroutine;
-	//ÅØ½ºÆ® ¿¬Ãâ¿¡ »ç¿ëµÉ ½Ã°£
+	//ï¿½Ø½ï¿½Æ® ï¿½ï¿½ï¿½â¿¡ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½
 	private float duration = 0.4f;
 
 
-	
 
-	//¸ÅÄ¡¸ÞÀÌÅ· °ü·Ã UI ¿ä¼Ò
+
+	//ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½Å· ï¿½ï¿½ï¿½ï¿½ UI ï¿½ï¿½ï¿½
 	[Header("Loading Panel")]
 	public GameObject LoadingPanel;
 	public Text LoadingText;
@@ -45,21 +45,21 @@ public class MatchController : MonoBehaviourPunCallbacks
 		SceneLoadingText.text = "";
 	}
 
-	//¸ÅÄ¡¸ÞÀÌÅ·À» ½ÃµµÇÏ´Â ÇÔ¼ö
+	//ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½Å·ï¿½ï¿½ ï¿½Ãµï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 	protected void FindMatch()
 	{
-		//¿¬°á °¡´ÉÇÑ »óÅÂ¿¡¼­
+		//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½
 		if (PhotonNetwork.IsConnectedAndReady)
 		{
 			if (LoadingPanel == null) return;
 
-			//¸ÅÄ¡¸ÞÀÌÅ· ÇÃ·¡±× ¼³Á¤
+			//ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½Å· ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			isFindingMatch = true;
 
-			//·Îµù ÆÐ³Î ¶ç¿ì±â
+			//ï¿½Îµï¿½ ï¿½Ð³ï¿½ ï¿½ï¿½ï¿½ï¿½
 			LoadingPanel.transform.localScale = Vector3.one;
 
-			//...ÀÌ Áö¼ÓÀûÀ¸·Î Ãâ·ÂµÇ·Î·Ï ÇÑ´Ù.
+			//...ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ÂµÇ·Î·ï¿½ ï¿½Ñ´ï¿½.
 			LoadingText.text = "Looking for an opponent";
 			if (spiningCoroutine != null)
 			{
@@ -67,29 +67,29 @@ public class MatchController : MonoBehaviourPunCallbacks
 				StopCoroutine(spiningCoroutine);
 			}
 			spiningCoroutine = StartCoroutine(SpiningDots(LoadingText));
-			
 
-			//»ý¼ºÇÒ ¹æ ¿É¼Ç ¼³Á¤
+
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½É¼ï¿½ ï¿½ï¿½ï¿½ï¿½
 			RoomOptions roomOptions = new RoomOptions();
-			//ÃÖ´ë ¹æ ÀÎ¿ø ¼ö ¹× ¹æ Âü¿© °¡´ÉÇÏ°Ô ¼³Á¤
+			//ï¿½Ö´ï¿½ ï¿½ï¿½ ï¿½Î¿ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½
 			roomOptions.MaxPlayers = 2;
 			roomOptions.IsVisible = true;
 			roomOptions.IsOpen = true;
 
-			//Å¸ÀÌ¸Ó °ü·Ã ÄÚ·çÆ¾ÀÌ ½ÇÇàÁßÀÌ¸é ¸ØÃß°í
+			//Å¸ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ú·ï¿½Æ¾ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ß°ï¿½
 			if (timerCoroutine != null)
 			{
 				StopCoroutine(timerCoroutine);
 			}
-			//Å¸ÀÌ¸Ó¸¦ ½ÃÀÛÇÑ´Ù.
+			//Å¸ï¿½Ì¸Ó¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 			timerCoroutine = StartCoroutine(UpdateTimer());
 
-			//JoinRandomroom ¸ÕÀú ½Ãµµ : Á¶°Ç¿¡ ¸Â´Â ÀÓÀÇÀÇ ¹æ¿¡ Âü°¡¸¦ ½ÃµµÇÑ´Ù.
-			//½ÇÆÐ ½Ã CreateRoom ½ÇÇà : ¸¸¾à Âü°¡ÇÒ ¼ö ÀÖ´Â ¹æÀ» ¸øÃ£À¸¸é, ¹æÀ» »ý¼ºÇÏ°í, ÇØ´ç ¹æÀÇ Ã¹¹øÂ° ÇÃ·¹ÀÌ¾î·Î ÀÔÀåÇÑ´Ù.
-			//ÁÖ¿ä ÆÄ¶ó¹ÌÅÍ
-			//expectedCustomRoomProperties : Æ¯Á¤ Ä¿½ºÅÒ ¼Ó¼ºÀ» °¡Áø ¹æ¸¸ ÇÊÅÍ¸µÇÏ¿© µé¾î°¡°í ½ÍÀ» ¶§ »ç¿ë(ex : map : "desert")
-			//roomOption : »ý¼ºµÉ ¹æÀÇ Á¶°Ç
-			//typedLobby : Æ¯Á¤ ·Îºñ¸¦ ÁöÁ¤ÇÏ¿©, ±× ¾È¿¡¼­¸¸ ¹æÀ» Ã£°Å³ª »ý¼ºÇÏ°í ½ÍÀ» ¶§ »ç¿ëÇÑ´Ù.(º¸ÅëÀº null·Î ÇØ¼­ ±âº»·Îºñ·Î ¼³Á¤)
+			//JoinRandomroom ï¿½ï¿½ï¿½ï¿½ ï¿½Ãµï¿½ : ï¿½ï¿½ï¿½Ç¿ï¿½ ï¿½Â´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½æ¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ãµï¿½ï¿½Ñ´ï¿½.
+			//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ CreateRoom ï¿½ï¿½ï¿½ï¿½ : ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã£ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½, ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã¹ï¿½ï¿½Â° ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
+			//ï¿½Ö¿ï¿½ ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½
+			//expectedCustomRoomProperties : Æ¯ï¿½ï¿½ Ä¿ï¿½ï¿½ï¿½ï¿½ ï¿½Ó¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½æ¸¸ ï¿½ï¿½ï¿½Í¸ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½î°¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½(ex : map : "desert")
+			//roomOption : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+			//typedLobby : Æ¯ï¿½ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½, ï¿½ï¿½ ï¿½È¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½Å³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ nullï¿½ï¿½ ï¿½Ø¼ï¿½ ï¿½âº»ï¿½Îºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 			PhotonNetwork.JoinRandomOrCreateRoom(null, 0, MatchmakingMode.FillRoom, null, null, null, roomOptions);
 		}
 		else
@@ -98,18 +98,18 @@ public class MatchController : MonoBehaviourPunCallbacks
 		}
 	}
 
-	//¸ÅÄ¡ ¸ÞÀÌÅ· Ãë¼Ò ¹öÆ°À» ´©¸£¸é ½ÇÇàµÉ ÇÔ¼ö
+	//ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½Å· ï¿½ï¿½ï¿½ ï¿½ï¿½Æ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 	protected void CancelMatch()
 	{
-		//¾ÖÃÊ¿¡ ¸ÅÄ¡¸ÞÀÌÅ· ÁßÀÌ ¾Æ´Ï¿´´Ù¸é ½ÇÇà x
+		//ï¿½ï¿½ï¿½Ê¿ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½Å· ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´Ï¿ï¿½ï¿½Ù¸ï¿½ ï¿½ï¿½ï¿½ï¿½ x
 		if (!isFindingMatch) return;
-		//¸ÅÄ¡¸ÞÀÌÅ· ÇÃ·¡±× ¼³Á¤
+		//ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½Å· ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		isFindingMatch = false;
 
-		//ÇöÀç ¹æ¿¡ µé¾î¿ÍÀÖ´Â °æ¿ì ¹æ¿¡¼­ ³ª°£´Ù.
+		//ï¿½ï¿½ï¿½ï¿½ ï¿½æ¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ ï¿½æ¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 		if (PhotonNetwork.InRoom) PhotonNetwork.LeaveRoom();
 
-		//Å¸ÀÌ¸Ó ÃÊ±âÈ­
+		//Å¸ï¿½Ì¸ï¿½ ï¿½Ê±ï¿½È­
 		if (timerCoroutine != null)
 		{
 			StopCoroutine(timerCoroutine);
@@ -117,11 +117,11 @@ public class MatchController : MonoBehaviourPunCallbacks
 			Timer.text = "00:00";
 		}
 
-		//·Îµù ÆÐ³Î ºñÈ°¼ºÈ­(Å©±â 0À¸·Î ¼³Á¤)
+		//ï¿½Îµï¿½ ï¿½Ð³ï¿½ ï¿½ï¿½È°ï¿½ï¿½È­(Å©ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 		if (LoadingPanel != null) LoadingPanel.transform.localScale = Vector3.zero;
 	}
 
-	//Å¸ÀÌ¸Ó¸¦ ¼³Á¤ÇÏ´Â ÄÚ·çÆ¾
+	//Å¸ï¿½Ì¸Ó¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ú·ï¿½Æ¾
 	IEnumerator UpdateTimer()
 	{
 		float elapsedTime = 0f;
@@ -138,45 +138,45 @@ public class MatchController : MonoBehaviourPunCallbacks
 		}
 	}
 
-	//¹æ¿¡ ¼º°øÀûÀ¸·Î Âü°¡ÇßÀ» ¶§ ½ÇÇàµÉ ÇÔ¼ö
-	//±âÁ¸¿¡ Á¸ÀçÇÏ´Â ¹æ¿¡ ÇØ´çµÇ´Â ÇÃ·¹ÀÌ¾î°¡ ¹æ¿¡ Âü°¡ÇÏ°Ô µÇ¸é ½ÇÇàÇÒ ÇÔ¼ö
+	//ï¿½æ¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½æ¿¡ ï¿½Ø´ï¿½Ç´ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½æ¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ç¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 	public override void OnJoinedRoom()
 	{
 		CheckPlayersInRoom();
 	}
 
-	//ÀÇµµÄ¡ ¾Ê°Ô ¹æÀ» ¶°³­ °æ¿ì, ¸ÅÄ¡¸ÞÀÌÅ·À» Ãë¼ÒÇÑ´Ù.
+	//ï¿½Çµï¿½Ä¡ ï¿½Ê°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½, ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½Å·ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	public override void OnLeftRoom()
 	{
 		if (isFindingMatch)
 			CancelMatch();
 	}
 
-	//Æ¯Á¤ ÇÃ·¹ÀÌ¾î°¡ ¹æ¿¡ Âü°¡ÇÏ¸é ½ÇÇàÇÒ ÇÔ¼ö
-	//ÇØ´ç ÇÔ¼ö´Â ¹æÀ» ¸¸µé°í ´ë±âÇÏ°í ÀÖ´ø ÇÃ·¹ÀÌ¾î°¡, Æ¯Á¤ ÇÃ·¹ÀÌ¾î°¡ ¹æ¿¡ µé¾î¿À¸é ½ÇÇàÇÏ°Ô µÈ´Ù.
+	//Æ¯ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½æ¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
+	//ï¿½Ø´ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ö´ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡, Æ¯ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½æ¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½È´ï¿½.
 	public override void OnPlayerEnteredRoom(Player newPlayer)
 	{
 		CheckPlayersInRoom();
 	}
 
-	//°ÔÀÓ ½ÃÀÛ Á¶°Ç È®ÀÎ ¹× °ÔÀÓ ½ÃÀÛ
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	private void CheckPlayersInRoom()
 	{
-		//ÀÎ¿ø Á¶°ÇÀÌ ÃæÁ·µÇ¸é
+		//ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½
 		if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
 		{
-			GameManager.instance.nextScene = CommonDefine.GAMESCENE;
+			GameManager.Instance.nextScene = CommonDefine.GAMESCENE;
 
-			//¿ªÇÒ ºÐ¹è
+			//ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¹ï¿½
 			//RoleDistribution();
-			//¾À ·Îµù
+			//ï¿½ï¿½ ï¿½Îµï¿½
 			StartCoroutine(LoadScene());
-			//¾À ÀüÈ¯ ÄÚ·çÆ¾ ½ÇÇà
+			//ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½Ú·ï¿½Æ¾ ï¿½ï¿½ï¿½ï¿½
 			StartCoroutine(StopTimerAndFinalizeMatch());
 		}
 		else
 		{
-			//...ÀÌ Áö¼ÓÀûÀ¸·Î Ãâ·ÂµÇµµ·Ï ÇÑ´Ù.
+			//...ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ÂµÇµï¿½ï¿½ï¿½ ï¿½Ñ´ï¿½.
 			LoadingText.text = "Waiting for opponent";
 			if (spiningCoroutine != null)
 			{
@@ -187,7 +187,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 		}
 	}
 
-	//Æ¯Á¤ ÅØ½ºÆ®¿¡ ...ÀÌ ¹Ýº¹ÀûÀ¸·Î Ãâ·ÂµÇ´Â ÄÚ·çÆ¾
+	//Æ¯ï¿½ï¿½ ï¿½Ø½ï¿½Æ®ï¿½ï¿½ ...ï¿½ï¿½ ï¿½Ýºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ÂµÇ´ï¿½ ï¿½Ú·ï¿½Æ¾
 	IEnumerator SpiningDots(Text texts)
 	{
 		yield return null;
@@ -196,7 +196,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 		string originText = texts.text;
 		int curDot = 0;
 		string Dot = "";
-		while(spining)
+		while (spining)
 		{
 			Dot = "";
 			for (int i = 0; i < curDot; i++)
@@ -211,99 +211,99 @@ public class MatchController : MonoBehaviourPunCallbacks
 
 	}
 
-	//°ÔÀÓÀ» ½ÃÀÛÇÏ±â À§ÇÑ ÄÚ·çÆ¾
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ú·ï¿½Æ¾
 	IEnumerator StopTimerAndFinalizeMatch()
 	{
-		//¸ÅÄ¡¸ÞÀÌÅ· ÇÃ·¡±× ¼³Á¤
+		//ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½Å· ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		isFindingMatch = false;
 
-		//Å¸ÀÌ¸Ó Á¤Áö
+		//Å¸ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 		if (timerCoroutine != null)
 		{
 			StopCoroutine(timerCoroutine);
 		}
 		LoadingText.text = "Matching success! Moving to gamescene";
 
-		//¸ÅÄ¡¸ÞÀÌÅ· Ãë¼Ò ¸øÇÏ°Ô ¹öÆ° ºñÈ°¼ºÈ­
+		//ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½Å· ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½Æ° ï¿½ï¿½È°ï¿½ï¿½È­
 		StopMatching.gameObject.SetActive(false);
 
-		//¾ÀÀÌ ºñµ¿±â·Î ·Îµå°¡ ¿Ï·áµÇ°í, ¿ªÇÑ ºÐ¹è°¡ ³¡³ª¸é ¾ÀÀ» ÀüÈ¯ÇÑ´Ù.
+		//ï¿½ï¿½ï¿½ï¿½ ï¿½ñµ¿±ï¿½ï¿½ ï¿½Îµå°¡ ï¿½Ï·ï¿½Ç°ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¹è°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ñ´ï¿½.
 		yield return new WaitUntil(() => allowSceneChange == true && roleDistribution == true);
 
-		//ÇØ´ç ¹æÀÇ ¹æÀåÀÌ¸é, ¹æÀ» ¾Èº¸ÀÌ°Ô ¼³Á¤ÇÏ°í ¾À ÀÌµ¿
+		//ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì¸ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½Èºï¿½ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ ï¿½Ìµï¿½
 		if (PhotonNetwork.IsMasterClient)
 		{
 			PhotonNetwork.CurrentRoom.IsOpen = false;
-			//´Ù¸¥ ÇÃ·¹ÀÌ¾îµéµµ °°ÀÌ ÀÌµ¿µÈ´Ù.(AutomaticallySyncScene = true ¼³Á¤ ÇØ¾ß ÇÔ)
+			//ï¿½Ù¸ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½éµµ ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½È´ï¿½.(AutomaticallySyncScene = true ï¿½ï¿½ï¿½ï¿½ ï¿½Ø¾ï¿½ ï¿½ï¿½)
 			PhotonNetwork.LoadLevel("GameScene");
 		}
 	}
 
-	//ÇÃ·¹ÀÌ¾î¿¡°Ô ¿ªÇÒÀ» ºÐ¹èÇÏ´Â ÇÔ¼ö
-	//¼öÁ¤ ÇÊ¿ä-------------------------
+	//ï¿½Ã·ï¿½ï¿½Ì¾î¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¹ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½-------------------------
 	private void RoleDistribution()
 	{
-		//¸¸¾à MasterClient°¡ ¾Æ´Ï¶ó¸é ÇØ´ç ÇÔ¼ö´Â ½ÇÇàÇÏÁö ¾Ê´Â´Ù.
+		//ï¿½ï¿½ï¿½ï¿½ MasterClientï¿½ï¿½ ï¿½Æ´Ï¶ï¿½ï¿½ ï¿½Ø´ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Â´ï¿½.
 		if (!PhotonNetwork.IsMasterClient) return;
 
-		//ÇöÀç ¹æÀÇ ÇÃ·¹ÀÌ¾îµéÀ» ¸®½ºÆ®·Î ºÒ·¯¿Â´Ù.
+		//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ò·ï¿½ï¿½Â´ï¿½.
 		var players = PhotonNetwork.PlayerList.ToList();
-		//·£´ý °´Ã¼ Á¤ÀÇ ÈÄ, (0 ~ players.count - 1) Áï, 0 È¤Àº 1ÀÇ ¼ýÀÚ¸¦ ¹ÝÈ¯¹Þ´Â´Ù.
+		//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, (0 ~ players.count - 1) ï¿½ï¿½, 0 È¤ï¿½ï¿½ 1ï¿½ï¿½ ï¿½ï¿½ï¿½Ú¸ï¿½ ï¿½ï¿½È¯ï¿½Þ´Â´ï¿½.
 		System.Random rand = new System.Random();
 		int r = rand.Next(players.Count);
 
 		Player p1;
-		//¸¸¾à 0ÀÌ¸é ±×´ë·ÎÀÌ°í 0¹øÂ°¿¡ À§Ä¡ÇÑ ÇÃ·¹ÀÌ¾î°¡ p1
+		//ï¿½ï¿½ï¿½ï¿½ 0ï¿½Ì¸ï¿½ ï¿½×´ï¿½ï¿½ï¿½Ì°ï¿½ 0ï¿½ï¿½Â°ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ p1
 		if (r == 0)
 		{
 			p1 = players[0];
 		}
-		else//1ÀÌ¸é 1¹øÂ°¿¡ À§Ä¡ÇÑ ÇÃ·¹ÀÌ¾î¸¦ p1·Î ¼³Á¤ÇÑ´Ù.
+		else//1ï¿½Ì¸ï¿½ 1ï¿½ï¿½Â°ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¸¦ p1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 		{
 			p1 = players[1];
 		}
 
-		//ÇÃ·¹ÀÌ¾îµéÀ» µ¹¸é¼­
-		foreach(var player in players)
+		//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½é¼­
+		foreach (var player in players)
 		{
-			//ÇØ´ç ÇÃ·¹ÀÌ¾î°¡ p1 ÇÃ·¹ÀÌ¾î¿Í °°Àº °æ¿ì, P1 ÇÒ´ç, ¾Æ´Ï¸é P2 ÇÒ´ç
+			//ï¿½Ø´ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ p1 ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½, P1 ï¿½Ò´ï¿½, ï¿½Æ´Ï¸ï¿½ P2 ï¿½Ò´ï¿½
 			string role = (player == p1) ? "P1" : "P2";
 
-			//ÇÃ·¹ÀÌ¾î ¿ªÇÒ Á¤º¼¸£ HashTable¿¡ ÀúÀåÇÏ°í
+			//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ HashTableï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½
 			var props = new ExitGames.Client.Photon.Hashtable
 			{
 				{"Role", role },
 			};
 
-			//ÇØ´ç ÇÃ·¹ÀÌ¾îÀÇ CustomProperties¸¦ ¼­¹ö¿¡ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+			//ï¿½Ø´ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ CustomPropertiesï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ñ´ï¿½.
 			player.SetCustomProperties(props);
 		}
 
-		//¸ðµç ¿ªÇÒ ºÐ¹è°¡ ³¡³ª¸é ÇÃ·¡±×¸¦ true·Î º¯°æÇÑ´Ù.
+		//ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¹è°¡ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½×¸ï¿½ trueï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 		roleDistribution = true;
 	}
 
-	//ºñµ¿±â·Î ¾ÀÀ» ·ÎµåÇÏ´Â ÇÔ¼ö
+	//ï¿½ñµ¿±ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 	IEnumerator LoadScene()
 	{
 		yield return null;
-		//ºñµ¿±â·Î ¾À ·Îµù
-		AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(GameManager.instance.nextScene);
-		//¾À ÀüÈ¯ ¸·±â
+		//ï¿½ñµ¿±ï¿½ï¿½ ï¿½ï¿½ ï¿½Îµï¿½
+		AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(GameManager.Instance.nextScene);
+		//ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½
 		asyncOperation.allowSceneActivation = false;
 
-		//ÅØ½ºÆ® °ü·Ã ¼³Á¤
+		//ï¿½Ø½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		string originText = "Loading Scene";
 		int curDot = 0;
 		string Dot = "";
 
-		//ºñµ¿±â ¾À ·ÎµùÀÌ ³¡³¯ ¶§±îÁö
-		while(!asyncOperation.isDone)
+		//ï¿½ñµ¿±ï¿½ ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		while (!asyncOperation.isDone)
 		{
-			//¾ÆÁ÷ ·Îµù ÁßÀÌ¶ó¸é
-			if(asyncOperation.progress < 0.9f)
+			//ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ï¿½Ì¶ï¿½ï¿½
+			if (asyncOperation.progress < 0.9f)
 			{
-				//Áö¼ÓÀûÀ¸·Î ÅØ½ºÆ® Ãâ·Â
+				//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Æ® ï¿½ï¿½ï¿½
 				Dot = "";
 				for (int i = 0; i < curDot; i++)
 				{
@@ -314,11 +314,11 @@ public class MatchController : MonoBehaviourPunCallbacks
 
 				yield return new WaitForSeconds(duration);
 			}
-			else //·ÎµùÀÌ ¿Ï·áµÇ¸é
+			else //ï¿½Îµï¿½ï¿½ï¿½ ï¿½Ï·ï¿½Ç¸ï¿½
 			{
-				//¾À ÀüÈ¯ Çã¿ë ÈÄ
+				//ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ ï¿½ï¿½
 				asyncOperation.allowSceneActivation = true;
-				//¾À ÀüÈ¯ÀÌ °¡´ÉÇÏµµ·Ï ¼³Á¤ÇÑ´Ù.
+				//ï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 				allowSceneChange = true;
 				yield break;
 			}
