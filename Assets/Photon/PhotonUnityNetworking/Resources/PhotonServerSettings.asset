@@ -58,6 +58,8 @@ MonoBehaviour:
   - setOfferGenerated
   - Handshaking
   - RPC_UseItem
+  - RPC_OnAttackResult
+  - RPC_RequestAttack
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

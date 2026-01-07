@@ -94,6 +94,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 	private bool UpgradePhase;
 	private bool WhileHittingMotion;
 	private float damageRatio;
+	private int damage;
 
 
 	private void Awake()
@@ -454,6 +455,10 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 
 		//Hit 순간의 게이지 데미지 값 받기
 		damageRatio = PlayerCanvasController.Instance.SelectNow();
+
+		int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxAtkPow);
+		int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MinAtkPow);
+		damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
 		//Hit 애니메이션 재생 
 		PlayHit();
 	}
@@ -487,14 +492,14 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		{
 			if(!photonView.IsMine) return;
 
-			if(damageRatio < 0f)
+			if(damage < 0)
 			{
-				Debug.LogError("damageRatio init error");
+				Debug.LogError("damage error");
 				return;
 			}
 			//Hit 한 순간의 데미지 값을 인자로 해서 턴 전환 함수 호출
-			TurnManager.Instance.RequestChangeTurn(damageRatio);
-			damageRatio = -1f;
+			TurnManager.Instance.RequestChangeTurn(damage);
+			damage = -1;
 			WhileHittingMotion = false;
 			//PlayerCanvasController.Instance.SetHitTextActive();
 		}

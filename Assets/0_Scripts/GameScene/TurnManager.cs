@@ -78,19 +78,19 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	private bool IsInitializer() => PhotonNetwork.IsMasterClient;
 
 	//턴 변경 요청이 발생한 경우
-	public void RequestChangeTurn(float damageRatio)
+	public void RequestChangeTurn(int damage)
 	{
 		//만약 현재 마을 페이즈가 실행중인 경우, 턴 변경 요청은 무시한다.
 		bool isUpgradePhase = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		if (isUpgradePhase) return;
 
 		//RPC로 모든 플레이어에게 턴 변경 요청을 보낸다.
-		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, damageRatio);
+		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, damage);
 		
 	}
 
 	[PunRPC]
-	private void RPC_RequestChangeTurn(int requesterActorNumber, float damageRatio, PhotonMessageInfo info)
+	private void RPC_RequestChangeTurn(int requesterActorNumber, int damage, PhotonMessageInfo info)
 	{
 		//그러나 실제로 턴 변경 관련 처리를 하는 플레이어는 한명이며, 이는 가장 낮은 Actor Number를 가진 플레이어다.
 		if (!IsInitializer()) return;
@@ -108,26 +108,29 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		}
 
 		//나무 때리기 액션 수행, Hit 요청자가 해당 함수 실행
-		photonView.RPC(nameof(RPC_DoHitOnRequester), info.Sender, damageRatio);
+		//photonView.RPC(nameof(RPC_DoHitOnRequester), info.Sender, damageRatio);
+
+		//데미지 계산 및 반영(아이템 효과 반영)
+		ItemHandlingSystem.instance.RequestAttack(damage, true);
 		//턴 변경 수행
 		ChangeToNextTurn();
 	}
 
 	//Hit 요청자 클라에서 실행될 Hit 처리
-	[PunRPC]
-	private void RPC_DoHitOnRequester(float damageRatio)
-	{
-		int dmg = PlayerStatus.Instance.HitAction(damageRatio);
-		photonView.RPC(nameof(RPC_ApplyTreeDamage), RpcTarget.All, dmg);
-	}
+	//[PunRPC]
+	//private void RPC_DoHitOnRequester(float damageRatio)
+	//{
+	//	int dmg = PlayerStatus.Instance.HitAction(damageRatio);
+	//	photonView.RPC(nameof(RPC_ApplyTreeDamage), RpcTarget.All, dmg);
+	//}
 
-	[PunRPC]
-	private void RPC_ApplyTreeDamage(int dmg, PhotonMessageInfo info)
-	{
-		if(!IsInitializer()) return;
+	//[PunRPC]
+	//private void RPC_ApplyTreeDamage(int dmg, PhotonMessageInfo info)
+	//{
+	//	if(!IsInitializer()) return;
 
-		TreeStatus.Instance.getHitByPlayer(dmg);
-	}
+	//	TreeStatus.Instance.getHitByPlayer(dmg);
+	//}
 
 	//처음 PlayerManager에서 초기화 된 후 Offer UI를 처리하기 위한 함수
 	public void setOfferGeneratedFromOutsied(bool flag)

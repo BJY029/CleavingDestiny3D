@@ -1,0 +1,240 @@
+using Photon.Pun;
+using Photon.Realtime;
+using UnityEngine;
+using System;
+using System.Collections.Generic;
+
+[Serializable] //Client -> MasterClient
+public struct AttackCommand
+{
+	public int attackerNum;		//요청자 Actor 번호
+	public int baseDamage;		//게이지로 계산한 원본 데미지
+	public bool isBasicAttack;	//평타인지 아닌지 여부
+	public int clientNonce;		//중복 요청 방지
+}
+
+[Serializable] //MasterClient -> client
+public struct AttackResult
+{
+	public int attackerNum;		//요청을 보낸 Actor 번호
+	public int finalDamage;		//최종 확정 데미지(숨김 상태인 경우 다른 플레이어에겐 -1)
+	public bool hidden;			//데미지 숨김 상태인지 여부
+	public float treeHpAfter;	//UI 반영용 treeHP 결과
+}
+
+public class ItemHandlingSystem : MonoBehaviourPunCallbacks
+{
+	public static ItemHandlingSystem instance;
+
+	private StatusSystem _statusSystem;
+	private GameEventBus _gameEventBus;
+	private DamageResolver _damageResolver;
+	private DeterministicRng _rng;
+
+	private void Awake()
+	{
+		if (instance == null) instance = this;
+		else Destroy(gameObject);
+
+		_statusSystem = new StatusSystem();
+		_gameEventBus = new GameEventBus(_statusSystem);
+		_damageResolver = new DamageResolver(_gameEventBus, _statusSystem);
+
+		//Wave 시드 값
+		//현재는 임시로 설정
+		//해당 값은 wave 변경 될 때마다 Masterclient가 변경 및 처리 수행
+		_rng = new DeterministicRng(12345);
+	}
+
+	public void AddItemStatusInstance(int actorNum, ItemSO item)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		foreach (EffectSpec es in item.effects)
+		{
+			StatusSpec ss = es.statusSpce;
+
+			int remainTurns = 9999;
+			switch (ss.durationType)
+			{
+				case DurationType.ThisTurn:
+					remainTurns = 1;
+					break;
+				case DurationType.NextTurn:
+					remainTurns = 2;
+					break;
+				case DurationType.Turns:
+					remainTurns = ss.durationTurns;
+					break;
+				case DurationType.UnitlWaveEnd:
+					int currentWave = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
+					int MaxWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.MaxWaveCnt);
+					int PlayerCnt = PhotonNetwork.PlayerList.Length;
+					int currentTurnIdx = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
+					remainTurns = (MaxWaveCnt - currentWave - 1) * PlayerCnt + (PlayerCnt - currentTurnIdx);
+					break;
+			}
+
+			var st = new StatusInstance
+			{
+				spec = ss,
+				ownerActorNum = actorNum,
+				sourceActorNum = actorNum,
+				remainingTurns = remainTurns
+			};
+
+			_statusSystem.Add(st);
+
+			Debug.Log($"[Item] AddStatus {ss.statusId} to {actorNum}");
+		}
+	}
+
+	public void RequestAttack(int baseDamage, bool isBasicAttack)
+	{
+		//json 형식으로 공격 커맨드 객체 생성
+		var cmd = new AttackCommand
+		{
+			attackerNum = PhotonNetwork.LocalPlayer.ActorNumber,
+			baseDamage = baseDamage,
+			isBasicAttack = isBasicAttack,
+			clientNonce = UnityEngine.Random.Range(int.MinValue, int.MaxValue),
+		};
+
+		//Json 형태로 직렬화 해서 MasterClient에게 요청 전송
+		photonView.RPC(nameof(RPC_RequestAttack), RpcTarget.MasterClient, JsonUtility.ToJson(cmd));
+	}
+
+	[PunRPC]
+	private void RPC_RequestAttack(string json, PhotonMessageInfo info)
+	{
+		//검증
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		//역직렬화
+		var cmd = JsonUtility.FromJson<AttackCommand>(json);
+
+		//요청자와 객체 정보가 같은지 확인(핵 방지)
+		if(info.Sender.ActorNumber != cmd.attackerNum) return;
+		//턴 검증 2
+		if (!IsMyTurnCheckInMaster(cmd.attackerNum)) return;
+
+		//컨텍스트 생성
+		var ctx = new EffectContext(_rng, Debug.Log);
+
+		//데미지 객체 생성
+		var dmg = new DamagePacket
+		{
+			attackerNum = cmd.attackerNum,
+			isBasicAttack = cmd.isBasicAttack,
+			baseDamage = cmd.baseDamage
+		};
+
+		//최종 데미지 계산(아이템도 함께 반영하여 계산)
+		_damageResolver.Resolve(dmg, ctx);
+
+		//나무 데미지 업데이트
+		float hp = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeHP);
+		hp -= dmg.finalDamage;
+		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, hp);
+
+		//계산된 결과를 각 클라이언트에게 브로드캐스트하는 함수 호출
+		BroadcastAttckResult(cmd.attackerNum, dmg.finalDamage, dmg.hidden, hp);
+	}
+
+	//계산 결과를 각 클라이언트에게 브로드캐스트 하는 함수
+	private void BroadcastAttckResult(int attackNum, int finalDmg, bool hidden, float treeHPAfter)
+	{
+		//플레이어 배열 가져오기
+		Player[] playerNums = PhotonNetwork.PlayerList;
+
+		//공격자와 그 외 플레이어 구분
+		Player attacker = null;
+		List<Player> opposites = new List<Player>();
+
+		foreach(Player player in playerNums )
+		{
+			if(player.ActorNumber == attackNum)
+			{
+				attacker = player;
+			}
+			else
+			{
+				opposites.Add(player);
+			}
+		}
+
+		//예외 처리
+		if(attacker == null)
+		{
+			Debug.LogError("No Attacker Player Info");
+			return;
+		}
+
+		//공격자(요청자)에게 전달할 json 객체
+		var fullInfo = new AttackResult
+		{
+			attackerNum = attackNum,
+			finalDamage = finalDmg,
+			hidden = hidden,
+			treeHpAfter = treeHPAfter,
+		};
+
+		//그외 플레이어들에게 전달할 json 객체
+		var maskedInfo = new AttackResult
+		{
+			attackerNum = attackNum,
+			//hidden 여부에 따라서 데미지 정보 공개 혹은 비공개
+			finalDamage = hidden ? -1 : finalDmg,
+			hidden = hidden,
+			treeHpAfter = treeHPAfter,
+		};
+
+		//직렬화
+		string fullInfoJson = JsonUtility.ToJson(fullInfo);
+		string maskedInfoJson = JsonUtility.ToJson(maskedInfo);
+		//각 요청자와 그외 플레이어들에게 RPC로 결과 전송
+		photonView.RPC(nameof(RPC_OnAttackResult), attacker, fullInfoJson);
+		foreach(Player player in opposites)
+		{
+			photonView.RPC(nameof(RPC_OnAttackResult), player, maskedInfoJson);
+		}
+	}
+
+	[PunRPC]
+	private void RPC_OnAttackResult(string json)
+	{
+		var res = JsonUtility.FromJson<AttackResult>(json);
+
+
+		//UI 처리
+		if(res.hidden && res.finalDamage < 0)
+		{
+			//데미지를 가리는 UI 처리 수행
+		}
+		else
+		{
+			//기본 처리(데미지 공개)
+		}
+
+		if(res.attackerNum == PhotonNetwork.LocalPlayer.ActorNumber)
+		{
+			float currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage);
+			float currentConBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.BarrierConversionRate);
+			float currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier);
+
+			//데미지 합계 계산
+			currentTotalDamage += res.finalDamage;
+			//Barrier 값 계산
+			currentBarrier = currentTotalDamage * (1 + currentConBarrier);
+			//변경된 스탯 값 프로퍼티에 업데이트
+			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage, currentTotalDamage);
+			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, currentBarrier);
+		}
+	}
+
+	private bool IsMyTurnCheckInMaster(int attackerNum)
+	{
+		int cur = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+		return cur == attackerNum;
+	}
+}

@@ -163,12 +163,3 @@ public enum GamePhaseValue
     DAY, NIGHT, END
 }
 
-public enum ItemType
-{
-    Damage, Defence, Heal, Gimmick
-}
-
-public enum ItemClass
-{
-    Common, Hero, Rare, Legendary
-}

@@ -15,7 +15,29 @@ MonoBehaviour:
   itemId: 1000
   displayName_ID: NAME_DMG_SHARPEN
   itemDesc_ID: DESC_DMG_SHARPEN
-  icon: {fileID: 0}
-  type: 0
   itemCost: 1
+  type: 0
+  target: 0
   itemClass: 0
+  itemWeight: 1
+  oncePerWave: 0
+  oncePerGame: 0
+  effects:
+  - effectType: 0
+    intValue1: 0
+    intValue2: 0
+    floatValue1: 0
+    floatValue2: 0
+    statusSpce:
+      statusId: 
+      durationType: 0
+      durationTurns: 0
+      triggers: 2
+      tags: 65
+      priority: 200
+      multiplier: 1.5
+      flatValue: 0
+      randMin: 0
+      randMax: 0
+      bypassConversion: 0
+      basicOnly: 0
