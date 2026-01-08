@@ -69,8 +69,10 @@ public static class PlayerPropKeys
     public const string VillageHP = "VillageHP";
     public const string VillageBarrier = "VillageBarrier";
     public const string BarrierConversionRate = "BarrierConversionRate";
+    public const string BarrierArmor = "BarrierArmor";
     public const string VillageUpgrades = "VillageUpgrades";
     public const string Gold = "Gold";
+    public const string DayGoldIncome = "DayGoldIncome";
     public const string MaxAtkPow = "MaxAtkPow";
     public const string MinAtkPow = "MinAtkPow";
     public const string TotalDamage = "TotalDamage";
@@ -78,6 +80,7 @@ public static class PlayerPropKeys
     public const string Energy = "Energy";
     public const string MaxEnergy = "MaxEnergy";
     public const string CarryOverEnergy = "CarryOverEnergy";
+    public const string EnergyIncome = "EnergyIncome";
     public const string DayTimeDamage = "DayTimeDamage";
     public const string MyTurn = "MyTurn";
 

@@ -5,7 +5,6 @@ using UnityEngine;
 
 namespace Village
 {
-
     public class VillageStatManager : MonoBehaviour, IVillageStatProvider
     {
         private static VillageStatManager _instance;
@@ -49,8 +48,12 @@ namespace Village
 
         private void InitVillageData()
         {
+            _villageDataDict.Clear();
+            if (_villageLevelDatas == null) return;
+
             foreach (var data in _villageLevelDatas)
             {
+                if (data == null) continue;
                 _villageDataDict[data.VillageType] = data;
             }
         }
@@ -61,12 +64,27 @@ namespace Village
             // 매개변수가 없으면 로컬 플레이어를 기본값으로 사용
             var player = targetPlayer ?? PhotonNetwork.LocalPlayer;
 
+            if (player == null) return 0;
+
             if (player.CustomProperties.TryGetValue(PlayerPropKeys.VillageUpgrades, out object village))
             {
-                // object 캐스팅
-                if (village is int[] upgradeList && upgradeList.Length > (int)type)
+                int index = (int)type;
+
+                // Photon은 때때로 int[]를 object[]로 역직렬화할 때가 있음
+                if (village is int[] intList)
                 {
-                    return upgradeList[(int)type];
+                    if (index >= 0 && index < intList.Length)
+                    {
+                        return intList[index];
+                    }
+                }
+                else if (village is object[] objList)
+                {
+                    if (index >= 0 && index < objList.Length)
+                    {
+                        // Photon에서 숫자는 종종 long으로 오거나 박싱될 수 있음
+                        return System.Convert.ToInt32(objList[index]);
+                    }
                 }
             }
             return 0; // 오류시 0레벨 반환
@@ -82,13 +100,22 @@ namespace Village
         public int GetLevelUpgradedCost(VillageType facilityType, int currentLevel, Player targetPlayer = null)
         {
             // TryGet을 체이닝하듯 검사
-            if (_villageDataDict.TryGetValue(facilityType, out var levelData) &&
-                levelData.TryGetUpgradeCost(currentLevel, out int cost))
+            if (_villageDataDict.TryGetValue(facilityType, out var levelData))
             {
-                return cost;
+                if (levelData.TryGetUpgradeCost(currentLevel, out int cost))
+                {
+                    return cost;
+                }
+                else
+                {
+                    Debug.LogWarning($"업그레이드 가격: {facilityType}는 존재하나, {currentLevel}레벨에 대한 비용 데이터를 찾을 수 없습니다. (MaxLevel: {levelData.MaxLevel})");
+                }
+            }
+            else
+            {
+                Debug.LogError($"업그레이드 가격: VillageStatManager의 _villageLevelDatas에 {facilityType} 데이터가 등록되지 않았습니다!");
             }
 
-            Debug.LogWarning($"{facilityType}의 {currentLevel}레벨 데이터를 찾을 수 없습니다.");
             return 0; // 오류 시 0 반환
         }
 

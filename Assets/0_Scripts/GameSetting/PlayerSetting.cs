@@ -9,6 +9,9 @@ public class PlayerSetting : ScriptableObject
     public float barrierConversionRate = 0.3f;
     public int initialGold = 100;
     public float initialTotalDamage = 0f;
+    public int initialDayGoldIncome = 50;
+    public float initialBarrierArmor = 0f;
+
 
     [Header("Combat Stats")]
     public int maxAtkPow = 1100;
@@ -17,6 +20,7 @@ public class PlayerSetting : ScriptableObject
     [Header("Energy Stats")]
     public int initialEnergy = 5;
     public int maxEnergy = 5;
+    public int energyIncomePerDay = 5;
     public int carryOverEnergy = 0;
     public float regenEnergyPerDay = 10f;
 

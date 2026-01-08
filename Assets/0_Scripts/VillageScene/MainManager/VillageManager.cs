@@ -80,13 +80,36 @@ namespace Village
             _propCache.Clear();
             _propCache[PlayerPropKeys.Gold] = _cachedGold;
 
-            int[] currentUpgrades = (int[])myPlayer.CustomProperties[PlayerPropKeys.VillageUpgrades] ?? new int[Enum.GetValues(typeof(VillageType)).Length];
-            currentUpgrades[(int)facilityType] = currentLevel + 1;
+            int[] currentUpgrades = (int[])myPlayer.CustomProperties[PlayerPropKeys.VillageUpgrades] ?? new int[System.Enum.GetValues(typeof(VillageType)).Length];
+            int nextLevel = currentLevel + 1;
+            currentUpgrades[(int)facilityType] = nextLevel;
             _propCache[PlayerPropKeys.VillageUpgrades] = currentUpgrades;
+
+            // 건물 타입에 따른 플레이어 스탯 업데이트
+            UpdatePlayerStatsByLevel(facilityType, nextLevel);
 
             _goldChangedBySelf = true;
             myPlayer.SetCustomProperties(_propCache);
             OnGoldChanged?.Invoke(_cachedGold);
+        }
+
+        private void UpdatePlayerStatsByLevel(VillageType facilityType, int nextLevel)
+        {
+            // _statProvider를 통해 계산된 최신 스탯을 _propCache에 추가
+            switch (facilityType)
+            {
+                case VillageType.Mine:
+                    _propCache[PlayerPropKeys.DayGoldIncome] = _statProvider.GetGoldIncomePerDay();
+                    break;
+                case VillageType.Farm:
+                    _propCache[PlayerPropKeys.MaxEnergy] = _statProvider.GetMaxEnergy();
+                    _propCache[PlayerPropKeys.EnergyIncome] = _statProvider.GetEnergyIncomePerDay();
+                    break;
+                case VillageType.Shop:
+                    _propCache[PlayerPropKeys.BarrierArmor] = _statProvider.GetBarrierArmor();
+                    break;
+                    // TODO: 대장간 등 추가 예정인 건물들에 대한 로직
+            }
         }
     }
 }

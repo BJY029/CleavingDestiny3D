@@ -31,6 +31,7 @@ namespace Village
 
         void SetLevelAndCostText()
         {
+
             int currentLevel = VillageStatManager.Instance.GetVillageLevel(buildingType);
             levelText.SetText("Level: {0}", currentLevel);
 
