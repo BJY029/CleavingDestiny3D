@@ -111,6 +111,21 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		}
 	}
 
+	public void OnTurnStart()
+	{
+		if (!PhotonNetwork.IsMasterClient) return;		
+
+		var ctx = new EffectContext(_rng, Debug.Log);
+		_damageResolver.ResolveWhenStartTurn(ctx);
+	}
+
+	public void OnWaveEnd()
+	{
+		if(!PhotonNetwork.IsMasterClient)  return; 
+		//아이템 사용 길이가 '하루'에 속하는 아이템을 statusSystem에서 삭제하는 함수 실행
+		_statusSystem.RemoveAllByDuration(DurationType.UnitlWaveEnd);
+	}
+
 	//턴 전환 시 호출될 함수
 	public void RequestHit(int baseDamage, bool isBasicAttack)
 	{

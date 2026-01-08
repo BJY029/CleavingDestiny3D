@@ -60,6 +60,7 @@ MonoBehaviour:
   - RPC_UseItem
   - RPC_OnAttackResult
   - RPC_RequestAttack
+  - TryDisposeWaveTurnItem
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

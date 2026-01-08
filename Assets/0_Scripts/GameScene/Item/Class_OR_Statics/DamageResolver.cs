@@ -51,4 +51,14 @@ public class DamageResolver
         }, ctx);
     }
 
+    public void ResolveWhenStartTurn(EffectContext ctx)
+    {
+        _bus.publish(new GameEvent
+        {
+            type = TriggerMask.OnTurnStart,
+            actorNum = -1,
+            payload = null
+        }, ctx);
+    }
+
 }

@@ -34,10 +34,10 @@ MonoBehaviour:
       durationTurns: 0
       triggers: 2
       tags: 1
-      priority: 10
-      multiplier: 0
+      priority: 200
+      multiplier: 0.5
       flatValue: 0
       randMin: 0
       randMax: 0
       bypassConversion: 0
-      basicOnly: 1
+      basicOnly: 0

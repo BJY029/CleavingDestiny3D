@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Photon.Pun;
 using System.Linq;
 
 public class GameEvent
@@ -62,5 +63,10 @@ public class StatusSystem
         _status.RemoveAll(s => 
         (s.spec.durationType == DurationType.Turns || s.spec.durationType == DurationType.ThisTurn)
         && s.remainingTurns <= 0);
+    }
+
+    public void RemoveAllByDuration(DurationType duration)
+    {
+        _status.RemoveAll(st => st.spec.durationType == duration);
     }
 }

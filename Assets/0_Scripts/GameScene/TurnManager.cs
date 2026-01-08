@@ -77,6 +77,19 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	private bool IsInitializer() => PhotonNetwork.IsMasterClient;
 
+	public void NewTurnStart()
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		ItemHandlingSystem.instance.OnTurnStart();
+	}
+
+	public void WaveEnd()
+	{
+		if(!PhotonNetwork.IsMasterClient) return;
+		ItemHandlingSystem.instance.OnWaveEnd();
+	}
+
 	//턴 변경 요청이 발생한 경우
 	public void RequestChangeTurn(int damage)
 	{
@@ -243,6 +256,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//제일 낮은 순서번호의 플레이어만 초기화 수행
 		if (!IsInitializer()) return;
 
+		//'하루'의 길이를 가진 아이템을 삭제한다.
+		WaveEnd();
+
 		//만약 이미 실행중이라면 실행하지 않음
 		bool isAlreadyUpgraded = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		if (isAlreadyUpgraded) return;
@@ -352,7 +368,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				GameCanvasController.Instance.UpdateDayText();
 				GameCanvasController.Instance.UpdateWaveText();
 
-
+				//턴 변경 시 발동될 아이템 실행 하는 함수 호출
+				NewTurnStart();
 			}
 			//중복 처리 방지위해 플래그를 설정한다.
 			//TurnHasChanged=false;

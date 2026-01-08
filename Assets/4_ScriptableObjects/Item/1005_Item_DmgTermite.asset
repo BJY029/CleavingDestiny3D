@@ -15,8 +15,29 @@ MonoBehaviour:
   itemId: 1005
   displayName_ID: NAME_DMG_TERMITE
   itemDesc_ID: DESC_DMG_TERMITE
-  icon: {fileID: 0}
-  type: 0
   itemCost: 6
+  type: 0
+  target: 0
   itemClass: 2
   itemWeight: 1
+  oncePerWave: 0
+  oncePerGame: 0
+  effects:
+  - effectType: 0
+    intValue1: 0
+    intValue2: 0
+    floatValue1: 0
+    floatValue2: 0
+    statusSpce:
+      statusId: DMG_TERMITE
+      durationType: 3
+      durationTurns: 0
+      triggers: 1
+      tags: 82
+      priority: 0
+      multiplier: 0
+      flatValue: 0
+      randMin: 20
+      randMax: 150
+      bypassConversion: 0
+      basicOnly: 0
