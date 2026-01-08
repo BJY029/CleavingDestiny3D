@@ -22,4 +22,22 @@ MonoBehaviour:
   itemWeight: 1
   oncePerWave: 0
   oncePerGame: 0
-  effects: []
+  effects:
+  - effectType: 0
+    intValue1: 0
+    intValue2: 0
+    floatValue1: 0
+    floatValue2: 0
+    statusSpce:
+      statusId: DMG_DULL
+      durationType: 0
+      durationTurns: 0
+      triggers: 2
+      tags: 1
+      priority: 200
+      multiplier: 0.8
+      flatValue: 0
+      randMin: 0
+      randMax: 0
+      bypassConversion: 0
+      basicOnly: 0

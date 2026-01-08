@@ -44,11 +44,11 @@ public enum TriggerMask
 public enum TagMask
 {
 	None = 0,
-	Positive = 1 << 0,      //버프용 아이템(데미지 증가)
-	Negative = 1 << 1,      //디버프 아이템(데미지 감소)
+	Positive = 1 << 0,      //버프용 아이템(플레이어에게 이득인 효과)
+	Negative = 1 << 1,      //디버프 아이템(플레이어 손해, '신의 가호' 같은 정화 아이템들이 해당 태그 달린 아이템 효과 제거)
 	Curse = 1 << 2,         //저주 아이템
-	Taunt = 1 << 3,         //흰개미 아이템
-	Termite = 1 << 4,       //도발 아이템
+	Taunt = 1 << 3,         //도발 아이템
+	Termite = 1 << 4,       //흰개미 아이템
 	Hidden = 1 << 5,        //랜덤 아이템
 	Counterable = 1 << 6,   //카운터용 아이템
 }

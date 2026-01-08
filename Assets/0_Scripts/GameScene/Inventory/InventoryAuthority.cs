@@ -134,7 +134,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		ItemSO item = ItemDB.Instance.Get(itemId);
 		//TODO: 아이템 효과 적용
 		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
-		//ApplyItemEffect(requestActor, itemID);
+		ItemHandlingSystem.instance.AddItemStatusInstance(turnActor, item);
 
 
 		//사용한 아이템 인벤토리에서 제거

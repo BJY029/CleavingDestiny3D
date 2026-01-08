@@ -23,7 +23,7 @@ public static class StatusBehaviours
                 ctx.Log?.Invoke($"[Status] DMG_SHARPEN x{st.spec.multiplier}");
                 return;
 
-            case "DMG_GREASED":
+            case "DMG_RUSTY":
                 if(e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
                 //평타 관련 데미지 객체가 아닌 경우 무시
                 if(!dmg.isBasicAttack) return;
@@ -32,7 +32,7 @@ public static class StatusBehaviours
                 dmg.overrideDamage = 0;
 
                 //디버그 로그로 임시 실행
-                ctx.Log?.Invoke($"[Status] DMG_GREASEDO overriedDamage = 0");
+                ctx.Log?.Invoke($"[Status] DMG_RUSTY overriedDamage = 0");
                 return;
         }
     }

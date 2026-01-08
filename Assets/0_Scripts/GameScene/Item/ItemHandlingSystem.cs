@@ -46,35 +46,55 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		_rng = new DeterministicRng(12345);
 	}
 
+	//플레이어가 사용한 아이템을 StatusInstance 객체로 객체화 후, 해당 플레이어의 _statuisSystem 리스트에 삽입한다.
+	//후에 턴 변화가 발생할 때, 플레이어의 stasusSystem 내의 아이템들이 적절한 타이밍에 실행된다.
 	public void AddItemStatusInstance(int actorNum, ItemSO item)
 	{
+		//MasterClient만 처리한다.
 		if (!PhotonNetwork.IsMasterClient) return;
 
+		//해당 아이템에 부착된 효과들을 돌면서
 		foreach (EffectSpec es in item.effects)
 		{
+			//AddStatus에 정의된 해당 아이템 정보를 가져온다.
+			//이는 추후에 다른 아이템을 처리하기 위해 별개의 코드를 넣어야 할 듯 하다.
 			StatusSpec ss = es.statusSpce;
 
+			//남은 턴 수를 기본값으로 초기화하고
 			int remainTurns = 9999;
+			//각 타입에 따라서 남은 턴 수를 계산한다.
 			switch (ss.durationType)
 			{
+				//이번 턴에만 사용되는 아이템인 경우
 				case DurationType.ThisTurn:
 					remainTurns = 1;
 					break;
+				//다음 턴까지 사용되는 아이템일 경우
 				case DurationType.NextTurn:
 					remainTurns = 2;
 					break;
+				//N번의 Turn 동안 활성화되는 아이템일 경우
 				case DurationType.Turns:
 					remainTurns = ss.durationTurns;
 					break;
+				//이번 일자 동안 활성화 되는 아이템일 경우
 				case DurationType.UnitlWaveEnd:
+					//현재 wave 값
 					int currentWave = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
+					//최대 wave 값
 					int MaxWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.MaxWaveCnt);
+					//플레이어 수(Turn 수)
 					int PlayerCnt = PhotonNetwork.PlayerList.Length;
+					//현재 턴 인덱스
 					int currentTurnIdx = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
+					//남은 턴 계산
+						//ex) 2번째 wave의 첫번째 턴인 경우 
+						//remainTurns = (3 - 1 - 1) * 2 + (2 - 0) = 4
 					remainTurns = (MaxWaveCnt - currentWave - 1) * PlayerCnt + (PlayerCnt - currentTurnIdx);
 					break;
 			}
 
+			//상태 객체 선언
 			var st = new StatusInstance
 			{
 				spec = ss,
@@ -83,12 +103,15 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 				remainingTurns = remainTurns
 			};
 
+			//플레이어의 상태 관리 시스템 리스트에 삽입
 			_statusSystem.Add(st);
 
+			//디버깅
 			Debug.Log($"[Item] AddStatus {ss.statusId} to {actorNum}");
 		}
 	}
 
+	//턴 전환 시 호출될 함수
 	public void RequestHit(int baseDamage, bool isBasicAttack)
 	{
 		//json 형식으로 공격 커맨드 객체 생성
@@ -103,7 +126,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//Json 형태로 직렬화 해서 MasterClient에게 요청 전송
 		photonView.RPC(nameof(RPC_RequestAttack), RpcTarget.MasterClient, JsonUtility.ToJson(cmd));
 	}
-
+	
+	//MasterClient에서 처리 수행
 	[PunRPC]
 	private void RPC_RequestAttack(string json, PhotonMessageInfo info)
 	{
@@ -139,6 +163,9 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 		//최종 데미지 계산(아이템도 함께 반영하여 계산)
 		_damageResolver.Resolve(dmg, ctx);
+
+		//각 아이템의 남은 턴 수 계산, 남은 턴수가 모두 지나면 해당 아이템을 _statusSystem 리스트에서 삭제한다.
+		_statusSystem.TickTurnEnd(cmd.attackerNum);
 
 		//나무 데미지 업데이트
 		float hp = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeHP);
