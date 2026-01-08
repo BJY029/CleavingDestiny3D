@@ -65,6 +65,7 @@ public class StatusSystem
         && s.remainingTurns <= 0);
     }
 
+    //적용 기간을 기반으로 해당되는 모든 상태이상 객체를 삭제하는 함수
     public void RemoveAllByDuration(DurationType duration)
     {
         _status.RemoveAll(st => st.spec.durationType == duration);

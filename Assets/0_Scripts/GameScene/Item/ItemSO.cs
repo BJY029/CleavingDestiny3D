@@ -23,7 +23,7 @@ public enum ItemTarget
 public enum ItemEffect
 {
     AddStatus,//StatusInstance 따로 생성
-    HealTreeUp, AddVillageShield, TransferOpponentShildPct, DisplayByTag
+    HealTreeUp, AddVillageShield, TransferOpponentShieldPct, DisplayByTag
 }
 
 
@@ -59,7 +59,7 @@ public enum DurationType
 	ThisTurn,   //이번 턴
 	NextTurn,   //다음 턴까지
 	Turns,      //N 턴
-	UnitlWaveEnd,//오늘
+	UntilWaveEnd,//오늘
 }
 
 [CreateAssetMenu(fileName = "ItemSO", menuName = "Scriptable Objects/ItemSO")]
