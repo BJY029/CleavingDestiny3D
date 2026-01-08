@@ -84,9 +84,11 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		bool isUpgradePhase = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		if (isUpgradePhase) return;
 
+		//데미지 계산 및 반영(아이템 효과 반영)
+		ItemHandlingSystem.instance.RequestHit(damage, true);
+
 		//RPC로 모든 플레이어에게 턴 변경 요청을 보낸다.
 		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, damage);
-		
 	}
 
 	[PunRPC]
@@ -110,8 +112,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//나무 때리기 액션 수행, Hit 요청자가 해당 함수 실행
 		//photonView.RPC(nameof(RPC_DoHitOnRequester), info.Sender, damageRatio);
 
-		//데미지 계산 및 반영(아이템 효과 반영)
-		ItemHandlingSystem.instance.RequestAttack(damage, true);
 		//턴 변경 수행
 		ChangeToNextTurn();
 	}

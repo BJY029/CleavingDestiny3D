@@ -89,7 +89,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		}
 	}
 
-	public void RequestAttack(int baseDamage, bool isBasicAttack)
+	public void RequestHit(int baseDamage, bool isBasicAttack)
 	{
 		//json 형식으로 공격 커맨드 객체 생성
 		var cmd = new AttackCommand
@@ -114,9 +114,17 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		var cmd = JsonUtility.FromJson<AttackCommand>(json);
 
 		//요청자와 객체 정보가 같은지 확인(핵 방지)
-		if(info.Sender.ActorNumber != cmd.attackerNum) return;
+		if (info.Sender.ActorNumber != cmd.attackerNum)
+		{
+			Debug.LogError("[ERROR]It is not real Requester");
+			return;
+		}
 		//턴 검증 2
-		if (!IsMyTurnCheckInMaster(cmd.attackerNum)) return;
+		if (!IsMyTurnCheckInMaster(cmd.attackerNum))
+		{
+			Debug.LogError("[ERROR]It is not Requester Turn");
+			return;
+		}
 
 		//컨텍스트 생성
 		var ctx = new EffectContext(_rng, Debug.Log);
@@ -138,12 +146,14 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, hp);
 
 		//계산된 결과를 각 클라이언트에게 브로드캐스트하는 함수 호출
-		BroadcastAttckResult(cmd.attackerNum, dmg.finalDamage, dmg.hidden, hp);
+		BroadcastHitResult(cmd.attackerNum, dmg.finalDamage, dmg.hidden, hp);
 	}
 
-	//계산 결과를 각 클라이언트에게 브로드캐스트 하는 함수
-	private void BroadcastAttckResult(int attackNum, int finalDmg, bool hidden, float treeHPAfter)
+	//마스터 클라이언트가 계산 결과를 각 클라이언트에게 브로드캐스트 하는 함수
+	private void BroadcastHitResult(int attackNum, int finalDmg, bool hidden, float treeHPAfter)
 	{
+		Debug.Log("Final Damage : " + finalDmg);
+
 		//플레이어 배열 가져오기
 		Player[] playerNums = PhotonNetwork.PlayerList;
 
@@ -220,7 +230,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		{
 			float currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage);
 			float currentConBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.BarrierConversionRate);
-			float currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier);
+			float currentBarrier;
 
 			//데미지 합계 계산
 			currentTotalDamage += res.finalDamage;

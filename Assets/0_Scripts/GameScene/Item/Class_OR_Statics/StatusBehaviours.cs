@@ -11,7 +11,7 @@ public static class StatusBehaviours
         switch (st.spec.statusId)
         {
             //날 갈기 아이템
-            case "DMG_MULT":
+            case "DMG_SHARPEN":
                 //공격 전에만 반응
                 if (e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
                 //평타만 적용 하거나, 기본 평타 관련 데미지 객체가 아닌 경우, 실행 안함
@@ -20,10 +20,10 @@ public static class StatusBehaviours
                 dmg.multiplier *= st.spec.multiplier;
 
                 //디버그 로그로 임시 실행
-                ctx.Log?.Invoke($"[Status] DMG_MULT x{st.spec.multiplier}");
+                ctx.Log?.Invoke($"[Status] DMG_SHARPEN x{st.spec.multiplier}");
                 return;
 
-            case "SET_BASIC_ZERO":
+            case "DMG_GREASED":
                 if(e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
                 //평타 관련 데미지 객체가 아닌 경우 무시
                 if(!dmg.isBasicAttack) return;
@@ -32,7 +32,7 @@ public static class StatusBehaviours
                 dmg.overrideDamage = 0;
 
                 //디버그 로그로 임시 실행
-                ctx.Log?.Invoke($"[Status] SET_BASIC_ZERO overriedDamage = 0");
+                ctx.Log?.Invoke($"[Status] DMG_GREASEDO overriedDamage = 0");
                 return;
         }
     }
