@@ -692,8 +692,8 @@ GameObject:
   - component: {fileID: 732835905}
   - component: {fileID: 732835904}
   m_Layer: 0
-  m_Name: DontDestoryOnLoad
-  m_TagString: Untagged
+  m_Name: GameManager
+  m_TagString: GameController
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -710,6 +710,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02008bb010208914690fa583dc691a8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  playerDefaultSetting: {fileID: 11400000, guid: 0ab68fb3dcfba894bbce6a7513b5a994, type: 2}
+  roomDefaultSetting: {fileID: 11400000, guid: a435e1ecc7289e04ca99639220cc8e4b, type: 2}
   playerObj: {fileID: 0}
   nextScene: 
 --- !u!4 &732835905

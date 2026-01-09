@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6a2392c1bb6c6e41ab982c5ed744f0c, type: 3}
   m_Name: Barrier
   m_EditorClassIdentifier: Assembly-CSharp::VillageLevelData
-  villageType: 5
+  villageType: 4
   max_level: 5
   upgradeCosts: 64000000b400000045010000440200001a040000
   effectValues: 000000006400000096000000e100000054010000fe010000

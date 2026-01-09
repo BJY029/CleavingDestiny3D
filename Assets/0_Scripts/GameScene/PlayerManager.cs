@@ -76,7 +76,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
 	{
 		if (!IsInitializer()) return;     // 마스터만
-		if (AllReadyFlag) return;	//이미 모두 준비되었다고 감지 된 경우 아래 처리 안함
+		if (AllReadyFlag) return;   //이미 모두 준비되었다고 감지 된 경우 아래 처리 안함
 
 		//플레이어들의 IsReady 프로퍼티가 업데이트 된 경우
 		if (changedProps.ContainsKey(PlayerPropKeys.IsReady))
@@ -143,7 +143,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	//미니게임으로부터 turn 순서가 정해지면, 해당 정보 기반으로 플레이어 정보 채워넣을 예정
 	private void InitPlayersInfo()
 	{
-		
+
 		players.Clear();
 		var room = PhotonNetwork.CurrentRoom;
 		var props = room.CustomProperties;
@@ -231,32 +231,36 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	private void InitPlayerProps()
 	{
 		Player player = PhotonNetwork.LocalPlayer;
+		var playerSetting = GameManager.Instance.playerDefaultSetting;
 
 		var ht = new ExitGames.Client.Photon.Hashtable
 		{
-			{ PlayerPropKeys.VillageHP, CommonDefine.defaultTreeHP},
-			{ PlayerPropKeys.VillageBarrier, CommonDefine.defaultVillageBarrier},
-			{  PlayerPropKeys.VillageUpgrades, CommonDefine.defaultVillageUpgrades},
-			{ PlayerPropKeys.Gold, CommonDefine.defaultGold },
-			{ PlayerPropKeys.MaxAtkPow, CommonDefine.defaultPlayerMaxAtkPow },
-			{  PlayerPropKeys.MinAtkPow, CommonDefine.defaultPlayerMinAtkPow},
-			{  PlayerPropKeys.Energy, CommonDefine.defaultPlayerEnergy},
-			{PlayerPropKeys.MaxEnergy, CommonDefine.defaultPlayerMaxEnergy },
-			{ PlayerPropKeys.CarryOverEnergy, CommonDefine.defaultCarryOverEnergy},
-			{PlayerPropKeys.DayTimeDamage, CommonDefine.defaultDayTimeDamage },
-			{PlayerPropKeys.TotalDamage, CommonDefine.defaultTotalDamage },
-			{PlayerPropKeys.BarrierConversionRate, CommonDefine.defaultBarrierConversionRate },
-			{PlayerPropKeys.Item_CommonWeight, CommonDefine.defaultCommonItemWeight },
-			{ PlayerPropKeys.Item_HeroWeight, CommonDefine.defaultHeroItemWeight },
-			{PlayerPropKeys.Item_RareWeight, CommonDefine.defaultRareItemWeight },
-			{ PlayerPropKeys.Item_LegendaryWeight, CommonDefine.defaultLegendaryItemWeight},
+			{ PlayerPropKeys.VillageHP, playerSetting.villageHP},
+			{ PlayerPropKeys.VillageBarrier, playerSetting.villageBarrier},
+			{ PlayerPropKeys.BarrierArmor, playerSetting.initialBarrierArmor},
+			{ PlayerPropKeys.VillageUpgrades, playerSetting.initialVillageUpgrades},
+			{ PlayerPropKeys.Gold, playerSetting.initialGold },
+			{ PlayerPropKeys.DayGoldIncome, playerSetting.initialDayGoldIncome},
+			{ PlayerPropKeys.MaxAtkPow, playerSetting.maxAtkPow },
+			{ PlayerPropKeys.MinAtkPow, playerSetting.minAtkPow},
+			{ PlayerPropKeys.Energy, playerSetting.initialEnergy},
+			{ PlayerPropKeys.MaxEnergy, playerSetting.maxEnergy },
+			{ PlayerPropKeys.EnergyIncome, playerSetting.energyIncomePerDay},
+			{ PlayerPropKeys.CarryOverEnergy, playerSetting.carryOverEnergy},
+			{ PlayerPropKeys.DayTimeDamage, playerSetting.dayTimeDamage },
+			{ PlayerPropKeys.TotalDamage, playerSetting.initialTotalDamage },
+			{ PlayerPropKeys.BarrierConversionRate, playerSetting.barrierConversionRate },
+			{ PlayerPropKeys.Item_CommonWeight, playerSetting.commonWeight },
+			{ PlayerPropKeys.Item_HeroWeight, playerSetting.heroWeight },
+			{ PlayerPropKeys.Item_RareWeight, playerSetting.rareWeight },
+			{ PlayerPropKeys.Item_LegendaryWeight, playerSetting.legendaryWeight},
 		};
 		PhotonNetwork.LocalPlayer.SetCustomProperties(ht);
 
 		var rt = new ExitGames.Client.Photon.Hashtable
 		{
-			{ItemPropKeys.INV(player.ActorNumber), ItemInfoSerializer.MakeEmptyInv(CommonDefine.defaultInventoryCapacity) },
-			{ItemPropKeys.INV_CAPACITY(player.ActorNumber), CommonDefine.defaultInventoryCapacity },
+			{ItemPropKeys.INV(player.ActorNumber), ItemInfoSerializer.MakeEmptyInv(playerSetting.inventoryCapacity) },
+			{ItemPropKeys.INV_CAPACITY(player.ActorNumber), playerSetting.inventoryCapacity },
 			{ItemPropKeys.OFFER(player.ActorNumber),"" },
 		};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(rt);

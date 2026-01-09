@@ -8,6 +8,8 @@ using Unity.InferenceEngine;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Village;
+using UnityEngine.SceneManagement;
 
 public class TurnManager : MonoBehaviourPunCallbacks
 {
@@ -58,6 +60,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			OnInteractFKeyDown?.Invoke();
 		}
 
+		// K키가 눌리고 마스터 클라이언트이며 아직 마을 페이즈가 아닌 경우 강제 시작
+		if (Keyboard.current.kKey.wasPressedThisFrame && IsInitializer() && !isUpgradePhase)
+		{
+			StartVillageUpgradePhase();
+		}
+
 		//권한자이면서 동시에 마을 페이즈에 돌입한 경우
 		if (IsInitializer() && isUpgradePhase)
 		{
@@ -101,7 +109,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		ItemHandlingSystem.instance.RequestHit(damage, true);
 
 		//RPC로 모든 플레이어에게 턴 변경 요청을 보낸다.
-		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, damage);
+		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, damageRatio);
+
 	}
 
 	[PunRPC]
@@ -116,7 +125,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		int currentTurnActor = TurnOrder[currentTurnIndex];
 
 		//턴 변경을 요청한 플레이어와, 현재 턴에 해당하는 플레이어가 일치하지 않는 경우
-		if(currentTurnActor != requesterActorNumber)
+		if (currentTurnActor != requesterActorNumber)
 		{
 			Debug.LogError("Turn request ERROR!!\ncurrentTurnActor : " + currentTurnActor + " requestActor : " + requesterActorNumber);
 			return;
@@ -137,10 +146,10 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	//	photonView.RPC(nameof(RPC_ApplyTreeDamage), RpcTarget.All, dmg);
 	//}
 
-	//[PunRPC]
-	//private void RPC_ApplyTreeDamage(int dmg, PhotonMessageInfo info)
-	//{
-	//	if(!IsInitializer()) return;
+	[PunRPC]
+	private void RPC_ApplyTreeDamage(int dmg, PhotonMessageInfo info)
+	{
+		if (!IsInitializer()) return;
 
 	//	TreeStatus.Instance.getHitByPlayer(dmg);
 	//}
@@ -163,7 +172,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		if (!IsInitializer()) return;
 		//턴 정보를 담은 리스트를 불러온다.
 		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
-		if(TurnOrder == null || TurnOrder.Length == 0)
+		if (TurnOrder == null || TurnOrder.Length == 0)
 		{
 			Debug.LogError("TurnInfo Property Setting ERROR");
 			return;
@@ -177,14 +186,14 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		int nextActor = TurnOrder[nextIndex];
 		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) + 1;
 		string offerStr = OfferAuthority.Instance.MakeOfferForTurn(nextActor, turnIndex);
-		
+
 
 		//만약 모든 턴을 돌고 한 웨이브가 끝난 경우
-		if(nextIndex == 0)
+		if (nextIndex == 0)
 		{
 			//현재 웨이브 값을 불러온다.
 			int currentWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
-			Debug.Log("Wave " +  currentWaveCnt + " End");
+			Debug.Log("Wave " + currentWaveCnt + " End");
 			//웨이브 값을 하나 증가시킨다.
 			currentWaveCnt += 1;
 
@@ -271,13 +280,13 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		float[] timeValue = new float[] { startTime, endTime };
 		//시간 프로퍼티 삽입
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.VillageUpgradeStartEndTime, timeValue);
-		//마을 페이즈 진입 프로퍼티 초기화
+		//마을 업그레이드 페이즈 플래그 설정 (OnRoomPropertiesUpdate에서 마을 씬 로드)
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, true);
 
 		//관련 UI 처리를 진행한다.
 		GameCanvasController.Instance.SetActiveCanvas(false);
 		PlayerCanvasController.Instance.SetActiveCanvas(false);
-		VillageUIManager.Instance.SetActiveCanvas(true);
+		// VillageUIManager.Instance.SetActiveCanvas(true);
 
 	}
 
@@ -304,29 +313,35 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//권한자만 실행
 		if (!IsInitializer()) return;
 
+		// 1. 프로퍼티 설정 해제
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, false);
 
 		//플레이어 상태 정보 초기화
 		PlayerStatus.Instance.initPlayerStatus();
 
 		//관련 UI를 처리한다.
-		VillageUIManager.Instance.SetActiveCanvas(false);
 		GameCanvasController.Instance.SetActiveCanvas(true);
 		PlayerCanvasController.Instance.SetActiveCanvas(true);
 
+		// 기본 세팅값 참조
+		var roomSet = GameManager.Instance.roomDefaultSetting;
+
 		//다음 날짜 값을 계산.
 		int day = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentDay) + 1;
-		//다음 턴 순서, 다음 턴의 Actor 번호, 턴 카운트, 해당 턴에 제공할 Offer를 계산한다.
+
+		//다음 턴 정보 계산
+		// ** 만약 방 설정을 추가할거라면 SO가 아닌 방 설정값을 참조하도록 변경 필요 **
 		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
-		int nextIndex = CommonDefine.defaultTurn;
+		int nextIndex = roomSet.initialTurn;
 		int nextActor = TurnOrder[nextIndex];
 		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) + 1;
 		string offerStr = OfferAuthority.Instance.MakeOfferForTurn(nextActor, turnIndex);
+
 		//해당 프로퍼티를 한번에 업데이트 한다.
 		var ht = new ExitGames.Client.Photon.Hashtable
 		{
 			{RoomPropKeys.CurrentDay, day },
-			{RoomPropKeys.CurrentWave, CommonDefine.defaultWave },
+			{RoomPropKeys.CurrentWave, roomSet.initialWave },
 
 			{RoomPropKeys.CurrentTurn, nextIndex },
 			{RoomPropKeys.CurrentTurnActor, nextActor },
@@ -335,10 +350,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			{ItemPropKeys.OFFER(nextActor), offerStr ?? "" },
 		};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
-		//Offer 플래그 설정
+
 		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
-		
-		//?
 		photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 	}
 
@@ -378,13 +391,32 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//마을 페이즈가 진행되는 여부를 저장한다.
 		if (propertiesThatChanged.ContainsKey(RoomPropKeys.IsVillageUpgradePhase))
 		{
-			isUpgradePhase = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
+			isUpgradePhase = (bool)propertiesThatChanged[RoomPropKeys.IsVillageUpgradePhase];
+
+			if (isUpgradePhase)
+			{
+				// 마을 씬을 추가로 로드 (Additive)
+				if (!SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded)
+					SceneManager.LoadSceneAsync(CommonDefine.VILLAGESCENE, LoadSceneMode.Additive);
+
+				// 메인 게임 UI 가리기 (필요 시)
+				GameCanvasController.Instance.SetActiveCanvas(false);
+			}
+			else
+			{
+				// 마을 씬 언로드
+				if (SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded)
+					SceneManager.UnloadSceneAsync(CommonDefine.VILLAGESCENE);
+
+				// 메인 게임 UI 보이기
+				GameCanvasController.Instance.SetActiveCanvas(true);
+			}
 		}
 
 		//내 Offer RoomProperty Key 가져오기
 		string myOfferKey = ItemPropKeys.OFFER(me);
 		//변경된 Offer 프로퍼티가 내 것에 해당되는 경우
-		if(propertiesThatChanged.TryGetValue(myOfferKey, out var offerObj))
+		if (propertiesThatChanged.TryGetValue(myOfferKey, out var offerObj))
 		{
 			//그리고 offer가 처음 제공되는 경우
 			if (offerGenerated)
@@ -393,7 +425,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				string offers = offerObj as string ?? "";
 
 				//내 턴이고, offer가 유효하면
-				if(turnActor == me && !string.IsNullOrEmpty(offers))
+				if (turnActor == me && !string.IsNullOrEmpty(offers))
 				{
 					//관련 UI를 처리한다.
 					ItemOfferCanvasController.instance.initItemOfferPanel(offers, me);
@@ -418,7 +450,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
 		string offer = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.OFFER(me));
 
-		if(turnActor == me && !string.IsNullOrEmpty (offer))
+		if (turnActor == me && !string.IsNullOrEmpty(offer))
 		{
 			if (ItemOfferCanvasController.instance != null)
 				ItemOfferCanvasController.instance.initItemOfferPanel(offer, me);
