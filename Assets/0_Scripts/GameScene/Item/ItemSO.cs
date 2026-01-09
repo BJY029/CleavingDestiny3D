@@ -23,7 +23,12 @@ public enum ItemTarget
 public enum ItemEffect
 {
     AddStatus,//StatusInstance 따로 생성
-    HealTreeUp, AddVillageShield, TransferOpponentShieldPct, DisplayByTag
+    DeltaTreeUp, 
+    DeltaVillageHp,
+    DeltaPlayerEng,
+    DeltaVillageShield, 
+    TransferOpponentShieldPct, 
+    DisplayByTag
 }
 
 
@@ -121,6 +126,7 @@ public class StatusSpec
     public int priority;                //데미지 파이프라인 우선 순위
 
     public float multiplier;            //데미지 배수
+    public float convertRate;
     public int flatValue;               //고정 데미지/회복/실드 등
     public int randMin, randMax;        //랜덤 범위
     public bool bypassConversion;       //흰개미 데미지 등 방어력으로 전환되지 않는 데미지

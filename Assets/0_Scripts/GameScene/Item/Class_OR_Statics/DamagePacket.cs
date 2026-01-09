@@ -17,6 +17,10 @@ public class DamagePacket
     public bool hidden;
     //방어력 전환에 사용할지 안할지 여부
     public bool bypassConversion;
+    //방어 전환에 사용될 전환률
+    public float convertRateOverride = -1f;
     //최종 확정 데미지 정보(마스터가 결정)
     public int finalDamage;
+    //최종 방어로 전환되는 양
+    public float convertedToBarrier;
 }

@@ -24,7 +24,7 @@ public class StatusSystem
     public void Add(StatusInstance newStatus)
     {
         _status.Add(newStatus);
-    }
+	}
 
     //특정 owner의 상태 이상을 태그 기준으로 제거
     //제거된 상태 이상 갯수 반환
@@ -63,6 +63,11 @@ public class StatusSystem
         _status.RemoveAll(s => 
         (s.spec.durationType == DurationType.Turns || s.spec.durationType == DurationType.ThisTurn)
         && s.remainingTurns <= 0);
+    }
+
+    public void ProcessOnApplyItem(StatusInstance st, EffectContext ctx)
+    {
+        
     }
 
     //적용 기간을 기반으로 해당되는 모든 상태이상 객체를 삭제하는 함수

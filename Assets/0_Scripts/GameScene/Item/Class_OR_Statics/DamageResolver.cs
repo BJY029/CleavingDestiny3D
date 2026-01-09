@@ -39,8 +39,13 @@ public class DamageResolver
             payload = dmg
         }, ctx);
 
+        float baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum);
+        float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate;
+        rate = Mathf.Clamp01(rate);
+
         //최종 데미지 확정
         dmg.finalDamage = calcDmg;
+        dmg.convertedToBarrier = calcDmg * rate;
 
         //공격 직후 트리거 발행(로그, 카운터 등)
         _bus.publish(new GameEvent
@@ -51,14 +56,13 @@ public class DamageResolver
         }, ctx);
     }
 
-    public void ResolveWhenStartTurn(EffectContext ctx)
+    public void ResolveWhenStartTurn(EffectContext ctx, int currentActNum)
     {
         _bus.publish(new GameEvent
         {
             type = TriggerMask.OnTurnStart,
-            actorNum = -1,
+            actorNum = currentActNum,
             payload = null
         }, ctx);
     }
-
 }

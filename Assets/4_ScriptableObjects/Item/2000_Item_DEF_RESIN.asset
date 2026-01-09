@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14ac315f804f03b4aa04259351c0af86, type: 3}
+  m_Name: 2000_Item_DEF_RESIN
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSO
+  itemId: 2000
+  displayName_ID: NAME_DEF_RESIN
+  itemDesc_ID: DESC_DEF_RESIN
+  itemCost: 1
+  type: 1
+  target: 0
+  itemClass: 0
+  itemWeight: 1
+  oncePerWave: 0
+  oncePerGame: 0
+  effects:
+  - effectType: 4
+    intValue1: 0
+    intValue2: 0
+    floatValue1: 50
+    floatValue2: 0
+    statusSpce:
+      statusId: 
+      durationType: 0
+      durationTurns: 0
+      triggers: 32
+      tags: 0
+      priority: 0
+      multiplier: 0
+      convertRate: 0
+      flatValue: 0
+      randMin: 0
+      randMax: 0
+      bypassConversion: 0
+      basicOnly: 0

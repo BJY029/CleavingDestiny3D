@@ -109,12 +109,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		ItemHandlingSystem.instance.RequestHit(damage, true);
 
 		//RPC로 모든 플레이어에게 턴 변경 요청을 보낸다.
-		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, damageRatio);
+		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber);
 
 	}
 
 	[PunRPC]
-	private void RPC_RequestChangeTurn(int requesterActorNumber, int damage, PhotonMessageInfo info)
+	private void RPC_RequestChangeTurn(int requesterActorNumber, PhotonMessageInfo info)
 	{
 		//그러나 실제로 턴 변경 관련 처리를 하는 플레이어는 한명이며, 이는 가장 낮은 Actor Number를 가진 플레이어다.
 		if (!IsInitializer()) return;
@@ -152,7 +152,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		if (!IsInitializer()) return;
 
 	//	TreeStatus.Instance.getHitByPlayer(dmg);
-	//}
+	}
 
 	//처음 PlayerManager에서 초기화 된 후 Offer UI를 처리하기 위한 함수
 	public void setOfferGeneratedFromOutsied(bool flag)

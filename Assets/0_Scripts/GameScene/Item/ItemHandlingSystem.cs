@@ -17,7 +17,8 @@ public struct AttackCommand
 public struct AttackResult
 {
 	public int attackerNum;		//요청을 보낸 Actor 번호
-	public int finalDamage;		//최종 확정 데미지(숨김 상태인 경우 다른 플레이어에겐 -1)
+	public int finalDamage;     //최종 확정 데미지(숨김 상태인 경우 다른 플레이어에겐 -1)
+	public float convertedBarrier; //최종 방어력 Rate
 	public bool hidden;			//데미지 숨김 상태인지 여부
 	public float treeHpAfter;	//UI 반영용 treeHP 결과
 }
@@ -53,9 +54,18 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//MasterClient만 처리한다.
 		if (!PhotonNetwork.IsMasterClient) return;
 
+
 		//해당 아이템에 부착된 효과들을 돌면서
 		foreach (EffectSpec es in item.effects)
 		{
+			//AddStatus 외의 다른 아이템 효과로 정의된 아이템일 경우
+			if(es.effectType != ItemEffect.AddStatus)
+			{
+				ItemProcessImm(actorNum, es);
+
+				continue;
+			}
+
 			//AddStatus에 정의된 해당 아이템 정보를 가져온다.
 			//이는 추후에 다른 아이템을 처리하기 위해 별개의 코드를 넣어야 할 듯 하다.
 			StatusSpec ss = es.statusSpce;
@@ -116,7 +126,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		if (!PhotonNetwork.IsMasterClient) return;		
 
 		var ctx = new EffectContext(_rng, Debug.Log);
-		_damageResolver.ResolveWhenStartTurn(ctx);
+		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+		_damageResolver.ResolveWhenStartTurn(ctx, turnActor);
 	}
 
 	public void OnWaveEnd()
@@ -124,6 +135,13 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		if(!PhotonNetwork.IsMasterClient)  return; 
 		//아이템 사용 길이가 '하루'에 속하는 아이템을 statusSystem에서 삭제하는 함수 실행
 		_statusSystem.RemoveAllByDuration(DurationType.UntilWaveEnd);
+	}
+
+	//사용 즉시 적용 될 아이템들을 확인하고 해당 아이템을 적용하는 함수
+	public void CheckAndActivateImmItem()
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+
 	}
 
 	//턴 전환 시 호출될 함수
@@ -188,11 +206,11 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, hp);
 
 		//계산된 결과를 각 클라이언트에게 브로드캐스트하는 함수 호출
-		BroadcastHitResult(cmd.attackerNum, dmg.finalDamage, dmg.hidden, hp);
+		BroadcastHitResult(cmd.attackerNum, dmg.finalDamage,  dmg.convertedToBarrier ,dmg.hidden, hp);
 	}
 
 	//마스터 클라이언트가 계산 결과를 각 클라이언트에게 브로드캐스트 하는 함수
-	private void BroadcastHitResult(int attackNum, int finalDmg, bool hidden, float treeHPAfter)
+	private void BroadcastHitResult(int attackNum, int finalDmg, float finalBarrierConverted,bool hidden, float treeHPAfter)
 	{
 		Debug.Log("Final Damage : " + finalDmg);
 
@@ -227,6 +245,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		{
 			attackerNum = attackNum,
 			finalDamage = finalDmg,
+			convertedBarrier = finalBarrierConverted,
 			hidden = hidden,
 			treeHpAfter = treeHPAfter,
 		};
@@ -237,6 +256,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			attackerNum = attackNum,
 			//hidden 여부에 따라서 데미지 정보 공개 혹은 비공개
 			finalDamage = hidden ? -1 : finalDmg,
+			convertedBarrier = hidden ? -1f : finalBarrierConverted,
 			hidden = hidden,
 			treeHpAfter = treeHPAfter,
 		};
@@ -271,18 +291,91 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		if(res.attackerNum == PhotonNetwork.LocalPlayer.ActorNumber)
 		{
 			float currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage);
-			float currentConBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.BarrierConversionRate);
-			float currentBarrier;
+			float currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier);
 
 			//데미지 합계 계산
 			currentTotalDamage += res.finalDamage;
 			//Barrier 값 계산
-			currentBarrier = currentTotalDamage * (1 + currentConBarrier);
+			currentBarrier = currentBarrier + res.convertedBarrier;
 			//변경된 스탯 값 프로퍼티에 업데이트
 			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage, currentTotalDamage);
 			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, currentBarrier);
 		}
 	}
+
+	//즉시 적용되는 아이템 실행 함수
+	private void ItemProcessImm(int actorNum, EffectSpec es)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+		//EffectContext 발행
+		var ctx = new EffectContext(_rng, Debug.Log);
+		//ItemEffect 타입 기준 구분
+		switch (es.effectType)
+		{
+			//나무 체력을 올리는 아이템이라면
+			case ItemEffect.DeltaTreeUp:
+				float val = es.floatValue1;
+				if(Mathf.Approximately(val, 0f))
+				{
+					ctx.Log?.Invoke("Item Heal Value null Exception");
+					return;
+				}
+				val += ctx.GetTreeHP();
+				ctx.SetTreeHP_MasterOnly(val);
+
+				ctx.Log?.Invoke($"[ItemProcessImm] TreeHP Changed to {val}");
+				break;
+			case ItemEffect.DeltaVillageHp:
+				float delta = es.floatValue1;
+				if (Mathf.Approximately(delta, 0f))
+				{
+					ctx.Log?.Invoke("Item Village Heal Value null Exception");
+					return;
+				}
+				float cur = ctx.GetPlayerVillageHP(actorNum);
+				//아래 코드는 해당 아이템을 사용하면 게임을 바로 지게 되는 요인을 막기 위한 플레이어를 위한 장치
+				//도입 여부는 아직 모름
+				//if (delta < 0f && cur + delta <= 0f)
+				//{
+				//	ctx.Log?.Invoke("[ItemProcessImm] Not enough VillageHP for donation");
+				//	return;
+				//}
+				float next = delta + cur;
+				ctx.SetPlayerVIllageHP(actorNum, next);
+
+				ctx.Log?.Invoke($"[ItemProcessImm] VillageHP Changed to {next}");
+				break;
+			//마을 쉴드량을 추가하는 아이템이라면
+			case ItemEffect.DeltaVillageShield:
+				float shield = es.floatValue1;
+				if(Mathf.Approximately(shield, 0f))
+				{
+					ctx.Log?.Invoke("Item Shield Value null Exception");
+					return;
+				}
+				shield += ctx.GetPlayerVillageShield(actorNum);
+
+				ctx.SetPlayerVIllageShield(actorNum, shield);
+
+				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {shield}");
+				break;
+			case ItemEffect.DeltaPlayerEng:
+				int eng = es.intValue1;
+				if(eng == 0)
+				{
+					ctx.Log?.Invoke("Item Charge Value null Exception");
+					return;
+				}
+
+				eng += ctx.GetPlayerEng(actorNum);
+
+				ctx.SetPlayerEng(actorNum, eng);
+
+				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s Energy Changed to {eng}");
+				break;
+		}
+	}
+
 
 	private bool IsMyTurnCheckInMaster(int attackerNum)
 	{

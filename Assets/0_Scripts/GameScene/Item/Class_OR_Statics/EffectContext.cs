@@ -1,5 +1,6 @@
 using UnityEngine;
 using Photon.Pun;
+using Photon.Realtime;
 using ExitGames.Client.Photon;
 using System;
 
@@ -33,5 +34,65 @@ public class EffectContext
 		}
 
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, newHP);
+	}
+
+	public float GetPlayerVillageHP(int actorNum)
+	{
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
+		return PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.VillageHP);
+	}
+
+	public void SetPlayerVIllageHP(int actorNum, float newHP)
+	{
+		if (!PhotonNetwork.IsMasterClient)
+		{
+			Log?.Invoke("[Warning] SetTreeHP_MasterOnly called on non-master. Ignored.");
+			return;
+		}
+
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageHP, newHP);
+	}
+
+	public float GetPlayerVillageShield(int actorNum)
+	{
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
+		return PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.VillageBarrier);
+	}
+
+	public void SetPlayerVIllageShield(int actorNum, float newValue)
+	{
+		if (!PhotonNetwork.IsMasterClient)
+		{
+			Log?.Invoke("[Warning] SetTreeHP_MasterOnly called on non-master. Ignored.");
+			return;
+		}
+
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageBarrier, newValue);
+	}
+
+	public int GetPlayerEng(int actorNum)
+	{
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
+		return PhotonPropertyHelper.GetPlayerProp<int>(player, PlayerPropKeys.Energy);
+	}
+
+	public void SetPlayerEng(int actorNum, int newValue)
+	{
+		if (!PhotonNetwork.IsMasterClient)
+		{
+			Log?.Invoke("[Warning] SetTreeHP_MasterOnly called on non-master. Ignored.");
+			return;
+		}
+
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Energy, newValue);
+	}
+
+	public float GetBarrierConversionRate(int actorNum)
+	{
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
+		return PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.BarrierConversionRate);
 	}
 }

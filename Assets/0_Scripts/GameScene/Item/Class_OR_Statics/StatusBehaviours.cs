@@ -87,6 +87,15 @@ public static class StatusBehaviours
 
 				ctx.Log?.Invoke($"[Status] DMG_BLIND overriedDamage = {value}");
 				return;
+
+            case "DEF_SILVER":
+                if (e.type != TriggerMask.OnDamageConvert) return;
+                if (!dmg.isBasicAttack) return;
+
+                dmg.convertRateOverride = st.spec.convertRate;
+
+				ctx.Log?.Invoke($"[Status] DEF_SILVER overriedBarrierConvertRate = {dmg.convertRateOverride}");
+				return;
         }
     }
 }
