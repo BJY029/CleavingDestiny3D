@@ -8,6 +8,7 @@ using UnityEngine;
 public class InventoryAuthority : MonoBehaviourPunCallbacks
 {
 	public static InventoryAuthority Instance;
+	private WorldInventorySlot wis;
 
 	private void Awake()
 	{
@@ -25,9 +26,10 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_TakeOffer), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber, itemId);
 	}
 
-	public void RequestUseItem(int slotIdx)
+	public void RequestUseItem(int slotIdx, WorldInventorySlot wi)
 	{
-		photonView.RPC(nameof(RPC_UseItem), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber, slotIdx); ;
+		wis = wi;
+		photonView.RPC(nameof(RPC_UseItem), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber, slotIdx);
 	}
 
 	[PunRPC]
@@ -132,6 +134,19 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		}
 
 		ItemSO item = ItemDB.Instance.Get(itemId);
+
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(requestActor);
+		int playerEng = PhotonPropertyHelper.GetPlayerProp<int>(player, PlayerPropKeys.Energy);
+		if(playerEng - item.itemCost < 0)
+		{
+			photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_Energy);
+			photonView.RPC(nameof(RPC_SetItemSlotUI), player, false);
+			return;
+		}
+
+		//기력량 업데이트
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Energy, playerEng - item.itemCost);
+
 		//TODO: 아이템 효과 적용
 		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
 		ItemHandlingSystem.instance.AddItemStatusInstance(turnActor, item);
@@ -139,6 +154,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		//사용한 아이템 인벤토리에서 제거
 		slots[slotIdx] = (0, null);
+		photonView.RPC(nameof(RPC_SetItemSlotUI), player, true);
 
 		//슬롯 Info 정보 업데이트
 		string updatedItemSlots = ItemInfoSerializer.Encode(slots);
@@ -174,6 +190,18 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		Debug.Log($"Player{turnActor}'s inventory : {inv}");
 	}
 
+	[PunRPC]
+	public void RPC_SetItemSlotUI(bool success)
+	{
+		wis?.SetCurrentItemNull(success);
+		wis = null;
+	}
+
+	[PunRPC]
+	public void RPC_ShowWarning(string textId)
+	{
+		PlayerCanvasController.Instance.SetWarningTextActive(textId);
+	}
 
 	//선택된 아이템이 실제 제안된 아이템 목록에 있는지 확인
 	bool Contains(string offer, string id)

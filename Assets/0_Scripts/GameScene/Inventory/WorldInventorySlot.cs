@@ -138,12 +138,20 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 		if (!IsMine) return;
 		if (!GameHelper.IsMyTurn()) return;
 
-		SetIcon(null);
 		ToolTipPanel.SetActive(false);
 		Debug.Log("Interacted!!");
-        InventoryAuthority.Instance.RequestUseItem(slotIndex);
-		currentItem = null;
+        InventoryAuthority.Instance.RequestUseItem(slotIndex, this);
+		
     }
+
+	public void SetCurrentItemNull(bool success)
+	{
+		if (success)
+		{
+			SetIcon(null);
+			currentItem = null;
+		}
+	}
 
     private void Highlight(bool on)
     {

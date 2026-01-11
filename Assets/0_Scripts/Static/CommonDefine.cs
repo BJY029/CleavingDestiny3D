@@ -41,6 +41,7 @@ public class UI_CSV
 	public const string UI_Load_Waiting = "UI_Load_Waiting";
 	public const string UI_Load_MatchSuccess = "UI_Load_MatchSuccess";
 	public const string UI_Load_Loading = "UI_Load_Loading";
+    public const string UI_Warning_Energy = "UI_Warning_Energy";
 }
 
 //서버 CustomProperty Key

@@ -61,6 +61,9 @@ MonoBehaviour:
   - RPC_OnAttackResult
   - RPC_RequestAttack
   - TryDisposeWaveTurnItem
+  - RPC_SetWarningTextActive
+  - RPC_SetItemSlotUI
+  - RPC_ShowWarning
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

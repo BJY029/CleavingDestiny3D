@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Realtime;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,11 +25,17 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	[Header("Gauge")]
 	[SerializeField] private float speed = 1.8f;
 
+	[Header("Warning")]
+	[SerializeField] private GameObject WarningObj;
+
 	private Coroutine gaugeCo;
 	private bool selecting;
 
 	private TextMeshProUGUI HitText;
 	private Animator HitTextAnim;
+
+	private TextMeshProUGUI WarningText;
+	private Animator WarningTextAnim;
 
 	private void Awake()
 	{
@@ -36,12 +43,17 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		else Destroy(gameObject);
 
 		HitText = HitTextObj.GetComponentInChildren<TextMeshProUGUI>();
+		WarningText = WarningObj.GetComponentInChildren<TextMeshProUGUI>();
+
 		HitTextAnim = HitTextObj.GetComponent<Animator>();
+		WarningTextAnim = WarningObj.GetComponent<Animator>();
 		canvasGroup = GetComponent<CanvasGroup>();
 
 		HitTextObj.SetActive(false);
+		WarningObj.SetActive(false);
 		CloseGauge();
 		HitText.text = "";
+		WarningText.text = "";
 	}
 
 	//턴 정보에 따라서 Hit Text를 변경하는 함수
@@ -142,6 +154,13 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		HitTextAnim.Play("UI_Player_HitText_Down");
 		CloseGauge();
 		HitText.text = "";
+	}
+
+	public void SetWarningTextActive(string textId)
+	{
+		WarningObj.SetActive(true);
+		WarningText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, textId);
+		WarningTextAnim.Play("UI_Player_Warning_Up");
 	}
 
 	//현재 플레이어 상태 UI를 업데이트 하는 함수
