@@ -1,6 +1,7 @@
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 {
@@ -21,10 +22,10 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	//ΩΩ∑‘ ≈¯∆¡ ø¿∫Í¡ß∆Æ
 	[Header("ToolTipInfos")]
 	public GameObject ToolTipPanel;
-	public Text ItemNameText;
-	public Text ItemRarityText;
-	public Text ItemPriceText;
-	public Text ItemDescText;
+	public TextMeshProUGUI ItemNameText;
+	public TextMeshProUGUI ItemRarityText;
+	public TextMeshProUGUI ItemPriceText;
+	public TextMeshProUGUI ItemDescText;
 
 	private void Awake()
 	{

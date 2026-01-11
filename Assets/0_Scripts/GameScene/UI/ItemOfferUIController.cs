@@ -1,15 +1,16 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ItemOfferUIController : MonoBehaviour
 {
     private string itemId;
     [Header("UI Components")]
     public Image iconImage;
-    public Text itemName;
-    public Text itemRarity;
-    public Text itemCost;
-    public Text itemDesc;
+    public TextMeshProUGUI itemName;
+    public TextMeshProUGUI itemRarity;
+    public TextMeshProUGUI itemCost;
+    public TextMeshProUGUI itemDesc;
     public Button selectBtn;
 
 

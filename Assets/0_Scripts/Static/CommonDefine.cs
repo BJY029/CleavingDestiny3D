@@ -37,6 +37,10 @@ public class UI_CSV
     public const string UI_BranchDesc2 = "UI_BranchDesc_2";
     public const string UI_PlayerHit = "UI_PlayerHIT";
     public const string UI_PlayerNHit = "UI_PlayerNotHIT";
+    public const string UI_Load_Finding = "UI_Load_Finding";
+	public const string UI_Load_Waiting = "UI_Load_Waiting";
+	public const string UI_Load_MatchSuccess = "UI_Load_MatchSuccess";
+	public const string UI_Load_Loading = "UI_Load_Loading";
 }
 
 //서버 CustomProperty Key

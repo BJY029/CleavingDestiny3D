@@ -2,7 +2,11 @@
 UI_PVP,매치메이킹,Matchmaking
 UI_PVE,로컬 플레이,Local Play
 UI_EXIT,게임 나가기,Exit Game
+UI_Load_Finding,상대 찾는 중,Looking for an opponent
+UI_Load_Waiting,상대 기다리는 중,Waiting for opponent
+UI_Load_MatchSuccess,매칭 성공! 게임에 입장합니다.,Matching success! Enter the game.
+UI_Load_Loading,로딩 중,Loading Scene
 UI_BranchDesc_1,나뭇가지 하나를 고르세요,Pick a stick
 UI_BranchDesc_2,나뭇가지 길이에 따라 게임 진행 순서가 결정됩니다.,The player with the longest stick goes first
-UI_PlayerHIT,F'로 나무 베기,Press 'F' to HIT
+UI_PlayerHIT,'F'로 나무 베기,Press 'F' to HIT
 UI_PlayerNotHIT,내 차례가 아닙니다.,Not my Turn.

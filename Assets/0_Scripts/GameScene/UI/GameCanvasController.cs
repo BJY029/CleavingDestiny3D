@@ -1,6 +1,7 @@
 using Photon.Pun;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class GameCanvasController : MonoBehaviourPunCallbacks
 {
@@ -10,9 +11,9 @@ public class GameCanvasController : MonoBehaviourPunCallbacks
 	private CanvasGroup canvasGroup;
 
 	public GameObject DayTextObj;
-	private Text DayText;
+	private TextMeshProUGUI DayText;
 	public GameObject WaveTextObj;
-	private Text WaveText;
+	private TextMeshProUGUI WaveText;
 
 
 	private void Awake()
@@ -20,8 +21,8 @@ public class GameCanvasController : MonoBehaviourPunCallbacks
 		if(Instance == null) Instance = this;
 		else Destroy(gameObject);
 
-		DayText = DayTextObj.GetComponentInChildren<Text>();
-		WaveText = WaveTextObj.GetComponentInChildren<Text>();
+		DayText = DayTextObj.GetComponentInChildren<TextMeshProUGUI>();
+		WaveText = WaveTextObj.GetComponentInChildren<TextMeshProUGUI>();
 		canvasGroup = GetComponent<CanvasGroup>();
 
 		DayText.text = string.Empty;

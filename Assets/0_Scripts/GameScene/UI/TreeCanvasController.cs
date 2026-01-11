@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class TreeCanvasController : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public class TreeCanvasController : MonoBehaviour
 		else Destroy(gameObject);
 	}
 
-	public Text TreeHP;
+	public TextMeshProUGUI TreeHP;
 
 	public void UpdateTreeHP(float damage)
 	{

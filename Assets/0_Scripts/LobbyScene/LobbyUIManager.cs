@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 public class LobbyUIManager : MonoBehaviour
 {
@@ -19,17 +19,17 @@ public class LobbyUIManager : MonoBehaviour
 
 	private void Start()
 	{
-		isConnectedUI.GetComponentInChildren<Text>().text = "Disconnected";
-		NicknameUI.GetComponentInChildren<Text>().text = "Nickname : ";
+		isConnectedUI.GetComponentInChildren<TextMeshProUGUI>().text = "Disconnected";
+		NicknameUI.GetComponentInChildren<TextMeshProUGUI>().text = "Nickname : ";
 	}
 
 	public void setConnectedText(string text)
 	{
-		isConnectedUI.GetComponentInChildren<Text>().text = text;
+		isConnectedUI.GetComponentInChildren<TextMeshProUGUI>().text = text;
 	}
 
 	public void setNickname(string name)
 	{
-		NicknameUI.GetComponentInChildren<Text>().text = "Nickname : " + name;
+		NicknameUI.GetComponentInChildren<TextMeshProUGUI>().text = "Nickname : " + name;
 	}	
 }

@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class BranchUIController : MonoBehaviour
 {
@@ -17,8 +18,8 @@ public class BranchUIController : MonoBehaviour
 	}
 
 	public Canvas BranchCanvas;
-    public Text Desc1;
-	public Text Desc2;
+    public TextMeshProUGUI Desc1;
+	public TextMeshProUGUI Desc2;
 	public Image Curtain;
 
 	private float offDuration = 3f;
@@ -26,8 +27,8 @@ public class BranchUIController : MonoBehaviour
 
 	private void Start()
 	{
-		Desc1.text = LocalizationManager.Instance.GetText(CSV_Type.UI, "UI_BranchDesc_1");
-		Desc2.text = LocalizationManager.Instance.GetText(CSV_Type.UI, "UI_BranchDesc_2");
+		Desc1.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_BranchDesc1);
+		Desc2.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_BranchDesc2);
 	}
 
 

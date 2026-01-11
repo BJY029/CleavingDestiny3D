@@ -1,9 +1,6 @@
-﻿using ExitGames.Client.Photon.StructWrapping;
-using Photon.Pun;
-using Photon.Realtime;
-using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ButtonController : MatchController
 {
@@ -28,7 +25,7 @@ public class ButtonController : MatchController
 
     void SetButtonText(Button btn, string textID)
     {
-        Text text = btn.GetComponentInChildren<Text>();
+        TextMeshProUGUI text = btn.GetComponentInChildren<TextMeshProUGUI>();
         if(text != null)
         {
             text.text = LocalizationManager.Instance.GetText(CSV_Type.UI, textID);

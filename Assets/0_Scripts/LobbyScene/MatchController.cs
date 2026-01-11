@@ -3,6 +3,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
 using UnityEngine.UI;
+using TMPro;
 using UnityEngine.SceneManagement;
 using System.Linq;
 
@@ -32,9 +33,9 @@ public class MatchController : MonoBehaviourPunCallbacks
 	//��ġ����ŷ ���� UI ���
 	[Header("Loading Panel")]
 	public GameObject LoadingPanel;
-	public Text LoadingText;
-	public Text SceneLoadingText;
-	public Text Timer;
+	public TextMeshProUGUI LoadingText;
+	public TextMeshProUGUI SceneLoadingText;
+	public TextMeshProUGUI Timer;
 	public Button StopMatching;
 
 	private void Awake()
@@ -60,7 +61,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 			LoadingPanel.transform.localScale = Vector3.one;
 
 			//...�� ���������� ��µǷη� �Ѵ�.
-			LoadingText.text = "Looking for an opponent";
+			LoadingText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Load_Finding);
 			if (spiningCoroutine != null)
 			{
 				spining = false;
@@ -177,7 +178,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 		else
 		{
 			//...�� ���������� ��µǵ��� �Ѵ�.
-			LoadingText.text = "Waiting for opponent";
+			LoadingText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Load_Waiting);
 			if (spiningCoroutine != null)
 			{
 				spining = false;
@@ -188,7 +189,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 	}
 
 	//Ư�� �ؽ�Ʈ�� ...�� �ݺ������� ��µǴ� �ڷ�ƾ
-	IEnumerator SpiningDots(Text texts)
+	IEnumerator SpiningDots(TextMeshProUGUI texts)
 	{
 		yield return null;
 		spining = true;
@@ -222,7 +223,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 		{
 			StopCoroutine(timerCoroutine);
 		}
-		LoadingText.text = "Matching success! Moving to gamescene";
+		LoadingText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Load_MatchSuccess);
 
 		//��ġ����ŷ ��� ���ϰ� ��ư ��Ȱ��ȭ
 		StopMatching.gameObject.SetActive(false);
@@ -293,7 +294,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 		asyncOperation.allowSceneActivation = false;
 
 		//�ؽ�Ʈ ���� ����
-		string originText = "Loading Scene";
+		string originText = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Load_Loading);
 		int curDot = 0;
 		string Dot = "";
 

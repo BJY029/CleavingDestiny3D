@@ -2,6 +2,7 @@ using Photon.Pun;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class PlayerCanvasController : MonoBehaviourPunCallbacks
 {
@@ -10,15 +11,15 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	private CanvasGroup canvasGroup;
 
 	[Header("UI")]
-	public Text EnergyValue;
-	public Text VillageHP;
-	public Text DamageValue;
-	public Text BarrierValue;
+	public TextMeshProUGUI EnergyValue;
+	public TextMeshProUGUI VillageHP;
+	public TextMeshProUGUI DamageValue;
+	public TextMeshProUGUI BarrierValue;
 	public GameObject HitTextObj;
 	[SerializeField] private GameObject gaugeRoot;
 	[SerializeField] private Slider gaugeSlider;
-	public Text minDamage;
-	public Text maxDamage;
+	public TextMeshProUGUI minDamage;
+	public TextMeshProUGUI maxDamage;
 
 	[Header("Gauge")]
 	[SerializeField] private float speed = 1.8f;
@@ -26,7 +27,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	private Coroutine gaugeCo;
 	private bool selecting;
 
-	private Text HitText;
+	private TextMeshProUGUI HitText;
 	private Animator HitTextAnim;
 
 	private void Awake()
@@ -34,7 +35,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		if(Instance == null) Instance = this;
 		else Destroy(gameObject);
 
-		HitText = HitTextObj.GetComponentInChildren<Text>();
+		HitText = HitTextObj.GetComponentInChildren<TextMeshProUGUI>();
 		HitTextAnim = HitTextObj.GetComponent<Animator>();
 		canvasGroup = GetComponent<CanvasGroup>();
 
