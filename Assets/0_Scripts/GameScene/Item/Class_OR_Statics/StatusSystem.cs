@@ -58,12 +58,13 @@ public class StatusSystem
             }
         }
 
-        //상태 이상 객체 삭제
-        //remainingTruns이 0 이하인 상태이상 객체 모두 삭제
-        _status.RemoveAll(s => 
-        (s.spec.durationType == DurationType.Turns || s.spec.durationType == DurationType.ThisTurn)
-        && s.remainingTurns <= 0);
-    }
+		//상태 이상 객체 삭제
+		//remainingTruns이 0 이하인 상태이상 객체 모두 삭제
+		//_status.RemoveAll(s => 
+		//(s.spec.durationType == DurationType.Turns || s.spec.durationType == DurationType.ThisTurn)
+		//&& s.remainingTurns <= 0);
+		_status.RemoveAll(s => s.remainingTurns <= 0);
+	}
 
     public void ProcessOnApplyItem(StatusInstance st, EffectContext ctx)
     {

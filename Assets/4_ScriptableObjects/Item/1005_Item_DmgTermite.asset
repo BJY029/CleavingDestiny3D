@@ -36,8 +36,10 @@ MonoBehaviour:
       tags: 82
       priority: 0
       multiplier: 0
+      convertRate: 0
       flatValue: 0
       randMin: 20
       randMax: 150
       bypassConversion: 0
       basicOnly: 0
+      consumeOnTrigger: 0

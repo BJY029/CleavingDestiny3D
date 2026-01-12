@@ -163,6 +163,8 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		WarningTextAnim.Play("UI_Player_Warning_Up");
 	}
 
+	
+
 	//현재 플레이어 상태 UI를 업데이트 하는 함수
 	public void updatePlayerStatus(string Energy, string HP, string Damage, string Barrier)
 	{

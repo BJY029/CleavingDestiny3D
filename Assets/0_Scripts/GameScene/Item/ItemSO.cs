@@ -27,6 +27,7 @@ public enum ItemEffect
     DeltaVillageHp,
     DeltaPlayerEng,
     DeltaVillageShield, 
+    MultVillageShield,
     TransferOpponentShieldPct, 
     DisplayByTag
 }
@@ -131,4 +132,5 @@ public class StatusSpec
     public int randMin, randMax;        //랜덤 범위
     public bool bypassConversion;       //흰개미 데미지 등 방어력으로 전환되지 않는 데미지
     public bool basicOnly;              //평타 데미지만 다음으로 적용
+    public bool consumeOnTrigger;       //트리거 발생시 소비 후 삭제 할지 플래그
 }

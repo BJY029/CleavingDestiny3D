@@ -54,71 +54,165 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//MasterClient만 처리한다.
 		if (!PhotonNetwork.IsMasterClient) return;
 
-
-		//해당 아이템에 부착된 효과들을 돌면서
-		foreach (EffectSpec es in item.effects)
+		//아이템 적용 대상을 기준으로 분기하여 처리한다.
+		switch (item.target)
 		{
-			//AddStatus 외의 다른 아이템 효과로 정의된 아이템일 경우
-			if(es.effectType != ItemEffect.AddStatus)
-			{
-				ItemProcessImm(actorNum, es);
+			//아이템 적용 대상이 자기 자신인 경우
+			case ItemTarget.Self:
+			case ItemTarget.SelfVillage:
+			case ItemTarget.Tree:
+				//해당 아이템에 부착된 효과들을 돌면서
+				foreach (EffectSpec es in item.effects)
+				{
+					//AddStatus 외의 다른 아이템 효과로 정의된 아이템일 경우
+					if (es.effectType != ItemEffect.AddStatus)
+					{
+						ItemProcessImm(actorNum, es);
 
-				continue;
-			}
+						continue;
+					}
 
-			//AddStatus에 정의된 해당 아이템 정보를 가져온다.
-			//이는 추후에 다른 아이템을 처리하기 위해 별개의 코드를 넣어야 할 듯 하다.
-			StatusSpec ss = es.statusSpce;
+					//AddStatus에 정의된 해당 아이템 정보를 가져온다.
+					//이는 추후에 다른 아이템을 처리하기 위해 별개의 코드를 넣어야 할 듯 하다.
+					StatusSpec ss = es.statusSpce;
 
-			//남은 턴 수를 기본값으로 초기화하고
-			int remainTurns = 9999;
-			//각 타입에 따라서 남은 턴 수를 계산한다.
-			switch (ss.durationType)
-			{
-				//이번 턴에만 사용되는 아이템인 경우
-				case DurationType.ThisTurn:
-					remainTurns = 1;
-					break;
-				//다음 턴까지 사용되는 아이템일 경우
-				case DurationType.NextTurn:
-					remainTurns = 2;
-					break;
-				//N번의 Turn 동안 활성화되는 아이템일 경우
-				case DurationType.Turns:
-					remainTurns = ss.durationTurns;
-					break;
-				//이번 일자 동안 활성화 되는 아이템일 경우
-				case DurationType.UntilWaveEnd:
-					//현재 wave 값
-					int currentWave = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
-					//최대 wave 값
-					int MaxWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.MaxWaveCnt);
-					//플레이어 수(Turn 수)
-					int PlayerCnt = PhotonNetwork.PlayerList.Length;
-					//현재 턴 인덱스
-					int currentTurnIdx = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
-					//남은 턴 계산
-						//ex) 2번째 wave의 첫번째 턴인 경우 
-						//remainTurns = (3 - 1 - 1) * 2 + (2 - 0) = 4
-					remainTurns = (MaxWaveCnt - currentWave - 1) * PlayerCnt + (PlayerCnt - currentTurnIdx);
-					break;
-			}
+					//남은 턴 수를 durationType을 기반으로 초기화하고
+					int remainTurns = getRemainTurns(ss);
 
-			//상태 객체 선언
-			var st = new StatusInstance
-			{
-				spec = ss,
-				ownerActorNum = actorNum,
-				sourceActorNum = actorNum,
-				remainingTurns = remainTurns
-			};
+					//StatusIntance를 생성한 다음
+					var st = setAndGetStatusInstance(ss, actorNum, actorNum, remainTurns);
 
-			//플레이어의 상태 관리 시스템 리스트에 삽입
-			_statusSystem.Add(st);
+					//플레이어의 상태 관리 시스템 리스트에 삽입
+					_statusSystem.Add(st);
 
-			//디버깅
-			Debug.Log($"[Item] AddStatus {ss.statusId} to {actorNum}");
+					//디버깅
+					Debug.Log($"[Item] AddStatus {ss.statusId} to {actorNum}");
+				}
+				break;
+
+			//아이템 적용 대상이 다른 플레이어인 경우
+			case ItemTarget.Opponent:
+			case ItemTarget.OpponentVillage:
+				foreach (EffectSpec es in item.effects)
+				{
+					Player[] playerNums = PhotonNetwork.PlayerList;
+					//AddStatus 외의 다른 아이템 효과로 정의된 아이템일 경우
+					if (es.effectType != ItemEffect.AddStatus)
+					{
+						//나를 제외한 다른 모든 플레이어에게 해당 즉시 적용 아이템 효과를 적용한다.
+						foreach(Player player in playerNums)
+						{
+							if (player.ActorNumber != actorNum)
+								ItemProcessImm(player.ActorNumber, es);
+						}
+						continue;
+					}
+
+					//AddStatus에 정의된 해당 아이템 정보를 가져온다.
+					StatusSpec ss = es.statusSpce;
+
+					//남은 턴 수를 durationType을 기반으로 초기화하고
+					int remainTurns = getRemainTurns(ss);
+
+					//다른 플레이어어정보로 초기화하여 해당 아이템 효과를 삽입한다.
+					foreach (Player player in playerNums)
+					{
+						if (player.ActorNumber != actorNum)
+						{
+							var opst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
+
+							_statusSystem.Add(opst);
+							//디버깅
+							Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
+						}
+					}
+				}
+				break;
+
+
+			//아이템 적용 대상이 전체인 경우
+			case ItemTarget.Global:
+				foreach (EffectSpec es in item.effects)
+				{
+					Player[] playerNums = PhotonNetwork.PlayerList;
+					//AddStatus 외의 다른 아이템 효과로 정의된 아이템일 경우
+					if (es.effectType != ItemEffect.AddStatus)
+					{
+						//모두에게 즉시 적용
+						foreach (Player player in playerNums)
+						{
+							ItemProcessImm(player.ActorNumber, es);
+						}
+						continue;
+					}
+
+					//AddStatus에 정의된 해당 아이템 정보를 가져온다.
+					StatusSpec ss = es.statusSpce;
+
+					//남은 턴 수를 durationType을 기반으로 초기화하고
+					int remainTurns = getRemainTurns(ss);
+
+					//각 플레이어 정보로 초기화하여 아이템효과를 삽입한다.
+					foreach (Player player in playerNums)
+					{
+						var gbst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
+						
+						_statusSystem.Add(gbst);
+						//디버깅
+						Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
+					}
+				}
+				break;
 		}
+	}
+
+	private int getRemainTurns(StatusSpec ss)
+	{
+		int remainTurns = 9999;
+		switch (ss.durationType)
+		{
+			//이번 턴에만 사용되는 아이템인 경우
+			case DurationType.ThisTurn:
+				remainTurns = 1;
+				break;
+			//다음 턴까지 사용되는 아이템일 경우
+			case DurationType.NextTurn:
+				remainTurns = 2;
+				break;
+			//N번의 Turn 동안 활성화되는 아이템일 경우
+			case DurationType.Turns:
+				remainTurns = ss.durationTurns;
+				break;
+			//이번 일자 동안 활성화 되는 아이템일 경우
+			case DurationType.UntilWaveEnd:
+				//현재 wave 값
+				int currentWave = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
+				//최대 wave 값
+				int MaxWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.MaxWaveCnt);
+				//플레이어 수(Turn 수)
+				int PlayerCnt = PhotonNetwork.PlayerList.Length;
+				//현재 턴 인덱스
+				int currentTurnIdx = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
+				//남은 턴 계산
+				//ex) 2번째 wave의 첫번째 턴인 경우 
+				//remainTurns = (3 - 1 - 1) * 2 + (2 - 0) = 4
+				remainTurns = (MaxWaveCnt - currentWave - 1) * PlayerCnt + (PlayerCnt - currentTurnIdx);
+				break;
+		}
+		return remainTurns;
+	}
+
+	//StatusInstance를 생성하고 반환하는 함수
+	private StatusInstance setAndGetStatusInstance(StatusSpec ss, int ownerAct, int sourceAct, int remainTurns)
+	{
+		var st = new StatusInstance
+		{
+			spec = ss,
+			ownerActorNum = ownerAct,
+			sourceActorNum = sourceAct,
+			remainingTurns = remainTurns
+		};
+		return st;
 	}
 
 	public void OnTurnStart()
@@ -312,7 +406,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//ItemEffect 타입 기준 구분
 		switch (es.effectType)
 		{
-			//나무 체력을 올리는 아이템이라면
+			//나무 체력에 추가 HP를 +/- 하는 아이템이라면
 			case ItemEffect.DeltaTreeUp:
 				float val = es.floatValue1;
 				if(Mathf.Approximately(val, 0f))
@@ -325,6 +419,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 				ctx.Log?.Invoke($"[ItemProcessImm] TreeHP Changed to {val}");
 				break;
+			//마을 체력에 추가 HP를 +/- 하는 아이템이라면
 			case ItemEffect.DeltaVillageHp:
 				float delta = es.floatValue1;
 				if (Mathf.Approximately(delta, 0f))
@@ -345,7 +440,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 				ctx.Log?.Invoke($"[ItemProcessImm] VillageHP Changed to {next}");
 				break;
-			//마을 쉴드량을 추가하는 아이템이라면
+			//마을 쉴드량에 추가 쉴드를 +/- 하는 아이템이라면
 			case ItemEffect.DeltaVillageShield:
 				float shield = es.floatValue1;
 				if(Mathf.Approximately(shield, 0f))
@@ -359,6 +454,21 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {shield}");
 				break;
+			//마을 쉴드량에 특정 값(비율)을 곱하는 아이템이라면
+			case ItemEffect.MultVillageShield:
+				float mult = es.floatValue1;
+				if (Mathf.Approximately(mult, 0f))
+				{
+					ctx.Log?.Invoke("Item Shield Value null Exception");
+					return;
+				}
+				float nextShield = ctx.GetPlayerVillageShield(actorNum) * mult;
+
+				ctx.SetPlayerVIllageShield(actorNum, nextShield);
+
+				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {nextShield}");
+				break;
+			//플레이어 기력에 추가 기력을 +/- 하는 아이템이라면
 			case ItemEffect.DeltaPlayerEng:
 				int eng = es.intValue1;
 				if(eng == 0)

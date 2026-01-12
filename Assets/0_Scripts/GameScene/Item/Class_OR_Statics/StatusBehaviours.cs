@@ -96,6 +96,22 @@ public static class StatusBehaviours
 
 				ctx.Log?.Invoke($"[Status] DEF_SILVER overriedBarrierConvertRate = {dmg.convertRateOverride}");
 				return;
-        }
+
+            case "GIM_TAUNT":
+                if(dmg.attackerNum != st.ownerActorNum) return;
+				//공격 전에만 반응
+				if (e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
+				//평타만 적용 하거나, 기본 평타 관련 데미지 객체가 아닌 경우, 실행 안함
+				if (st.spec.basicOnly && !dmg.isBasicAttack) return;
+				//배수 누적
+				dmg.multiplier *= st.spec.multiplier;
+
+                if(st.spec.consumeOnTrigger) st.remainingTurns = 0;
+
+				//디버그 로그로 임시 실행
+				ctx.Log?.Invoke($"[Status] GIM_TAUNT x{st.spec.multiplier}");
+				return;
+
+		}
     }
 }
