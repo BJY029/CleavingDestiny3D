@@ -156,6 +156,9 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		slots[slotIdx] = (0, null);
 		photonView.RPC(nameof(RPC_SetItemSlotUI), player, true);
 
+		//아이템 사용 UI 띄우기
+		PlayerCanvasController.Instance.PopUpItemNotify(item.itemId, player);
+
 		//슬롯 Info 정보 업데이트
 		string updatedItemSlots = ItemInfoSerializer.Encode(slots);
 

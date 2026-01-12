@@ -427,6 +427,14 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				//내 턴이고, offer가 유효하면
 				if (turnActor == me && !string.IsNullOrEmpty(offers))
 				{
+					//만약 offer 메시지가 Error 메시지로 이루어진 경우
+					if(string.Equals(offers, ERROR.FULL_INV.ToString()))
+					{
+						//Warning으로 경고문을 발생시킨다.
+						PlayerCanvasController.Instance.SetWarningTextActive(UI_CSV.UI_Warning_FullInv);
+						ItemOfferCanvasController.instance.Close();
+						return;
+					}
 					//관련 UI를 처리한다.
 					ItemOfferCanvasController.instance.initItemOfferPanel(offers, me);
 				}
@@ -453,7 +461,17 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		if (turnActor == me && !string.IsNullOrEmpty(offer))
 		{
 			if (ItemOfferCanvasController.instance != null)
+			{
+				//만약 offer 메시지가 Error 메시지로 이루어진 경우
+				if (string.Equals(offer, ERROR.FULL_INV.ToString()))
+				{
+					//Warning으로 경고문을 발생시킨다.
+					PlayerCanvasController.Instance.SetWarningTextActive(UI_CSV.UI_Warning_FullInv);
+					ItemOfferCanvasController.instance.Close();
+					return;
+				}
 				ItemOfferCanvasController.instance.initItemOfferPanel(offer, me);
+			}
 		}
 	}
 }

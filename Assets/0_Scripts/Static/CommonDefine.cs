@@ -19,6 +19,10 @@ public enum PLAYER
     P1, P2, P3, P4, NONE,
 }
 
+public enum ERROR
+{
+    FULL_INV,
+}
 //플레이어 정보 저장 객체
 public class RuntimePlayer
 {
@@ -41,7 +45,9 @@ public class UI_CSV
 	public const string UI_Load_Waiting = "UI_Load_Waiting";
 	public const string UI_Load_MatchSuccess = "UI_Load_MatchSuccess";
 	public const string UI_Load_Loading = "UI_Load_Loading";
-    public const string UI_Warning_Energy = "UI_Warning_Energy";
+    public const string UI_ItemNotify_Title = "UI_ItemNotify_Title";
+	public const string UI_Warning_Energy = "UI_Warning_Energy";
+    public const string UI_Warning_FullInv = "UI_Warning_FullInv";
 }
 
 //서버 CustomProperty Key

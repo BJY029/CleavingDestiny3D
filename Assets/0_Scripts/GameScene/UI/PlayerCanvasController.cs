@@ -28,6 +28,9 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	[Header("Warning")]
 	[SerializeField] private GameObject WarningObj;
 
+	[Header("ItemNotifyHolder")]
+	[SerializeField] private GameObject Holder;
+
 	private Coroutine gaugeCo;
 	private bool selecting;
 
@@ -36,11 +39,16 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 
 	private TextMeshProUGUI WarningText;
 	private Animator WarningTextAnim;
+	
+	private GameObject ItemNotifyPrefab;
+	private ItemNotifyController INC;
 
 	private void Awake()
 	{
 		if(Instance == null) Instance = this;
 		else Destroy(gameObject);
+
+		ItemNotifyPrefab = Resources.Load<GameObject>("ItemNotify/ItemNotify");
 
 		HitText = HitTextObj.GetComponentInChildren<TextMeshProUGUI>();
 		WarningText = WarningObj.GetComponentInChildren<TextMeshProUGUI>();
@@ -163,7 +171,19 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		WarningTextAnim.Play("UI_Player_Warning_Up");
 	}
 
-	
+	public void PopUpItemNotify(string itemId, Player player)
+	{
+		photonView.RPC(nameof(RPC_PopUpItemNotify), RpcTarget.All, itemId, player);
+	}
+
+	[PunRPC]
+	public void RPC_PopUpItemNotify(string itemId, Player player)
+	{
+		GameObject Notify = Instantiate(ItemNotifyPrefab, Holder.transform);
+		INC = Notify?.GetComponent<ItemNotifyController>();
+
+		INC.SetActive(ItemDB.Instance.Get(itemId), player);
+	}
 
 	//현재 플레이어 상태 UI를 업데이트 하는 함수
 	public void updatePlayerStatus(string Energy, string HP, string Damage, string Barrier)

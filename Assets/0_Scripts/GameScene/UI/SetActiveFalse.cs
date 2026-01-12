@@ -6,4 +6,9 @@ public class SetActiveFalse : MonoBehaviour
     {
         this.gameObject.SetActive(false);
     }
+
+    public void SetDestory()
+    {
+        Destroy(gameObject);
+    }
 }

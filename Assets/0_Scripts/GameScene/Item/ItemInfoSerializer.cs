@@ -66,8 +66,22 @@ public static class ItemInfoSerializer
         return false;
     }
 
-    //주어진 아이템 슬롯에서, uniqueId를 기반으로 아이템을 삭제하고 삭제된 아이템 이름을 반환(out)하는 함수
-    public static int TryFindIndexByUniqueId((int uniqueId, string itemId)[] slots, int uniqueId)
+    public static bool isFullInventory((int uniqueId, string itemId)[] slots)
+    {
+		for (int i = 0; i < slots.Length; i++)
+		{
+			//특정 슬롯의 uniqueId가 0보다 작으면, 즉 빈 구간인 경우
+			if (slots[i].uniqueId <= 0)
+			{
+				return false;
+			}
+		}
+		//삽입 실패(꽉참)
+		return true;
+	}
+
+	//주어진 아이템 슬롯에서, uniqueId를 기반으로 아이템을 삭제하고 삭제된 아이템 이름을 반환(out)하는 함수
+	public static int TryFindIndexByUniqueId((int uniqueId, string itemId)[] slots, int uniqueId)
     {
         for(int i = 0; i < slots.Length; i++)
         {
