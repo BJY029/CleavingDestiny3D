@@ -42,11 +42,11 @@ public class UI_CSV
     public const string UI_PlayerHit = "UI_PlayerHIT";
     public const string UI_PlayerNHit = "UI_PlayerNotHIT";
     public const string UI_Load_Finding = "UI_Load_Finding";
-	public const string UI_Load_Waiting = "UI_Load_Waiting";
-	public const string UI_Load_MatchSuccess = "UI_Load_MatchSuccess";
-	public const string UI_Load_Loading = "UI_Load_Loading";
+    public const string UI_Load_Waiting = "UI_Load_Waiting";
+    public const string UI_Load_MatchSuccess = "UI_Load_MatchSuccess";
+    public const string UI_Load_Loading = "UI_Load_Loading";
     public const string UI_ItemNotify_Title = "UI_ItemNotify_Title";
-	public const string UI_Warning_Energy = "UI_Warning_Energy";
+    public const string UI_Warning_Energy = "UI_Warning_Energy";
     public const string UI_Warning_FullInv = "UI_Warning_FullInv";
 }
 
@@ -126,7 +126,6 @@ public static class ItemPropKeys
 // 건물의 종류
 public enum VillageType
 {
-    House = -1, // House는 턴 종료용 -> 업그레이드 대상 아님
     Mine,
     Forge,
     Shop,

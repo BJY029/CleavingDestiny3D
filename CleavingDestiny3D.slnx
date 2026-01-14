@@ -58,6 +58,7 @@
   <Project Path="Unity.VisualScripting.State.csproj" />
   <Project Path="Unity.AI.Navigation.Updater.csproj" />
   <Project Path="UnityEditor.UI.csproj" />
+  <Project Path="PrimeTween.Demo.csproj" />
   <Project Path="Unity.2D.Sprite.Editor.csproj" />
   <Project Path="Unity.AI.Navigation.Editor.csproj" />
   <Project Path="Unity.AppUI.MVVM.csproj" />
@@ -69,6 +70,7 @@
   <Project Path="Unity.Collections.CodeGen.csproj" />
   <Project Path="Unity.Mathematics.Editor.csproj" />
   <Project Path="Unity.VisualScripting.SettingsProvider.Editor.csproj" />
+  <Project Path="PrimeTween.Runtime.csproj" />
   <Project Path="Unity.Multiplayer.PlayMode.Configurations.Editor.csproj" />
   <Project Path="ALP8310_ControllerGlobal.Editor.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
@@ -79,6 +81,7 @@
   <Project Path="PunDemos.DemoHubEditor.csproj" />
   <Project Path="Unity.VisualScripting.Shared.Editor.csproj" />
   <Project Path="PunDemos.DemoSlotcarEditor.csproj" />
+  <Project Path="PrimeTween.Editor.csproj" />
   <Project Path="PhotonChat.csproj" />
   <Project Path="Unity.AppUI.Undo.csproj" />
   <Project Path="Unity.InternalAPIEditorBridge.022.csproj" />
@@ -92,6 +95,7 @@
   <Project Path="Unity.InputSystem.DocCodeSamples.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Shaders.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.Shared.csproj" />
+  <Project Path="PrimeTween.Debug.csproj" />
   <Project Path="Unity.2D.Sprite.AIIntegration.Editor.csproj" />
   <Project Path="Unity.InferenceEngine.MacBLAS.csproj" />
   <Project Path="Unity.AppUI.InternalAPIBridge.csproj" />
@@ -101,6 +105,7 @@
   <Project Path="Unity.PlasticSCM.Editor.Entities.csproj" />
   <Project Path="Unity.Collections.Editor.csproj" />
   <Project Path="PhotonUnityNetworking.Utilities.Culling.Editor.csproj" />
+  <Project Path="PrimeTween.Installer.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Config.Runtime.csproj" />
   <Project Path="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.csproj" />
   <Project Path="Unity.RenderPipelines.Core.ShaderLibrary.csproj" />
