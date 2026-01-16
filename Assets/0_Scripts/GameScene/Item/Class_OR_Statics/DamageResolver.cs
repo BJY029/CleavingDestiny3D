@@ -40,7 +40,7 @@ public class DamageResolver
         }, ctx);
 
         float baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum);
-        float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate;
+        float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate + dmg.convertRateDelta;
         rate = Mathf.Clamp01(rate);
 
         //최종 데미지 확정
@@ -64,5 +64,16 @@ public class DamageResolver
             actorNum = currentActNum,
             payload = null
         }, ctx);
+    }
+
+    public void ResolveWhenVillageStart(EffectContext ctx)
+    {
+        _bus.publish(new GameEvent
+        {
+            type = TriggerMask.OnVillageStart,
+            actorNum = -1,
+            payload = null
+        }, ctx
+        );
     }
 }

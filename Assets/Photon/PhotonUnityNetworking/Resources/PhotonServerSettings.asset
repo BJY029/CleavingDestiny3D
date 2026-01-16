@@ -65,6 +65,10 @@ MonoBehaviour:
   - RPC_SetItemSlotUI
   - RPC_ShowWarning
   - RPC_PopUpItemNotify
+  - RPC_OnVillageDamageProcessDone
+  - RPC_OnVillageShieldProcessDone
+  - RPC_RequestVillageDamageProcess
+  - RPC_RequestVillageShileldProcess
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

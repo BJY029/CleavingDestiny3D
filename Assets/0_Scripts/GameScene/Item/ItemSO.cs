@@ -43,6 +43,7 @@ public enum TriggerMask
 	OnAfterAttack = 1 << 2,     //공격 후 적용
 	OnDamageConvert = 1 << 3,   //데미지-방어력 변환 적용
 	OnTurnEnd = 1 << 4,         //턴 종료시 적용
+    OnVillageStart = 1 << 5,    //마을 페이즈 시작시 적용
 }
 
 //아이템 태그

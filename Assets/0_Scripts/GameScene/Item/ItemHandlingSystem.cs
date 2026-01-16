@@ -23,6 +23,7 @@ public struct AttackResult
 	public float treeHpAfter;	//UI 반영용 treeHP 결과
 }
 
+
 public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 {
 	public static ItemHandlingSystem instance;
@@ -229,6 +230,13 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		if(!PhotonNetwork.IsMasterClient)  return; 
 		//아이템 사용 길이가 '하루'에 속하는 아이템을 statusSystem에서 삭제하는 함수 실행
 		_statusSystem.RemoveAllByDuration(DurationType.UntilWaveEnd);
+	}
+	
+	public void OnVillageStart()
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+		var ctx = new EffectContext(_rng, Debug.Log);
+		_damageResolver.ResolveWhenVillageStart(ctx);
 	}
 
 	//사용 즉시 적용 될 아이템들을 확인하고 해당 아이템을 적용하는 함수

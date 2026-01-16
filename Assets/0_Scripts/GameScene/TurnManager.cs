@@ -16,6 +16,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	[SerializeField]
 	private float VillageUpgradeLimitedTime;
 
+	private int _villageActionId = 0;
+	private int _villageShieldProcessDone = -1;
+	private int _villageDamageProcessDone = -1;
 	//현재 마을 업그레이드 중인지
 	public bool isUpgradePhase;
 	//마을 업그레이드 제한 시간
@@ -246,17 +249,57 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	IEnumerator TreeAction(float dmg)
 	{
-		//현재 딜레이를 주지 않으면, 밤이 되기 전의 hit이 처리가 안되고 씹히는 현상이 발생해서 임의의 딜레이 삽입
-		//체크 필요
-		yield return new WaitForSeconds(2f);
+		_villageActionId = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+
+		//VilageStart시 발동되는 아이템 처리
+		photonView.RPC(nameof(RPC_RequestVillageShileldProcess), RpcTarget.MasterClient, _villageActionId);
+		while (_villageActionId != _villageShieldProcessDone)
+			yield return null;
+
+		//photonView.RPC(nameof(RPC_RequestVillageDamageProcess), RpcTarget.MasterClient, dmg, _villageActionId);
+		//while (_villageActionId != _villageDamageProcessDone)
+		//	yield return null;
 
 
-		//관련 처리 진행
+		//마을 데미지 처리 진행
 		PlayerStatus.Instance.DamagedVillage(dmg);
 		//추후 딜레이 추가
-		yield return null;
 		//마을 페이즈를 시작한다.
 		StartVillageUpgradePhase();
+	}
+
+	[PunRPC]
+	private void RPC_RequestVillageShileldProcess(int actionId, PhotonMessageInfo info)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		ItemHandlingSystem.instance.OnVillageStart();
+
+		photonView.RPC(nameof(RPC_OnVillageShieldProcessDone), RpcTarget.All, actionId);
+	}
+
+	[PunRPC]
+	private void RPC_OnVillageShieldProcessDone(int actionId, PhotonMessageInfo info)
+	{
+		if (!info.Sender.IsMasterClient) return;
+		_villageShieldProcessDone = actionId;
+	}
+
+	[PunRPC]
+	private void RPC_RequestVillageDamageProcess(float dmg, int actionId, PhotonMessageInfo info)
+	{
+		if(!PhotonNetwork.IsMasterClient) return;
+
+		PlayerStatus.Instance.DamagedVillage(dmg);
+
+		photonView.RPC(nameof(RPC_OnVillageDamageProcessDone), RpcTarget.All, actionId);
+	}
+
+	[PunRPC]
+	private void RPC_OnVillageDamageProcessDone(int actionId, PhotonMessageInfo info)
+	{
+		if (!info.Sender.IsMasterClient) return;
+		_villageDamageProcessDone = actionId;
 	}
 
 	//마을 업그레이드 페이즈를 설정한다.

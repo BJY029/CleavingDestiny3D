@@ -19,8 +19,29 @@ public class DamagePacket
     public bool bypassConversion;
     //방어 전환에 사용될 전환률
     public float convertRateOverride = -1f;
+    //방어력 전환 누정 값
+    public float convertRateDelta = 0f;
     //최종 확정 데미지 정보(마스터가 결정)
     public int finalDamage;
     //최종 방어로 전환되는 양
     public float convertedToBarrier;
+}
+
+//나무가 각 마을을 공격할 때 사용할 데미지 계산용 패킷
+public class VillageDmgPacket
+{
+    //타겟 마을 소유 actor 번호
+    public int targetActorNum;
+    //마을이 원래 받는 데미지
+    public int baseDamage;
+    //방어 감소 관련 퍼센티지
+    public float shieldRemovePct = 0f;
+    //방어 감소 관련 고정 감소 값
+    public int shieldRemoveFlat = 0;
+    //공격 직전 제거된 마을 방어력
+    public int removedShield;
+    //마을 방어력이 막은 데미지
+    public int damageToShield;
+    //쉴드로 못 막고 직접적 타격을 입을 양
+    public int damageToHP;
 }

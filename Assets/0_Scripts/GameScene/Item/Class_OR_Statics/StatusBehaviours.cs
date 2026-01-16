@@ -87,7 +87,7 @@ public static class StatusBehaviours
 
 				ctx.Log?.Invoke($"[Status] DMG_BLIND overriedDamage = {value}");
 				return;
-
+            //은빛가호 아이템
             case "DEF_SILVER":
                 if (e.type != TriggerMask.OnDamageConvert) return;
                 if (!dmg.isBasicAttack) return;
@@ -112,6 +112,33 @@ public static class StatusBehaviours
 				ctx.Log?.Invoke($"[Status] GIM_TAUNT x{st.spec.multiplier}");
 				return;
 
+            case "GIM_SPY":
+                if (e.type != TriggerMask.OnVillageStart) return;
+                if(!PhotonNetwork.IsMasterClient) return;
+
+                int target = st.ownerActorNum;
+
+                float curVillageShileld = ctx.GetPlayerVillageShield(target);
+                float calc = curVillageShileld * st.spec.multiplier;
+                ctx.SetPlayerVIllageShield(target, calc);
+
+                st.remainingTurns = 0;
+				ctx.Log?.Invoke($"[Status] GIM_SPY Player{target}'s village Shild set to {calc}");
+				break;
+
+            case "GIM_CURSE":
+                if(e.type != TriggerMask.OnDamageConvert) return;
+
+                if(dmg.attackerNum != st.ownerActorNum) return;
+                if (dmg.convertRateOverride >= 0f) return;
+
+                float delta = st.spec.convertRate;
+                dmg.convertRateDelta += delta;
+
+				st.remainingTurns = 0;
+
+				ctx.Log?.Invoke($"[Curse] convertRateDelta {delta} applied to attacker={dmg.attackerNum}");
+				break;
 		}
     }
 }
