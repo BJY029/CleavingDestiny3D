@@ -1,4 +1,4 @@
-using ExitGames.Client.Photon;
+ï»¿using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
 using System;
@@ -16,20 +16,20 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	[SerializeField]
 	private float VillageUpgradeLimitedTime;
 
-	//ÇöÀç ¸¶À» ¾÷±×·¹ÀÌµå ÁßÀÎÁö
+	//í˜„ì¬ ë§ˆì„ ì—…ê·¸ë ˆì´ë“œ ì¤‘ì¸ì§€
 	public bool isUpgradePhase;
-	//¸¶À» ¾÷±×·¹ÀÌµå Á¦ÇÑ ½Ã°£
+	//ë§ˆì„ ì—…ê·¸ë ˆì´ë“œ ì œí•œ ì‹œê°„
 	private float startTime;
 	private float endTime;
 
 	public static TurnManager Instance;
 
-	//FÅ°°¡ ´­¸®¸é ¹ß»ıµÉ ÀÌº¥Æ®
+	//Fí‚¤ê°€ ëˆŒë¦¬ë©´ ë°œìƒë  ì´ë²¤íŠ¸
 	public event Action OnInteractFKeyDown;
-	//ÅÏ º¯°æ ÇÃ·¡±×
+	//í„´ ë³€ê²½ í”Œë˜ê·¸
 	private bool TurnHasChanged = false;
 	private int _lastProcessedTrun = -1;
-	//ÇÑ ¹ø¸¸ Offer Á¤º¸ °ü·Ã UI¸¦ Ã³¸®ÇÏ±â À§ÇÑ ÀåÄ¡
+	//í•œ ë²ˆë§Œ Offer ì •ë³´ ê´€ë ¨ UIë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ ì¥ì¹˜
 	private bool offerGenerated = false;
 	private void Awake()
 	{
@@ -52,29 +52,29 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	{
 		if (Keyboard.current == null) return;
 
-		//¸¸¾à 'F'Å°°¡ ´­¸° °æ¿ì
+		//ë§Œì•½ 'F'í‚¤ê°€ ëˆŒë¦° ê²½ìš°
 		if (Keyboard.current.fKey.wasPressedThisFrame)
 		{
-			//'F'Å° ÀÌº¥Æ® ½ÇÇà
-			//°ü·Ã ÀÌº¥Æ®´Â PlayerController.cs¿¡¼­ Ã³¸®(HandleInteractFKey())
+			//'F'í‚¤ ì´ë²¤íŠ¸ ì‹¤í–‰
+			//ê´€ë ¨ ì´ë²¤íŠ¸ëŠ” PlayerController.csì—ì„œ ì²˜ë¦¬(HandleInteractFKey())
 			OnInteractFKeyDown?.Invoke();
 		}
 
-		// KÅ°°¡ ´­¸®°í ¸¶½ºÅÍ Å¬¶óÀÌ¾ğÆ®ÀÌ¸ç ¾ÆÁ÷ ¸¶À» ÆäÀÌÁî°¡ ¾Æ´Ñ °æ¿ì °­Á¦ ½ÃÀÛ
+		// Kí‚¤ê°€ ëˆŒë¦¬ê³  ë§ˆìŠ¤í„° í´ë¼ì´ì–¸íŠ¸ì´ë©° ì•„ì§ ë§ˆì„ í˜ì´ì¦ˆê°€ ì•„ë‹Œ ê²½ìš° ê°•ì œ ì‹œì‘
 		if (Keyboard.current.kKey.wasPressedThisFrame && IsInitializer() && !isUpgradePhase)
 		{
 			StartVillageUpgradePhase();
 		}
 
-		//±ÇÇÑÀÚÀÌ¸é¼­ µ¿½Ã¿¡ ¸¶À» ÆäÀÌÁî¿¡ µ¹ÀÔÇÑ °æ¿ì
+		//ê¶Œí•œìì´ë©´ì„œ ë™ì‹œì— ë§ˆì„ í˜ì´ì¦ˆì— ëŒì…í•œ ê²½ìš°
 		if (IsInitializer() && isUpgradePhase)
 		{
-			//¸¶À» ÆäÀÌÁî Á¾·á Á¶°ÇÀ» Áö¼ÓÀûÀ¸·Î È®ÀÎÇÑ´Ù.
+			//ë§ˆì„ í˜ì´ì¦ˆ ì¢…ë£Œ ì¡°ê±´ì„ ì§€ì†ì ìœ¼ë¡œ í™•ì¸í•œë‹¤.
 			CheckVillageUpgradePhase();
 		}
 	}
 
-	//ÇÃ·¹ÀÌ¾î Áß °¡Àå ÀÛÀº actor number¸¦ °¡Áø ÇÃ·¹ÀÌ¾î°¡ °¢Á¾ ±ÇÇÑÀ» °®´Â´Ù.
+	//í”Œë ˆì´ì–´ ì¤‘ ê°€ì¥ ì‘ì€ actor numberë¥¼ ê°€ì§„ í”Œë ˆì´ì–´ê°€ ê°ì¢… ê¶Œí•œì„ ê°–ëŠ”ë‹¤.
 	//private bool IsInitializer()
 	//{
 	//	var players = PhotonNetwork.PlayerList;
@@ -94,21 +94,21 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	public void WaveEnd()
 	{
-		if(!PhotonNetwork.IsMasterClient) return;
+		if (!PhotonNetwork.IsMasterClient) return;
 		ItemHandlingSystem.instance.OnWaveEnd();
 	}
 
-	//ÅÏ º¯°æ ¿äÃ»ÀÌ ¹ß»ıÇÑ °æ¿ì
+	//í„´ ë³€ê²½ ìš”ì²­ì´ ë°œìƒí•œ ê²½ìš°
 	public void RequestChangeTurn(int damage)
 	{
-		//¸¸¾à ÇöÀç ¸¶À» ÆäÀÌÁî°¡ ½ÇÇàÁßÀÎ °æ¿ì, ÅÏ º¯°æ ¿äÃ»Àº ¹«½ÃÇÑ´Ù.
+		//ë§Œì•½ í˜„ì¬ ë§ˆì„ í˜ì´ì¦ˆê°€ ì‹¤í–‰ì¤‘ì¸ ê²½ìš°, í„´ ë³€ê²½ ìš”ì²­ì€ ë¬´ì‹œí•œë‹¤.
 		bool isUpgradePhase = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		if (isUpgradePhase) return;
 
-		//µ¥¹ÌÁö °è»ê ¹× ¹İ¿µ(¾ÆÀÌÅÛ È¿°ú ¹İ¿µ)
+		//ë°ë¯¸ì§€ ê³„ì‚° ë° ë°˜ì˜(ì•„ì´í…œ íš¨ê³¼ ë°˜ì˜)
 		ItemHandlingSystem.instance.RequestHit(damage, true);
 
-		//RPC·Î ¸ğµç ÇÃ·¹ÀÌ¾î¿¡°Ô ÅÏ º¯°æ ¿äÃ»À» º¸³½´Ù.
+		//RPCë¡œ ëª¨ë“  í”Œë ˆì´ì–´ì—ê²Œ í„´ ë³€ê²½ ìš”ì²­ì„ ë³´ë‚¸ë‹¤.
 		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber);
 
 	}
@@ -116,29 +116,29 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	[PunRPC]
 	private void RPC_RequestChangeTurn(int requesterActorNumber, PhotonMessageInfo info)
 	{
-		//±×·¯³ª ½ÇÁ¦·Î ÅÏ º¯°æ °ü·Ã Ã³¸®¸¦ ÇÏ´Â ÇÃ·¹ÀÌ¾î´Â ÇÑ¸íÀÌ¸ç, ÀÌ´Â °¡Àå ³·Àº Actor Number¸¦ °¡Áø ÇÃ·¹ÀÌ¾î´Ù.
+		//ê·¸ëŸ¬ë‚˜ ì‹¤ì œë¡œ í„´ ë³€ê²½ ê´€ë ¨ ì²˜ë¦¬ë¥¼ í•˜ëŠ” í”Œë ˆì´ì–´ëŠ” í•œëª…ì´ë©°, ì´ëŠ” ê°€ì¥ ë‚®ì€ Actor Numberë¥¼ ê°€ì§„ í”Œë ˆì´ì–´ë‹¤.
 		if (!IsInitializer()) return;
 
-		//ÅÏ Á¤º¸¸¦ ¹Ş¾Æ¿Â´Ù.
+		//í„´ ì •ë³´ë¥¼ ë°›ì•„ì˜¨ë‹¤.
 		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
 		int currentTurnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
 		int currentTurnActor = TurnOrder[currentTurnIndex];
 
-		//ÅÏ º¯°æÀ» ¿äÃ»ÇÑ ÇÃ·¹ÀÌ¾î¿Í, ÇöÀç ÅÏ¿¡ ÇØ´çÇÏ´Â ÇÃ·¹ÀÌ¾î°¡ ÀÏÄ¡ÇÏÁö ¾Ê´Â °æ¿ì
+		//í„´ ë³€ê²½ì„ ìš”ì²­í•œ í”Œë ˆì´ì–´ì™€, í˜„ì¬ í„´ì— í•´ë‹¹í•˜ëŠ” í”Œë ˆì´ì–´ê°€ ì¼ì¹˜í•˜ì§€ ì•ŠëŠ” ê²½ìš°
 		if (currentTurnActor != requesterActorNumber)
 		{
 			Debug.LogError("Turn request ERROR!!\ncurrentTurnActor : " + currentTurnActor + " requestActor : " + requesterActorNumber);
 			return;
 		}
 
-		//³ª¹« ¶§¸®±â ¾×¼Ç ¼öÇà, Hit ¿äÃ»ÀÚ°¡ ÇØ´ç ÇÔ¼ö ½ÇÇà
+		//ë‚˜ë¬´ ë•Œë¦¬ê¸° ì•¡ì…˜ ìˆ˜í–‰, Hit ìš”ì²­ìê°€ í•´ë‹¹ í•¨ìˆ˜ ì‹¤í–‰
 		//photonView.RPC(nameof(RPC_DoHitOnRequester), info.Sender, damageRatio);
 
-		//ÅÏ º¯°æ ¼öÇà
+		//í„´ ë³€ê²½ ìˆ˜í–‰
 		ChangeToNextTurn();
 	}
 
-	//Hit ¿äÃ»ÀÚ Å¬¶ó¿¡¼­ ½ÇÇàµÉ Hit Ã³¸®
+	//Hit ìš”ì²­ì í´ë¼ì—ì„œ ì‹¤í–‰ë  Hit ì²˜ë¦¬
 	//[PunRPC]
 	//private void RPC_DoHitOnRequester(float damageRatio)
 	//{
@@ -151,10 +151,10 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	{
 		if (!IsInitializer()) return;
 
-	//	TreeStatus.Instance.getHitByPlayer(dmg);
+		//	TreeStatus.Instance.getHitByPlayer(dmg);
 	}
 
-	//Ã³À½ PlayerManager¿¡¼­ ÃÊ±âÈ­ µÈ ÈÄ Offer UI¸¦ Ã³¸®ÇÏ±â À§ÇÑ ÇÔ¼ö
+	//ì²˜ìŒ PlayerManagerì—ì„œ ì´ˆê¸°í™” ëœ í›„ Offer UIë¥¼ ì²˜ë¦¬í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
 	public void setOfferGeneratedFromOutsied(bool flag)
 	{
 		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
@@ -166,11 +166,11 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		offerGenerated = flag;
 	}
 
-	//ÅÏ ÀüÈ¯ ÇÔ¼ö
+	//í„´ ì „í™˜ í•¨ìˆ˜
 	private void ChangeToNextTurn()
 	{
 		if (!IsInitializer()) return;
-		//ÅÏ Á¤º¸¸¦ ´ãÀº ¸®½ºÆ®¸¦ ºÒ·¯¿Â´Ù.
+		//í„´ ì •ë³´ë¥¼ ë‹´ì€ ë¦¬ìŠ¤íŠ¸ë¥¼ ë¶ˆëŸ¬ì˜¨ë‹¤.
 		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
 		if (TurnOrder == null || TurnOrder.Length == 0)
 		{
@@ -178,47 +178,47 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			return;
 		}
 
-		//ÇöÀç ÅÏ ¼ø¼­ °ªÀ» °¡Á®¿Â´Ù.
+		//í˜„ì¬ í„´ ìˆœì„œ ê°’ì„ ê°€ì ¸ì˜¨ë‹¤.
 		int currentIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
 		Debug.Log("Turn " + currentIndex + " End");
-		//´ÙÀ½ ÅÏ ¼ø¼­, ´ÙÀ½ ÅÏÀÇ Actor ¹øÈ£, ÅÏ Ä«¿îÆ®, ÇØ´ç ÅÏ¿¡ Á¦°øÇÒ Offer¸¦ °è»êÇÑ´Ù.
+		//ë‹¤ìŒ í„´ ìˆœì„œ, ë‹¤ìŒ í„´ì˜ Actor ë²ˆí˜¸, í„´ ì¹´ìš´íŠ¸, í•´ë‹¹ í„´ì— ì œê³µí•  Offerë¥¼ ê³„ì‚°í•œë‹¤.
 		int nextIndex = (currentIndex + 1) % TurnOrder.Length;
 		int nextActor = TurnOrder[nextIndex];
 		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) + 1;
 		string offerStr = OfferAuthority.Instance.MakeOfferForTurn(nextActor, turnIndex);
 
 
-		//¸¸¾à ¸ğµç ÅÏÀ» µ¹°í ÇÑ ¿şÀÌºê°¡ ³¡³­ °æ¿ì
+		//ë§Œì•½ ëª¨ë“  í„´ì„ ëŒê³  í•œ ì›¨ì´ë¸Œê°€ ëë‚œ ê²½ìš°
 		if (nextIndex == 0)
 		{
-			//ÇöÀç ¿şÀÌºê °ªÀ» ºÒ·¯¿Â´Ù.
+			//í˜„ì¬ ì›¨ì´ë¸Œ ê°’ì„ ë¶ˆëŸ¬ì˜¨ë‹¤.
 			int currentWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
 			Debug.Log("Wave " + currentWaveCnt + " End");
-			//¿şÀÌºê °ªÀ» ÇÏ³ª Áõ°¡½ÃÅ²´Ù.
+			//ì›¨ì´ë¸Œ ê°’ì„ í•˜ë‚˜ ì¦ê°€ì‹œí‚¨ë‹¤.
 			currentWaveCnt += 1;
 
-			//¸¸¾à ÃÖ´ë ¿şÀÌºê¿¡ µµ´ŞÇÑ °æ¿ì
+			//ë§Œì•½ ìµœëŒ€ ì›¨ì´ë¸Œì— ë„ë‹¬í•œ ê²½ìš°
 			int MaxWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.MaxWaveCnt);
 			if (currentWaveCnt >= MaxWaveCnt)
 			{
-				//³¯Â¥ º¯°æÀÎ °æ¿ì
-				//¸¶À» °ø°İ ¾×¼Ç ¼öÇà
+				//ë‚ ì§œ ë³€ê²½ì¸ ê²½ìš°
+				//ë§ˆì„ ê³µê²© ì•¡ì…˜ ìˆ˜í–‰
 				float treeDmg = TreeStatus.Instance.getTreeAtkPow();
 				photonView.RPC(nameof(TreeActionProcess), RpcTarget.All, treeDmg);
 				//StartVillageUpgradePhase();
 				return;
 			}
-			else//ÃÖ´ë ¿şÀÌºê °ªÀÌ ¾Æ´Ñ °æ¿ì
+			else//ìµœëŒ€ ì›¨ì´ë¸Œ ê°’ì´ ì•„ë‹Œ ê²½ìš°
 			{
-				//¿şÀÌºê °ªÀ» °»½ÅÇÑ´Ù.
+				//ì›¨ì´ë¸Œ ê°’ì„ ê°±ì‹ í•œë‹¤.
 				PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentWave, currentWaveCnt);
 				Debug.Log("Wave " + currentWaveCnt + " Start");
 			}
 		}
-		//ÅÏ º¯°æ °ü·Ã Ã³¸®¸¦ ÇÑ ¹ø¸¸ ¼öÇàÇÏ±â À§ÇØ ´ÙÀ½°ú °°Àº RPC·Î º¯¼ö ÃÊ±âÈ­
+		//í„´ ë³€ê²½ ê´€ë ¨ ì²˜ë¦¬ë¥¼ í•œ ë²ˆë§Œ ìˆ˜í–‰í•˜ê¸° ìœ„í•´ ë‹¤ìŒê³¼ ê°™ì€ RPCë¡œ ë³€ìˆ˜ ì´ˆê¸°í™”
 		//photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 
-		//ÇÁ·ÎÆÛÆ¼¸¦ ÇÑ¹ø¿¡ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+		//í”„ë¡œí¼í‹°ë¥¼ í•œë²ˆì— ì—…ë°ì´íŠ¸ í•œë‹¤.
 		var ht = new ExitGames.Client.Photon.Hashtable
 		{
 			{RoomPropKeys.CurrentTurn, nextIndex},
@@ -227,8 +227,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			{ItemPropKeys.OFFER(nextActor), offerStr ?? "" }
 		};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
-		//¸¶À» ÆäÀÌÁî¿¡ µ¹ÀÔÇÏ°Ô µÇ¸é, Áß°£¿¡ returnÀÌ µÇ¼­ offer°¡ ¹İ¿µÀÌ ¾ÈµÈ´Ù.
-		//µû¶ó¼­ ²À ½ÇÁ¦·Î ÇÁ·ÎÆÛÆ¼°¡ ¾÷µ¥ÀÌÆ® µÈ ÈÄ¿¡ ÇØ´ç ÇÃ·¹±×¸¦ true·Î ¼³Á¤ÇØ¾ß ÇÑ´Ù.
+		//ë§ˆì„ í˜ì´ì¦ˆì— ëŒì…í•˜ê²Œ ë˜ë©´, ì¤‘ê°„ì— returnì´ ë˜ì„œ offerê°€ ë°˜ì˜ì´ ì•ˆëœë‹¤.
+		//ë”°ë¼ì„œ ê¼­ ì‹¤ì œë¡œ í”„ë¡œí¼í‹°ê°€ ì—…ë°ì´íŠ¸ ëœ í›„ì— í•´ë‹¹ í”Œë ˆê·¸ë¥¼ trueë¡œ ì„¤ì •í•´ì•¼ í•œë‹¤.
 		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
 	}
 
@@ -246,60 +246,60 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	IEnumerator TreeAction(float dmg)
 	{
-		//ÇöÀç µô·¹ÀÌ¸¦ ÁÖÁö ¾ÊÀ¸¸é, ¹ãÀÌ µÇ±â ÀüÀÇ hitÀÌ Ã³¸®°¡ ¾ÈµÇ°í ¾ÃÈ÷´Â Çö»óÀÌ ¹ß»ıÇØ¼­ ÀÓÀÇÀÇ µô·¹ÀÌ »ğÀÔ
-		//Ã¼Å© ÇÊ¿ä
+		//í˜„ì¬ ë”œë ˆì´ë¥¼ ì£¼ì§€ ì•Šìœ¼ë©´, ë°¤ì´ ë˜ê¸° ì „ì˜ hitì´ ì²˜ë¦¬ê°€ ì•ˆë˜ê³  ì”¹íˆëŠ” í˜„ìƒì´ ë°œìƒí•´ì„œ ì„ì˜ì˜ ë”œë ˆì´ ì‚½ì…
+		//ì²´í¬ í•„ìš”
 		yield return new WaitForSeconds(2f);
 
 
-		//°ü·Ã Ã³¸® ÁøÇà
+		//ê´€ë ¨ ì²˜ë¦¬ ì§„í–‰
 		PlayerStatus.Instance.DamagedVillage(dmg);
-		//ÃßÈÄ µô·¹ÀÌ Ãß°¡
+		//ì¶”í›„ ë”œë ˆì´ ì¶”ê°€
 		yield return null;
-		//¸¶À» ÆäÀÌÁî¸¦ ½ÃÀÛÇÑ´Ù.
+		//ë§ˆì„ í˜ì´ì¦ˆë¥¼ ì‹œì‘í•œë‹¤.
 		StartVillageUpgradePhase();
 	}
 
-	//¸¶À» ¾÷±×·¹ÀÌµå ÆäÀÌÁî¸¦ ¼³Á¤ÇÑ´Ù.
+	//ë§ˆì„ ì—…ê·¸ë ˆì´ë“œ í˜ì´ì¦ˆë¥¼ ì„¤ì •í•œë‹¤.
 	private void StartVillageUpgradePhase()
 	{
-		//Á¦ÀÏ ³·Àº ¼ø¼­¹øÈ£ÀÇ ÇÃ·¹ÀÌ¾î¸¸ ÃÊ±âÈ­ ¼öÇà
+		//ì œì¼ ë‚®ì€ ìˆœì„œë²ˆí˜¸ì˜ í”Œë ˆì´ì–´ë§Œ ì´ˆê¸°í™” ìˆ˜í–‰
 		if (!IsInitializer()) return;
 
-		//'ÇÏ·ç'ÀÇ ±æÀÌ¸¦ °¡Áø ¾ÆÀÌÅÛÀ» »èÁ¦ÇÑ´Ù.
+		//'í•˜ë£¨'ì˜ ê¸¸ì´ë¥¼ ê°€ì§„ ì•„ì´í…œì„ ì‚­ì œí•œë‹¤.
 		WaveEnd();
 
-		//¸¸¾à ÀÌ¹Ì ½ÇÇàÁßÀÌ¶ó¸é ½ÇÇàÇÏÁö ¾ÊÀ½
+		//ë§Œì•½ ì´ë¯¸ ì‹¤í–‰ì¤‘ì´ë¼ë©´ ì‹¤í–‰í•˜ì§€ ì•ŠìŒ
 		bool isAlreadyUpgraded = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		if (isAlreadyUpgraded) return;
 
-		//ÇöÀç ½Ã°£
+		//í˜„ì¬ ì‹œê°„
 		startTime = (float)PhotonNetwork.Time;
-		//Á¾·á ½Ã°£
+		//ì¢…ë£Œ ì‹œê°„
 		endTime = (float)PhotonNetwork.Time + VillageUpgradeLimitedTime;
-		//ÇÁ·ÎÆÛÆ¼ »ğÀÔÀ» À§ÇØ ¹è¿­ ÇüÅÂ·Î ÀúÀå
+		//í”„ë¡œí¼í‹° ì‚½ì…ì„ ìœ„í•´ ë°°ì—´ í˜•íƒœë¡œ ì €ì¥
 		float[] timeValue = new float[] { startTime, endTime };
-		//½Ã°£ ÇÁ·ÎÆÛÆ¼ »ğÀÔ
+		//ì‹œê°„ í”„ë¡œí¼í‹° ì‚½ì…
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.VillageUpgradeStartEndTime, timeValue);
-		//¸¶À» ¾÷±×·¹ÀÌµå ÆäÀÌÁî ÇÃ·¡±× ¼³Á¤ (OnRoomPropertiesUpdate¿¡¼­ ¸¶À» ¾À ·Îµå)
+		//ë§ˆì„ ì—…ê·¸ë ˆì´ë“œ í˜ì´ì¦ˆ í”Œë˜ê·¸ ì„¤ì • (OnRoomPropertiesUpdateì—ì„œ ë§ˆì„ ì”¬ ë¡œë“œ)
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, true);
 
-		//°ü·Ã UI Ã³¸®¸¦ ÁøÇàÇÑ´Ù.
+		//ê´€ë ¨ UI ì²˜ë¦¬ë¥¼ ì§„í–‰í•œë‹¤.
 		GameCanvasController.Instance.SetActiveCanvas(false);
 		PlayerCanvasController.Instance.SetActiveCanvas(false);
 		// VillageUIManager.Instance.SetActiveCanvas(true);
 
 	}
 
-	//ÇöÀç ¸¶À» º¯°æ ÆäÀÌÁî°¡ ÁøÇàÁßÀÎÁö Ã¼Å©ÇÑ´Ù.
+	//í˜„ì¬ ë§ˆì„ ë³€ê²½ í˜ì´ì¦ˆê°€ ì§„í–‰ì¤‘ì¸ì§€ ì²´í¬í•œë‹¤.
 	private void CheckVillageUpgradePhase()
 	{
-		//½Ã°£°ªÀ» Áö¼ÓÀûÀ¸·Î °è»êÇÑ´Ù.
+		//ì‹œê°„ê°’ì„ ì§€ì†ì ìœ¼ë¡œ ê³„ì‚°í•œë‹¤.
 		float now = (float)PhotonNetwork.Time;
 
 		if (now >= endTime)
 		{
-			//½Ã°£ÀÌ ¸ğµÎ Áö³­ °æ¿ì
-			//¸¶À» ÆäÀÌÁî Á¾·á
+			//ì‹œê°„ì´ ëª¨ë‘ ì§€ë‚œ ê²½ìš°
+			//ë§ˆì„ í˜ì´ì¦ˆ ì¢…ë£Œ
 			CompleteDayChangeAfterUpgrade();
 			isUpgradePhase = false;
 			endTime = -1.0f;
@@ -307,37 +307,37 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	}
 
 
-	//¸¶À» ÆäÀÌÁî Á¾·á
+	//ë§ˆì„ í˜ì´ì¦ˆ ì¢…ë£Œ
 	private void CompleteDayChangeAfterUpgrade()
 	{
-		//±ÇÇÑÀÚ¸¸ ½ÇÇà
+		//ê¶Œí•œìë§Œ ì‹¤í–‰
 		if (!IsInitializer()) return;
 
-		// 1. ÇÁ·ÎÆÛÆ¼ ¼³Á¤ ÇØÁ¦
+		// 1. í”„ë¡œí¼í‹° ì„¤ì • í•´ì œ
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, false);
 
-		//ÇÃ·¹ÀÌ¾î »óÅÂ Á¤º¸ ÃÊ±âÈ­
+		//í”Œë ˆì´ì–´ ìƒíƒœ ì •ë³´ ì´ˆê¸°í™”
 		PlayerStatus.Instance.initPlayerStatus();
 
-		//°ü·Ã UI¸¦ Ã³¸®ÇÑ´Ù.
+		//ê´€ë ¨ UIë¥¼ ì²˜ë¦¬í•œë‹¤.
 		GameCanvasController.Instance.SetActiveCanvas(true);
 		PlayerCanvasController.Instance.SetActiveCanvas(true);
 
-		// ±âº» ¼¼ÆÃ°ª ÂüÁ¶
+		// ê¸°ë³¸ ì„¸íŒ…ê°’ ì°¸ì¡°
 		var roomSet = GameManager.Instance.roomDefaultSetting;
 
-		//´ÙÀ½ ³¯Â¥ °ªÀ» °è»ê.
+		//ë‹¤ìŒ ë‚ ì§œ ê°’ì„ ê³„ì‚°.
 		int day = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentDay) + 1;
 
-		//´ÙÀ½ ÅÏ Á¤º¸ °è»ê
-		// ** ¸¸¾à ¹æ ¼³Á¤À» Ãß°¡ÇÒ°Å¶ó¸é SO°¡ ¾Æ´Ñ ¹æ ¼³Á¤°ªÀ» ÂüÁ¶ÇÏµµ·Ï º¯°æ ÇÊ¿ä **
+		//ë‹¤ìŒ í„´ ì •ë³´ ê³„ì‚°
+		// ** ë§Œì•½ ë°© ì„¤ì •ì„ ì¶”ê°€í• ê±°ë¼ë©´ SOê°€ ì•„ë‹Œ ë°© ì„¤ì •ê°’ì„ ì°¸ì¡°í•˜ë„ë¡ ë³€ê²½ í•„ìš” **
 		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
 		int nextIndex = roomSet.initialTurn;
 		int nextActor = TurnOrder[nextIndex];
 		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) + 1;
 		string offerStr = OfferAuthority.Instance.MakeOfferForTurn(nextActor, turnIndex);
 
-		//ÇØ´ç ÇÁ·ÎÆÛÆ¼¸¦ ÇÑ¹ø¿¡ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+		//í•´ë‹¹ í”„ë¡œí¼í‹°ë¥¼ í•œë²ˆì— ì—…ë°ì´íŠ¸ í•œë‹¤.
 		var ht = new ExitGames.Client.Photon.Hashtable
 		{
 			{RoomPropKeys.CurrentDay, day },
@@ -355,12 +355,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 	}
 
-	//ÇÁ·ÎÆÛÆ¼ º¯°æ °¨Áö
+	//í”„ë¡œí¼í‹° ë³€ê²½ ê°ì§€
 	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
 	{
-		//³ªÀÇ Actor ¹øÈ£
+		//ë‚˜ì˜ Actor ë²ˆí˜¸
 		int me = PhotonNetwork.LocalPlayer.ActorNumber;
-		//ÇöÀç ÅÏ¿¡ ÇØ´çµÇ´Â Actor ¹øÈ£(ÃÖ½Å °ªÀ» ±âÁØÀ¸·Î ÇÑ´Ù.)
+		//í˜„ì¬ í„´ì— í•´ë‹¹ë˜ëŠ” Actor ë²ˆí˜¸(ìµœì‹  ê°’ì„ ê¸°ì¤€ìœ¼ë¡œ í•œë‹¤.)
 		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
 		if (propertiesThatChanged.TryGetValue(RoomPropKeys.CurrentTurnActor, out var taObj))
 		{
@@ -368,7 +368,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			TryOpenOfferFromRoomState();
 		}
 
-		//ÅÏ °ü·Ã ÇÁ·ÎÆÛÆ¼°¡ º¯°æµÇ¾ú°í, ¾ÆÁ÷ Ã³¸®µÇÁö ¾ÊÀº °æ¿ì
+		//í„´ ê´€ë ¨ í”„ë¡œí¼í‹°ê°€ ë³€ê²½ë˜ì—ˆê³ , ì•„ì§ ì²˜ë¦¬ë˜ì§€ ì•Šì€ ê²½ìš°
 		if (propertiesThatChanged.TryGetValue(RoomPropKeys.CurrentTurn, out var turnObj))
 		{
 			int newTurn = Convert.ToInt32(turnObj);
@@ -376,82 +376,82 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			{
 				_lastProcessedTrun = newTurn;
 
-				//°ü·Ã UI Ã³¸®¸¦ ÁøÇàÇØÁÖ°í
+				//ê´€ë ¨ UI ì²˜ë¦¬ë¥¼ ì§„í–‰í•´ì£¼ê³ 
 				PlayerCanvasController.Instance.UpdateGameHitText();
 				GameCanvasController.Instance.UpdateDayText();
 				GameCanvasController.Instance.UpdateWaveText();
 
-				//ÅÏ º¯°æ ½Ã ¹ßµ¿µÉ ¾ÆÀÌÅÛ ½ÇÇà ÇÏ´Â ÇÔ¼ö È£Ãâ
+				//í„´ ë³€ê²½ ì‹œ ë°œë™ë  ì•„ì´í…œ ì‹¤í–‰ í•˜ëŠ” í•¨ìˆ˜ í˜¸ì¶œ
 				NewTurnStart();
 			}
-			//Áßº¹ Ã³¸® ¹æÁöÀ§ÇØ ÇÃ·¡±×¸¦ ¼³Á¤ÇÑ´Ù.
+			//ì¤‘ë³µ ì²˜ë¦¬ ë°©ì§€ìœ„í•´ í”Œë˜ê·¸ë¥¼ ì„¤ì •í•œë‹¤.
 			//TurnHasChanged=false;
 		}
 
-		//¸¶À» ÆäÀÌÁî°¡ ÁøÇàµÇ´Â ¿©ºÎ¸¦ ÀúÀåÇÑ´Ù.
+		//ë§ˆì„ í˜ì´ì¦ˆê°€ ì§„í–‰ë˜ëŠ” ì—¬ë¶€ë¥¼ ì €ì¥í•œë‹¤.
 		if (propertiesThatChanged.ContainsKey(RoomPropKeys.IsVillageUpgradePhase))
 		{
 			isUpgradePhase = (bool)propertiesThatChanged[RoomPropKeys.IsVillageUpgradePhase];
 
 			if (isUpgradePhase)
 			{
-				// ¸¶À» ¾ÀÀ» Ãß°¡·Î ·Îµå (Additive)
+				// ë§ˆì„ ì”¬ì„ ì¶”ê°€ë¡œ ë¡œë“œ (Additive)
 				if (!SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded)
 					SceneManager.LoadSceneAsync(CommonDefine.VILLAGESCENE, LoadSceneMode.Additive);
 
-				// ¸ŞÀÎ °ÔÀÓ UI °¡¸®±â (ÇÊ¿ä ½Ã)
+				// ë©”ì¸ ê²Œì„ UI ê°€ë¦¬ê¸° (í•„ìš” ì‹œ)
 				GameCanvasController.Instance.SetActiveCanvas(false);
 			}
 			else
 			{
-				// ¸¶À» ¾À ¾ğ·Îµå
+				// ë§ˆì„ ì”¬ ì–¸ë¡œë“œ
 				if (SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded)
 					SceneManager.UnloadSceneAsync(CommonDefine.VILLAGESCENE);
 
-				// ¸ŞÀÎ °ÔÀÓ UI º¸ÀÌ±â
+				// ë©”ì¸ ê²Œì„ UI ë³´ì´ê¸°
 				GameCanvasController.Instance.SetActiveCanvas(true);
 			}
 		}
 
-		//³» Offer RoomProperty Key °¡Á®¿À±â
+		//ë‚´ Offer RoomProperty Key ê°€ì ¸ì˜¤ê¸°
 		string myOfferKey = ItemPropKeys.OFFER(me);
-		//º¯°æµÈ Offer ÇÁ·ÎÆÛÆ¼°¡ ³» °Í¿¡ ÇØ´çµÇ´Â °æ¿ì
+		//ë³€ê²½ëœ Offer í”„ë¡œí¼í‹°ê°€ ë‚´ ê²ƒì— í•´ë‹¹ë˜ëŠ” ê²½ìš°
 		if (propertiesThatChanged.TryGetValue(myOfferKey, out var offerObj))
 		{
-			//±×¸®°í offer°¡ Ã³À½ Á¦°øµÇ´Â °æ¿ì
+			//ê·¸ë¦¬ê³  offerê°€ ì²˜ìŒ ì œê³µë˜ëŠ” ê²½ìš°
 			if (offerGenerated)
 			{
-				//ÇØ´ç ÇÁ·ÎÆÛÆ¼·ÎºÎÅÍ offer stringÀ» ¹Ş¾Æ¿Â´Ù.
+				//í•´ë‹¹ í”„ë¡œí¼í‹°ë¡œë¶€í„° offer stringì„ ë°›ì•„ì˜¨ë‹¤.
 				string offers = offerObj as string ?? "";
 
-				//³» ÅÏÀÌ°í, offer°¡ À¯È¿ÇÏ¸é
+				//ë‚´ í„´ì´ê³ , offerê°€ ìœ íš¨í•˜ë©´
 				if (turnActor == me && !string.IsNullOrEmpty(offers))
 				{
-					//¸¸¾à offer ¸Ş½ÃÁö°¡ Error ¸Ş½ÃÁö·Î ÀÌ·ç¾îÁø °æ¿ì
-					if(string.Equals(offers, ERROR.FULL_INV.ToString()))
+					//ë§Œì•½ offer ë©”ì‹œì§€ê°€ Error ë©”ì‹œì§€ë¡œ ì´ë£¨ì–´ì§„ ê²½ìš°
+					if (string.Equals(offers, ERROR.FULL_INV.ToString()))
 					{
-						//WarningÀ¸·Î °æ°í¹®À» ¹ß»ı½ÃÅ²´Ù.
+						//Warningìœ¼ë¡œ ê²½ê³ ë¬¸ì„ ë°œìƒì‹œí‚¨ë‹¤.
 						PlayerCanvasController.Instance.SetWarningTextActive(UI_CSV.UI_Warning_FullInv);
 						ItemOfferCanvasController.instance.Close();
 						return;
 					}
-					//°ü·Ã UI¸¦ Ã³¸®ÇÑ´Ù.
+					//ê´€ë ¨ UIë¥¼ ì²˜ë¦¬í•œë‹¤.
 					ItemOfferCanvasController.instance.initItemOfferPanel(offers, me);
 				}
 				else
 				{
-					//³» ÅÏÀÌ ¾Æ´Ï¸é UI¸¦ ´İ´Â´Ù.
+					//ë‚´ í„´ì´ ì•„ë‹ˆë©´ UIë¥¼ ë‹«ëŠ”ë‹¤.
 					ItemOfferCanvasController.instance.Close();
 				}
-				//ÇÃ·¡±× Ã³¸®
+				//í”Œë˜ê·¸ ì²˜ë¦¬
 				offerGenerated = false;
 			}
 		}
 	}
 
-	//Ã³À½ °ÔÀÓÀÌ ½ÃÀÛ µÉ ¶§, ³×Æ®¿öÅ© ÀÌ½´·Î ÇÁ·ÎÆÛÆ¼°¡ ¾ÆÁ÷ ÃÊ±âÈ­ µÇÁö ¾Ê¾Ò´Âµ¥ 
-	//È£Ãâ µÇ´Â °æ¿ì, CurrentTurnActor ¼³Á¤ ÀÌ½´ µîµîÀÇ ¹®Á¦·Î ¹ö±×°¡ ¹ß»ıÇÔ
-	//ÀÌ¸¦ ¸·±â À§ÇØ¼­ CurrentTurnActor ÇÁ·ÎÆÛÆ¼°¡ º¯°æµÉ ½Ã º°µµÀÇ Ã¼Å©¸¦ ¼öÇàÇÏ´Â ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+	//ì²˜ìŒ ê²Œì„ì´ ì‹œì‘ ë  ë•Œ, ë„¤íŠ¸ì›Œí¬ ì´ìŠˆë¡œ í”„ë¡œí¼í‹°ê°€ ì•„ì§ ì´ˆê¸°í™” ë˜ì§€ ì•Šì•˜ëŠ”ë° 
+	//í˜¸ì¶œ ë˜ëŠ” ê²½ìš°, CurrentTurnActor ì„¤ì • ì´ìŠˆ ë“±ë“±ì˜ ë¬¸ì œë¡œ ë²„ê·¸ê°€ ë°œìƒí•¨
+	//ì´ë¥¼ ë§‰ê¸° ìœ„í•´ì„œ CurrentTurnActor í”„ë¡œí¼í‹°ê°€ ë³€ê²½ë  ì‹œ ë³„ë„ì˜ ì²´í¬ë¥¼ ìˆ˜í–‰í•˜ëŠ” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 	public void TryOpenOfferFromRoomState()
 	{
 		int me = PhotonNetwork.LocalPlayer.ActorNumber;
@@ -462,10 +462,10 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		{
 			if (ItemOfferCanvasController.instance != null)
 			{
-				//¸¸¾à offer ¸Ş½ÃÁö°¡ Error ¸Ş½ÃÁö·Î ÀÌ·ç¾îÁø °æ¿ì
+				//ë§Œì•½ offer ë©”ì‹œì§€ê°€ Error ë©”ì‹œì§€ë¡œ ì´ë£¨ì–´ì§„ ê²½ìš°
 				if (string.Equals(offer, ERROR.FULL_INV.ToString()))
 				{
-					//WarningÀ¸·Î °æ°í¹®À» ¹ß»ı½ÃÅ²´Ù.
+					//Warningìœ¼ë¡œ ê²½ê³ ë¬¸ì„ ë°œìƒì‹œí‚¨ë‹¤.
 					PlayerCanvasController.Instance.SetWarningTextActive(UI_CSV.UI_Warning_FullInv);
 					ItemOfferCanvasController.instance.Close();
 					return;
@@ -473,5 +473,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				ItemOfferCanvasController.instance.initItemOfferPanel(offer, me);
 			}
 		}
+
+		VillageUpgradeLimitedTime = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.VillagePhaseTime);
 	}
 }

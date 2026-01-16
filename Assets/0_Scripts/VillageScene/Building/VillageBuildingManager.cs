@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -9,10 +10,14 @@ namespace Village.Building
         [SerializeField] VillageBuilding[] villageBuildings;
         [SerializeField] CinemachineCamera cinemachineCamera;
         [SerializeField] FadeCanvas fadeCanvas;
-
+        VillageBuilldingUI buildingUI;
 
         void Start()
         {
+            buildingUI = GetComponent<VillageBuilldingUI>();
+
+            buildingUI.OnExitButtonClicked += ExitBuilding;
+
             foreach (var building in villageBuildings)
             {
                 building.OnVillageClicked += OnBuildingClicked;
@@ -27,14 +32,21 @@ namespace Village.Building
             cinemachineCamera.gameObject.SetActive(true);
 
             await fadeCanvas.FadeIn(1f);
-            EnterBuilding(building);
+            buildingUI.SetBuildingUI(building.buildingType);
+            await buildingUI.ShowBuildingUI(0.5f);
             await fadeCanvas.FadeOut(1f);
         }
 
-        private void EnterBuilding(VillageBuilding building)
+
+        public async void ExitBuilding()
         {
-            Debug.Log("Entering building: " + building.buildingType);
-            // 빌딩 내부로 이동하는 로직 추가
+            await fadeCanvas.FadeIn(0.5f);
+            await buildingUI.HideBuildingUI(0.5f);
+
+            cinemachineCamera.gameObject.SetActive(false);
+
+            await fadeCanvas.FadeOut(1f);
+
         }
     }
 }
