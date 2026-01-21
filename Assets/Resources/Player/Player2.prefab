@@ -1590,6 +1590,7 @@ MonoBehaviour:
   playerInput: {fileID: 5390782575481684524}
   isGrounded: 0
   RayDistance: 5
+  RayMultiplyer: 0
   targetLayer:
     serializedVersion: 2
     m_Bits: 384

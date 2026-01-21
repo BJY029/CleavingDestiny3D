@@ -36,7 +36,7 @@ DESC_DMG_COMBO,"효과 선택 후 콤보 성공 시 해당 효과 적용, 실패
 DESC_DEF_RESIN,마을 방어력이 50 증가합니다.,Increases Village Defense by 50.
 DESC_DEF_SILVER,이번 턴에 나무에게 입힌 데미지의 100%를 방어력으로 전환합니다.,Converts 100% of damage dealt to the Tree into Defense this turn.
 DESC_DEF_SACRIFICE,"아이템을 희생하여 나무의 공격력을 감소시킵니다. (등급에 따라 감소율 상이, 웨이브당 1회)","Sacrifices an item to reduce the Tree's Attack Power. (Effect varies by rarity, once per wave)"
-DESC_DEF_SIPHON,상대 마을 방어력의 30%를 강탈하여 내 마을 방어력에 추가합니다.,Steals 30% of the enemy Village's Defense and adds it to yours.
+DESC_DEF_SIPHON,상대 마을 방어력의 30%를 즉시 강탈하여 내 마을 방어력에 추가합니다.,Immediately steals 30% of the enemy village's defense and adds it to your own defense.
 DESC_REC_SAP,나무의 체력(HP)을 200 회복합니다.,Restores 200 HP to the Tree.
 DESC_REC_MIRACLE,"미션을 시작합니다. 성공 시 나무 체력을 2000 회복하는 0코스트 신약을 획득합니다. (게임 중 1회)","Starts a mission. If successful, obtain a 0-cost potion that heals the Tree for 2000 HP. (Once per game)"
 DESC_REC_BREW,즉시 기력을 3 회복합니다.,Instantly restores 3 Energy.

@@ -91,6 +91,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	public void NewTurnStart()
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
+		ItemHandlingSystem.instance.InitRandomSystem();
 
 		ItemHandlingSystem.instance.OnTurnStart();
 	}

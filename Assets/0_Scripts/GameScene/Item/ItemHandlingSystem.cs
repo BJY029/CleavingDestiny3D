@@ -42,10 +42,17 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		_gameEventBus = new GameEventBus(_statusSystem);
 		_damageResolver = new DamageResolver(_gameEventBus, _statusSystem);
 
-		//Wave 시드 값
-		//현재는 임시로 설정
-		//해당 값은 wave 변경 될 때마다 Masterclient가 변경 및 처리 수행
-		_rng = new DeterministicRng(12345);
+		//Turn 시드 값 설정 및 적용
+		//Turn이 변경될 때마다 재설정 된다.
+		//재현 가능한 랜덤 시스템,
+		InitRandomSystem();
+	}
+
+	public void InitRandomSystem()
+	{
+		int seed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+		Debug.Log($"[InitRandomSystem] Generated Turn Seed: {seed}");
+		_rng = new DeterministicRng(seed);
 	}
 
 	//플레이어가 사용한 아이템을 StatusInstance 객체로 객체화 후, 해당 플레이어의 _statuisSystem 리스트에 삽입한다.
@@ -411,6 +418,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		if (!PhotonNetwork.IsMasterClient) return;
 		//EffectContext 발행
 		var ctx = new EffectContext(_rng, Debug.Log);
+
 		//ItemEffect 타입 기준 구분
 		switch (es.effectType)
 		{
@@ -491,9 +499,51 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s Energy Changed to {eng}");
 				break;
+
+			case ItemEffect.TransferOpponentShieldPct:
+				int targetActNum = getRandomActNum_ExceptMe(actorNum);
+				if(targetActNum == -1)
+				{
+					Debug.LogError("There is only me in this Game...");
+					return;
+				}
+				float VillageShieldPct = es.floatValue1;
+
+				float targetShieldValue = ctx.GetPlayerVillageShield(targetActNum);
+				float myShieldValue = ctx.GetPlayerVillageShield(actorNum);
+				float deltaValue = targetShieldValue * VillageShieldPct;
+
+				ctx.SetPlayerVIllageShield(actorNum, myShieldValue + deltaValue);
+				ctx.SetPlayerVIllageShield(targetActNum, Mathf.Max(0f, targetShieldValue - deltaValue));
+
+				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed from {myShieldValue} to {myShieldValue + deltaValue}");
+				ctx.Log?.Invoke($"[ItemProcessImm] Player{targetActNum}'s VillageShield Changed from {targetShieldValue} to {targetShieldValue - deltaValue}");
+				break;
 		}
 	}
 
+	private int getRandomActNum_ExceptMe(int myActNum)
+	{
+		var playerList = PhotonNetwork.PlayerList;
+
+		List<int> candidates = new List<int>();
+
+		foreach(var player in playerList)
+		{
+			if(player.ActorNumber != myActNum)
+			{
+				candidates.Add(player.ActorNumber);
+			}
+		}
+
+		if(candidates.Count == 0)
+		{
+			return -1;
+		}
+
+		int randomIndex = _rng.Range(0, candidates.Count);
+		return candidates[randomIndex];
+	}
 
 	private bool IsMyTurnCheckInMaster(int attackerNum)
 	{

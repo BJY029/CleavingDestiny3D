@@ -102,6 +102,8 @@ public class ItemOfferCanvasController : MonoBehaviour
 		//UI 설정
 		OpenCloseText.SetActive(true);
 		OpenCloseText.GetComponent<CanvasGroup>().alpha = 1.0f;
+		//HIT UI 비활성화(상호작용도 막음)
+		PlayerCanvasController.Instance.SetHitTextUnActive();
 
 		OffersPanel.SetActive(true);
 		//선택 Phase 임을 명시
@@ -124,6 +126,8 @@ public class ItemOfferCanvasController : MonoBehaviour
 			Cursor.visible = true;
 			//UI 처리
 			OpenCloseText.GetComponent<CanvasGroup>().alpha = 1.0f;
+			//HIT UI 비활성화(상호작용도 막음)
+			PlayerCanvasController.Instance.SetHitTextUnActive();
 			//움직임 제한
 			isOfferPanelOpened = true;
 		}

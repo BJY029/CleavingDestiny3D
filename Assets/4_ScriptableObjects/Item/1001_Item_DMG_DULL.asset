@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 14ac315f804f03b4aa04259351c0af86, type: 3}
-  m_Name: 1002_Item_DmgDouble
+  m_Name: 1001_Item_DMG_DULL
   m_EditorClassIdentifier: Assembly-CSharp::ItemSO
-  itemId: 1002
-  displayName_ID: NAME_DMG_DOUBLE
-  itemDesc_ID: DESC_DMG_DOUBLE
+  itemId: 1001
+  displayName_ID: NAME_DMG_DULL
+  itemDesc_ID: DESC_DMG_DULL
   itemCost: 2
   type: 0
   target: 0
-  itemClass: 1
+  itemClass: 0
   itemWeight: 1
   oncePerWave: 0
   oncePerGame: 0
@@ -29,13 +29,13 @@ MonoBehaviour:
     floatValue1: 0
     floatValue2: 0
     statusSpce:
-      statusId: DMG_DOUBLE
+      statusId: DMG_DULL
       durationType: 0
       durationTurns: 0
       triggers: 2
       tags: 1
       priority: 200
-      multiplier: 2
+      multiplier: 0.8
       flatValue: 0
       randMin: 0
       randMax: 0

@@ -84,6 +84,8 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 	private Camera cam;
 	[Header("Raycast")]
 	[SerializeField] private float RayDistance;
+	//Ray를 비활성화 하기 위한 레이 거리 조절기(비활성화시 0으로 설정되어 곱해짐)
+	public int RayMultiplyer;
 	[SerializeField] private LayerMask targetLayer;
 	private ILookInteractable currentInteractable;
 	private Transform lastHitTarget = null;
@@ -158,6 +160,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		isLookingAtTree = false;
 		UpgradePhase = false;
 		WhileHittingMotion = false;
+		RayMultiplyer = 1;
 	}
 
 
@@ -437,7 +440,8 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		if (!photonView.IsMine) return;
 		//내 턴이 아니면 return
 		if (!GameHelper.IsMyTurn()) return;
-		//현재 나무를 보고 있지 않은 경우 return
+		//현재 Hit 관련 UI가 활성화되지 않은 상태인 경우 return
+		if (!PlayerCanvasController.Instance.selecting) return;
 
 		currentInteractable?.OnInteract(this);
 	}

@@ -32,7 +32,9 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	[SerializeField] private GameObject Holder;
 
 	private Coroutine gaugeCo;
-	private bool selecting;
+	//플레이어의 Hit 관련 UI가 활성화되었는지 여부
+	[HideInInspector]
+	public bool selecting;
 
 	private TextMeshProUGUI HitText;
 	private Animator HitTextAnim;

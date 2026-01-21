@@ -112,8 +112,9 @@ public class EffectSpec
     public float floatValue1;
     public float floatValue2;
 
-    //effectType이 AddStatus인 경우, 다음 객체로 타입 정의
-    public StatusSpec statusSpce;
+
+	//effectType이 AddStatus인 경우, 다음 객체로 타입 정의
+	public StatusSpec statusSpce;
 }
 
 [System.Serializable]

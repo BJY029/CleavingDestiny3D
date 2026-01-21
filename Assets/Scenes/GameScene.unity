@@ -1119,7 +1119,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!1 &356860126
 GameObject:
@@ -3572,6 +3572,7 @@ MonoBehaviour:
   speed: 100
   WarningObj: {fileID: 1866290866}
   Holder: {fileID: 489264637}
+  selecting: 0
 --- !u!225 &1030991279
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -3935,6 +3936,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 21c2c69d9699a2f41931262fc31924c0, type: 2}
   - {fileID: 11400000, guid: 338c57266339abb4ba7866c85a00a93c, type: 2}
   - {fileID: 11400000, guid: 16f29d4360074cb43b00b9577367a405, type: 2}
+  - {fileID: 11400000, guid: 7f133f7e2e3bf5f4c9fb55d6cd85068b, type: 2}
   - {fileID: 11400000, guid: e5aa80425976ee6499db24e7ac81e1b9, type: 2}
   - {fileID: 11400000, guid: 0fc74dcb8904b364bb16e9e7957609c0, type: 2}
   - {fileID: 11400000, guid: 32a0ac771362dbf4c83423ceda724bee, type: 2}
