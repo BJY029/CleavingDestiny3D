@@ -16,15 +16,13 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	[SerializeField]
 	private float VillageUpgradeLimitedTime;
 
+	public VillageSceneManager villageSceneManager;
 
 	private int _villageActionId = 0;
 	private int _villageShieldProcessDone = -1;
 	private int _villageDamageProcessDone = -1;
 
 	public bool isUpgradePhase;
-	//마을 업그레이드 제한 시간
-	private float startTime;
-	private float endTime;
 
 	public static TurnManager Instance;
 
@@ -47,8 +45,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	private void Start()
 	{
-		startTime = -1.0f;
-		endTime = -1.0f;
 		TryOpenOfferFromRoomState();
 	}
 
@@ -69,13 +65,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		{
 			StartVillageUpgradePhase();
 		}
+	}
 
-		//권한자이면서 동시에 마을 페이즈에 돌입한 경우
-		if (IsInitializer() && isUpgradePhase)
-		{
-			//마을 페이즈 종료 조건을 지속적으로 확인한다.
-			CheckVillageUpgradePhase();
-		}
+	public void SetVillageSceneManager(VillageSceneManager vsm)
+	{
+		villageSceneManager = vsm;
+		vsm.OnVillagePhaseEnded += CompleteDayChangeAfterUpgrade;
 	}
 
 	//플레이어 중 가장 작은 actor number를 가진 플레이어가 각종 권한을 갖는다.
@@ -317,39 +312,17 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		if (isAlreadyUpgraded) return;
 
 		//현재 시간
-		startTime = (float)PhotonNetwork.Time;
+		float startTime = (float)PhotonNetwork.Time;
 		//종료 시간
-		endTime = (float)PhotonNetwork.Time + VillageUpgradeLimitedTime;
+		float endTime = (float)PhotonNetwork.Time + VillageUpgradeLimitedTime;
 		//프로퍼티 삽입을 위해 배열 형태로 저장
-		float[] timeValue = new float[] { startTime, endTime };
+		Vector2 timeValue = new Vector2(startTime, endTime);
 		//시간 프로퍼티 삽입
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.VillageUpgradeStartEndTime, timeValue);
 		//마을 업그레이드 페이즈 플래그 설정 (OnRoomPropertiesUpdate에서 마을 씬 로드)
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, true);
 
-		//관련 UI 처리를 진행한다.
-		GameCanvasController.Instance.SetActiveCanvas(false);
-		PlayerCanvasController.Instance.SetActiveCanvas(false);
-		// VillageUIManager.Instance.SetActiveCanvas(true);
-
 	}
-
-	//현재 마을 변경 페이즈가 진행중인지 체크한다.
-	private void CheckVillageUpgradePhase()
-	{
-		//시간값을 지속적으로 계산한다.
-		float now = (float)PhotonNetwork.Time;
-
-		if (now >= endTime)
-		{
-			//시간이 모두 지난 경우
-			//마을 페이즈 종료
-			CompleteDayChangeAfterUpgrade();
-			isUpgradePhase = false;
-			endTime = -1.0f;
-		}
-	}
-
 
 	//마을 페이즈 종료
 	private void CompleteDayChangeAfterUpgrade()
@@ -430,31 +403,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			}
 			//중복 처리 방지위해 플래그를 설정한다.
 			//TurnHasChanged=false;
-		}
-
-		//마을 페이즈가 진행되는 여부를 저장한다.
-		if (propertiesThatChanged.ContainsKey(RoomPropKeys.IsVillageUpgradePhase))
-		{
-			isUpgradePhase = (bool)propertiesThatChanged[RoomPropKeys.IsVillageUpgradePhase];
-
-			if (isUpgradePhase)
-			{
-				// 마을 씬을 추가로 로드 (Additive)
-				if (!SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded)
-					SceneManager.LoadSceneAsync(CommonDefine.VILLAGESCENE, LoadSceneMode.Additive);
-
-				// 메인 게임 UI 가리기 (필요 시)
-				GameCanvasController.Instance.SetActiveCanvas(false);
-			}
-			else
-			{
-				// 마을 씬 언로드
-				if (SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded)
-					SceneManager.UnloadSceneAsync(CommonDefine.VILLAGESCENE);
-
-				// 메인 게임 UI 보이기
-				GameCanvasController.Instance.SetActiveCanvas(true);
-			}
 		}
 
 		//내 Offer RoomProperty Key 가져오기

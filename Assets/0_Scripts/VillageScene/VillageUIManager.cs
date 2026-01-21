@@ -108,11 +108,11 @@ namespace Village
 
         public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
         {
-            if (propertiesThatChanged.ContainsKey(RoomPropKeys.VillageUpgradeStartEndTime))
+            if (propertiesThatChanged.TryGetValue(RoomPropKeys.VillageUpgradeStartEndTime, out object value)
+                && value is Vector2 times)
             {
-                float[] times = PhotonPropertyHelper.GetRoomProp<float[]>(RoomPropKeys.VillageUpgradeStartEndTime);
-                startTime = times[0];
-                endTime = times[1];
+                startTime = times.x;
+                endTime = times.y;
                 duration = endTime - startTime;
             }
 

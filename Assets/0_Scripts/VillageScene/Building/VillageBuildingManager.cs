@@ -9,7 +9,6 @@ namespace Village.Building
     {
         [SerializeField] VillageBuilding[] villageBuildings;
         [SerializeField] CinemachineCamera cinemachineCamera;
-        [SerializeField] FadeCanvas fadeCanvas;
         VillageBuilldingUI buildingUI;
 
         void Start()
@@ -31,21 +30,23 @@ namespace Village.Building
             cinemachineCamera.transform.position = building.cameraFocusPoint.position + new Vector3(0, 0, -5);
             cinemachineCamera.gameObject.SetActive(true);
 
-            await fadeCanvas.FadeIn(1f);
+            var fadeCanvas = FadeCanvas.Instance;
+            await fadeCanvas.FadeInAsync(1f);
             buildingUI.SetBuildingUI(building.buildingType);
             await buildingUI.ShowBuildingUI(0.5f);
-            await fadeCanvas.FadeOut(1f);
+            await fadeCanvas.FadeOutAsync(1f);
         }
 
 
         public async void ExitBuilding()
         {
-            await fadeCanvas.FadeIn(0.5f);
+            var fadeCanvas = FadeCanvas.Instance;
+            await fadeCanvas.FadeInAsync(0.5f);
             await buildingUI.HideBuildingUI(0.5f);
 
             cinemachineCamera.gameObject.SetActive(false);
 
-            await fadeCanvas.FadeOut(1f);
+            await fadeCanvas.FadeOutAsync(1f);
 
         }
     }

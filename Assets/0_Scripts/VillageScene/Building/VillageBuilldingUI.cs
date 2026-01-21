@@ -61,7 +61,6 @@ namespace Village.Building
 
             // 업그레이드 버튼 활성화 여부 설정
             upgradeButton.interactable = currentGold >= nextUpgradeCost;
-
         }
 
         public async Awaitable ShowBuildingUI(float duration = 0.5f)
