@@ -11,11 +11,6 @@ namespace Village.Building
 
         public Action<VillageBuilding> OnVillageClicked;
 
-        private void Start()
-        {
-
-        }
-
         public void OnPointerClick(PointerEventData eventData)
         {
             Debug.Log(buildingType.ToString() + " clicked!");

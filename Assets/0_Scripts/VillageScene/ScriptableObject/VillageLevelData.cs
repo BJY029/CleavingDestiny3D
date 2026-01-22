@@ -41,12 +41,17 @@ public class VillageLevelData : ScriptableObject
             effectValue = level;
             return true;
         }
+        if (level >= effectValues.Length)
+        {
+            effectValue = -1;
+            return false;
+        }
 
         effectValue = effectValues[level];
         return true;
     }
 
     [SerializeField, Tooltip("건물 설명 ID")]
-    private string levelDescriptionID;
-    public string LevelDescriptionID => levelDescriptionID;
+    private string[] levelDescriptionID;
+    public string[] LevelDescriptionID => levelDescriptionID;
 }

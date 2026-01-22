@@ -50,6 +50,7 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 				{ RoomPropKeys.CurrentWave, roomSet.initialWave},
 				{ RoomPropKeys.IsVillageUpgradePhase, false },
 				{ ItemPropKeys.NEXT_UID,    roomSet.initialUID },
+				{ RoomPropKeys.VillagePhaseTime, roomSet.villagePhaseTime }
 			};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
 

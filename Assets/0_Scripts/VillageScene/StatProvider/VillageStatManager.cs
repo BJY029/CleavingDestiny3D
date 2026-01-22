@@ -159,5 +159,21 @@ namespace Village
 
         // TODO: 상점 강화 함수 필요
         // TODO: 대장간 강화 함수 필요
+
+        public string GetLevelDescriptionID(VillageType facilityType, int level)
+        {
+            if (_villageDataDict.TryGetValue(facilityType, out var levelData))
+            {
+                if (levelData.TryGetEffectValue(level, out int _))
+                {
+                    var descriptions = levelData.LevelDescriptionID;
+                    if (level >= 0 && level < descriptions.Length)
+                    {
+                        return descriptions[level];
+                    }
+                }
+            }
+            return string.Empty; // 오류 시 빈 문자열 반환
+        }
     }
 }

@@ -20,6 +20,6 @@ public class RoomSetting : ScriptableObject
     public int itemOfferCount = 3;
 
     [Header("Village Settings")]
-    public float villageUpgradeLimitedTime = 60f;
+    public float villagePhaseTime = 60f;
 }
 
