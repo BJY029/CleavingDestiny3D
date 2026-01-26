@@ -17,10 +17,17 @@ namespace Village
         private void Awake()
         {
             if (Instance == null) Instance = this;
-            else Destroy(gameObject);
+            else
+            {
+                Destroy(gameObject);
+                return; // 중복 인스턴스라면 초기화 로직을 수행하지 않고 종료
+            }
 
-            // 로직 클래스 생성 시 데이터 프로바이더(StatManager)를 주입
-            VillageLogic = new VillageManager(VillageStatManager.Instance);
+            // 이미 생성된 로직 인스턴스가 있다면 재사용
+            VillageLogic ??= new VillageManager();
+
+            // 씬 로드 시마다 데이터 프로바이더 주입 및 데이터 초기화 (Reset 개념)
+            VillageLogic.Initialize(VillageStat);
 
             _uiManager.Init();
         }

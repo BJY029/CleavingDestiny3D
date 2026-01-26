@@ -26,6 +26,8 @@ namespace Village.Building
         [SerializeField] private Button upgradeButton;
         [SerializeField] private Button exitButton;
 
+        private VillageType currentBuildingType;
+
         IVillageStatProvider VillageStat => VillageSystem.VillageStat;
 
 
@@ -44,16 +46,18 @@ namespace Village.Building
 
         public void SetBuildingUI(VillageType buildingType)
         {
+            currentBuildingType = buildingType;
+
             // 관련 데이터 가져오기
-            int currentLevel = VillageStat.GetVillageLevel(buildingType);
+            int currentLevel = VillageStat.GetVillageLevel(currentBuildingType);
             int nextLevel = currentLevel + 1;
-            int nextUpgradeCost = VillageStat.GetLevelUpgradedCost(buildingType, currentLevel);
-            string currentEffect = VillageStat.GetLevelDescriptionID(buildingType, currentLevel);
-            string nextEffect = VillageStat.GetLevelDescriptionID(buildingType, nextLevel);
+            int nextUpgradeCost = VillageStat.GetLevelUpgradedCost(currentBuildingType, currentLevel);
+            string currentEffect = VillageStat.GetLevelDescriptionID(currentBuildingType, currentLevel);
+            string nextEffect = VillageStat.GetLevelDescriptionID(currentBuildingType, nextLevel);
             int currentGold = VillageSystem.VillageLogic.GetMyGold();
 
             // UI 텍스트 업데이트
-            titleText.SetText(buildingType.ToString());
+            titleText.SetText(currentBuildingType.ToString());
             currentLevelText.SetText("레벨: {0}", currentLevel);
             currentEffectText.SetText("효과:" + currentEffect);
             nextLevelText.SetText("다음 레벨: {0}", nextLevel);
@@ -88,7 +92,11 @@ namespace Village.Building
 
         private void OnUpgradeButton()
         {
-
+            if (VillageSystem.VillageLogic.TryUpgradeLevel(currentBuildingType))
+            {
+                // 업그레이드 성공 시 UI 갱신
+                SetBuildingUI(currentBuildingType);
+            }
         }
 
     }

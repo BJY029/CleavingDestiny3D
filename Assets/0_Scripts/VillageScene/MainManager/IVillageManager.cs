@@ -13,6 +13,11 @@ namespace Village
         event Action<int> OnGoldChanged;
 
         /// <summary>
+        /// 매니저 상태 초기화. 씬 로드 시 호출되어 데이터 제공자를 연결하고 상태를 리셋함.
+        /// </summary>
+        void Initialize(IVillageStatProvider statProvider);
+
+        /// <summary>
         /// 현재 로컬 플레이어의 보유 골드량 반환
         /// </summary>
         /// <returns>현재 골드</returns>
