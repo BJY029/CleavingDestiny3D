@@ -9,6 +9,7 @@ namespace Village
     {
         public static VillageSystem Instance { get; private set; }
         public static IVillageManager VillageLogic { get; private set; }
+        public static IVillageStatProvider VillageStat => VillageStatManager.Instance;
 
         [SerializeField] private VillageUIManager _uiManager;
         public VillageUIManager UIManager => _uiManager;

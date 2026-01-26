@@ -26,6 +26,8 @@ namespace Village.Building
         [SerializeField] private Button upgradeButton;
         [SerializeField] private Button exitButton;
 
+        IVillageStatProvider VillageStat => VillageSystem.VillageStat;
+
 
         public Action OnExitButtonClicked;
 
@@ -43,11 +45,11 @@ namespace Village.Building
         public void SetBuildingUI(VillageType buildingType)
         {
             // 관련 데이터 가져오기
-            int currentLevel = VillageStatManager.Instance.GetVillageLevel(buildingType);
+            int currentLevel = VillageStat.GetVillageLevel(buildingType);
             int nextLevel = currentLevel + 1;
-            int nextUpgradeCost = VillageStatManager.Instance.GetLevelUpgradedCost(buildingType, currentLevel);
-            string currentEffect = VillageStatManager.Instance.GetLevelDescriptionID(buildingType, currentLevel);
-            string nextEffect = VillageStatManager.Instance.GetLevelDescriptionID(buildingType, nextLevel);
+            int nextUpgradeCost = VillageStat.GetLevelUpgradedCost(buildingType, currentLevel);
+            string currentEffect = VillageStat.GetLevelDescriptionID(buildingType, currentLevel);
+            string nextEffect = VillageStat.GetLevelDescriptionID(buildingType, nextLevel);
             int currentGold = VillageSystem.VillageLogic.GetMyGold();
 
             // UI 텍스트 업데이트
@@ -86,7 +88,7 @@ namespace Village.Building
 
         private void OnUpgradeButton()
         {
-            // 업그레이드 로직 처리
+
         }
 
     }

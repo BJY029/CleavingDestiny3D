@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -13,7 +13,7 @@ namespace Village.Building
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            Debug.Log(buildingType.ToString() + " clicked!");
+            // Debug.Log(buildingType.ToString() + " clicked!");
             OnVillageClicked?.Invoke(this);
         }
 
