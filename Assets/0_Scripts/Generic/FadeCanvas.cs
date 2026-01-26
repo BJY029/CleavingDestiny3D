@@ -72,8 +72,12 @@ public class FadeCanvas : MonoBehaviour
     /// <summary>
     /// Fade in the canvas over the specified duration.
     /// </summary>
-    public async Awaitable FadeInAsync(float duration, Action onComplete = null)
+    public async Awaitable FadeInAsync(float duration, Action onComplete = null, float delay = 0f, float endDelay = 0f)
     {
+        if (delay > 0f)
+        {
+            await Awaitable.WaitForSecondsAsync(delay);
+        }
         if (_currentFadeTween.isAlive) _currentFadeTween.Stop(); // 기존 트윈 정지
 
         IsFading = true;
@@ -82,6 +86,11 @@ public class FadeCanvas : MonoBehaviour
         _currentFadeTween = Tween.Alpha(fadeImage, 1f, duration);
         await _currentFadeTween;
 
+        if (endDelay > 0f)
+        {
+            await Awaitable.WaitForSecondsAsync(endDelay);
+        }
+
         onComplete?.Invoke();
         IsFading = false;
     }
@@ -89,14 +98,23 @@ public class FadeCanvas : MonoBehaviour
     /// <summary>
     /// Fade out the canvas over the specified duration.
     /// </summary>
-    public async Awaitable FadeOutAsync(float duration, Action onComplete = null)
+    public async Awaitable FadeOutAsync(float duration, Action onComplete = null, float delay = 0f, float endDelay = 0f)
     {
+        if (delay > 0f)
+        {
+            await Awaitable.WaitForSecondsAsync(delay);
+        }
         if (_currentFadeTween.isAlive) _currentFadeTween.Stop(); // 기존 트윈 정지
 
         IsFading = true;
 
         _currentFadeTween = Tween.Alpha(fadeImage, 0f, duration);
         await _currentFadeTween;
+
+        if (endDelay > 0f)
+        {
+            await Awaitable.WaitForSecondsAsync(endDelay);
+        }
 
         fadeImage.gameObject.SetActive(false);
         onComplete?.Invoke();

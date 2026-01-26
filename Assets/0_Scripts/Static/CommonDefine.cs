@@ -132,6 +132,7 @@ public enum VillageType
     Shop,
     Farm,
     Barrier,
+    Compass,
 }
 
 public enum GamePhaseValue

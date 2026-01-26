@@ -13,6 +13,8 @@ namespace Village.Building
 
         public VillageBuilldingUI villageBuilldingUIPrefab;
 
+        public bool isScaleOnPointer = true;
+
         public void OnPointerClick(PointerEventData eventData)
         {
             // Debug.Log(buildingType.ToString() + " clicked!");
@@ -21,12 +23,19 @@ namespace Village.Building
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            transform.localScale = Vector3.one * 1.1f;
+            if (isScaleOnPointer)
+            {
+                transform.localScale = Vector3.one * 1.1f;
+            }
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            transform.localScale = Vector3.one;
+            if (isScaleOnPointer)
+            {
+                transform.localScale = Vector3.one;
+
+            }
         }
 
     }

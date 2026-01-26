@@ -59,7 +59,6 @@ namespace Village.Building
             await fadeCanvas.FadeOutAsync(1f);
         }
 
-
         public async void ExitBuilding()
         {
             if (currentBuildingUI == null) return;
