@@ -34,8 +34,8 @@ namespace Village
 
             VillageSystem.VillageLogic.OnGoldChanged += UpdateGoldText;
 
-            OpenVillageBtn.onClick.AddListener(OnClickOpenVillage);
-            CloseVillageBtn.onClick.AddListener(OnClickCloseVillage);
+            // OpenVillageBtn.onClick.AddListener(OnClickOpenVillage);
+            // CloseVillageBtn.onClick.AddListener(OnClickCloseVillage);
         }
 
         private void OnDestroy()

@@ -11,6 +11,8 @@ namespace Village.Building
 
         public Action<VillageBuilding> OnVillageClicked;
 
+        public VillageBuilldingUI villageBuilldingUIPrefab;
+
         public void OnPointerClick(PointerEventData eventData)
         {
             // Debug.Log(buildingType.ToString() + " clicked!");
