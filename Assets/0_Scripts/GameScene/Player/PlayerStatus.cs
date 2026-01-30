@@ -23,9 +23,15 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	private int currentMaxAtkDamage;
 	private int currentMinAtkDamage;
 	private float currentVillageHP;
+	private float maxVillageHp;
 	private float currentTotalDamage;
 	private float currentBarrier;
 	private float currentConBarrier;
+
+	public float GetMaxVillageHp() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxVillageHP); }
+	public float GetCurrentVillageHP() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageHP); }
+	public float GetCurrentBarrier() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier); }
+
 
 	// 플레이어 프로퍼티 값 불러오기
 	public void GetCurrentPlayerStatus()
@@ -39,6 +45,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier);
 		currentConBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.BarrierConversionRate);
 		currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage);
+		maxVillageHp = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxVillageHP);
 	}
 
 	// UI 업데이트
