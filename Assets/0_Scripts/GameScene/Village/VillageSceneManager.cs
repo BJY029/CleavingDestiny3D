@@ -1,5 +1,6 @@
 using ExitGames.Client.Photon;
 using Photon.Pun;
+using Photon.Realtime;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -31,11 +32,58 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
         // 시간 체크
         if ((float)PhotonNetwork.Time >= _endTime)
         {
-            _endTime = -1.0f;
-            _isPhaseActive = false;
-            // TurnManager에게 종료 알림
-            OnVillagePhaseEnded?.Invoke();
+            EndPhaseLogic();
         }
+    }
+
+    // 마스터 클라이언트가 페이즈를 종료시키는 공통 로직
+    private void EndPhaseLogic()
+    {
+        _endTime = -1.0f;
+        _isPhaseActive = false;
+        // TurnManager에게 종료 알림
+        OnVillagePhaseEnded?.Invoke();
+    }
+
+    // 플레이어 속성(준비 상태 등)이 변경되었을 때 호출됨
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
+    {
+        // 마스터 클라이언트만 체크하면 됨 (게임 흐름 제어)
+        if (!PhotonNetwork.IsMasterClient) return;
+        if (!_isPhaseActive) return;
+
+        // 준비 상태가 변경되었는지 확인
+        if (changedProps.ContainsKey(PlayerPropKeys.PlayerVillageReady))
+        {
+            CheckAllPlayersReady();
+        }
+    }
+
+    // 모든 플레이어가 준비되었는지 확인
+    private void CheckAllPlayersReady()
+    {
+        foreach (Player p in PhotonNetwork.PlayerList)
+        {
+            // 키가 없거나 false라면 아직 준비 안 된 것임
+            if (!p.CustomProperties.TryGetValue(PlayerPropKeys.PlayerVillageReady, out object isReadyObj) || !(bool)isReadyObj)
+            {
+                return; // 한 명이라도 준비 안 됨
+            }
+        }
+
+        // 여기까지 왔다면 모두 준비 완료 -> 즉시 페이즈 종료
+        Debug.Log("All players are ready in Village. Ending phase early.");
+        EndPhaseLogic();
+    }
+
+    /// <summary>
+    /// UI 버튼에서 호출: 내 준비 상태를 변경
+    /// </summary>
+    public void SetLocalPlayerReady(bool isReady)
+    {
+        // Hashtable props = new Hashtable { { PlayerPropKeys.PlayerVillageReady, isReady } };
+        // PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+        PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.PlayerVillageReady, isReady);
     }
 
     public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
@@ -63,6 +111,10 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     public void StartVillagePhase()
     {
         _isPhaseActive = true;
+
+        // 페이즈 시작 시 나의 준비 상태 초기화 (False)
+        SetLocalPlayerReady(false);
+
         _ = LoadVillageSceneAsync();
     }
 

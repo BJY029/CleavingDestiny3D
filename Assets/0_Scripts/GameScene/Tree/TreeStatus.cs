@@ -17,25 +17,25 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 		Instance = this;
 	}
 
-	//³ª¹« ½ºÅÈ Á¤º¸
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	private float currentTreeHP;
 	private float currentTreeAtkPow;
 
-	//³ª¹« ÇÁ·ÎÆÛÆ¼ Á¤º¸ °¡Á®¿À±â
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¼ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	public void GetCurrentTreeStatus()
 	{
 		currentTreeHP = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeHP);
 		currentTreeAtkPow = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeAtkPow);
 	}
 
-	//UI ¾÷µ¥ÀÌÆ®
+	//UI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 	public void SetTreeStatusUI()
 	{
 		GetCurrentTreeStatus();
 		TreeCanvasController.Instance.UpdateTreeHP(currentTreeHP);
 	}
 
-	//³ª¹« ÇÁ·ÎÆÛÆ¼ º¯°æµÇ¸é UI¿¡ ¹Ý¿µÇÏ±â
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¼ ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ UIï¿½ï¿½ ï¿½Ý¿ï¿½ï¿½Ï±ï¿½
 	public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
 	{
 		if (propertiesThatChanged.ContainsKey(RoomPropKeys.TreeHP))
@@ -44,25 +44,25 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 		}
 	}
 
-	//³ª¹« Ã¼·Â °¨¼Ò
+	//ï¿½ï¿½ï¿½ï¿½ Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	public void getHitByPlayer(int HitDamage)
 	{
 		if (!IsInitializer()) return;
 		GetCurrentTreeStatus();
 
-		//HitDamage ¸¸Å­ ³ª¹« Ã¼·Â °¨¼Ò ½ÃÅ°±â
+		//HitDamage ï¿½ï¿½Å­ ï¿½ï¿½ï¿½ï¿½ Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å°ï¿½ï¿½
 		currentTreeHP -= HitDamage;
 
 		if (currentTreeHP <= 0)
 		{
 			currentTreeHP = 0;
-			//°ÔÀÓ Á¾·á
+			//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			Debug.Log("Game End");
 		}
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, currentTreeHP);
 	}
 
-	//³ª¹« Èú
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
 	public void getHealByItem(int HealValue)
 	{
 		GetCurrentTreeStatus();
@@ -73,7 +73,7 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, currentTreeHP);
 	}
 
-	//¸¶À» °ø°Ý µ¥¹ÌÁö¸¦ ¹ÝÈ¯ÇÏ´Â ÇÔ¼ö
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 	public float getTreeAtkPow()
 	{
 		GetCurrentTreeStatus();

@@ -240,6 +240,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		var ht = new ExitGames.Client.Photon.Hashtable
 		{
 			{ PlayerPropKeys.VillageHP, playerSetting.villageHP},
+			{ PlayerPropKeys.MaxVillageHP, playerSetting.villageHP},
 			{ PlayerPropKeys.VillageBarrier, playerSetting.villageBarrier},
 			{PlayerPropKeys.TreeAtkMulti, playerSetting.VillageDmgMulti},
 			{ PlayerPropKeys.BarrierArmor, playerSetting.initialBarrierArmor},

@@ -87,6 +87,7 @@ public static class PlayerPropKeys
     public const string IsReady = "IsReady";
     public const string TreeAtkMulti = "TreeAtkMulti";
     public const string VillageHP = "VillageHP";
+    public const string MaxVillageHP = "MaxVillageHP";
     public const string VillageBarrier = "VillageBarrier";
     public const string BarrierConversionRate = "BarrierConversionRate";
     public const string BarrierArmor = "BarrierArmor";
@@ -103,6 +104,9 @@ public static class PlayerPropKeys
     public const string EnergyIncome = "EnergyIncome";
     public const string DayTimeDamage = "DayTimeDamage";
     public const string MyTurn = "MyTurn";
+
+    // 플레이어 준비 상태 체크용 키
+    public const string PlayerVillageReady = "IsPlayerVillageReady";
 
     public const string Item_CommonWeight = "Item_CommonWeight";
     public const string Item_HeroWeight = "Item_HeroWeight";
@@ -149,6 +153,7 @@ public enum VillageType
     Shop,
     Farm,
     Barrier,
+    Compass,
 }
 
 public enum GamePhaseValue

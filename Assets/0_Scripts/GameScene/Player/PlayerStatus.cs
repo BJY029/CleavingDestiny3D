@@ -25,6 +25,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	private int currentMaxAtkDamage;
 	private int currentMinAtkDamage;
 	private float currentVillageHP;
+	private float maxVillageHp;
 	private float currentTotalDamage;
 	private float currentBarrier;
 	private float currentConBarrier;
@@ -55,7 +56,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		currentConBarrier = GetValue<float>(props, PlayerPropKeys.BarrierConversionRate);
 		currentTotalDamage = GetValue<float>(props, PlayerPropKeys.TotalDamage);
 		currentTreeDmgMulit = GetValue<float>(props, PlayerPropKeys.TreeAtkMulti);
-
+		maxVillageHp = GetValue<float>(props, PlayerPropKeys.MaxVillageHP);
 	}
 	// 안전하게 값을 꺼내는 유틸리티 함수 (클래스 내부에 추가하거나 Helper에 추가)
 	private T GetValue<T>(Hashtable props, string key)
@@ -66,6 +67,11 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		}
 		return default(T); // 키가 없으면 0 또는 null 반환
 	}
+	public float GetMaxVillageHp() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxVillageHP); }
+	public float GetCurrentVillageHP() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageHP); }
+	public float GetCurrentBarrier() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier); }
+
+
 
 	// UI 업데이트
 	public void SetPlayerStatusUI()
