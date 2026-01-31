@@ -27,7 +27,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	public static TurnManager Instance;
 
 	//F키가 눌리면 발생될 이벤트
-	public event Action OnInteractFKeyDown;
+	//public event Action OnInteractFKeyDown;
 	//턴 변경 플래그
 	private bool TurnHasChanged = false;
 	private int _lastProcessedTrun = -1;
@@ -50,21 +50,21 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	private void Update()
 	{
-		if (Keyboard.current == null) return;
+		// if (Keyboard.current == null) return;
 
-		//만약 'F'키가 눌린 경우
-		if (Keyboard.current.fKey.wasPressedThisFrame)
-		{
-			//'F'키 이벤트 실행
-			//관련 이벤트는 PlayerController.cs에서 처리(HandleInteractFKey())
-			OnInteractFKeyDown?.Invoke();
-		}
+		// //만약 'F'키가 눌린 경우
+		// if (Keyboard.current.fKey.wasPressedThisFrame)
+		// {
+		// 	//'F'키 이벤트 실행
+		// 	//관련 이벤트는 PlayerController.cs에서 처리(HandleInteractFKey())
+		// 	OnInteractFKeyDown?.Invoke();
+		// }
 
-		// K키가 눌리고 마스터 클라이언트이며 아직 마을 페이즈가 아닌 경우 강제 시작
-		if (Keyboard.current.kKey.wasPressedThisFrame && IsInitializer() && !isUpgradePhase)
-		{
-			StartVillageUpgradePhase();
-		}
+		// // K키가 눌리고 마스터 클라이언트이며 아직 마을 페이즈가 아닌 경우 강제 시작
+		// if (Keyboard.current.kKey.wasPressedThisFrame && IsInitializer() && !isUpgradePhase)
+		// {
+		// 	StartVillageUpgradePhase();
+		// }
 	}
 
 	public void SetVillageSceneManager(VillageSceneManager vsm)
@@ -88,7 +88,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
 		ItemHandlingSystem.instance.InitRandomSystem();
-
 		ItemHandlingSystem.instance.OnTurnStart();
 	}
 
@@ -96,6 +95,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
 		ItemHandlingSystem.instance.OnWaveEnd();
+		//PlayerStatus.Instance.InitTreeAtkMultRate();
 	}
 
 	//턴 변경 요청이 발생한 경우
@@ -253,9 +253,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		while (_villageActionId != _villageShieldProcessDone)
 			yield return null;
 
-		//photonView.RPC(nameof(RPC_RequestVillageDamageProcess), RpcTarget.MasterClient, dmg, _villageActionId);
-		//while (_villageActionId != _villageDamageProcessDone)
-		//	yield return null;
+		// photonView.RPC(nameof(RPC_RequestVillageDamageProcess), RpcTarget.MasterClient, dmg, _villageActionId);
+		// while (_villageActionId != _villageDamageProcessDone)
+		// 	yield return null;
 
 
 		//���� ������ ó�� ����
@@ -300,7 +300,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	}
 
 	//���� ���׷��̵� ����� �����Ѵ�.
-	private void StartVillageUpgradePhase()
+	public void StartVillageUpgradePhase()
 	{
 		//제일 낮은 순서번호의 플레이어만 초기화 수행
 		if (!IsInitializer()) return;

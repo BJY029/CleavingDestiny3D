@@ -3,24 +3,25 @@ using Photon.Realtime;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using static UnityEngine.Rendering.DebugUI;
 
 [Serializable] //Client -> MasterClient
 public struct AttackCommand
 {
-	public int attackerNum;		//¿äÃ»ÀÚ Actor ¹øÈ£
-	public int baseDamage;		//°ÔÀÌÁö·Î °è»êÇÑ ¿øº» µ¥¹ÌÁö
-	public bool isBasicAttack;	//ÆòÅ¸ÀÎÁö ¾Æ´ÑÁö ¿©ºÎ
-	public int clientNonce;		//Áßº¹ ¿äÃ» ¹æÁö
+	public int attackerNum;     //ìš”ì²­ì Actor ë²ˆí˜¸
+	public int baseDamage;      //ê²Œì´ì§€ë¡œ ê³„ì‚°í•œ ì›ë³¸ ë°ë¯¸ì§€
+	public bool isBasicAttack;  //í‰íƒ€ì¸ì§€ ì•„ë‹Œì§€ ì—¬ë¶€
+	public int clientNonce;     //ì¤‘ë³µ ìš”ì²­ ë°©ì§€
 }
 
 [Serializable] //MasterClient -> client
 public struct AttackResult
 {
-	public int attackerNum;		//¿äÃ»À» º¸³½ Actor ¹øÈ£
-	public int finalDamage;     //ÃÖÁ¾ È®Á¤ µ¥¹ÌÁö(¼û±è »óÅÂÀÎ °æ¿ì ´Ù¸¥ ÇÃ·¹ÀÌ¾î¿¡°Õ -1)
-	public float convertedBarrier; //ÃÖÁ¾ ¹æ¾î·Â Rate
-	public bool hidden;			//µ¥¹ÌÁö ¼û±è »óÅÂÀÎÁö ¿©ºÎ
-	public float treeHpAfter;	//UI ¹İ¿µ¿ë treeHP °á°ú
+	public int attackerNum;     //ìš”ì²­ì„ ë³´ë‚¸ Actor ë²ˆí˜¸
+	public int finalDamage;     //ìµœì¢… í™•ì • ë°ë¯¸ì§€(ìˆ¨ê¹€ ìƒíƒœì¸ ê²½ìš° ë‹¤ë¥¸ í”Œë ˆì´ì–´ì—ê² -1)
+	public float convertedBarrier; //ìµœì¢… ë°©ì–´ë ¥ Rate
+	public bool hidden;         //ë°ë¯¸ì§€ ìˆ¨ê¹€ ìƒíƒœì¸ì§€ ì—¬ë¶€
+	public float treeHpAfter;   //UI ë°˜ì˜ìš© treeHP ê²°ê³¼
 }
 
 
@@ -32,6 +33,10 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	private GameEventBus _gameEventBus;
 	private DamageResolver _damageResolver;
 	private DeterministicRng _rng;
+	//Inventory usage limits
+	private Dictionary<int, List<string>> UsedTurnItem;
+	private Dictionary<int, List<string>> UsedDayItem;
+	private Dictionary<int, List<string>> UsedGameItem;
 
 	private void Awake()
 	{
@@ -42,9 +47,13 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		_gameEventBus = new GameEventBus(_statusSystem);
 		_damageResolver = new DamageResolver(_gameEventBus, _statusSystem);
 
-		//Turn ½Ãµå °ª ¼³Á¤ ¹× Àû¿ë
-		//TurnÀÌ º¯°æµÉ ¶§¸¶´Ù Àç¼³Á¤ µÈ´Ù.
-		//ÀçÇö °¡´ÉÇÑ ·£´ı ½Ã½ºÅÛ,
+		UsedTurnItem = new Dictionary<int, List<string>>();
+		UsedDayItem = new Dictionary<int, List<string>>();
+		UsedGameItem = new Dictionary<int, List<string>>();
+
+		//Turn ì‹œë“œ ê°’ ì„¤ì • ë° ì ìš©
+		//Turnì´ ë³€ê²½ë  ë•Œë§ˆë‹¤ ì¬ì„¤ì • ëœë‹¤.
+		//ì¬í˜„ ê°€ëŠ¥í•œ ëœë¤ ì‹œìŠ¤í…œ,
 		InitRandomSystem();
 	}
 
@@ -55,24 +64,147 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		_rng = new DeterministicRng(seed);
 	}
 
-	//ÇÃ·¹ÀÌ¾î°¡ »ç¿ëÇÑ ¾ÆÀÌÅÛÀ» StatusInstance °´Ã¼·Î °´Ã¼È­ ÈÄ, ÇØ´ç ÇÃ·¹ÀÌ¾îÀÇ _statuisSystem ¸®½ºÆ®¿¡ »ğÀÔÇÑ´Ù.
-	//ÈÄ¿¡ ÅÏ º¯È­°¡ ¹ß»ıÇÒ ¶§, ÇÃ·¹ÀÌ¾îÀÇ stasusSystem ³»ÀÇ ¾ÆÀÌÅÛµéÀÌ ÀûÀıÇÑ Å¸ÀÌ¹Ö¿¡ ½ÇÇàµÈ´Ù.
-	public void AddItemStatusInstance(int actorNum, ItemSO item)
+	/// <summary>
+	/// Manage and control items that can only be used once in a day in a list
+	/// </summary>
+	/// <param name="itemId"></param>
+	public void AddUsedDayItem(int actorNum, string itemId)
 	{
-		//MasterClient¸¸ Ã³¸®ÇÑ´Ù.
+		if (!UsedDayItem.ContainsKey(actorNum))
+			UsedDayItem.Add(actorNum, new List<string>());
+		UsedDayItem[actorNum].Add(itemId);
+	}
+
+	/// <summary>
+	/// When the day is reset, it is reset.
+	/// </summary>
+	public void ClearUsedDayItem()
+	{
+		foreach (var I in UsedDayItem)
+		{
+			I.Value.Clear();
+		}
+	}
+
+	/// <summary>
+	/// Manage and control items that can only be used once in a turn in a list
+	/// </summary>
+	/// <param name="itemId"></param>
+	public void AddUsedTurnItem(int actorNum, string itemId)
+	{
+		if (!UsedTurnItem.ContainsKey(actorNum))
+			UsedTurnItem.Add(actorNum, new List<string>());
+
+		UsedTurnItem[actorNum].Add(itemId);
+	}
+
+	/// <summary>
+	/// When the turn is reset, it is reset.
+	/// </summary>
+	public void ClearUsedTurnItem()
+	{
+		foreach (var I in UsedTurnItem)
+		{
+			I.Value.Clear();
+		}
+	}
+
+	public void AddUsedGameItem(int actorNum, string itemId)
+	{
+		if (!UsedGameItem.ContainsKey(actorNum))
+			UsedGameItem.Add(actorNum, new List<string>());
+		UsedGameItem[actorNum].Add(itemId);
+	}
+
+	/// <summary>
+	/// Check if the item is available (check turn, wave).
+	/// </summary>
+	/// <param name="itemId"></param>
+	/// <returns></returns>
+	public bool CheckItemAvaiable(int actorNum, string itemId)
+	{
+		// 1. UsedGameItemì— í‚¤ê°€ ìˆëŠ”ì§€ í™•ì¸ í›„ ê²€ì‚¬
+		if (UsedGameItem.ContainsKey(actorNum) && UsedGameItem[actorNum].Contains(itemId))
+			return false;
+
+		// 2. UsedDayItemì— í‚¤ê°€ ìˆëŠ”ì§€ í™•ì¸ í›„ ê²€ì‚¬
+		if (UsedDayItem.ContainsKey(actorNum) && UsedDayItem[actorNum].Contains(itemId))
+			return false;
+
+		// 3. UsedTurnItemì— í‚¤ê°€ ìˆëŠ”ì§€ í™•ì¸ í›„ ê²€ì‚¬
+		if (UsedTurnItem.ContainsKey(actorNum) && UsedTurnItem[actorNum].Contains(itemId))
+			return false;
+
+		return true;
+	}
+
+	public int HasLockPick(int actorNum)
+	{
+		var ctx = new EffectContext(_rng, Debug.Log);
+
+		int lockPickCnt = ctx.GetPlayerLockPickCount(actorNum);
+		return lockPickCnt;
+	}
+
+	public void UseLockPick(int actorNum)
+	{
+		photonView.RPC(nameof(RPC_UseLockPick), RpcTarget.MasterClient, actorNum);
+	}
+
+	[PunRPC]
+	public void RPC_UseLockPick(int actorNum)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+		var ctx = new EffectContext(_rng, Debug.Log);
+
+		ctx.RemovePlayerLockPickCount(actorNum);
+	}
+
+
+	//í”Œë ˆì´ì–´ê°€ ì‚¬ìš©í•œ ì•„ì´í…œì„ StatusInstance ê°ì²´ë¡œ ê°ì²´í™” í›„, í•´ë‹¹ í”Œë ˆì´ì–´ì˜ _statuisSystem ë¦¬ìŠ¤íŠ¸ì— ì‚½ì…í•œë‹¤.
+	//í›„ì— í„´ ë³€í™”ê°€ ë°œìƒí•  ë•Œ, í”Œë ˆì´ì–´ì˜ stasusSystem ë‚´ì˜ ì•„ì´í…œë“¤ì´ ì ì ˆí•œ íƒ€ì´ë°ì— ì‹¤í–‰ëœë‹¤.
+	public void AddItemStatusInstance(int actorNum, ItemSO item, int itemUID)
+	{
+		//MasterClientë§Œ ì²˜ë¦¬í•œë‹¤.
 		if (!PhotonNetwork.IsMasterClient) return;
 
-		//¾ÆÀÌÅÛ Àû¿ë ´ë»óÀ» ±âÁØÀ¸·Î ºĞ±âÇÏ¿© Ã³¸®ÇÑ´Ù.
+		if (item.oncePerTurn) AddUsedTurnItem(actorNum, item.itemId);
+		if (item.oncePerDay) AddUsedDayItem(actorNum, item.itemId);
+		if (item.oncePerGame) AddUsedGameItem(actorNum, item.itemId);
+
+		//If Sacrifice Item
+		if (item.itemId == "2002")
+		{
+			ItemSelectionController.instance.SetItemSelectionActive(actorNum, itemUID);
+		}
+
+		//If Lockpick Item
+		if (item.itemId == "4000")
+		{
+			var ctx = new EffectContext(_rng, Debug.Log);
+			ctx.AddPlayerLockPickCount(actorNum);
+			ctx.Log?.Invoke($"[ItemLockPick] Player{actorNum}'s LockPick added");
+			return;
+		}
+		if (item.itemId == "4001")
+		{
+			var ctx = new EffectContext(_rng, Debug.Log);
+			ctx.AddPlayerLockCount(actorNum);
+			ctx.Log?.Invoke($"[ItemLockPick] Player{actorNum}'s Lock added");
+			return;
+		}
+
+		//ì•„ì´í…œ ì ìš© ëŒ€ìƒì„ ê¸°ì¤€ìœ¼ë¡œ ë¶„ê¸°í•˜ì—¬ ì²˜ë¦¬í•œë‹¤.
 		switch (item.target)
 		{
-			//¾ÆÀÌÅÛ Àû¿ë ´ë»óÀÌ ÀÚ±â ÀÚ½ÅÀÎ °æ¿ì
+			//ì•„ì´í…œ ì ìš© ëŒ€ìƒì´ ìê¸° ìì‹ ì¸ ê²½ìš°
 			case ItemTarget.Self:
 			case ItemTarget.SelfVillage:
 			case ItemTarget.Tree:
-				//ÇØ´ç ¾ÆÀÌÅÛ¿¡ ºÎÂøµÈ È¿°úµéÀ» µ¹¸é¼­
+				//í•´ë‹¹ ì•„ì´í…œì— ë¶€ì°©ëœ íš¨ê³¼ë“¤ì„ ëŒë©´ì„œ
 				foreach (EffectSpec es in item.effects)
 				{
-					//AddStatus ¿ÜÀÇ ´Ù¸¥ ¾ÆÀÌÅÛ È¿°ú·Î Á¤ÀÇµÈ ¾ÆÀÌÅÛÀÏ °æ¿ì
+					//AddStatus ì™¸ì˜ ë‹¤ë¥¸ ì•„ì´í…œ íš¨ê³¼ë¡œ ì •ì˜ëœ ì•„ì´í…œì¼ ê²½ìš°
 					if (es.effectType != ItemEffect.AddStatus)
 					{
 						ItemProcessImm(actorNum, es);
@@ -80,35 +212,35 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 						continue;
 					}
 
-					//AddStatus¿¡ Á¤ÀÇµÈ ÇØ´ç ¾ÆÀÌÅÛ Á¤º¸¸¦ °¡Á®¿Â´Ù.
-					//ÀÌ´Â ÃßÈÄ¿¡ ´Ù¸¥ ¾ÆÀÌÅÛÀ» Ã³¸®ÇÏ±â À§ÇØ º°°³ÀÇ ÄÚµå¸¦ ³Ö¾î¾ß ÇÒ µí ÇÏ´Ù.
+					//AddStatusì— ì •ì˜ëœ í•´ë‹¹ ì•„ì´í…œ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+					//ì´ëŠ” ì¶”í›„ì— ë‹¤ë¥¸ ì•„ì´í…œì„ ì²˜ë¦¬í•˜ê¸° ìœ„í•´ ë³„ê°œì˜ ì½”ë“œë¥¼ ë„£ì–´ì•¼ í•  ë“¯ í•˜ë‹¤.
 					StatusSpec ss = es.statusSpce;
 
-					//³²Àº ÅÏ ¼ö¸¦ durationTypeÀ» ±â¹İÀ¸·Î ÃÊ±âÈ­ÇÏ°í
+					//ë‚¨ì€ í„´ ìˆ˜ë¥¼ durationTypeì„ ê¸°ë°˜ìœ¼ë¡œ ì´ˆê¸°í™”í•˜ê³ 
 					int remainTurns = getRemainTurns(ss);
 
-					//StatusIntance¸¦ »ı¼ºÇÑ ´ÙÀ½
+					//StatusIntanceë¥¼ ìƒì„±í•œ ë‹¤ìŒ
 					var st = setAndGetStatusInstance(ss, actorNum, actorNum, remainTurns);
 
-					//ÇÃ·¹ÀÌ¾îÀÇ »óÅÂ °ü¸® ½Ã½ºÅÛ ¸®½ºÆ®¿¡ »ğÀÔ
+					//í”Œë ˆì´ì–´ì˜ ìƒíƒœ ê´€ë¦¬ ì‹œìŠ¤í…œ ë¦¬ìŠ¤íŠ¸ì— ì‚½ì…
 					_statusSystem.Add(st);
 
-					//µğ¹ö±ë
+					//ë””ë²„ê¹…
 					Debug.Log($"[Item] AddStatus {ss.statusId} to {actorNum}");
 				}
 				break;
 
-			//¾ÆÀÌÅÛ Àû¿ë ´ë»óÀÌ ´Ù¸¥ ÇÃ·¹ÀÌ¾îÀÎ °æ¿ì
+			//ì•„ì´í…œ ì ìš© ëŒ€ìƒì´ ë‹¤ë¥¸ í”Œë ˆì´ì–´ì¸ ê²½ìš°
 			case ItemTarget.Opponent:
 			case ItemTarget.OpponentVillage:
 				foreach (EffectSpec es in item.effects)
 				{
 					Player[] playerNums = PhotonNetwork.PlayerList;
-					//AddStatus ¿ÜÀÇ ´Ù¸¥ ¾ÆÀÌÅÛ È¿°ú·Î Á¤ÀÇµÈ ¾ÆÀÌÅÛÀÏ °æ¿ì
+					//AddStatus ì™¸ì˜ ë‹¤ë¥¸ ì•„ì´í…œ íš¨ê³¼ë¡œ ì •ì˜ëœ ì•„ì´í…œì¼ ê²½ìš°
 					if (es.effectType != ItemEffect.AddStatus)
 					{
-						//³ª¸¦ Á¦¿ÜÇÑ ´Ù¸¥ ¸ğµç ÇÃ·¹ÀÌ¾î¿¡°Ô ÇØ´ç Áï½Ã Àû¿ë ¾ÆÀÌÅÛ È¿°ú¸¦ Àû¿ëÇÑ´Ù.
-						foreach(Player player in playerNums)
+						//ë‚˜ë¥¼ ì œì™¸í•œ ë‹¤ë¥¸ ëª¨ë“  í”Œë ˆì´ì–´ì—ê²Œ í•´ë‹¹ ì¦‰ì‹œ ì ìš© ì•„ì´í…œ íš¨ê³¼ë¥¼ ì ìš©í•œë‹¤.
+						foreach (Player player in playerNums)
 						{
 							if (player.ActorNumber != actorNum)
 								ItemProcessImm(player.ActorNumber, es);
@@ -116,13 +248,13 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 						continue;
 					}
 
-					//AddStatus¿¡ Á¤ÀÇµÈ ÇØ´ç ¾ÆÀÌÅÛ Á¤º¸¸¦ °¡Á®¿Â´Ù.
+					//AddStatusì— ì •ì˜ëœ í•´ë‹¹ ì•„ì´í…œ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 					StatusSpec ss = es.statusSpce;
 
-					//³²Àº ÅÏ ¼ö¸¦ durationTypeÀ» ±â¹İÀ¸·Î ÃÊ±âÈ­ÇÏ°í
+					//ë‚¨ì€ í„´ ìˆ˜ë¥¼ durationTypeì„ ê¸°ë°˜ìœ¼ë¡œ ì´ˆê¸°í™”í•˜ê³ 
 					int remainTurns = getRemainTurns(ss);
 
-					//´Ù¸¥ ÇÃ·¹ÀÌ¾î¾îÁ¤º¸·Î ÃÊ±âÈ­ÇÏ¿© ÇØ´ç ¾ÆÀÌÅÛ È¿°ú¸¦ »ğÀÔÇÑ´Ù.
+					//ë‹¤ë¥¸ í”Œë ˆì´ì–´ì–´ì •ë³´ë¡œ ì´ˆê¸°í™”í•˜ì—¬ í•´ë‹¹ ì•„ì´í…œ íš¨ê³¼ë¥¼ ì‚½ì…í•œë‹¤.
 					foreach (Player player in playerNums)
 					{
 						if (player.ActorNumber != actorNum)
@@ -130,7 +262,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 							var opst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
 
 							_statusSystem.Add(opst);
-							//µğ¹ö±ë
+							//ë””ë²„ê¹…
 							Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
 						}
 					}
@@ -138,15 +270,15 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 				break;
 
 
-			//¾ÆÀÌÅÛ Àû¿ë ´ë»óÀÌ ÀüÃ¼ÀÎ °æ¿ì
+			//ì•„ì´í…œ ì ìš© ëŒ€ìƒì´ ì „ì²´ì¸ ê²½ìš°
 			case ItemTarget.Global:
 				foreach (EffectSpec es in item.effects)
 				{
 					Player[] playerNums = PhotonNetwork.PlayerList;
-					//AddStatus ¿ÜÀÇ ´Ù¸¥ ¾ÆÀÌÅÛ È¿°ú·Î Á¤ÀÇµÈ ¾ÆÀÌÅÛÀÏ °æ¿ì
+					//AddStatus ì™¸ì˜ ë‹¤ë¥¸ ì•„ì´í…œ íš¨ê³¼ë¡œ ì •ì˜ëœ ì•„ì´í…œì¼ ê²½ìš°
 					if (es.effectType != ItemEffect.AddStatus)
 					{
-						//¸ğµÎ¿¡°Ô Áï½Ã Àû¿ë
+						//ëª¨ë‘ì—ê²Œ ì¦‰ì‹œ ì ìš©
 						foreach (Player player in playerNums)
 						{
 							ItemProcessImm(player.ActorNumber, es);
@@ -154,19 +286,19 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 						continue;
 					}
 
-					//AddStatus¿¡ Á¤ÀÇµÈ ÇØ´ç ¾ÆÀÌÅÛ Á¤º¸¸¦ °¡Á®¿Â´Ù.
+					//AddStatusì— ì •ì˜ëœ í•´ë‹¹ ì•„ì´í…œ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 					StatusSpec ss = es.statusSpce;
 
-					//³²Àº ÅÏ ¼ö¸¦ durationTypeÀ» ±â¹İÀ¸·Î ÃÊ±âÈ­ÇÏ°í
+					//ë‚¨ì€ í„´ ìˆ˜ë¥¼ durationTypeì„ ê¸°ë°˜ìœ¼ë¡œ ì´ˆê¸°í™”í•˜ê³ 
 					int remainTurns = getRemainTurns(ss);
 
-					//°¢ ÇÃ·¹ÀÌ¾î Á¤º¸·Î ÃÊ±âÈ­ÇÏ¿© ¾ÆÀÌÅÛÈ¿°ú¸¦ »ğÀÔÇÑ´Ù.
+					//ê° í”Œë ˆì´ì–´ ì •ë³´ë¡œ ì´ˆê¸°í™”í•˜ì—¬ ì•„ì´í…œíš¨ê³¼ë¥¼ ì‚½ì…í•œë‹¤.
 					foreach (Player player in playerNums)
 					{
 						var gbst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
-						
+
 						_statusSystem.Add(gbst);
-						//µğ¹ö±ë
+						//ë””ë²„ê¹…
 						Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
 					}
 				}
@@ -174,35 +306,99 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		}
 	}
 
+	//í¬ìƒ ì•„ì´í…œ ìµœì¢… ì²˜ë¦¬ í”„ë¡œì„¸ìŠ¤
+	public void ProcessSacrificeItem(int ActNum, int UID)
+	{
+		photonView.RPC(nameof(RPC_ProcessSacrificeItem), RpcTarget.MasterClient, ActNum, UID);
+	}
+
+	[PunRPC]
+	public void RPC_ProcessSacrificeItem(int ActNum, int UID)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		Debug.Log("Item Sacrifice Process Activated");
+		//í”Œë ˆì´ì–´ ë²ˆí˜¸ ê¸°ì¤€ìœ¼ë¡œ ì¸ë²¤í† ë¦¬ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
+		int capacity = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(ActNum));
+		string invStr = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(ActNum));
+
+		//ì¸ë²¤í† ë¦¬ ìŠ¬ë¡¯ ê°€ì ¸ì˜¤ê¸°
+		var invSlots = ItemInfoSerializer.Decode(invStr, capacity);
+		if (invSlots == null) return;
+
+		//UIDë¥¼ ê¸°ë°˜ìœ¼ë¡œ ì•„ì´í…œ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
+		ItemSO selectedItem = null;
+		for (int i = 0; i < invSlots.Length; i++)
+		{
+			if (invSlots[i].itemID == null) continue;
+			if (UID == invSlots[i].uniqueId)
+			{
+				selectedItem = ItemDB.Instance.Get(invSlots[i].itemID);
+				break;
+			}
+		}
+
+		if (selectedItem == null) return;
+
+		Debug.Log($"Selected Item ID = {selectedItem.itemId}");
+
+		//Rate ê°’ ê°€ì ¸ì˜¤ê¸°
+		float reduceRate = 1f;
+		switch (selectedItem.itemClass)
+		{
+			case ItemClass.Common:
+				reduceRate -= PhotonPropertyHelper.GetRoomProp<float>(ItemPropKeys.COMMON_RATE(ActNum));
+				break;
+			case ItemClass.Hero:
+				reduceRate -= PhotonPropertyHelper.GetRoomProp<float>(ItemPropKeys.HERO_RATE(ActNum));
+				break;
+			case ItemClass.Rare:
+				reduceRate -= PhotonPropertyHelper.GetRoomProp<float>(ItemPropKeys.RARE_RATE(ActNum));
+				break;
+			case ItemClass.Legendary:
+				reduceRate -= PhotonPropertyHelper.GetRoomProp<float>(ItemPropKeys.LEGENDARY_RATE(ActNum));
+				break;
+		}
+
+		//Rate ê°’ ê³„ì‚° ë° ë°˜ì˜
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(ActNum);
+		float currentRate = PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.TreeAtkMulti);
+		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.TreeAtkMulti, currentRate * reduceRate);
+		Debug.Log($"Player{ActNum}'s Village Attack Mult Rate : {currentRate * reduceRate}");
+
+		//í•´ë‹¹ ì•„ì´í…œ ì‚­ì œ
+		InventoryAuthority.Instance.DeleteItemByUID(ActNum, UID);
+	}
+
 	private int getRemainTurns(StatusSpec ss)
 	{
 		int remainTurns = 9999;
 		switch (ss.durationType)
 		{
-			//ÀÌ¹ø ÅÏ¿¡¸¸ »ç¿ëµÇ´Â ¾ÆÀÌÅÛÀÎ °æ¿ì
+			//ì´ë²ˆ í„´ì—ë§Œ ì‚¬ìš©ë˜ëŠ” ì•„ì´í…œì¸ ê²½ìš°
 			case DurationType.ThisTurn:
 				remainTurns = 1;
 				break;
-			//´ÙÀ½ ÅÏ±îÁö »ç¿ëµÇ´Â ¾ÆÀÌÅÛÀÏ °æ¿ì
+			//ë‹¤ìŒ í„´ê¹Œì§€ ì‚¬ìš©ë˜ëŠ” ì•„ì´í…œì¼ ê²½ìš°
 			case DurationType.NextTurn:
 				remainTurns = 2;
 				break;
-			//N¹øÀÇ Turn µ¿¾È È°¼ºÈ­µÇ´Â ¾ÆÀÌÅÛÀÏ °æ¿ì
+			//Në²ˆì˜ Turn ë™ì•ˆ í™œì„±í™”ë˜ëŠ” ì•„ì´í…œì¼ ê²½ìš°
 			case DurationType.Turns:
 				remainTurns = ss.durationTurns;
 				break;
-			//ÀÌ¹ø ÀÏÀÚ µ¿¾È È°¼ºÈ­ µÇ´Â ¾ÆÀÌÅÛÀÏ °æ¿ì
+			//ì´ë²ˆ ì¼ì ë™ì•ˆ í™œì„±í™” ë˜ëŠ” ì•„ì´í…œì¼ ê²½ìš°
 			case DurationType.UntilWaveEnd:
-				//ÇöÀç wave °ª
+				//í˜„ì¬ wave ê°’
 				int currentWave = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
-				//ÃÖ´ë wave °ª
+				//ìµœëŒ€ wave ê°’
 				int MaxWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.MaxWaveCnt);
-				//ÇÃ·¹ÀÌ¾î ¼ö(Turn ¼ö)
+				//í”Œë ˆì´ì–´ ìˆ˜(Turn ìˆ˜)
 				int PlayerCnt = PhotonNetwork.PlayerList.Length;
-				//ÇöÀç ÅÏ ÀÎµ¦½º
+				//í˜„ì¬ í„´ ì¸ë±ìŠ¤
 				int currentTurnIdx = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
-				//³²Àº ÅÏ °è»ê
-				//ex) 2¹øÂ° waveÀÇ Ã¹¹øÂ° ÅÏÀÎ °æ¿ì 
+				//ë‚¨ì€ í„´ ê³„ì‚°
+				//ex) 2ë²ˆì§¸ waveì˜ ì²«ë²ˆì§¸ í„´ì¸ ê²½ìš° 
 				//remainTurns = (3 - 1 - 1) * 2 + (2 - 0) = 4
 				remainTurns = (MaxWaveCnt - currentWave - 1) * PlayerCnt + (PlayerCnt - currentTurnIdx);
 				break;
@@ -210,7 +406,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		return remainTurns;
 	}
 
-	//StatusInstance¸¦ »ı¼ºÇÏ°í ¹İÈ¯ÇÏ´Â ÇÔ¼ö
+	//StatusInstanceë¥¼ ìƒì„±í•˜ê³  ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
 	private StatusInstance setAndGetStatusInstance(StatusSpec ss, int ownerAct, int sourceAct, int remainTurns)
 	{
 		var st = new StatusInstance
@@ -225,20 +421,22 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 	public void OnTurnStart()
 	{
-		if (!PhotonNetwork.IsMasterClient) return;		
+		if (!PhotonNetwork.IsMasterClient) return;
 
 		var ctx = new EffectContext(_rng, Debug.Log);
 		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
 		_damageResolver.ResolveWhenStartTurn(ctx, turnActor);
+		ClearUsedTurnItem();
 	}
 
 	public void OnWaveEnd()
 	{
-		if(!PhotonNetwork.IsMasterClient)  return; 
-		//¾ÆÀÌÅÛ »ç¿ë ±æÀÌ°¡ 'ÇÏ·ç'¿¡ ¼ÓÇÏ´Â ¾ÆÀÌÅÛÀ» statusSystem¿¡¼­ »èÁ¦ÇÏ´Â ÇÔ¼ö ½ÇÇà
+		if (!PhotonNetwork.IsMasterClient) return;
+		//ì•„ì´í…œ ì‚¬ìš© ê¸¸ì´ê°€ 'í•˜ë£¨'ì— ì†í•˜ëŠ” ì•„ì´í…œì„ statusSystemì—ì„œ ì‚­ì œí•˜ëŠ” í•¨ìˆ˜ ì‹¤í–‰
 		_statusSystem.RemoveAllByDuration(DurationType.UntilWaveEnd);
+		ClearUsedDayItem();
 	}
-	
+
 	public void OnVillageStart()
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
@@ -246,17 +444,24 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		_damageResolver.ResolveWhenVillageStart(ctx);
 	}
 
-	//»ç¿ë Áï½Ã Àû¿ë µÉ ¾ÆÀÌÅÛµéÀ» È®ÀÎÇÏ°í ÇØ´ç ¾ÆÀÌÅÛÀ» Àû¿ëÇÏ´Â ÇÔ¼ö
+	// public void OnTreeDamage()
+	// {
+	// 	if (!PhotonNetwork.IsMasterClient) return;
+	// 	var ctx = new EffectContext(_rng, Debug.Log);
+	// 	_damageResolver.ResolveWhenVillageStart(ctx);
+	// }
+
+	//ì‚¬ìš© ì¦‰ì‹œ ì ìš© ë  ì•„ì´í…œë“¤ì„ í™•ì¸í•˜ê³  í•´ë‹¹ ì•„ì´í…œì„ ì ìš©í•˜ëŠ” í•¨ìˆ˜
 	public void CheckAndActivateImmItem()
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
 
 	}
 
-	//ÅÏ ÀüÈ¯ ½Ã È£ÃâµÉ ÇÔ¼ö
+	//í„´ ì „í™˜ ì‹œ í˜¸ì¶œë  í•¨ìˆ˜
 	public void RequestHit(int baseDamage, bool isBasicAttack)
 	{
-		//json Çü½ÄÀ¸·Î °ø°İ Ä¿¸Çµå °´Ã¼ »ı¼º
+		//json í˜•ì‹ìœ¼ë¡œ ê³µê²© ì»¤ë§¨ë“œ ê°ì²´ ìƒì„±
 		var cmd = new AttackCommand
 		{
 			attackerNum = PhotonNetwork.LocalPlayer.ActorNumber,
@@ -265,37 +470,37 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			clientNonce = UnityEngine.Random.Range(int.MinValue, int.MaxValue),
 		};
 
-		//Json ÇüÅÂ·Î Á÷·ÄÈ­ ÇØ¼­ MasterClient¿¡°Ô ¿äÃ» Àü¼Û
+		//Json í˜•íƒœë¡œ ì§ë ¬í™” í•´ì„œ MasterClientì—ê²Œ ìš”ì²­ ì „ì†¡
 		photonView.RPC(nameof(RPC_RequestAttack), RpcTarget.MasterClient, JsonUtility.ToJson(cmd));
 	}
-	
-	//MasterClient¿¡¼­ Ã³¸® ¼öÇà
+
+	//MasterClientì—ì„œ ì²˜ë¦¬ ìˆ˜í–‰
 	[PunRPC]
 	private void RPC_RequestAttack(string json, PhotonMessageInfo info)
 	{
-		//°ËÁõ
+		//ê²€ì¦
 		if (!PhotonNetwork.IsMasterClient) return;
 
-		//¿ªÁ÷·ÄÈ­
+		//ì—­ì§ë ¬í™”
 		var cmd = JsonUtility.FromJson<AttackCommand>(json);
 
-		//¿äÃ»ÀÚ¿Í °´Ã¼ Á¤º¸°¡ °°ÀºÁö È®ÀÎ(ÇÙ ¹æÁö)
+		//ìš”ì²­ìì™€ ê°ì²´ ì •ë³´ê°€ ê°™ì€ì§€ í™•ì¸(í•µ ë°©ì§€)
 		if (info.Sender.ActorNumber != cmd.attackerNum)
 		{
 			Debug.LogError("[ERROR]It is not real Requester");
 			return;
 		}
-		//ÅÏ °ËÁõ 2
+		//í„´ ê²€ì¦ 2
 		if (!IsMyTurnCheckInMaster(cmd.attackerNum))
 		{
 			Debug.LogError("[ERROR]It is not Requester Turn");
 			return;
 		}
 
-		//ÄÁÅØ½ºÆ® »ı¼º
+		//ì»¨í…ìŠ¤íŠ¸ ìƒì„±
 		var ctx = new EffectContext(_rng, Debug.Log);
 
-		//µ¥¹ÌÁö °´Ã¼ »ı¼º
+		//ë°ë¯¸ì§€ ê°ì²´ ìƒì„±
 		var dmg = new DamagePacket
 		{
 			attackerNum = cmd.attackerNum,
@@ -303,36 +508,36 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			baseDamage = cmd.baseDamage
 		};
 
-		//ÃÖÁ¾ µ¥¹ÌÁö °è»ê(¾ÆÀÌÅÛµµ ÇÔ²² ¹İ¿µÇÏ¿© °è»ê)
+		//ìµœì¢… ë°ë¯¸ì§€ ê³„ì‚°(ì•„ì´í…œë„ í•¨ê»˜ ë°˜ì˜í•˜ì—¬ ê³„ì‚°)
 		_damageResolver.Resolve(dmg, ctx);
 
-		//°¢ ¾ÆÀÌÅÛÀÇ ³²Àº ÅÏ ¼ö °è»ê, ³²Àº ÅÏ¼ö°¡ ¸ğµÎ Áö³ª¸é ÇØ´ç ¾ÆÀÌÅÛÀ» _statusSystem ¸®½ºÆ®¿¡¼­ »èÁ¦ÇÑ´Ù.
+		//ê° ì•„ì´í…œì˜ ë‚¨ì€ í„´ ìˆ˜ ê³„ì‚°, ë‚¨ì€ í„´ìˆ˜ê°€ ëª¨ë‘ ì§€ë‚˜ë©´ í•´ë‹¹ ì•„ì´í…œì„ _statusSystem ë¦¬ìŠ¤íŠ¸ì—ì„œ ì‚­ì œí•œë‹¤.
 		_statusSystem.TickTurnEnd(cmd.attackerNum);
 
-		//³ª¹« µ¥¹ÌÁö ¾÷µ¥ÀÌÆ®
+		//ë‚˜ë¬´ ë°ë¯¸ì§€ ì—…ë°ì´íŠ¸
 		float hp = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeHP);
 		hp -= dmg.finalDamage;
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, hp);
 
-		//°è»êµÈ °á°ú¸¦ °¢ Å¬¶óÀÌ¾ğÆ®¿¡°Ô ºê·ÎµåÄ³½ºÆ®ÇÏ´Â ÇÔ¼ö È£Ãâ
-		BroadcastHitResult(cmd.attackerNum, dmg.finalDamage,  dmg.convertedToBarrier ,dmg.hidden, hp);
+		//ê³„ì‚°ëœ ê²°ê³¼ë¥¼ ê° í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ë¸Œë¡œë“œìºìŠ¤íŠ¸í•˜ëŠ” í•¨ìˆ˜ í˜¸ì¶œ
+		BroadcastHitResult(cmd.attackerNum, dmg.finalDamage, dmg.convertedToBarrier, dmg.hidden, hp);
 	}
 
-	//¸¶½ºÅÍ Å¬¶óÀÌ¾ğÆ®°¡ °è»ê °á°ú¸¦ °¢ Å¬¶óÀÌ¾ğÆ®¿¡°Ô ºê·ÎµåÄ³½ºÆ® ÇÏ´Â ÇÔ¼ö
-	private void BroadcastHitResult(int attackNum, int finalDmg, float finalBarrierConverted,bool hidden, float treeHPAfter)
+	//ë§ˆìŠ¤í„° í´ë¼ì´ì–¸íŠ¸ê°€ ê³„ì‚° ê²°ê³¼ë¥¼ ê° í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ë¸Œë¡œë“œìºìŠ¤íŠ¸ í•˜ëŠ” í•¨ìˆ˜
+	private void BroadcastHitResult(int attackNum, int finalDmg, float finalBarrierConverted, bool hidden, float treeHPAfter)
 	{
 		Debug.Log("Final Damage : " + finalDmg);
 
-		//ÇÃ·¹ÀÌ¾î ¹è¿­ °¡Á®¿À±â
+		//í”Œë ˆì´ì–´ ë°°ì—´ ê°€ì ¸ì˜¤ê¸°
 		Player[] playerNums = PhotonNetwork.PlayerList;
 
-		//°ø°İÀÚ¿Í ±× ¿Ü ÇÃ·¹ÀÌ¾î ±¸ºĞ
+		//ê³µê²©ìì™€ ê·¸ ì™¸ í”Œë ˆì´ì–´ êµ¬ë¶„
 		Player attacker = null;
 		List<Player> opposites = new List<Player>();
 
-		foreach(Player player in playerNums )
+		foreach (Player player in playerNums)
 		{
-			if(player.ActorNumber == attackNum)
+			if (player.ActorNumber == attackNum)
 			{
 				attacker = player;
 			}
@@ -342,14 +547,14 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			}
 		}
 
-		//¿¹¿Ü Ã³¸®
-		if(attacker == null)
+		//ì˜ˆì™¸ ì²˜ë¦¬
+		if (attacker == null)
 		{
 			Debug.LogError("No Attacker Player Info");
 			return;
 		}
 
-		//°ø°İÀÚ(¿äÃ»ÀÚ)¿¡°Ô Àü´ŞÇÒ json °´Ã¼
+		//ê³µê²©ì(ìš”ì²­ì)ì—ê²Œ ì „ë‹¬í•  json ê°ì²´
 		var fullInfo = new AttackResult
 		{
 			attackerNum = attackNum,
@@ -359,23 +564,23 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			treeHpAfter = treeHPAfter,
 		};
 
-		//±×¿Ü ÇÃ·¹ÀÌ¾îµé¿¡°Ô Àü´ŞÇÒ json °´Ã¼
+		//ê·¸ì™¸ í”Œë ˆì´ì–´ë“¤ì—ê²Œ ì „ë‹¬í•  json ê°ì²´
 		var maskedInfo = new AttackResult
 		{
 			attackerNum = attackNum,
-			//hidden ¿©ºÎ¿¡ µû¶ó¼­ µ¥¹ÌÁö Á¤º¸ °ø°³ È¤Àº ºñ°ø°³
+			//hidden ì—¬ë¶€ì— ë”°ë¼ì„œ ë°ë¯¸ì§€ ì •ë³´ ê³µê°œ í˜¹ì€ ë¹„ê³µê°œ
 			finalDamage = hidden ? -1 : finalDmg,
 			convertedBarrier = hidden ? -1f : finalBarrierConverted,
 			hidden = hidden,
 			treeHpAfter = treeHPAfter,
 		};
 
-		//Á÷·ÄÈ­
+		//ì§ë ¬í™”
 		string fullInfoJson = JsonUtility.ToJson(fullInfo);
 		string maskedInfoJson = JsonUtility.ToJson(maskedInfo);
-		//°¢ ¿äÃ»ÀÚ¿Í ±×¿Ü ÇÃ·¹ÀÌ¾îµé¿¡°Ô RPC·Î °á°ú Àü¼Û
+		//ê° ìš”ì²­ìì™€ ê·¸ì™¸ í”Œë ˆì´ì–´ë“¤ì—ê²Œ RPCë¡œ ê²°ê³¼ ì „ì†¡
 		photonView.RPC(nameof(RPC_OnAttackResult), attacker, fullInfoJson);
-		foreach(Player player in opposites)
+		foreach (Player player in opposites)
 		{
 			photonView.RPC(nameof(RPC_OnAttackResult), player, maskedInfoJson);
 		}
@@ -387,45 +592,45 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		var res = JsonUtility.FromJson<AttackResult>(json);
 
 
-		//UI Ã³¸®
-		if(res.hidden && res.finalDamage < 0)
+		//UI ì²˜ë¦¬
+		if (res.hidden && res.finalDamage < 0)
 		{
-			//µ¥¹ÌÁö¸¦ °¡¸®´Â UI Ã³¸® ¼öÇà
+			//ë°ë¯¸ì§€ë¥¼ ê°€ë¦¬ëŠ” UI ì²˜ë¦¬ ìˆ˜í–‰
 		}
 		else
 		{
-			//±âº» Ã³¸®(µ¥¹ÌÁö °ø°³)
+			//ê¸°ë³¸ ì²˜ë¦¬(ë°ë¯¸ì§€ ê³µê°œ)
 		}
 
-		if(res.attackerNum == PhotonNetwork.LocalPlayer.ActorNumber)
+		if (res.attackerNum == PhotonNetwork.LocalPlayer.ActorNumber)
 		{
 			float currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage);
 			float currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier);
 
-			//µ¥¹ÌÁö ÇÕ°è °è»ê
+			//ë°ë¯¸ì§€ í•©ê³„ ê³„ì‚°
 			currentTotalDamage += res.finalDamage;
-			//Barrier °ª °è»ê
+			//Barrier ê°’ ê³„ì‚°
 			currentBarrier = currentBarrier + res.convertedBarrier;
-			//º¯°æµÈ ½ºÅÈ °ª ÇÁ·ÎÆÛÆ¼¿¡ ¾÷µ¥ÀÌÆ®
+			//ë³€ê²½ëœ ìŠ¤íƒ¯ ê°’ í”„ë¡œí¼í‹°ì— ì—…ë°ì´íŠ¸
 			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage, currentTotalDamage);
 			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, currentBarrier);
 		}
 	}
 
-	//Áï½Ã Àû¿ëµÇ´Â ¾ÆÀÌÅÛ ½ÇÇà ÇÔ¼ö
+	//ì¦‰ì‹œ ì ìš©ë˜ëŠ” ì•„ì´í…œ ì‹¤í–‰ í•¨ìˆ˜
 	private void ItemProcessImm(int actorNum, EffectSpec es)
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
-		//EffectContext ¹ßÇà
+		//EffectContext ë°œí–‰
 		var ctx = new EffectContext(_rng, Debug.Log);
 
-		//ItemEffect Å¸ÀÔ ±âÁØ ±¸ºĞ
+		//ItemEffect íƒ€ì… ê¸°ì¤€ êµ¬ë¶„
 		switch (es.effectType)
 		{
-			//³ª¹« Ã¼·Â¿¡ Ãß°¡ HP¸¦ +/- ÇÏ´Â ¾ÆÀÌÅÛÀÌ¶ó¸é
+			//ë‚˜ë¬´ ì²´ë ¥ì— ì¶”ê°€ HPë¥¼ +/- í•˜ëŠ” ì•„ì´í…œì´ë¼ë©´
 			case ItemEffect.DeltaTreeUp:
 				float val = es.floatValue1;
-				if(Mathf.Approximately(val, 0f))
+				if (Mathf.Approximately(val, 0f))
 				{
 					ctx.Log?.Invoke("Item Heal Value null Exception");
 					return;
@@ -435,7 +640,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 				ctx.Log?.Invoke($"[ItemProcessImm] TreeHP Changed to {val}");
 				break;
-			//¸¶À» Ã¼·Â¿¡ Ãß°¡ HP¸¦ +/- ÇÏ´Â ¾ÆÀÌÅÛÀÌ¶ó¸é
+			//ë§ˆì„ ì²´ë ¥ì— ì¶”ê°€ HPë¥¼ +/- í•˜ëŠ” ì•„ì´í…œì´ë¼ë©´
 			case ItemEffect.DeltaVillageHp:
 				float delta = es.floatValue1;
 				if (Mathf.Approximately(delta, 0f))
@@ -444,8 +649,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					return;
 				}
 				float cur = ctx.GetPlayerVillageHP(actorNum);
-				//¾Æ·¡ ÄÚµå´Â ÇØ´ç ¾ÆÀÌÅÛÀ» »ç¿ëÇÏ¸é °ÔÀÓÀ» ¹Ù·Î Áö°Ô µÇ´Â ¿äÀÎÀ» ¸·±â À§ÇÑ ÇÃ·¹ÀÌ¾î¸¦ À§ÇÑ ÀåÄ¡
-				//µµÀÔ ¿©ºÎ´Â ¾ÆÁ÷ ¸ğ¸§
+				//ì•„ë˜ ì½”ë“œëŠ” í•´ë‹¹ ì•„ì´í…œì„ ì‚¬ìš©í•˜ë©´ ê²Œì„ì„ ë°”ë¡œ ì§€ê²Œ ë˜ëŠ” ìš”ì¸ì„ ë§‰ê¸° ìœ„í•œ í”Œë ˆì´ì–´ë¥¼ ìœ„í•œ ì¥ì¹˜
+				//ë„ì… ì—¬ë¶€ëŠ” ì•„ì§ ëª¨ë¦„
 				//if (delta < 0f && cur + delta <= 0f)
 				//{
 				//	ctx.Log?.Invoke("[ItemProcessImm] Not enough VillageHP for donation");
@@ -456,10 +661,10 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 				ctx.Log?.Invoke($"[ItemProcessImm] VillageHP Changed to {next}");
 				break;
-			//¸¶À» ½¯µå·®¿¡ Ãß°¡ ½¯µå¸¦ +/- ÇÏ´Â ¾ÆÀÌÅÛÀÌ¶ó¸é
+			//ë§ˆì„ ì‰´ë“œëŸ‰ì— ì¶”ê°€ ì‰´ë“œë¥¼ +/- í•˜ëŠ” ì•„ì´í…œì´ë¼ë©´
 			case ItemEffect.DeltaVillageShield:
 				float shield = es.floatValue1;
-				if(Mathf.Approximately(shield, 0f))
+				if (Mathf.Approximately(shield, 0f))
 				{
 					ctx.Log?.Invoke("Item Shield Value null Exception");
 					return;
@@ -470,7 +675,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {shield}");
 				break;
-			//¸¶À» ½¯µå·®¿¡ Æ¯Á¤ °ª(ºñÀ²)À» °öÇÏ´Â ¾ÆÀÌÅÛÀÌ¶ó¸é
+			//ë§ˆì„ ì‰´ë“œëŸ‰ì— íŠ¹ì • ê°’(ë¹„ìœ¨)ì„ ê³±í•˜ëŠ” ì•„ì´í…œì´ë¼ë©´
 			case ItemEffect.MultVillageShield:
 				float mult = es.floatValue1;
 				if (Mathf.Approximately(mult, 0f))
@@ -484,10 +689,10 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {nextShield}");
 				break;
-			//ÇÃ·¹ÀÌ¾î ±â·Â¿¡ Ãß°¡ ±â·ÂÀ» +/- ÇÏ´Â ¾ÆÀÌÅÛÀÌ¶ó¸é
+			//í”Œë ˆì´ì–´ ê¸°ë ¥ì— ì¶”ê°€ ê¸°ë ¥ì„ +/- í•˜ëŠ” ì•„ì´í…œì´ë¼ë©´
 			case ItemEffect.DeltaPlayerEng:
 				int eng = es.intValue1;
-				if(eng == 0)
+				if (eng == 0)
 				{
 					ctx.Log?.Invoke("Item Charge Value null Exception");
 					return;
@@ -502,7 +707,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 			case ItemEffect.TransferOpponentShieldPct:
 				int targetActNum = getRandomActNum_ExceptMe(actorNum);
-				if(targetActNum == -1)
+				if (targetActNum == -1)
 				{
 					Debug.LogError("There is only me in this Game...");
 					return;
@@ -528,15 +733,15 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 		List<int> candidates = new List<int>();
 
-		foreach(var player in playerList)
+		foreach (var player in playerList)
 		{
-			if(player.ActorNumber != myActNum)
+			if (player.ActorNumber != myActNum)
 			{
 				candidates.Add(player.ActorNumber);
 			}
 		}
 
-		if(candidates.Count == 0)
+		if (candidates.Count == 0)
 		{
 			return -1;
 		}

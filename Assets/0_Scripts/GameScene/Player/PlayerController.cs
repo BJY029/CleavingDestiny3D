@@ -2,6 +2,9 @@ using Photon.Pun;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using ExitGames.Client.Photon;
+using Photon.Pun.UtilityScripts;
+using System.Data.Common;
+using System.Collections.Generic;
 
 public interface ILookInteractable
 {
@@ -10,9 +13,15 @@ public interface ILookInteractable
 	void OnInteract(PlayerController pc);
 }
 
+//미니게임 상호작용 인터페이스
+public interface IMinigameInteractable
+{
+	void OnInteract(PlayerController pc);
+}
+
 //CharacterController 컴포넌트 강제 할당
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviour, IAnimNotify
+public class PlayerController : MonoBehaviourPun, IAnimNotify
 {
 	//움직임 관련 파라미터
 	[Header("Move")]
@@ -32,7 +41,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 	//카메라 관련 파라미터
 	[Header("Camera")]
 	public Transform pivotTransform;  // Main Camera의 pivot
-	public GameObject _mainCamera;	//실제 카메라
+	public GameObject _mainCamera;  //실제 카메라
 	public float cameraDistance = 3.0f;
 
 	//애니메이션 관련 파라미터
@@ -88,7 +97,11 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 	public int RayMultiplyer;
 	[SerializeField] private LayerMask targetLayer;
 	private ILookInteractable currentInteractable;
+
+	private IMinigameInteractable currentMinigame;
+
 	private Transform lastHitTarget = null;
+
 	public bool isLookingAtTree;
 
 	private PhotonView photonView;
@@ -98,6 +111,16 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 	private float damageRatio;
 	private int damage;
 
+	//특정 인벤토리에 들어가기 위한 키(값 = 인벤토리 주인 ActorNum)
+	private int InvAdmissionTicket = -1;
+	public void SetInvAdmissionTicket(int Num)
+	{
+		InvAdmissionTicket = Num;
+	}
+	public int GetInvAdmissionticket()
+	{
+		return InvAdmissionTicket;
+	}
 
 	private void Awake()
 	{
@@ -139,7 +162,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		}
 
 		//커서 설정
-		
+
 
 		//애니메이터 할당(할당 실패시 false로 설정)
 		hasAnimator = TryGetComponent(out animator);
@@ -175,7 +198,8 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		jumpAction?.Enable();
 
 		//F 키가 눌리는 이벤트에 해당 함수 삽입
-		TurnManager.Instance.OnInteractFKeyDown += HandleInteractFKey;
+		KeyInteractManager.instance.OnInteractFKeyDown += HandleInteractFKey;
+		KeyInteractManager.instance.OnInteractSpaceKeyDown += HandleInteractSpaceKey;
 	}
 
 	private void OnDisable()
@@ -186,7 +210,8 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		sprintAction?.Disable();
 		jumpAction?.Disable();
 
-		TurnManager.Instance.OnInteractFKeyDown -= HandleInteractFKey;
+		KeyInteractManager.instance.OnInteractFKeyDown -= HandleInteractFKey;
+		KeyInteractManager.instance.OnInteractSpaceKeyDown -= HandleInteractSpaceKey;
 	}
 
 	private bool inputLocked;
@@ -302,17 +327,29 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 			SetInputLocked(true);
 			return;
 		}
-		if (ItemOfferCanvasController.instance.isOfferPanelOpened)
+		if (ItemOfferCanvasController.instance.isOfferPanelOpened
+		|| ItemSelectionController.instance.IsItemSelectionActivated)
 		{
 			SetInputLocked(true);
 			return;
 		}
+		//만약 특정 미니게임이 실행되었다면
+		if (LockpickController.instance.IsGameActive())
+		{
+			//만약 현재 실행중인 미니게임이 없다면, 해당 인터페이스로 설정
+			if (currentMinigame == null) currentMinigame = LockpickController.instance;
+			//움직임 막기
+			SetInputLocked(true);
+			return;
+		}
 
+		//별다른 미니게임이 실행중이지 않으면, 인터페이스를 초기화한다.
+		if (currentMinigame != null) currentMinigame = null;
 		//만약 마을 업그레이드 페이즈에 돌입한 경우
 		if (TurnManager.Instance.isUpgradePhase)
 		{
 			//아직 관련 처리를 진행하지 않은 경우
-			if(!UpgradePhase)
+			if (!UpgradePhase)
 			{
 				//처리 진행후
 				VillageUpgradePahse();
@@ -325,7 +362,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		else //마을 업그레이드 페이즈가 아닌 경우
 		{
 			//그런데 아직 마을 업그레이드 페이즈로 설정되어 있는 경우
-			if(UpgradePhase)
+			if (UpgradePhase)
 			{
 				//관련 처리 진행 후
 				VillageUpgradePahseOut();
@@ -346,13 +383,13 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		//디버그용 Ray 그리기
 		Debug.DrawRay(ray.origin, ray.direction * RayDistance, Color.green);
 		//QueryTriggerInteraction.Collide : Trigger로 설정된 콜라이더와도 충돌을 감지
-		if(Physics.Raycast(ray, out var hit, RayDistance, targetLayer, QueryTriggerInteraction.Collide))
+		if (Physics.Raycast(ray, out var hit, RayDistance, targetLayer, QueryTriggerInteraction.Collide))
 		{
 			//충돌한 물체 혹은 그 부모에게서 ILookInteractable 인터페이스 찾기
 			var next = hit.transform.GetComponentInParent<ILookInteractable>();
 
 			//보고있던 대상이 변경 되었는지 확인
-			if(!ReferenceEquals(next, currentInteractable))
+			if (!ReferenceEquals(next, currentInteractable))
 			{
 				//기존에 보고 있던 것이 있으면, 시선 해제
 				currentInteractable?.OnLookExit(this);
@@ -432,7 +469,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		}
 	}
 
-	
+
 	//F키가 눌렸을 때 실행될 함수
 	private void HandleInteractFKey()
 	{
@@ -441,9 +478,21 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		//내 턴이 아니면 return
 		if (!GameHelper.IsMyTurn()) return;
 		//현재 Hit 관련 UI가 활성화되지 않은 상태인 경우 return
-		if (!PlayerCanvasController.Instance.selecting) return;
+		//if (!PlayerCanvasController.Instance.selecting) return;
 
 		currentInteractable?.OnInteract(this);
+	}
+
+	//스페이스 바가 눌렸을 때 실행될 함수
+	private void HandleInteractSpaceKey()
+	{
+		//내 객체가 아니면 return
+		if (!photonView.IsMine) return;
+		//내 턴이 아니면 return
+		if (!GameHelper.IsMyTurn()) return;
+
+		//미니 게임 관련 인터페이스 상호작용 수행
+		currentMinigame?.OnInteract(this);
 	}
 
 	private bool checkTreeInteractable()
@@ -455,7 +504,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 
 	public void TryHit()
 	{
-		if(!checkTreeInteractable()) return;
+		if (!checkTreeInteractable()) return;
 
 		//Hit 순간의 게이지 데미지 값 받기
 		damageRatio = PlayerCanvasController.Instance.SelectNow();
@@ -494,9 +543,9 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		//stateKey가 1이면, 즉 Hit 관련 모션이면
 		if (stateKey == 1)
 		{
-			if(!photonView.IsMine) return;
+			if (!photonView.IsMine) return;
 
-			if(damage < 0)
+			if (damage < 0)
 			{
 				Debug.LogError("damage error");
 				return;
@@ -544,7 +593,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		//controller.skinWidth (ChararcterController의 물리 충돌 보정값으로, 여유를 둬서 겹치지 않게 하는 값)
 		//두 값을 빼는 이뉴는, skinWidth 만큼 바닥을 지나쳐야 실제 땅에 닿았다고 판단하기 때문,
 		//추가로 +0.05f로 살짝 더 내려서 바닥에 안정적으로 붙이는 연산
-		Vector3 checkPos = groundCheck != null ? groundCheck.position : 
+		Vector3 checkPos = groundCheck != null ? groundCheck.position :
 			(transform.position + Vector3.down * (characterController.height * 0.5f - characterController.skinWidth + 0.05f));
 
 		isGrounded = Physics.CheckSphere(checkPos, groundCheckRadius, groundLayers, QueryTriggerInteraction.Ignore);
@@ -554,7 +603,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 			velocity.y = -2f;
 
 		//점프 상태여부에 따라 관련 애니메이션을 실행한다.
-		if(hasAnimator)
+		if (hasAnimator)
 		{
 			animator.SetBool(_animIDGrounded, isGrounded);
 		}
@@ -591,7 +640,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 		characterController.Move(final * dt);
 
 		//애니메이터가 있다면
-		if(hasAnimator)
+		if (hasAnimator)
 		{
 			//움직임 방향 계산
 			float mag = moveDir.magnitude;
@@ -600,7 +649,7 @@ public class PlayerController : MonoBehaviour, IAnimNotify
 			//현재 움직임 속도를 0~1 범위로 변환(달리기시 1)
 			float speed01 = (maxMoveSpeed > 0f) ? Mathf.Clamp01(currentSpeed / maxMoveSpeed) : 0f;
 			//만약 현재 정지 상태라면
-			if(mag < 0.001f || speed01 < 0.001f)
+			if (mag < 0.001f || speed01 < 0.001f)
 			{
 				animator.SetFloat(_animIDSpeedX, 0f, 0.1f, dt);
 				animator.SetFloat(_animIDSpeedZ, 0f, 0.1f, dt);

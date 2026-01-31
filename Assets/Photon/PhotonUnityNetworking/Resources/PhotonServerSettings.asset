@@ -69,6 +69,16 @@ MonoBehaviour:
   - RPC_OnVillageShieldProcessDone
   - RPC_RequestVillageDamageProcess
   - RPC_RequestVillageShileldProcess
+  - RPC_UseLockPick
+  - RPC_CheckSuccess
+  - RPC_NotifyUnlockSuccess
+  - RPC_SteelItem
+  - RPC_PopUpItemStolenNotify
+  - RPC_SetItemSelectionActive
+  - RPC_InitTreeAtkMultRate
+  - RPC_ProcessSacrificeItem
+  - RPC_RefreshItemInv
+  - RPC_DeleteItem
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

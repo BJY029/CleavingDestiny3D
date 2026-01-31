@@ -128,8 +128,11 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		CameraSwitchManager.Instance.Branch_to_Game();
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
-		PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
-		PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[myActNum - 1], spawnInvRot[myActNum - 1]);
+		GameObject spawnPlayer = PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
+		GameObject PlayersInv = PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[myActNum - 1], spawnInvRot[myActNum - 1]);
+		PlayerStatus.Instance.SetPlayerInventory(PlayersInv);
+		InventoryBarrier ib = PlayersInv.GetComponentInChildren<InventoryBarrier>();
+		ib.SetPermission(spawnPlayer);
 		CameraSwitchManager.Instance.Off_ExceptPlayerCam();
 
 		GameCanvasController.Instance.gameObject.SetActive(true);
@@ -232,11 +235,13 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	{
 		Player player = PhotonNetwork.LocalPlayer;
 		var playerSetting = GameManager.Instance.playerDefaultSetting;
+		var roomSetting = GameManager.Instance.roomDefaultSetting;
 
 		var ht = new ExitGames.Client.Photon.Hashtable
 		{
 			{ PlayerPropKeys.VillageHP, playerSetting.villageHP},
 			{ PlayerPropKeys.VillageBarrier, playerSetting.villageBarrier},
+			{PlayerPropKeys.TreeAtkMulti, playerSetting.VillageDmgMulti},
 			{ PlayerPropKeys.BarrierArmor, playerSetting.initialBarrierArmor},
 			{ PlayerPropKeys.VillageUpgrades, playerSetting.initialVillageUpgrades},
 			{ PlayerPropKeys.Gold, playerSetting.initialGold },
@@ -262,9 +267,16 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			{ItemPropKeys.INV(player.ActorNumber), ItemInfoSerializer.MakeEmptyInv(playerSetting.inventoryCapacity) },
 			{ItemPropKeys.INV_CAPACITY(player.ActorNumber), playerSetting.inventoryCapacity },
 			{ItemPropKeys.OFFER(player.ActorNumber),"" },
+			{ItemPropKeys.LOCKPICK(player.ActorNumber), roomSetting.lockpickCount },
+			{ItemPropKeys.LOCKCNT(player.ActorNumber), roomSetting.lockCount},
+			{ItemPropKeys.COMMON_RATE(player.ActorNumber), roomSetting.common_reduction_rate},
+			{ItemPropKeys.HERO_RATE(player.ActorNumber), roomSetting.hero_reduction_rate},
+			{ItemPropKeys.RARE_RATE(player.ActorNumber), roomSetting.rare_reduction_rate},
+			{ItemPropKeys.LEGENDARY_RATE(player.ActorNumber), roomSetting.legendary_reduction_rate},
 		};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(rt);
 
+		Debug.Log(roomSetting.lockCount);
 		//모든 프로퍼티가 준비 완료된 경우
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.IsReady, true);
 

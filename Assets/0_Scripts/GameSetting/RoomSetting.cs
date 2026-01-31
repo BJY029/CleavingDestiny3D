@@ -18,6 +18,12 @@ public class RoomSetting : ScriptableObject
     [Header("Items")]
     public int initialUID = 1;
     public int itemOfferCount = 3;
+    public int lockpickCount = 0;
+    public int lockCount = 1;
+    public float common_reduction_rate = 0.3f;
+    public float hero_reduction_rate = 0.4f;
+    public float rare_reduction_rate = 0.5f;
+    public float legendary_reduction_rate = 0.6f;
 
     [Header("Village Settings")]
     public float villagePhaseTime = 60f;

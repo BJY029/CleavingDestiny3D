@@ -20,7 +20,8 @@ MonoBehaviour:
   target: 1
   itemClass: 0
   itemWeight: 1
-  oncePerWave: 0
+  oncePerTurn: 1
+  oncePerDay: 0
   oncePerGame: 0
   effects:
   - effectType: 0

@@ -11,7 +11,7 @@ public class WorldInventory : MonoBehaviourPunCallbacks
 	//인벤토리 소유자 정보
 	int owner = -1;
 	//해당 인벤토리의 슬롯들 
-    [SerializeField]private List<WorldInventorySlot> slots = new();
+	[SerializeField] private List<WorldInventorySlot> slots = new();
 
 	private void Awake()
 	{
@@ -38,7 +38,7 @@ public class WorldInventory : MonoBehaviourPunCallbacks
 		string capKey = ItemPropKeys.INV_CAPACITY(owner);
 
 		//소유자의 인벤토리 정보가 변경된 경우
-		if(propertiesThatChanged.ContainsKey(invKey) || propertiesThatChanged.ContainsKey(capKey))
+		if (propertiesThatChanged.ContainsKey(invKey) || propertiesThatChanged.ContainsKey(capKey))
 		{
 			//슬롯 초기화
 			RefreshInv();
@@ -62,7 +62,7 @@ public class WorldInventory : MonoBehaviourPunCallbacks
 		int n = Mathf.Min(slots.Count, capacity);
 
 		//각 인벤토리 슬롯 설정
-		for(int i = 0; i < n; i++)
+		for (int i = 0; i < n; i++)
 		{
 			//해당 아이템 정보 가져오기
 			ItemSO item = ItemDB.Instance.Get(invSlots[i].itemID);

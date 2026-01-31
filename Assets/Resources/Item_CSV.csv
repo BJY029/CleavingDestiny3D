@@ -41,7 +41,7 @@ DESC_REC_SAP,나무의 체력(HP)을 200 회복합니다.,Restores 200 HP to the
 DESC_REC_MIRACLE,"미션을 시작합니다. 성공 시 나무 체력을 2000 회복하는 0코스트 신약을 획득합니다. (게임 중 1회)","Starts a mission. If successful, obtain a 0-cost potion that heals the Tree for 2000 HP. (Once per game)"
 DESC_REC_BREW,즉시 기력을 3 회복합니다.,Instantly restores 3 Energy.
 DESC_REC_RESERVE,이번 웨이브에 남은 기력을 다음 턴으로 이월합니다.,Carries over any unused Energy from this wave to the next turn.
-DESC_GIM_LOCKPICK,자물쇠 따기 미니게임 성공 시 상대의 아이템 1개를 랜덤으로 훔칩니다.,Steals a random item from the opponent if the lockpicking minigame is successful.
+DESC_GIM_LOCKPICK,자물쇠 따기 미니게임 성공 시 상대의 아이템 1개를 훔칠 수 있습니다.,Steals a item from the opponent if the lockpicking minigame is successful.
 DESC_GIM_DOUBLELOCK,"상자에 추가 잠금 장치를 설치합니다. (락픽 사용 시 n번 성공 필요)","Installs an extra lock. (Opponent must succeed n times when using Lockpick)"
 DESC_GIM_SMOKE,짙은 연기로 시야를 가려 이번 턴에 내가 사용하는 아이템과 데미지를 숨깁니다.,Obscures vision to hide your damage and item usage from the opponent this turn.
 DESC_GIM_TAUNT,상대를 도발하여 다음 턴 상대의 데미지를 30% 강화시킵니다.,Taunts the opponent increasing their damage by 30% next turn.

@@ -7,7 +7,7 @@ using TMPro;
 
 public class PlayerCanvasController : MonoBehaviourPunCallbacks
 {
-    public static PlayerCanvasController Instance;
+	public static PlayerCanvasController Instance;
 	//캔버스를 껴고 킬때 사용할 캔버스 그룹
 	private CanvasGroup canvasGroup;
 
@@ -16,6 +16,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public TextMeshProUGUI VillageHP;
 	public TextMeshProUGUI DamageValue;
 	public TextMeshProUGUI BarrierValue;
+	public TextMeshProUGUI TreeMultValue;
 	public GameObject HitTextObj;
 	[SerializeField] private GameObject gaugeRoot;
 	[SerializeField] private Slider gaugeSlider;
@@ -41,16 +42,18 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 
 	private TextMeshProUGUI WarningText;
 	private Animator WarningTextAnim;
-	
+
 	private GameObject ItemNotifyPrefab;
+	private GameObject ItemStolenNotifyPrefab;
 	private ItemNotifyController INC;
 
 	private void Awake()
 	{
-		if(Instance == null) Instance = this;
+		if (Instance == null) Instance = this;
 		else Destroy(gameObject);
 
 		ItemNotifyPrefab = Resources.Load<GameObject>("ItemNotify/ItemNotify");
+		ItemStolenNotifyPrefab = Resources.Load<GameObject>("ItemNotify/ItemStolenNotify");
 
 		HitText = HitTextObj.GetComponentInChildren<TextMeshProUGUI>();
 		WarningText = WarningObj.GetComponentInChildren<TextMeshProUGUI>();
@@ -102,7 +105,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public void CloseGauge()
 	{
 		selecting = false;
-		if(gaugeCo!= null) StopCoroutine(gaugeCo);
+		if (gaugeCo != null) StopCoroutine(gaugeCo);
 		gaugeCo = null;
 		gaugeRoot.SetActive(false);
 	}
@@ -128,7 +131,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		if (!selecting) return -1;
 
 		selecting = false;
-		if(gaugeCo != null) StopCoroutine (gaugeCo);
+		if (gaugeCo != null) StopCoroutine(gaugeCo);
 
 		return gaugeSlider.maxValue - gaugeSlider.value;
 	}
@@ -152,7 +155,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		else
 		{
 			//내 턴이 아니면, 내 턴이 아니라는 텍스트로 변경
-			HitText.text = LocalizationManager.Instance.GetText(CSV_Type.UI,UI_CSV.UI_PlayerNHit);
+			HitText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_PlayerNHit);
 			CloseGauge();
 		}
 	}
@@ -178,6 +181,11 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_PopUpItemNotify), RpcTarget.All, itemId, player);
 	}
 
+	public void PopUpItemStolenNotify(string itemId, Player FromPlayer, Player ToPlayer)
+	{
+		photonView.RPC(nameof(RPC_PopUpItemStolenNotify), RpcTarget.All, itemId, FromPlayer, ToPlayer);
+	}
+
 	[PunRPC]
 	public void RPC_PopUpItemNotify(string itemId, Player player)
 	{
@@ -187,8 +195,17 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		INC.SetActive(ItemDB.Instance.Get(itemId), player);
 	}
 
+	[PunRPC]
+	public void RPC_PopUpItemStolenNotify(string itemId, Player FromPlayer, Player ToPlayer)
+	{
+		GameObject Notify = Instantiate(ItemStolenNotifyPrefab, Holder.transform);
+		INC = Notify?.GetComponent<ItemNotifyController>();
+
+		INC.SetStolenActive(ItemDB.Instance.Get(itemId), FromPlayer, ToPlayer);
+	}
+
 	//현재 플레이어 상태 UI를 업데이트 하는 함수
-	public void updatePlayerStatus(string Energy, string HP, string Damage, string Barrier)
+	public void updatePlayerStatus(string Energy, string HP, string Damage, string Barrier, string TreeMult)
 	{
 		//if (!photonView.IsMine) return;
 
@@ -196,6 +213,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		VillageHP.text = HP;
 		DamageValue.text = Damage;
 		BarrierValue.text = Barrier;
+		TreeMultValue.text = TreeMult;
 	}
 
 	//캔버스를 켜고 끄는 RPC 함수를 실행할 함수

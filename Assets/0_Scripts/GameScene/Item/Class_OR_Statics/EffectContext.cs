@@ -10,11 +10,11 @@ using System;
 /// </summary>
 public class EffectContext
 {
-    public DeterministicRng Rng { get; private set; }
+	public DeterministicRng Rng { get; private set; }
 
-    public Action<string> Log {  get; private set; }
+	public Action<string> Log { get; private set; }
 
-    public EffectContext(DeterministicRng rng, Action<string> log)
+	public EffectContext(DeterministicRng rng, Action<string> log)
 	{
 		Rng = rng;
 		this.Log = log;
@@ -94,5 +94,47 @@ public class EffectContext
 	{
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
 		return PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.BarrierConversionRate);
+	}
+
+	public void AddPlayerLockPickCount(int actorNum)
+	{
+		if (!PhotonNetwork.IsMasterClient)
+		{
+			Log?.Invoke("[Warning] LockPickSetting's called on non-master. Ignored.");
+			return;
+		}
+
+		int currentLockPickCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.LOCKPICK(actorNum));
+		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.LOCKPICK(actorNum), currentLockPickCnt + 1);
+	}
+
+	public void AddPlayerLockCount(int actorNum)
+	{
+		if (!PhotonNetwork.IsMasterClient)
+		{
+			Log?.Invoke("[Warning] LockPickSetting's called on non-master. Ignored.");
+			return;
+		}
+
+		int currentLockCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.LOCKCNT(actorNum));
+		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.LOCKCNT(actorNum), currentLockCnt + 1);
+	}
+
+	public void RemovePlayerLockPickCount(int actorNum)
+	{
+		if (!PhotonNetwork.IsMasterClient)
+		{
+			Log?.Invoke("[Warning] LockPickSetting's called on non-master. Ignored.");
+			return;
+		}
+
+		int currentLockPickCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.LOCKPICK(actorNum));
+		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.LOCKPICK(actorNum), Mathf.Max(currentLockPickCnt - 1, 0));
+		Log?.Invoke($"[Lockpick] Player{actorNum}'s Lockpick changed... {currentLockPickCnt} -> {currentLockPickCnt - 1}");
+	}
+
+	public int GetPlayerLockPickCount(int actorNum)
+	{
+		return PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.LOCKPICK(actorNum));
 	}
 }
