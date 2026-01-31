@@ -48,7 +48,7 @@ namespace Village.Outside
             readyButtonText = readyButton.GetComponentInChildren<TextMeshProUGUI>();
 
             // ! - Debug
-            PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, 500f);
+            //PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, 500f);
         }
 
         public void RemoveHP()

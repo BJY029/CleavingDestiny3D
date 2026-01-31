@@ -95,6 +95,8 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		// ScriptableObject 기반 초기화
 		var playerSet = GameManager.Instance.playerDefaultSetting;
 
+		Debug.Log($"Current Village HP : {currentVillageHP}");
+
 		currentEnergy = (currentMaxEnergy == 0 ? playerSet.initialEnergy : currentMaxEnergy) + currentCarryOverEnergy;
 		currentTotalDamage = 0;
 		currentBarrier = playerSet.villageBarrier;
@@ -141,6 +143,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		return HitDamage;
 	}
 
+
 	// 마을이 데미지를 입었을 때 처리 함수
 	public void DamagedVillage(float damage)
 	{
@@ -165,9 +168,14 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 			Debug.Log("Game End By VillageHP 0");
 		}
 
+		Debug.Log($"Final Village HP : {currentVillageHP}");
 		// 프로퍼티 업데이트
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageHP, currentVillageHP);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VDamageProcessCompleted, true);
 		InitTreeAtkMultRate();
+
+		//데미지 처리가 끝났다고 MasterClient에게 송신
+		TurnManager.Instance.TreeDamageChecker();
 	}
 
 	public void InitTreeAtkMultRate()

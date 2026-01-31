@@ -85,6 +85,7 @@ public static class PlayerPropKeys
 {
     //public const string Name = "Name";
     public const string IsReady = "IsReady";
+    public const string VDamageProcessCompleted = "VDamageProcessCompleted";
     public const string TreeAtkMulti = "TreeAtkMulti";
     public const string VillageHP = "VillageHP";
     public const string MaxVillageHP = "MaxVillageHP";
