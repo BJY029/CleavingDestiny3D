@@ -81,6 +81,9 @@ MonoBehaviour:
   - RPC_DeleteItem
   - StartTreeAtackCoroutine
   - RPC_TreeDamageChecker
+  - RPC_UI_AddStatus
+  - RPC_UI_RemoveStatus
+  - RPC_UI_UpdateStatus
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
