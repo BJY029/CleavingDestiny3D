@@ -41,13 +41,20 @@ public class UI_CSV
     public const string UI_BranchDesc2 = "UI_BranchDesc_2";
     public const string UI_PlayerHit = "UI_PlayerHIT";
     public const string UI_PlayerNHit = "UI_PlayerNotHIT";
+    public const string UI_PlayerSpace = "UI_PlayerSpace";
     public const string UI_Load_Finding = "UI_Load_Finding";
     public const string UI_Load_Waiting = "UI_Load_Waiting";
     public const string UI_Load_MatchSuccess = "UI_Load_MatchSuccess";
     public const string UI_Load_Loading = "UI_Load_Loading";
     public const string UI_ItemNotify_Title = "UI_ItemNotify_Title";
+    public const string UI_ItemSacrifice_Title = "UI_ItemSacrifice_Title";
+    public const string UI_ItemSacrifice_TableDesc = "UI_ItemSacrifice_TableDesc";
     public const string UI_Warning_Energy = "UI_Warning_Energy";
     public const string UI_Warning_FullInv = "UI_Warning_FullInv";
+    public const string UI_Warning_NotEnoughItem = "UI_Warning_NotEnoughItem";
+    public const string UI_Warning_NotAvaiable = "UI_Warning_NotAvaiable";
+    public const string UI_Item_LockPick_Warning = "UI_Item_LockPick_Warning";
+    public const string UI_Item_LockPick_Has = "UI_Item_LockPick_Has";
 }
 
 //서버 CustomProperty Key
@@ -78,6 +85,8 @@ public static class PlayerPropKeys
 {
     //public const string Name = "Name";
     public const string IsReady = "IsReady";
+    public const string VDamageProcessCompleted = "VDamageProcessCompleted";
+    public const string TreeAtkMulti = "TreeAtkMulti";
     public const string VillageHP = "VillageHP";
     public const string MaxVillageHP = "MaxVillageHP";
     public const string VillageBarrier = "VillageBarrier";
@@ -124,6 +133,15 @@ public static class ItemPropKeys
     // KEY : OFFER_1
     // VALUE : "potion|bomb|shield"
     public static string OFFER(int actor) => $"OFFER_{actor}";
+
+    public static string LOCKPICK(int actor) => $"LOCKPICK_{actor}";
+
+    public static string LOCKCNT(int actor) => $"LOCK_CNT_{actor}";
+
+    public static string COMMON_RATE(int actor) => $"COMMON_RATE_{actor}";
+    public static string HERO_RATE(int actor) => $"HERO_RATE_{actor}";
+    public static string RARE_RATE(int actor) => $"RARE_RATE_{actor}";
+    public static string LEGENDARY_RATE(int actor) => $"LEGENDARY_RATE_{actor}";
 
     public const string NEXT_UID = "NEXT_UID";
 }

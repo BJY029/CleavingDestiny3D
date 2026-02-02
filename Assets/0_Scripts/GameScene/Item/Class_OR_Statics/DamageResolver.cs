@@ -18,7 +18,7 @@ public class DamageResolver
     public void Resolve(DamagePacket dmg, EffectContext ctx)
     {
         //공격 직전 트리거 발행
-        _bus.publish(new GameEvent 
+        _bus.publish(new GameEvent
         {
             type = TriggerMask.OnBeforeAttack,
             actorNum = dmg.attackerNum,
@@ -76,4 +76,5 @@ public class DamageResolver
         }, ctx
         );
     }
+
 }

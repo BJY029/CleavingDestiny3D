@@ -35,7 +35,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
         }
     }
 
-    // 마을 페이즈 종료 로직
+    // 마스터 클라이언트가 페이즈를 종료시키는 공통 로직
     private void EndPhaseLogic()
     {
         _endTime = -1.0f;
@@ -79,6 +79,9 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
         EndPhaseLogic();
     }
 
+    /// <summary>
+    /// UI 버튼에서 호출: 내 준비 상태를 변경
+    /// </summary>
     public void SetLocalPlayerReady(bool isReady)
     {
         PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.PlayerVillageReady, isReady);

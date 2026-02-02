@@ -32,11 +32,58 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_UseItem), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber, slotIdx);
 	}
 
+	public void RequestSteelItem(int FromActor, int ToActor, int SelectedSlotIdx, WorldInventorySlot wi)
+	{
+		wis = wi;
+		photonView.RPC(nameof(RPC_SteelItem), RpcTarget.MasterClient, FromActor, ToActor, SelectedSlotIdx);
+	}
+
+	//UID 기반으로 아이템을 삭제하는 함수
+	public void DeleteItemByUID(int ActNum, int UID)
+	{
+		photonView.RPC(nameof(RPC_DeleteItem), RpcTarget.MasterClient, ActNum, UID);
+	}
+
+	[PunRPC]
+	void RPC_DeleteItem(int actor, int UID, PhotonMessageInfo info)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		//요청자 INV 정보 가져오기
+		string Inv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(actor));
+		int InvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(actor));
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actor);
+
+		//요청자 INV 정보 검증
+		var slots = ItemInfoSerializer.Decode(Inv, InvCap);
+
+		//uniqueId 기반으로 슬롯 IDX 값 받아오기
+		int removaldx = ItemInfoSerializer.TryFindIndexByUniqueId(slots, UID);
+
+		//사용한 아이템 인벤토리에서 제거
+		slots[removaldx] = (0, null);
+		photonView.RPC(nameof(RPC_RefreshItemInv), player);
+
+		//아이템 사용 UI 띄우기
+		//PlayerCanvasController.Instance.PopUpItemNotify(item.itemId, player);
+
+		//슬롯 Info 정보 업데이트
+		string updatedItemSlots = ItemInfoSerializer.Encode(slots);
+
+		string InvKey = ItemPropKeys.INV(actor);
+		//새롭게 업데이트할 프로퍼티
+		var newProps = new ExitGames.Client.Photon.Hashtable
+		{
+			{InvKey, updatedItemSlots }
+		};
+		PhotonNetwork.CurrentRoom.SetCustomProperties(newProps);
+	}
+
 	[PunRPC]
 	void RPC_TakeOffer(int actor, string itemId, PhotonMessageInfo info)
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
-		if(info.Sender == null || info.Sender.ActorNumber != actor) return;
+		if (info.Sender == null || info.Sender.ActorNumber != actor) return;
 
 		//턴 검증
 		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
@@ -56,7 +103,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		//다음 아이템 고유 아이디 가져오기
 		int nextUid = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.NEXT_UID);
 		//플레이어 아이템 인벤토리 첫 칸에 해당 아이템 삽입 시도하기
-		if(!ItemInfoSerializer.TryAddFirstEmpty(slots, (nextUid, itemId)))
+		if (!ItemInfoSerializer.TryAddFirstEmpty(slots, (nextUid, itemId)))
 		{
 			//실패시
 			Debug.LogError("Item Insertion ERROR");
@@ -109,6 +156,12 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		//요청자 INV 정보 검증
 		var slots = ItemInfoSerializer.Decode(Inv, InvCap);
+		int itemCnt = 0;
+		for (int i = 0; i < slots.Length; i++)
+		{
+			if (slots[i].itemID != null) itemCnt++;
+		}
+
 		if (slots == null || slots.Length != InvCap)
 		{
 			Debug.LogError("Slots Info Error");
@@ -127,7 +180,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		//uniqueId 기반으로 슬롯 IDX 값 받아오기
 		int removaldx = ItemInfoSerializer.TryFindIndexByUniqueId(slots, uniqueId);
 		//IDX 다르면 에러
-		if(removaldx != slotIdx)
+		if (removaldx != slotIdx)
 		{
 			Debug.Log("SlotIdx Error");
 			return;
@@ -135,9 +188,26 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		ItemSO item = ItemDB.Instance.Get(itemId);
 
+
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(requestActor);
+
+		//희생 아이템이면서, 아이템 갯수가 1개 이하인 경우
+		if (itemCnt <= 1 && item.itemId == "2002")
+		{
+			photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_NotEnoughItem);
+			return;
+		}
+
+		//Check whether you are trying to use an item that can only be used once per turn or day.
+		if (!ItemHandlingSystem.instance.CheckItemAvaiable(requestActor, itemId))
+		{
+			photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_NotAvaiable);
+			return;
+		}
+
+		//Check player's energy and prevent to use item
 		int playerEng = PhotonPropertyHelper.GetPlayerProp<int>(player, PlayerPropKeys.Energy);
-		if(playerEng - item.itemCost < 0)
+		if (playerEng - item.itemCost < 0)
 		{
 			photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_Energy);
 			photonView.RPC(nameof(RPC_SetItemSlotUI), player, false);
@@ -146,10 +216,6 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		//기력량 업데이트
 		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Energy, playerEng - item.itemCost);
-
-		//TODO: 아이템 효과 적용
-		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
-		ItemHandlingSystem.instance.AddItemStatusInstance(turnActor, item);
 
 
 		//사용한 아이템 인벤토리에서 제거
@@ -191,6 +257,127 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			}
 		}
 		Debug.Log($"Player{turnActor}'s inventory : {inv}");
+
+		//TODO: 아이템 효과 적용
+		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
+		ItemHandlingSystem.instance.AddItemStatusInstance(turnActor, item, uniqueId);
+	}
+
+	[PunRPC]
+	public void RPC_SteelItem(int FromActor, int ToActor, int SelectedSlotIdx, PhotonMessageInfo info)
+	{
+		//Master 검증
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		//인벤토리 주인 INV 정보 가져오기
+		string FromInv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(FromActor));
+		int FromInvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(FromActor));
+		//훔치는 Actor Inv 정보 가져오기
+		string ToInv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(ToActor));
+		int ToInvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(ToActor));
+
+
+		//인벤토리 주인 INV 정보 검증
+		var slots = ItemInfoSerializer.Decode(FromInv, FromInvCap);
+		if (slots == null || slots.Length != FromInvCap)
+		{
+			Debug.LogError("Slots Info Error");
+			return;
+		}
+		if (SelectedSlotIdx < 0 || SelectedSlotIdx >= slots.Length)
+		{
+			Debug.LogError("Slot Index Info Error");
+			return;
+		}
+
+		//인벤토리 주인 슬롯 Idx 검증
+		string itemId = slots[SelectedSlotIdx].itemID;
+		int uniqueId = slots[SelectedSlotIdx].uniqueId;
+
+		//uniqueId 기반으로 슬롯 IDX 값 받아오기
+		int removaldx = ItemInfoSerializer.TryFindIndexByUniqueId(slots, uniqueId);
+		//IDX 다르면 에러
+		if (removaldx != SelectedSlotIdx)
+		{
+			Debug.Log("SlotIdx Error");
+			return;
+		}
+
+		//훔치는 아이템 가져오기
+		ItemSO item = ItemDB.Instance.Get(itemId);
+		//인벤토리 주인 Player 객체
+		Player FromPlayer = PhotonNetwork.CurrentRoom.GetPlayer(FromActor);
+		Player ToPlayer = PhotonNetwork.CurrentRoom.GetPlayer(ToActor);
+
+		//빼앗긴 아이템 인벤토리에서 제거
+		slots[SelectedSlotIdx] = (0, null);
+		photonView.RPC(nameof(RPC_SetItemSlotUI), FromPlayer, true);
+
+		//아이템 빼앗김 UI 띄우기
+		PlayerCanvasController.Instance.PopUpItemStolenNotify(item.itemId, FromPlayer, ToPlayer);
+
+		//인벤토리 주인 슬롯 Info 정보 업데이트
+		string updatedItemSlots = ItemInfoSerializer.Encode(slots);
+
+		string InvKey = ItemPropKeys.INV(FromActor);
+		//새롭게 업데이트할 프로퍼티
+		var newProps = new ExitGames.Client.Photon.Hashtable
+		{
+			{InvKey, updatedItemSlots }
+		};
+		PhotonNetwork.CurrentRoom.SetCustomProperties(newProps);
+
+
+
+		//훔치는 Actor의 인벤토리 정보 역직렬화해서 가져오기
+		var TargetSlots = ItemInfoSerializer.Decode(ToInv, ToInvCap);
+
+		//훔치는 플레이어 아이템 인벤토리 첫 칸에 해당 아이템 삽입 시도하기
+		if (!ItemInfoSerializer.TryAddFirstEmpty(TargetSlots, (uniqueId, itemId)))
+		{
+			//실패시
+			Debug.LogError("Item Insertion ERROR");
+			return;
+		}
+
+		//삽입 결과, 변경 결과 프로퍼티로 한번에 업데이트
+		var ht = new ExitGames.Client.Photon.Hashtable
+		{
+			{ItemPropKeys.INV(ToActor),ItemInfoSerializer.Encode(TargetSlots)},
+			{ItemPropKeys.OFFER(ToActor), "" },
+
+		};
+		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
+
+
+		//Debug
+		string inv = "";
+		foreach (var x in slots)
+		{
+			if (x.itemID == null)
+			{
+				inv += " _ ";
+			}
+			else
+			{
+				inv += $" {x.itemID} ";
+			}
+		}
+		Debug.Log($"Player{FromActor}'s inventory : {inv}");
+
+		inv = "";
+		foreach (var x in TargetSlots)
+		{
+			if (x.itemID == null)
+			{
+				inv += " _ ";
+			}
+			else
+			{
+				inv += $" {x.itemID} ";
+			}
+		}
+		Debug.Log($"Player{ToActor}'s inventory : {inv}");
 	}
 
 	[PunRPC]
@@ -198,6 +385,14 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 	{
 		wis?.SetCurrentItemNull(success);
 		wis = null;
+	}
+
+	[PunRPC]
+	public void RPC_RefreshItemInv()
+	{
+		GameObject PlayerInv = PlayerStatus.Instance.GetPlayerInventory();
+		WorldInventory WI = PlayerInv.GetComponent<WorldInventory>();
+		WI.RefreshInv();
 	}
 
 	[PunRPC]
@@ -210,7 +405,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 	bool Contains(string offer, string id)
 	{
 		var p = offer.Split('|');
-		for(int i = 0; i <  p.Length; i++)
+		for (int i = 0; i < p.Length; i++)
 		{
 			if (p[i] == id) return true;
 		}

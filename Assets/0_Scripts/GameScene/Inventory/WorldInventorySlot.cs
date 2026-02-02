@@ -9,15 +9,15 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	private int ownerActor;
 
 	//슬롯 인덱스
-    public int slotIndex;
+	public int slotIndex;
 	//해당 슬롯 Mesh 렌더러
-    private MeshRenderer quadRenderer;
+	private MeshRenderer quadRenderer;
 	//슬롯이 빈 경우 표시할 텍스쳐
-    private Texture2D nullTexture;
+	private Texture2D nullTexture;
 	//해당 슬롯이 현재 가지고 있는 아이템 정보
-    private ItemSO currentItem;
+	private ItemSO currentItem;
 	//해당 슬롯의 머테리얼 관련 정보
-    private MaterialPropertyBlock mpb;
+	private MaterialPropertyBlock mpb;
 
 	//슬롯 툴팁 오브젝트
 	[Header("ToolTipInfos")]
@@ -115,34 +115,51 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 
 	//Ray가 Enter한 경우
 	public void OnLookEnter(PlayerController pc)
-    {
-        if (!HasItem()) return;
-		if (!IsMine) return;
+	{
+		if (!HasItem()) return;
+		if (!IsMine)
+		{
+			if (pc.GetInvAdmissionticket() != ownerActor) return;
+		}
 		InitItemInfos();
 		ToolTipPanel.SetActive(true);
-        //Highlight();
-    }
+		//Highlight();
+	}
 
 	//Ray가 Exit 한 경우
-    public void OnLookExit(PlayerController pc)
-    {
-		if (!IsMine) return;
+	public void OnLookExit(PlayerController pc)
+	{
+		//if (!IsMine) return;
 		ToolTipPanel.SetActive(false);
-        //Highlight();
-    }
+		//Highlight();
+	}
 
 	//이제 구현해야 할 부분
-    public void OnInteract(PlayerController pc)
-    {
-        if(!HasItem()) return;
-		if (!IsMine) return;
+	public void OnInteract(PlayerController pc)
+	{
+		if (!HasItem()) return;
+		if (!IsMine)
+		{
+			if (pc.GetInvAdmissionticket() != ownerActor) return;
+			int ToActorNum = pc.photonView.Owner.ActorNumber;
+			//키 제거
+			pc.SetInvAdmissionTicket(-1);
+			//TODO: 선택된 아이템 상호작용한 플레이어의 인벤토리로 옮기기
+			InventoryAuthority.Instance.RequestSteelItem(ownerActor, ToActorNum, slotIndex, this);
+			return;
+		}
 		if (!GameHelper.IsMyTurn()) return;
 
 		ToolTipPanel.SetActive(false);
 		Debug.Log("Interacted!!");
-        InventoryAuthority.Instance.RequestUseItem(slotIndex, this);
-		
-    }
+		InventoryAuthority.Instance.RequestUseItem(slotIndex, this);
+
+	}
+
+	public void DeleteItemByUID()
+	{
+
+	}
 
 	public void SetCurrentItemNull(bool success)
 	{
@@ -153,8 +170,8 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 		}
 	}
 
-    private void Highlight(bool on)
-    {
+	private void Highlight(bool on)
+	{
 
-    }
+	}
 }

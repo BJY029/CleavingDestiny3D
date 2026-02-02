@@ -9,7 +9,14 @@ UI_Load_Loading,로딩 중,Loading Scene
 UI_BranchDesc_1,나뭇가지 하나를 고르세요,Pick a stick
 UI_BranchDesc_2,나뭇가지 길이에 따라 게임 진행 순서가 결정됩니다.,The player with the longest stick goes first
 UI_PlayerHIT,'F'로 나무 베기,Press 'F' to HIT
+UI_PlayerSpace,'Spacebar'로 상호작용,'Spacebar' to interact
 UI_PlayerNotHIT,내 차례가 아닙니다.,Not my Turn.
 UI_ItemNotify_Title,아이템이 사용되었습니다!,Item has been used!
+UI_ItemSacrifice_Title,바칠 제물을 선택하세요.,Choose an item to sacrifice.
+UI_ItemSacrifice_TableDesc,공격력 감소량,Reduction amount
 UI_Warning_Energy,기력이 부족합니다.,Not enough energy
 UI_Warning_FullInv,인벤토리가 가득찼습니다.,Full Inventory
+UI_Warning_NotEnoughItem,아이템 수가 부족합니다.,Not enough items.
+UI_Warning_NotAvaiable,더 이상 사용 불가합니다.,Item use is blocked.
+UI_Item_LockPick_Warning,락픽이 없습니다.,There are no lockpicks.
+UI_Item_LockPick_Has,락픽 갯수,Number of lock picks

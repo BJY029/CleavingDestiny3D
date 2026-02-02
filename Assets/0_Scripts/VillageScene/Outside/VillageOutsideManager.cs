@@ -1,5 +1,5 @@
 using Photon.Pun;
-using Photon.Realtime; // Player 타입 사용을 위해 필요할 수 있음
+using Photon.Realtime;
 using PrimeTween;
 using TMPro;
 using Unity.Cinemachine;

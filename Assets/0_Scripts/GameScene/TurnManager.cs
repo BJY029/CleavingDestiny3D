@@ -27,7 +27,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	public static TurnManager Instance;
 
 	//F키가 눌리면 발생될 이벤트
-	public event Action OnInteractFKeyDown;
+	//public event Action OnInteractFKeyDown;
 	//턴 변경 플래그
 	private bool TurnHasChanged = false;
 	private int _lastProcessedTrun = -1;
@@ -50,27 +50,28 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	private void Update()
 	{
-		if (Keyboard.current == null) return;
+		// if (Keyboard.current == null) return;
 
-		//만약 'F'키가 눌린 경우
-		if (Keyboard.current.fKey.wasPressedThisFrame)
-		{
-			//'F'키 이벤트 실행
-			//관련 이벤트는 PlayerController.cs에서 처리(HandleInteractFKey())
-			OnInteractFKeyDown?.Invoke();
-		}
+		// //만약 'F'키가 눌린 경우
+		// if (Keyboard.current.fKey.wasPressedThisFrame)
+		// {
+		// 	//'F'키 이벤트 실행
+		// 	//관련 이벤트는 PlayerController.cs에서 처리(HandleInteractFKey())
+		// 	OnInteractFKeyDown?.Invoke();
+		// }
 
-		// K키가 눌리고 마스터 클라이언트이며 아직 마을 페이즈가 아닌 경우 강제 시작
-		if (Keyboard.current.kKey.wasPressedThisFrame && IsInitializer() && !isUpgradePhase)
-		{
-			StartVillageUpgradePhase();
-		}
+		// // K키가 눌리고 마스터 클라이언트이며 아직 마을 페이즈가 아닌 경우 강제 시작
+		// if (Keyboard.current.kKey.wasPressedThisFrame && IsInitializer() && !isUpgradePhase)
+		// {
+		// 	StartVillageUpgradePhase();
+		// }
 	}
 
 	public void SetVillageSceneManager(VillageSceneManager vsm)
 	{
 		villageSceneManager = vsm;
-		vsm.OnVillagePhaseEnded += CompleteDayChangeAfterUpgrade;
+		//vsm.OnVillagePhaseEnded += CompleteDayChangeAfterUpgrade;
+		vsm.OnVillagePhaseEnded += ActivateTreeAttack;
 	}
 
 	//플레이어 중 가장 작은 actor number를 가진 플레이어가 각종 권한을 갖는다.
@@ -88,7 +89,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
 		ItemHandlingSystem.instance.InitRandomSystem();
-
 		ItemHandlingSystem.instance.OnTurnStart();
 	}
 
@@ -96,6 +96,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
 		ItemHandlingSystem.instance.OnWaveEnd();
+		//PlayerStatus.Instance.InitTreeAtkMultRate();
 	}
 
 	//턴 변경 요청이 발생한 경우
@@ -203,8 +204,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			{
 				//날짜 변경인 경우
 				//마을 공격 액션 수행
-				float treeDmg = TreeStatus.Instance.getTreeAtkPow();
-				photonView.RPC(nameof(TreeActionProcess), RpcTarget.All, treeDmg);
+				photonView.RPC(nameof(TreeActionProcess), RpcTarget.All);
 				//StartVillageUpgradePhase();
 				return;
 			}
@@ -239,12 +239,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	}
 
 	[PunRPC]
-	public void TreeActionProcess(float dmg)
+	public void TreeActionProcess()
 	{
-		StartCoroutine(TreeAction(dmg));
+		StartCoroutine(TreeAction());
 	}
 
-	IEnumerator TreeAction(float dmg)
+	IEnumerator TreeAction()
 	{
 		_villageActionId = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
 
@@ -253,13 +253,13 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		while (_villageActionId != _villageShieldProcessDone)
 			yield return null;
 
-		//photonView.RPC(nameof(RPC_RequestVillageDamageProcess), RpcTarget.MasterClient, dmg, _villageActionId);
-		//while (_villageActionId != _villageDamageProcessDone)
-		//	yield return null;
+		// photonView.RPC(nameof(RPC_RequestVillageDamageProcess), RpcTarget.MasterClient, dmg, _villageActionId);
+		// while (_villageActionId != _villageDamageProcessDone)
+		// 	yield return null;
 
 
 		//���� ������ ó�� ����
-		PlayerStatus.Instance.DamagedVillage(dmg);
+		//PlayerStatus.Instance.DamagedVillage(dmg);
 		//���� ������ �߰�
 		//���� ����� �����Ѵ�.
 		StartVillageUpgradePhase();
@@ -282,25 +282,25 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		_villageShieldProcessDone = actionId;
 	}
 
-	[PunRPC]
-	private void RPC_RequestVillageDamageProcess(float dmg, int actionId, PhotonMessageInfo info)
-	{
-		if (!PhotonNetwork.IsMasterClient) return;
+	// [PunRPC]
+	// private void RPC_RequestVillageDamageProcess(float dmg, int actionId, PhotonMessageInfo info)
+	// {
+	// 	if (!PhotonNetwork.IsMasterClient) return;
 
-		PlayerStatus.Instance.DamagedVillage(dmg);
+	// 	PlayerStatus.Instance.DamagedVillage(dmg);
 
-		photonView.RPC(nameof(RPC_OnVillageDamageProcessDone), RpcTarget.All, actionId);
-	}
+	// 	photonView.RPC(nameof(RPC_OnVillageDamageProcessDone), RpcTarget.All, actionId);
+	// }
 
-	[PunRPC]
-	private void RPC_OnVillageDamageProcessDone(int actionId, PhotonMessageInfo info)
-	{
-		if (!info.Sender.IsMasterClient) return;
-		_villageDamageProcessDone = actionId;
-	}
+	// [PunRPC]
+	// private void RPC_OnVillageDamageProcessDone(int actionId, PhotonMessageInfo info)
+	// {
+	// 	if (!info.Sender.IsMasterClient) return;
+	// 	_villageDamageProcessDone = actionId;
+	// }
 
 	//���� ���׷��̵� ����� �����Ѵ�.
-	private void StartVillageUpgradePhase()
+	public void StartVillageUpgradePhase()
 	{
 		//제일 낮은 순서번호의 플레이어만 초기화 수행
 		if (!IsInitializer()) return;
@@ -323,6 +323,82 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//마을 업그레이드 페이즈 플래그 설정 (OnRoomPropertiesUpdate에서 마을 씬 로드)
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, true);
 
+	}
+
+	//나무가 마을들을 공격하는 로직 실행
+	public void ActivateTreeAttack()
+	{
+		if (!IsInitializer()) return;
+		//MasterClient가 대표로 기본 나무 공격력 가져오고
+		float treeDmg = TreeStatus.Instance.getTreeAtkPow();
+		//각 클라에게 데미지 계산 요청
+		photonView.RPC(nameof(StartTreeAtackCoroutine), RpcTarget.All, treeDmg);
+		//CompleteDayChangeAfterUpgrade();
+	}
+
+	//코루틴 호출
+	[PunRPC]
+	public void StartTreeAtackCoroutine(float treeDmg)
+	{
+		StartCoroutine(ProcessTreeAtack(treeDmg));
+	}
+
+	//연출 및 나무 데미지 계산
+	IEnumerator ProcessTreeAtack(float treeDmg)
+	{
+		//관련 애니메이션 처리
+
+		//각 클라이에서 자신의 Multi 적용하여 데미지 계산 및 적용 수행
+		PlayerStatus.Instance.DamagedVillage(treeDmg);
+		//임시 코드
+		//yield return new WaitForSeconds(2f);
+		yield return null;
+	}
+
+	//모든 클라이언트의 마을 데미지 로직이 완료되었는지 확인하는 함수
+	public void TreeDamageChecker()
+	{
+		photonView.RPC(nameof(RPC_TreeDamageChecker), RpcTarget.MasterClient);
+	}
+
+	[PunRPC]
+	public void RPC_TreeDamageChecker()
+	{
+		//MasterClient만 수행
+		if (!IsInitializer()) return;
+		//모든 플레이어의 데미지 처리가 완료되었는지 확인한다.
+		if (AllPlayersReady())
+		{
+			//완료된 경우, 마을 종료 수행
+			CompleteDayChangeAfterUpgrade();
+			//마을 데미지 플래그 초기화
+			ResetAllPlayersReadyState();
+		}
+	}
+
+	//모든 플레이어의 VDamageProcessCompleted 프로퍼티를 검사하여 반환하는 함수
+	private bool AllPlayersReady()
+	{
+		return PhotonNetwork.PlayerList.All(p => p.CustomProperties.TryGetValue(PlayerPropKeys.VDamageProcessCompleted, out var v) && (bool)v);
+	}
+
+	//모든 플레이어의 VDamageProcessCompleted 프로퍼티를 초기화 하는 함수
+	public void ResetAllPlayersReadyState()
+	{
+		// 권한 체크 (방장만 실행)
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		//변경할 속성을 담은 해시테이블 생성 (메모리 절약을 위해 루프 밖에서 생성)
+		var props = new ExitGames.Client.Photon.Hashtable()
+	{
+		{ PlayerPropKeys.VDamageProcessCompleted, false }
+	};
+
+		//방에 있는 모든 플레이어 순회하며 적용
+		foreach (Player player in PhotonNetwork.PlayerList)
+		{
+			player.SetCustomProperties(props);
+		}
 	}
 
 	//마을 페이즈 종료

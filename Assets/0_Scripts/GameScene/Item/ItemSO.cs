@@ -4,13 +4,13 @@ using UnityEngine;
 //아이템 타입
 public enum ItemType
 {
-	Damage, Defence, Heal, Gimmick
+    Damage, Defence, Heal, Gimmick
 }
 
 //아이템 희귀도
 public enum ItemClass
 {
-	Common, Hero, Rare, Legendary
+    Common, Hero, Rare, Legendary
 }
 
 //아이템 적용 타겟
@@ -23,12 +23,12 @@ public enum ItemTarget
 public enum ItemEffect
 {
     AddStatus,//StatusInstance 따로 생성
-    DeltaTreeUp, 
+    DeltaTreeUp,
     DeltaVillageHp,
     DeltaPlayerEng,
-    DeltaVillageShield, 
+    DeltaVillageShield,
     MultVillageShield,
-    TransferOpponentShieldPct, 
+    TransferOpponentShieldPct,
     DisplayByTag
 }
 
@@ -37,36 +37,37 @@ public enum ItemEffect
 [System.Flags]
 public enum TriggerMask
 {
-	None = 0,
-	OnTurnStart = 1 << 0,       //턴 시작시 적용
-	OnBeforeAttack = 1 << 1,    //공격 전 적용
-	OnAfterAttack = 1 << 2,     //공격 후 적용
-	OnDamageConvert = 1 << 3,   //데미지-방어력 변환 적용
-	OnTurnEnd = 1 << 4,         //턴 종료시 적용
+    None = 0,
+    OnTurnStart = 1 << 0,       //턴 시작시 적용
+    OnBeforeAttack = 1 << 1,    //공격 전 적용
+    OnAfterAttack = 1 << 2,     //공격 후 적용
+    OnDamageConvert = 1 << 3,   //데미지-방어력 변환 적용
+    OnTurnEnd = 1 << 4,         //턴 종료시 적용
     OnVillageStart = 1 << 5,    //마을 페이즈 시작시 적용
+    OnTreeDamage = 1 << 6,
 }
 
 //아이템 태그
 [System.Flags]
 public enum TagMask
 {
-	None = 0,
-	Positive = 1 << 0,      //버프용 아이템(플레이어에게 이득인 효과)
-	Negative = 1 << 1,      //디버프 아이템(플레이어 손해, '신의 가호' 같은 정화 아이템들이 해당 태그 달린 아이템 효과 제거)
-	Curse = 1 << 2,         //저주 아이템
-	Taunt = 1 << 3,         //도발 아이템
-	Termite = 1 << 4,       //흰개미 아이템
-	Hidden = 1 << 5,        //랜덤 아이템
-	Counterable = 1 << 6,   //카운터용 아이템
+    None = 0,
+    Positive = 1 << 0,      //버프용 아이템(플레이어에게 이득인 효과)
+    Negative = 1 << 1,      //디버프 아이템(플레이어 손해, '신의 가호' 같은 정화 아이템들이 해당 태그 달린 아이템 효과 제거)
+    Curse = 1 << 2,         //저주 아이템
+    Taunt = 1 << 3,         //도발 아이템
+    Termite = 1 << 4,       //흰개미 아이템
+    Hidden = 1 << 5,        //랜덤 아이템
+    Counterable = 1 << 6,   //카운터용 아이템
 }
 
 //아이템 효과 적용 기간
 public enum DurationType
 {
-	ThisTurn,   //이번 턴
-	NextTurn,   //다음 턴까지
-	Turns,      //N 턴
-	UntilWaveEnd,//오늘
+    ThisTurn,   //이번 턴
+    NextTurn,   //다음 턴까지
+    Turns,      //N 턴
+    UntilWaveEnd,//오늘
 }
 
 [CreateAssetMenu(fileName = "ItemSO", menuName = "Scriptable Objects/ItemSO")]
@@ -75,12 +76,12 @@ public class ItemSO : ScriptableObject
     public string itemId;       //고유 ID
     public string displayName_ID;  //UI에서 보여지는 이름 CSV ID
     public string itemDesc_ID;     //아이템 설명 CSV ID
-	public int itemCost;        //필요한 기력량
-	public Sprite Icon
+    public int itemCost;        //필요한 기력량
+    public Sprite Icon
     {
         get
         {
-            if(Application.isPlaying && AtlasManager.instance != null)
+            if (Application.isPlaying && AtlasManager.instance != null)
             {
                 return AtlasManager.instance.GetItemSprite(itemId);
             }
@@ -94,7 +95,8 @@ public class ItemSO : ScriptableObject
     public float itemWeight = 1f; //아이템 등장 확률(같은 등급 내 확률, 기본 1)
 
     //아이템 사용 제약
-    public bool oncePerWave;    //웨이브 당 한번
+    public bool oncePerTurn;    //턴 당 한번
+    public bool oncePerDay;     //하루 당 한번
     public bool oncePerGame;    //게임 당 한번
 
     public List<EffectSpec> effects; //아이템 이펙트들
@@ -113,8 +115,8 @@ public class EffectSpec
     public float floatValue2;
 
 
-	//effectType이 AddStatus인 경우, 다음 객체로 타입 정의
-	public StatusSpec statusSpce;
+    //effectType이 AddStatus인 경우, 다음 객체로 타입 정의
+    public StatusSpec statusSpce;
 }
 
 [System.Serializable]

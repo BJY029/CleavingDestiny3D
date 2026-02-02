@@ -12,6 +12,9 @@ public class PlayerSetting : ScriptableObject
     public int initialDayGoldIncome = 50;
     public float initialBarrierArmor = 0f;
 
+    [Header("Village Mulitplier")]
+    public float VillageDmgMulti = 1f;
+
 
     [Header("Combat Stats")]
     public int maxAtkPow = 1100;

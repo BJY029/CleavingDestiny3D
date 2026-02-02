@@ -15,7 +15,8 @@ public class TreeInteractable : MonoBehaviour, ILookInteractable
 	}
 
 	public void OnInteract(PlayerController pc)
-	{ 
+	{
+		if (!PlayerCanvasController.Instance.selecting) return;
 		pc.TryHit();
 	}
 }
