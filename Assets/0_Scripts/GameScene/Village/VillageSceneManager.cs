@@ -10,6 +10,9 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     public event Action OnVillagePhaseStarted;
     public event Action OnVillagePhaseEnded;
 
+    // [추가] 플레이어 준비 상태 변경 시 호출될 이벤트
+    public event Action OnPlayerReadyListUpdated;
+
     private float _startTime = -1.0f;
     private float _endTime = -1.0f;
     private bool _isPhaseActive = false;
@@ -48,6 +51,12 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     // 플레이어 속성(준비 상태 등)이 변경되었을 때 호출됨
     public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
     {
+        // 준비 상태 속성이 변경되었다면, 모든 클라이언트에서 UI 갱신 이벤트 호출
+        if (changedProps.ContainsKey(PlayerPropKeys.PlayerVillageReady))
+        {
+            OnPlayerReadyListUpdated?.Invoke();
+        }
+
         // 마스터 클라이언트만 체크하면 됨 (게임 흐름 제어)
         if (!PhotonNetwork.IsMasterClient) return;
         if (!_isPhaseActive) return;

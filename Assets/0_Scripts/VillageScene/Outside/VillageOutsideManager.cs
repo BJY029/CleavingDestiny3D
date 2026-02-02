@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Realtime; // Player 타입 사용을 위해 필요할 수 있음
 using PrimeTween;
 using TMPro;
 using Unity.Cinemachine;
@@ -22,6 +23,8 @@ namespace Village.Outside
         [SerializeField] VillageHpBar villageHpBar;
         [SerializeField] GameObject outsideUI;
 
+        [SerializeField] ReadyChecker readyChecker;
+
         private const float insideSizeOrigin = 5.4f;    // 마을 원래 사이즈
         private const float outsideSizeOrigin = 10f;  // 지도 전체 사이즈 (프레임 보임)
         private const float outsideSizeZoomed = 8f;     // 지도 확대 사이즈 (프레임 안 보임)
@@ -43,12 +46,63 @@ namespace Village.Outside
 
             outsideUI.SetActive(false);
             villageSceneManager = FindFirstObjectByType<VillageSceneManager>();
-            readyButton.onClick.AddListener(ToggleReadyButton);
 
+            // VillageSceneManager 이벤트 구독 및 ReadyChecker 초기화
+            if (villageSceneManager != null)
+            {
+                villageSceneManager.OnPlayerReadyListUpdated += UpdateReadyChecker;
+            }
+
+            InitializeReadyChecker();
+
+            readyButton.onClick.AddListener(ToggleReadyButton);
             readyButtonText = readyButton.GetComponentInChildren<TextMeshProUGUI>();
+
+            outsideCam.gameObject.SetActive(false);
 
             // ! - Debug
             PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, 500f);
+        }
+
+        // 소멸 시 이벤트 구독 해제 (중복 호출 방지)
+        private void OnDestroy()
+        {
+            if (villageSceneManager != null)
+            {
+                villageSceneManager.OnPlayerReadyListUpdated -= UpdateReadyChecker;
+            }
+        }
+
+        // ReadyChecker 초기화 및 최초 상태 반영
+        private void InitializeReadyChecker()
+        {
+            if (readyChecker == null) return;
+
+            // 현재 방의 플레이어 수만큼 슬롯 생성
+            Player[] players = PhotonNetwork.PlayerList;
+            readyChecker.Initialize(players.Length);
+
+            UpdateReadyChecker();
+        }
+
+        // 모든 플레이어의 준비 상태를 확인하여 UI 갱신
+        private void UpdateReadyChecker()
+        {
+            if (readyChecker == null) return;
+
+            Player[] players = PhotonNetwork.PlayerList;
+            for (int i = 0; i < players.Length; i++)
+            {
+                Player p = players[i];
+                bool isPlayerReady = false;
+
+                if (p.CustomProperties.TryGetValue(PlayerPropKeys.PlayerVillageReady, out object isReadyObj))
+                {
+                    isPlayerReady = (bool)isReadyObj;
+                }
+
+                readyChecker.SetPlayerReady(i, isPlayerReady);
+            }
         }
 
         public void RemoveHP()
