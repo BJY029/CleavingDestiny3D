@@ -225,6 +225,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					//플레이어의 상태 관리 시스템 리스트에 삽입
 					_statusSystem.Add(st);
 
+					Master_UpdateItemStatusUI(item, st);
+
 					//디버깅
 					Debug.Log($"[Item] AddStatus {ss.statusId} to {actorNum}");
 				}
@@ -262,6 +264,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 							var opst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
 
 							_statusSystem.Add(opst);
+
+							Master_UpdateItemStatusUI(item, opst);
 							//디버깅
 							Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
 						}
@@ -298,12 +302,27 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 						var gbst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
 
 						_statusSystem.Add(gbst);
+
+						Master_UpdateItemStatusUI(item, gbst);
 						//디버깅
 						Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
 					}
 				}
 				break;
 		}
+	}
+
+	private void Master_UpdateItemStatusUI(ItemSO item, StatusInstance st)
+	{
+		StatusSyncHub.instance.Master_BroadcastAdd(new ItemStatusInfo
+		{
+			itemId = item.itemId,
+			statusId = st.spec.statusId,
+			ownerActNum = st.ownerActorNum,
+			sourceActNum = st.sourceActorNum,
+			remainingTurns = st.remainingTurns,
+			stackCount = 1
+		});
 	}
 
 	//희생 아이템 최종 처리 프로세스

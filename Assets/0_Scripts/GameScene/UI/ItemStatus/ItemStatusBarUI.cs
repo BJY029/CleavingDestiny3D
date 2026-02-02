@@ -5,49 +5,52 @@ using UnityEngine.UI;
 
 public class ItemStatusBarUI : MonoBehaviour
 {
-    private static ItemStatusBarUI instance;
-
-    private void Awake()
+    void Awake()
     {
-        if (instance == null) instance = null;
-        else Destroy(gameObject);
+        ownerActorNum = PhotonNetwork.LocalPlayer.ActorNumber;
     }
-
-    [Header("Owenr Act Num")]
-    public int ownerActorNum;
+    private int ownerActorNum;
 
     [Header("Item Infos")]
     public Transform iconParent;
-    public StatusIconView iconPrefab;
+    public GameObject iconPrefab;
 
     [Header("Binded Icons")]
     public Sprite BindImg;
 
     private void OnEnable()
     {
-        StatusUIModel.instance.StatusOnChanged += Rebuild;
-        Rebuild();
+        if (StatusUIModel.instance != null)
+        {
+            StatusUIModel.instance.StatusOnChanged += Rebuild;
+            Rebuild();
+        }
     }
 
     private void OnDisable()
     {
-        StatusUIModel.instance.StatusOnChanged -= Rebuild;
+        if (StatusUIModel.instance != null)
+        {
+            StatusUIModel.instance.StatusOnChanged -= Rebuild;
+        }
     }
 
 
     private void Rebuild()
     {
+        Debug.Log("Rebuild Activated");
         for (int i = iconParent.childCount - 1; i >= 0; i--)
             Destroy(iconParent.GetChild(i).gameObject);
 
         List<ItemStatusInfo> list = StatusUIModel.instance.GetAllForOwner(ownerActorNum);
-
+        Debug.Log($"list count : {list.Count}");
         foreach (var st in list)
         {
             bool isMine = (PhotonNetwork.LocalPlayer.ActorNumber == ownerActorNum);
             bool shouldMask = (!isMine && st.isHiddenToEnemy);
 
-            var view = Instantiate(iconPrefab, iconParent);
+            var go = Instantiate(iconPrefab, iconParent);
+            StatusIconView view = go.GetComponent<StatusIconView>();
 
             if (shouldMask)
             {

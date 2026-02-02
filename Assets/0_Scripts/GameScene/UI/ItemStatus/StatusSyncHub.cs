@@ -8,7 +8,7 @@ public class StatusSyncHub : MonoBehaviourPun
 
     private void Awake()
     {
-        if (instance == null) instance = null;
+        if (instance == null) instance = this;
         else Destroy(gameObject);
     }
 
@@ -34,11 +34,11 @@ public class StatusSyncHub : MonoBehaviourPun
         photonView.RPC(nameof(RPC_UI_UpdateStatus), RpcTarget.All, JsonUtility.ToJson(info));
     }
 
-    public void Master_BroadcastRemove(int ownerActNum, string itemId, int uniqueId)
+    public void Master_BroadcastRemove(int ownerActNum, string statusId)
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
-        photonView.RPC(nameof(RPC_UI_RemoveStatus), RpcTarget.All, ownerActNum, itemId, uniqueId.ToString());
+        photonView.RPC(nameof(RPC_UI_RemoveStatus), RpcTarget.All, ownerActNum, statusId);
     }
 
     [PunRPC]
@@ -60,10 +60,10 @@ public class StatusSyncHub : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void RPC_UI_RemoveStatus(int ownerActNum, string itemId, string uniqueId, PhotonMessageInfo msgInfo)
+    private void RPC_UI_RemoveStatus(int ownerActNum, string statusId, PhotonMessageInfo msgInfo)
     {
         if (!msgInfo.Sender.IsMasterClient) return;
 
-        StatusUIModel.instance.Client_Remove(ownerActNum, itemId, uniqueId);
+        StatusUIModel.instance.Client_Remove(ownerActNum, statusId);
     }
 }
