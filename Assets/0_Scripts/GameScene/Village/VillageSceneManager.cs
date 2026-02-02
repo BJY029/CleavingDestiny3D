@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
@@ -9,6 +10,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
 {
     public event Action OnVillagePhaseStarted;
     public event Action OnVillagePhaseEnded;
+    public event Action OnPlayerReadyListUpdated;
 
     private float _startTime = -1.0f;
     private float _endTime = -1.0f;
@@ -16,7 +18,6 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
 
     void Start()
     {
-        // TurnManager가 있다면 등록
         if (TurnManager.Instance != null)
         {
             TurnManager.Instance.SetVillageSceneManager(this);
@@ -25,11 +26,9 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
 
     private void Update()
     {
-        // 마스터 클라이언트만 시간을 체크하여 페이즈 종료를 결정함
-        if (!PhotonNetwork.IsMasterClient) return;
-        if (!_isPhaseActive || _endTime < 0) return;
+        // MasterClient만 타이머를 체크해 마을 페이즈일 때 타이머가 다 진행되면 페이즈 종료
+        if (!IsMasterAndPhase()) return;
 
-        // 시간 체크
         if ((float)PhotonNetwork.Time >= _endTime)
         {
             EndPhaseLogic();
@@ -41,37 +40,41 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     {
         _endTime = -1.0f;
         _isPhaseActive = false;
-        // TurnManager에게 종료 알림
         OnVillagePhaseEnded?.Invoke();
     }
 
-    // 플레이어 속성(준비 상태 등)이 변경되었을 때 호출됨
+    private bool IsMasterAndPhase()
+    {
+        return _isPhaseActive && PhotonNetwork.IsMasterClient;
+    }
+
+    // 플레이어 속성 변경 감지
     public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
     {
-        // 마스터 클라이언트만 체크하면 됨 (게임 흐름 제어)
-        if (!PhotonNetwork.IsMasterClient) return;
-        if (!_isPhaseActive) return;
-
-        // 준비 상태가 변경되었는지 확인
-        if (changedProps.ContainsKey(PlayerPropKeys.PlayerVillageReady))
+        // 어떤 플레이어가 준비 상태를 변경했는지 감지
+        bool isVillageReadyChanged = changedProps.ContainsKey(PlayerPropKeys.PlayerVillageReady);
+        if (isVillageReadyChanged)
         {
-            CheckAllPlayersReady();
+            OnPlayerReadyListUpdated?.Invoke();
+
+            if (IsMasterAndPhase())
+            {
+                CheckAllPlayersReady();
+            }
         }
     }
 
-    // 모든 플레이어가 준비되었는지 확인
     private void CheckAllPlayersReady()
     {
+        // 모든 플레이어가 준비되었는지 확인
         foreach (Player p in PhotonNetwork.PlayerList)
         {
-            // 키가 없거나 false라면 아직 준비 안 된 것임
             if (!p.CustomProperties.TryGetValue(PlayerPropKeys.PlayerVillageReady, out object isReadyObj) || !(bool)isReadyObj)
             {
-                return; // 한 명이라도 준비 안 됨
+                return;
             }
         }
 
-        // 여기까지 왔다면 모두 준비 완료 -> 즉시 페이즈 종료
         Debug.Log("All players are ready in Village. Ending phase early.");
         EndPhaseLogic();
     }
@@ -81,8 +84,6 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     /// </summary>
     public void SetLocalPlayerReady(bool isReady)
     {
-        // Hashtable props = new Hashtable { { PlayerPropKeys.PlayerVillageReady, isReady } };
-        // PhotonNetwork.LocalPlayer.SetCustomProperties(props);
         PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.PlayerVillageReady, isReady);
     }
 
@@ -96,7 +97,6 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
             else EndVillagePhase();
         }
 
-        // 마을 페이즈 관련 시간 정보가 업데이트 되었을 때 로컬 변수 동기화
         if (propertiesThatChanged.TryGetValue(RoomPropKeys.VillageUpgradeStartEndTime, out object value)
         && value is Vector2 times)
         {
@@ -105,54 +105,46 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
         }
     }
 
-    /// <summary>
-    /// 마을 페이즈를 시작합니다. (Fire-and-forget)
-    /// </summary>
     public void StartVillagePhase()
     {
         _isPhaseActive = true;
-
-        // 페이즈 시작 시 나의 준비 상태 초기화 (False)
         SetLocalPlayerReady(false);
 
-        _ = LoadVillageSceneAsync();
+        // UniTask의 Fire-and-Forget
+        LoadVillageSceneAsync().Forget();
     }
 
-    /// <summary>
-    /// 마을 페이즈를 종료합니다. (Fire-and-forget)
-    /// </summary>
     public void EndVillagePhase()
     {
         _isPhaseActive = false;
         _endTime = -1.0f;
-        _ = UnloadVillageSceneAsync();
+
+        UnloadVillageSceneAsync().Forget();
     }
 
     /// <summary>
     /// 페이드 효과와 함께 마을 씬을 로드합니다.
     /// </summary>
-    public async Awaitable LoadVillageSceneAsync()
+    public async UniTask LoadVillageSceneAsync()
     {
         if (SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded) return;
 
-        // 미리 로딩 시작 (활성화는 안 함)
+        // 1. 미리 로딩 시작 (활성화 대기)
         var loadOp = SceneManager.LoadSceneAsync(CommonDefine.VILLAGESCENE, LoadSceneMode.Additive);
         loadOp.allowSceneActivation = false;
 
-        // 페이드 인 (화면 어두워짐)
+        // 2. 로딩 중에 페이드 인 동시 진행
         await FadeCanvas.Instance.FadeInAsync(1f);
 
-        // 메인 UI 숨기기
         GameCanvasController.Instance.SetActiveCanvas(false);
         PlayerCanvasController.Instance.SetActiveCanvas(false);
 
-        await Awaitable.WaitForSecondsAsync(0.3f);
+        await UniTask.Delay(300, cancellationToken: destroyCancellationToken); // 0.3초 대기
 
-        // 씬 활성화 및 완료 대기
+        // 3. 씬 활성화
         loadOp.allowSceneActivation = true;
-        await loadOp;
+        await loadOp.ToUniTask(cancellationToken: destroyCancellationToken); // 로딩 완료 대기
 
-        // 씬 전환 완료 후 페이드 아웃은 마을 씬 내부 초기화 로직이나 여기서 수행
         await FadeCanvas.Instance.FadeOutAsync(1f);
 
         OnVillagePhaseStarted?.Invoke();
@@ -161,25 +153,24 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     /// <summary>
     /// 페이드 효과와 함께 마을 씬을 언로드합니다.
     /// </summary>
-    public async Awaitable UnloadVillageSceneAsync()
+    public async UniTask UnloadVillageSceneAsync()
     {
         if (!SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded) return;
-        var unloadOp = SceneManager.UnloadSceneAsync(CommonDefine.VILLAGESCENE);
-        unloadOp.allowSceneActivation = false;
 
-        // 페이드 인 (화면 가리기)
+        // 1. 화면 가리기 (완료될 때까지 대기)
         await FadeCanvas.Instance.FadeInAsync(1f);
 
-        await Awaitable.WaitForSecondsAsync(0.3f);
+        await UniTask.Delay(300, cancellationToken: destroyCancellationToken);
 
-        unloadOp.allowSceneActivation = true;
-        await unloadOp;
+        // 2. 화면이 가려진 상태에서 언로드
+        // ToUniTask()는 작업 완료를 보장합니다.
+        await SceneManager.UnloadSceneAsync(CommonDefine.VILLAGESCENE).ToUniTask(cancellationToken: destroyCancellationToken);
 
-        // 메인 UI 복구
+        // 3. UI 복구
         GameCanvasController.Instance.SetActiveCanvas(true);
         PlayerCanvasController.Instance.SetActiveCanvas(true);
 
-        // 페이드 아웃 (화면 밝아짐)
+        // 4. 화면 밝히기
         await FadeCanvas.Instance.FadeOutAsync(1f);
     }
 }

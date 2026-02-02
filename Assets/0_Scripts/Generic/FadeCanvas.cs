@@ -2,28 +2,16 @@ using UnityEngine;
 using UnityEngine.UI;
 using PrimeTween;
 using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 
 public class FadeCanvas : MonoBehaviour
 {
     private static FadeCanvas _instance;
     public static FadeCanvas Instance => _instance;
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            _instance = this;
-            SetFade(false);
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
 
     [SerializeField] Image fadeImage;
-
-    private Tween _currentFadeTween; // 현재 진행 중인 트윈을 저장
+    private Tween _currentFadeTween; // 현재 진행 중인 트윈
 
     /// <summary>
     /// Returns true if the canvas is fully faded in.
@@ -39,13 +27,26 @@ public class FadeCanvas : MonoBehaviour
     /// </summary>
     public bool IsFading { get; private set; } = false;
 
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            _instance = this;
+            SetFade(false);
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     /// <summary>
     /// Set the fade state instantly.
     /// </summary>
-    /// <param name="isFaded">If true, the canvas will be fully faded in; if false, it will be fully clear.</param>
     public void SetFade(bool isFaded)
     {
-        if (_currentFadeTween.isAlive) _currentFadeTween.Stop(); // 진행 중인 트윈 정지
+        if (_currentFadeTween.isAlive) _currentFadeTween.Stop();
         IsFading = false;
 
         float alpha = isFaded ? 1f : 0f;
@@ -54,31 +55,33 @@ public class FadeCanvas : MonoBehaviour
     }
 
     /// <summary>
-    /// Fade in the canvas over the specified duration (Fire-and-forget).
+    /// Fade in (Fire-and-forget).
     /// </summary>
     public void FadeIn(float duration, Action onComplete = null)
     {
-        _ = FadeInAsync(duration, onComplete);
+        FadeInAsync(duration, onComplete).Forget();
     }
 
     /// <summary>
-    /// Fade out the canvas over the specified duration (Fire-and-forget).
+    /// Fade out (Fire-and-forget).
     /// </summary>
     public void FadeOut(float duration, Action onComplete = null)
     {
-        _ = FadeOutAsync(duration, onComplete);
+        FadeOutAsync(duration, onComplete).Forget();
     }
 
     /// <summary>
-    /// Fade in the canvas over the specified duration.
+    /// 페이드 인 (화면 어두워짐). UniTask를 반환합니다.
+    /// 취소 토큰(CancellationToken)을 지원합니다.
     /// </summary>
-    public async Awaitable FadeInAsync(float duration, Action onComplete = null, float delay = 0f, float endDelay = 0f)
+    public async UniTask FadeInAsync(float duration, Action onComplete = null, float delay = 0f, float endDelay = 0f, CancellationToken ct = default)
     {
         if (delay > 0f)
         {
-            await Awaitable.WaitForSecondsAsync(delay);
+            await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: ct);
         }
-        if (_currentFadeTween.isAlive) _currentFadeTween.Stop(); // 기존 트윈 정지
+
+        if (_currentFadeTween.isAlive) _currentFadeTween.Stop();
 
         IsFading = true;
         fadeImage.gameObject.SetActive(true);
@@ -88,7 +91,7 @@ public class FadeCanvas : MonoBehaviour
 
         if (endDelay > 0f)
         {
-            await Awaitable.WaitForSecondsAsync(endDelay);
+            await UniTask.Delay(TimeSpan.FromSeconds(endDelay), cancellationToken: ct);
         }
 
         onComplete?.Invoke();
@@ -96,15 +99,16 @@ public class FadeCanvas : MonoBehaviour
     }
 
     /// <summary>
-    /// Fade out the canvas over the specified duration.
+    /// 페이드 아웃 (화면 밝아짐). UniTask를 반환합니다.
     /// </summary>
-    public async Awaitable FadeOutAsync(float duration, Action onComplete = null, float delay = 0f, float endDelay = 0f)
+    public async UniTask FadeOutAsync(float duration, Action onComplete = null, float delay = 0f, float endDelay = 0f, CancellationToken ct = default)
     {
         if (delay > 0f)
         {
-            await Awaitable.WaitForSecondsAsync(delay);
+            await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: ct);
         }
-        if (_currentFadeTween.isAlive) _currentFadeTween.Stop(); // 기존 트윈 정지
+
+        if (_currentFadeTween.isAlive) _currentFadeTween.Stop();
 
         IsFading = true;
 
@@ -113,7 +117,7 @@ public class FadeCanvas : MonoBehaviour
 
         if (endDelay > 0f)
         {
-            await Awaitable.WaitForSecondsAsync(endDelay);
+            await UniTask.Delay(TimeSpan.FromSeconds(endDelay), cancellationToken: ct);
         }
 
         fadeImage.gameObject.SetActive(false);

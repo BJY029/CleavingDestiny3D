@@ -31,47 +31,54 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	private float currentConBarrier;
 	private float currentTreeDmgMulit;
 
-	public void SetPlayerInventory(GameObject inv)
-	{
-		if (inv == null) return;
-		myInventory = inv;
-	}
+  public float GetMaxVillageHp() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxVillageHP); }
+  public float GetCurrentVillageHP() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageHP); }
+  public float GetCurrentBarrier() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier); }
 
-	public GameObject GetPlayerInventory()
-	{
-		return myInventory;
-	}
-	// 플레이어 프로퍼티 값 불러오기
-	public void GetCurrentPlayerStatus()
-	{
-		Hashtable props = PhotonNetwork.LocalPlayer.CustomProperties;
-		currentCarryOverEnergy = GetValue<int>(props, PlayerPropKeys.CarryOverEnergy);
-		currentEnergy = GetValue<int>(props, PlayerPropKeys.Energy);
-		currentMaxEnergy = GetValue<int>(props, PlayerPropKeys.MaxEnergy);
-		currentMaxAtkDamage = GetValue<int>(props, PlayerPropKeys.MaxAtkPow);
-		currentMinAtkDamage = GetValue<int>(props, PlayerPropKeys.MinAtkPow);
+  public void SetPlayerInventory(GameObject inv)
+  {
+      if (inv == null) return;
+      myInventory = inv;
+  }
 
-		currentVillageHP = GetValue<float>(props, PlayerPropKeys.VillageHP);
-		currentBarrier = GetValue<float>(props, PlayerPropKeys.VillageBarrier);
-		currentConBarrier = GetValue<float>(props, PlayerPropKeys.BarrierConversionRate);
-		currentTotalDamage = GetValue<float>(props, PlayerPropKeys.TotalDamage);
-		currentTreeDmgMulit = GetValue<float>(props, PlayerPropKeys.TreeAtkMulti);
-		maxVillageHp = GetValue<float>(props, PlayerPropKeys.MaxVillageHP);
-	}
-	// 안전하게 값을 꺼내는 유틸리티 함수 (클래스 내부에 추가하거나 Helper에 추가)
-	private T GetValue<T>(Hashtable props, string key)
-	{
-		if (props.TryGetValue(key, out object value))
-		{
-			return (T)value;
-		}
-		return default(T); // 키가 없으면 0 또는 null 반환
-	}
+  public GameObject GetPlayerInventory()
+  {
+      return myInventory;
+  }
+
+  // 플레이어 프로퍼티 값 불러오기
+  public void GetCurrentPlayerStatus()
+  {
+      var props = PhotonNetwork.LocalPlayer.CustomProperties;
+
+      currentCarryOverEnergy = GetValue<int>(props, PlayerPropKeys.CarryOverEnergy);
+      currentEnergy = GetValue<int>(props, PlayerPropKeys.Energy);
+      currentMaxEnergy = GetValue<int>(props, PlayerPropKeys.MaxEnergy);
+      currentMaxAtkDamage = GetValue<int>(props, PlayerPropKeys.MaxAtkPow);
+      currentMinAtkDamage = GetValue<int>(props, PlayerPropKeys.MinAtkPow);
+
+      currentVillageHP = GetValue<float>(props, PlayerPropKeys.VillageHP);
+      currentBarrier = GetValue<float>(props, PlayerPropKeys.VillageBarrier);
+      currentConBarrier = GetValue<float>(props, PlayerPropKeys.BarrierConversionRate);
+      currentTotalDamage = GetValue<float>(props, PlayerPropKeys.TotalDamage);
+
+      currentTreeDmgMulit = GetValue<float>(props, PlayerPropKeys.TreeAtkMulti);
+
+      maxVillageHp = GetValue<float>(props, PlayerPropKeys.MaxVillageHP);
+  }
+
+  // 안전하게 값을 꺼내는 유틸리티 함수
+  private T GetValue<T>(ExitGames.Client.Photon.Hashtable props, string key)
+  {
+      if (props.TryGetValue(key, out object value))
+      {
+          return (T)value;
+      }
+      return default(T);
+  }
 	public float GetMaxVillageHp() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxVillageHP); }
 	public float GetCurrentVillageHP() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageHP); }
 	public float GetCurrentBarrier() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier); }
-
-
 
 	// UI 업데이트
 	public void SetPlayerStatusUI()
