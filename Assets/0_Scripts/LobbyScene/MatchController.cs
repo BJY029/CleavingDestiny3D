@@ -51,6 +51,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 		if (PhotonNetwork.OfflineMode)
 		{
 			PhotonNetwork.OfflineMode = false; // 오프라인 모드 해제
+			GameManager.Instance.isSoloPlay = false;
 			PhotonNetwork.ConnectUsingSettings(); // 포톤 설정파일을 이용해 다시 온라인 연결 시도
 		}
 	}
@@ -118,7 +119,11 @@ public class MatchController : MonoBehaviourPunCallbacks
 		isFindingMatch = false;
 
 		//솔로 모드 진입 시도 중이었다면 취소
-		if (isStartingSolo) isStartingSolo = false;
+		if (isStartingSolo)
+		{
+			isStartingSolo = false;
+			GameManager.Instance.isSoloPlay = false;
+		}
 
 		//현재 방에 들어와있다면 방에서 나간다.
 		if (PhotonNetwork.InRoom) PhotonNetwork.LeaveRoom();
@@ -370,8 +375,10 @@ public class MatchController : MonoBehaviourPunCallbacks
 	private void StartOfflineRoom()
 	{
 		isStartingSolo = false;
+		GameManager.Instance.isSoloPlay = true;
 		PhotonNetwork.OfflineMode = true;
 		PhotonNetwork.CreateRoom("SoloRoom"); // 오프라인 룸 생성 -> OnJoinedRoom 호출됨
+
 	}
 
 	//비동기식 씬을 로드하는 함수

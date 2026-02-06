@@ -23,14 +23,6 @@ public enum ERROR
 {
     FULL_INV,
 }
-//플레이어 정보 저장 객체
-public class RuntimePlayer
-{
-    public int actorNumber;
-    public string playerName;
-    public int turnIdx;
-    public bool isMyTurn;
-}
 
 public class UI_CSV
 {

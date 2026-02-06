@@ -1,4 +1,4 @@
-using Photon.Pun;
+ï»¿using Photon.Pun;
 using Photon.Realtime;
 using System.Linq;
 using UnityEngine;
@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 public class StickGameController : MonoBehaviourPunCallbacks
 {
-    //»ı¼ºÇÒ ³ª¹µ°¡Áö ¼ö
+    // ë‚˜ë­‡ê°€ì§€(Branch)ì˜ ì´ ê°œìˆ˜
     [SerializeField]
     private int branchCount;
 
@@ -18,36 +18,34 @@ public class StickGameController : MonoBehaviourPunCallbacks
     private float selectDuration;
     private float endTime;
     private bool localResolved = false;
-    
+
     public Canvas BranchGameCanvas;
     public int selectCount;
     public Slider Timer;
     private int playerCount;
     private bool isUpdatedTimer;
 
-    //½Ì±ÛÅÏ
+    // Singleton
     public static StickGameController Instance;
-	private void Awake()
-	{
-		if (Instance != null)
-		{
-			Destroy(Instance);
-			return;
-		}
-		Instance = this;
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Destroy(Instance);
+            return;
+        }
+        Instance = this;
 
         selectCount = 0;
-	}
+    }
 
-	
-
-	void Start()
+    void Start()
     {
         BranchGameCanvas.transform.localScale = Vector3.zero;
         playerCount = PhotonNetwork.PlayerList.Length;
 
         Timer.value = 1f;
-        //MasterClient¸¸ ³ª¹µ°¡Áö Á¤º¸ ¼³Á¤
+        // ë§ˆìŠ¤í„° í´ë¼ì´ì–¸íŠ¸ê°€ ìŠ¤í‹±ë“¤ì„ ì´ˆê¸°í™”
         //if(PhotonNetwork.IsMasterClient)
         //{
         //       InitSticks();
@@ -57,19 +55,20 @@ public class StickGameController : MonoBehaviourPunCallbacks
         var props = room.CustomProperties;
 
         isUpdatedTimer = false;
-        if(props.ContainsKey("SelectStartTime"))
+        if (props.ContainsKey("SelectStartTime"))
         {
             selectStartTime = (float)props["SelectStartTime"];
             selectDuration = (float)props["SelectDuration"];
+            endTime = selectStartTime + selectDuration;
             isUpdatedTimer = true;
             return;
         }
 
-        //Å¸ÀÌ¸Ó ÃÊ±âÈ­ Á¶°ÇÀº °ÔÀÓ¿¡¼­ÀÇ ActorNumber°¡ °¡Àå ³·Àº ÇÃ·¹ÀÌ¾î°¡ ¼öÇà
-        //(MasterClient)¿¡ ÀÇÁ¸ÇÏÁö ¾Ê±â À§ÇÑ ¼³Á¤
-        if(IsTimerInitializer())
+        // íƒ€ì´ë¨¸ ì´ˆê¸°í™”ëŠ” ë°©ì¥(MasterClient) í˜¹ì€ ê°€ì¥ ë¹ ë¥¸ ë²ˆí˜¸ì˜ í”Œë ˆì´ì–´ê°€ ìˆ˜í–‰
+        // (MasterClient)ê°€ ì¡´ì¬í•˜ì§€ ì•ŠëŠ” ìƒí™© ëŒ€ë¹„
+        if (IsTimerInitializer())
         {
-            //¸ğµç Å¬¶óÀÌ¾ğÆ®°¡ µ¿ÀÏÇÑ °ª ±â¹İ µ¿ÀÛÇÏ±â À§ÇØ Photon ¼­¹ö ½Ã°£ÀÌ¿ë
+            // ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ê°€ ìµœëŒ€í•œ ë™ì‹œì— íƒ€ì´ë¨¸ë¥¼ ì‹œì‘í•˜ê¸° ìœ„í•´ Photon ì„œë²„ ì‹œê°„ì„ ê¸°ì¤€ìœ¼ë¡œ ì„¤ì •
             float now = (float)PhotonNetwork.Time;
 
             var ht = new ExitGames.Client.Photon.Hashtable
@@ -83,38 +82,39 @@ public class StickGameController : MonoBehaviourPunCallbacks
             selectStartTime = now;
             selectDuration = selectDurarionDefault;
             endTime = selectStartTime + selectDuration;
-			isUpdatedTimer = true;
+            isUpdatedTimer = true;
         }
     }
 
-	public override void OnRoomPropertiesUpdate(Hashtable changedProps)
-	{
-		if (changedProps.ContainsKey("SelectStartTime"))
-		{
-			var room = PhotonNetwork.CurrentRoom;
-			selectStartTime = (float)room.CustomProperties["SelectStartTime"];
-			selectDuration = (float)room.CustomProperties["SelectDuration"];
-			endTime = selectStartTime + selectDuration;
-			isUpdatedTimer = true;
-			Debug.Log(selectStartTime + " " + selectDuration + " " + endTime);
-		}
-	}
+    public override void OnRoomPropertiesUpdate(Hashtable changedProps)
+    {
+        if (changedProps.ContainsKey("SelectStartTime"))
+        {
+            var room = PhotonNetwork.CurrentRoom;
+            selectStartTime = (float)room.CustomProperties["SelectStartTime"];
+            selectDuration = (float)room.CustomProperties["SelectDuration"];
+            endTime = selectStartTime + selectDuration;
+            isUpdatedTimer = true;
+            BranchGameCanvas.transform.localScale = Vector3.one;
+            Debug.Log(selectStartTime + " " + selectDuration + " " + endTime);
+        }
+    }
 
-	//¿¹¿Ü Ã³¸®
-	public override void OnPlayerLeftRoom(Player otherPlayer)
-	{
-		playerCount = PhotonNetwork.PlayerList.Length;
-	}
+    // í”Œë ˆì´ì–´ í‡´ì¥ ì²˜ë¦¬
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        playerCount = PhotonNetwork.PlayerList.Length;
+    }
 
-	private void Update()
-	{
-        if (localResolved) return;;
+    private void Update()
+    {
+        if (localResolved) return; ;
         if (!isUpdatedTimer) return;
         var room = PhotonNetwork.CurrentRoom;
 
-        if(room == null) return;
+        if (room == null) return;
 
-        if(room.CustomProperties.TryGetValue("SelectionResolved", out var r) && (bool)r)
+        if (room.CustomProperties.TryGetValue("SelectionResolved", out var r) && (bool)r)
         {
             localResolved = true;
             return;
@@ -123,84 +123,107 @@ public class StickGameController : MonoBehaviourPunCallbacks
         float now = (float)PhotonNetwork.Time;
         //double endTime = selectStartTime + selectDuration;
         float remain = endTime - now;
-        Timer.value = remain/selectDuration;
+        Timer.value = remain / selectDuration;
 
-        if(remain <= 0.0 || selectCount >= playerCount)
+        if (remain <= 0.0 || selectCount >= playerCount)
         {
+            Debug.Log($"Time's up or all selected: remain={remain}, selectCount={selectCount}, playerCount={playerCount}");
             ResolveSelection();
         }
-	}
+    }
 
     private void ResolveSelection()
     {
-        Debug.LogError("time 0 or all selected");
-		
-		if (!IsTimerInitializer())
+        Debug.Log("time 0 or all selected");
+
+        if (!IsTimerInitializer())
         {
             //localResolved = true;
             return;
         }
-		localResolved = true;
-		var room = PhotonNetwork.CurrentRoom;
+        localResolved = true;
+        var room = PhotonNetwork.CurrentRoom;
         var props = room.CustomProperties;
-		var owners = (int[])props["StickOwner"];
-		var lengths = (int[])props["StickLengths"];
-		var rand = new System.Random();
-		int randIdx;
+        var owners = (int[])props["StickOwner"];
+        var lengths = (int[])props["StickLengths"];
+        var rand = new System.Random();
+        int randIdx;
 
-        //key: actorNum, value: selected length
-		Dictionary<int, int> setTurns = new Dictionary<int, int>();
+        // key: actorNum, value: selected length
+        Dictionary<int, int> setTurns = new Dictionary<int, int>();
 
-        //°¢ ÇÃ·¹ÀÌ¾î¸¦ µ¹¸é¼­
-		foreach (Player p in PhotonNetwork.PlayerList)
-		{
-            //ÇÃ·¹ÀÌ¾îµéÀÇ ½Äº° ¹øÈ£¸¦ °¡Á®¿Â´Ù.
-			int playerActNum = p.ActorNumber;
+        // ëª¨ë“  í”Œë ˆì´ì–´ë¥¼ ìˆœíšŒí•˜ë©°
+        foreach (Player p in PhotonNetwork.PlayerList)
+        {
+            // í”Œë ˆì´ì–´ì˜ ê³ ìœ  ë²ˆí˜¸ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+            int playerActNum = p.ActorNumber;
             int flag = 0;
-            //owner ¸®½ºÆ®¸¦ µ¹¾Æº¸¸é¼­
-			for (int i = 0; i < owners.Length; i++)
-			{
-                //ÇØ´ç ÇÃ·¹ÀÌ¾î°¡ ¼±ÅÃÇÑ ³ª¹µ°¡Áö°¡ ÀÖÀ¸¸é
-				if (owners[i] == playerActNum)
-				{
-                    //µñ¼Å³Ê¸® »ğÀÔ
-					setTurns.Add(playerActNum, lengths[i]);
+            // ì†Œìœ ì ë¦¬ìŠ¤íŠ¸ë¥¼ í™•ì¸í•˜ë©´ì„œ
+            for (int i = 0; i < owners.Length; i++)
+            {
+                // í•´ë‹¹ í”Œë ˆì´ì–´ê°€ ìŠ¤í‹±ì„ ì´ë¯¸ ì„ íƒí–ˆë‹¤ë©´
+                if (owners[i] == playerActNum)
+                {
+                    // ì •ë³´ ì¶”ê°€
+                    setTurns.Add(playerActNum, lengths[i]);
                     flag = 1;
                     break;
-				}
-			}
+                }
+            }
             if (flag == 1) continue;
-            //¸¸¾à ÇØ´ç ÇÃ·¹ÀÌ¾î°¡ ¼±ÅÃÇÑ ³ª¹µ°¡Áö°¡ ¾øÀ¸¸é
-			do
-			{
-                //¹«ÀÛÀ§ ¼ıÀÚ ¼±ÅÃ
-				randIdx = rand.Next(0, branchCount);
-			} while (owners[randIdx] != -1); //Áßº¹µÇÁö ¾Êµµ·Ï ¼³Á¤
-            //ÇØ´ç ·£´ı ³ª¹µ°¡Áö¸¦ ÇÃ·¹ÀÌ¾î°Ô ÀÓÀÇ·Î ¹èÄ¡
-			owners[randIdx] = playerActNum;
-            //µñ¼Å³Ê¸® »ğÀÔ
-			setTurns.Add(playerActNum, lengths[randIdx]);
-		}
-        //value¸¦ ±â¹İÀ¸·Î µñ¼Å³Ê¸® Á¤·Ä ¹× ¹è¿­·Î º¯È¯
-        var sortedTurnInfo = setTurns.OrderByDescending(t => t.Value).ToList();
-        int[] turnOrder = sortedTurnInfo.Select(t =>t.Key).ToArray();
-        int[] lengthOrder = sortedTurnInfo.Select(t => t.Value).ToArray();
-		for (int i = 0;i < turnOrder.Length; i++)
-        {
-            Debug.LogError($"turn order :  {i + 1} = player{turnOrder[i]}, length:{lengthOrder[i]}");
+            // ì•„ì§ ìŠ¤í‹±ì„ ì„ íƒí•˜ì§€ ì•Šì€ í”Œë ˆì´ì–´ë¼ë©´ (íƒ€ì„ì•„ì›ƒ ë“±)
+            do
+            {
+                // ëœë¤ìœ¼ë¡œ ìŠ¤í‹± ì„ íƒ
+                randIdx = rand.Next(0, branchCount);
+            } while (owners[randIdx] != -1); // ì¤‘ë³µë˜ì§€ ì•Šë„ë¡ ë°©ì§€
+            // í•´ë‹¹ ìŠ¤í‹±ì˜ ì†Œìœ ìë¡œ í”Œë ˆì´ì–´ ì„¤ì •
+            owners[randIdx] = playerActNum;
+            // ì •ë³´ ì¶”ê°€
+            setTurns.Add(playerActNum, lengths[randIdx]);
         }
-        //Properties¿¡ »ğÀÔ
+
+        if (GameManager.Instance.isSoloPlay)
+        {
+            int player = PhotonNetwork.PlayerList.Length;
+            int aiID = 1000;
+            for (int i = player + 1; i <= GameManager.Instance.maxRoomPlayerCount; i++)
+            {
+                do
+                {
+                    // ëœë¤ìœ¼ë¡œ ìŠ¤í‹± ì„ íƒ
+                    randIdx = rand.Next(0, branchCount);
+                } while (owners[randIdx] != -1); // ì¤‘ë³µë˜ì§€ ì•Šë„ë¡ ë°©ì§€
+
+                // í•´ë‹¹ ìŠ¤í‹±ì˜ ì†Œìœ ìë¡œ í”Œë ˆì´ì–´ ì„¤ì •
+                owners[randIdx] = aiID;
+                // ì •ë³´ ì¶”ê°€
+                setTurns.Add(aiID, lengths[randIdx]);
+                aiID++;
+            }
+        }
+
+
+        // ê¸¸ì´ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ë‚´ë¦¼ì°¨ìˆœ ì •ë ¬í•˜ì—¬ í„´ ìˆœì„œ ë°°ì—´ ìƒì„±
+        var sortedTurnInfo = setTurns.OrderByDescending(t => t.Value).ToList();
+        int[] turnOrder = sortedTurnInfo.Select(t => t.Key).ToArray();
+        int[] lengthOrder = sortedTurnInfo.Select(t => t.Value).ToArray();
+        for (int i = 0; i < turnOrder.Length; i++)
+        {
+            Debug.Log($"turn order :  {i + 1} = player{turnOrder[i]}, length:{lengthOrder[i]}");
+        }
+        // ë£¸ í”„ë¡œí¼í‹°ì— ì €ì¥
         var newProps = new ExitGames.Client.Photon.Hashtable
         {
             ["TurnInfo"] = turnOrder,
             ["StickOwner"] = owners,
             ["SelectionResolved"] = true,
         };
-		room.SetCustomProperties(newProps);
-	}
+        room.SetCustomProperties(newProps);
+    }
 
-    //Masterclient°¡ ¾Æ´Ñ °¡Àå ³·Àº ¹øÈ£ÀÇ ActorNumber¸¦ °¡Áø »ç¶÷ÀÌ Å¸ÀÌ¸Ó ¹× Ã³¸® ÁøÇà
-	private bool IsTimerInitializer()
+    // ë§ˆìŠ¤í„° í´ë¼ì´ì–¸íŠ¸ê°€ ì•„ë‹ˆë”ë¼ë„ ê°€ì¥ ë‚®ì€ ActorNumberë¥¼ ê°€ì§„ ìœ ì €ê°€ íƒ€ì´ë¨¸ ì´ˆê¸°í™”ë¥¼ ìˆ˜í–‰
+    private bool IsTimerInitializer()
     {
         var players = PhotonNetwork.PlayerList;
         int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
@@ -208,108 +231,108 @@ public class StickGameController : MonoBehaviourPunCallbacks
         return myActor == minActor;
     }
 
-    //³ª¹µ °¡Áö Á¤º¸¸¦ ÃÊ±âÈ­ ÇÏ´Â ÇÔ¼ö
+    // ìŠ¤í‹± ë° ì´ˆê¸° ë°ì´í„°ë¥¼ ì´ˆê¸°í™”í•˜ëŠ” í•¨ìˆ˜
     public void InitSticks()
-    {       
-        //³ª¹µ°¡Áö °³¼ö¸¸Å­ ¹è¿­ »ı¼º ¹× ÃÊ±âÈ­
+    {
+        // ë‚˜ë­‡ê°€ì§€ ê°œìˆ˜ë§Œí¼ ë°°ì—´ ìƒì„± ë° ì´ˆê¸°í™”
         int[] lengths = new int[branchCount];
-        for(int i = 0; i < branchCount; i++)
+        for (int i = 0; i < branchCount; i++)
         {
             lengths[i] = i + 1;
         }
-        //°¢ ³ª¹µ°¡Áö ÁÖÀÎ Á¤º¸¸¦ ÀúÀåÇÒ ¹è¿­ »ı¼º
+        // ê° ë‚˜ë­‡ê°€ì§€ì˜ ì†Œìœ ì£¼ë¥¼ ì €ì¥í•  ë°°ì—´ ìƒì„±
         int[] owners = new int[branchCount];
 
-        //³ª¹µ °¡Áö ±æÀÌ¸¦ Áßº¹ ¾øÀÌ ¼¯±â À§ÇØ¼­ ´ÙÀ½°ú °°Àº ¹İº¹¹® ½ÇÇà
+        // ë‚˜ë­‡ê°€ì§€ì˜ ê¸¸ì´ë¥¼ ë¬´ì‘ìœ„ë¡œ ì„ê¸° ìœ„í•´ ì…”í”Œ ì•Œê³ ë¦¬ì¦˜ ì‚¬ìš©
         int temp;
         var rand = new System.Random();
 
-        for(int i = 0; i < branchCount; i++)
+        for (int i = 0; i < branchCount; i++)
         {
             int randIdx = rand.Next(0, branchCount);
             temp = lengths[randIdx];
             lengths[randIdx] = lengths[i];
             lengths[i] = temp;
 
-            //°¢ ³ª¹µ°¡ÁöÀÇ ÁÖÀÎÀº ÇöÀç ¾ø±â ¶§¹®¿¡ -1·Î ¼³Á¤
+            // ì†Œìœ ì£¼ ë°°ì—´ì„ -1(ì†Œìœ ì£¼ ì—†ìŒ)ë¡œ ì´ˆê¸°í™”
             owners[i] = -1;
         }
 
-        //µğ¹ö±×¿ë
+        // í…ŒìŠ¤íŠ¸ìš©
         //for(int i = 0; i < branchCount; i++)
         //{
         //    Debug.LogError($"index{i+1} length = {lengths[i]}");
         //}
 
-        //RoomProperty¿¡ ÀúÀå
+        // ë£¸ í”„ë¡œí¼í‹°ì— ì €ì¥
         var props = new ExitGames.Client.Photon.Hashtable
         {
             ["StickLengths"] = lengths,
             ["StickOwner"] = owners,
         };
 
-        //¾÷µ¥ÀÌÆ®
+        // ì—…ë°ì´íŠ¸
         PhotonNetwork.CurrentRoom.SetCustomProperties(props);
-		BranchGameCanvas.transform.localScale = Vector3.zero;
-	}
+        BranchGameCanvas.transform.localScale = Vector3.zero;
+    }
 
-    //Æ¯Á¤ ³ª¹µ°¡Áö°¡ Å¬¸¯µÉ °æ¿ì È£ÃâµÉ ÇÔ¼ö
-	public void OnClickStick(int stickIndex)
-	{
-		if (!PhotonNetwork.InRoom) return;
+    // íŠ¹ì • ë‚˜ë­‡ê°€ì§€ë¥¼ í´ë¦­í–ˆì„ ë•Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+    public void OnClickStick(int stickIndex)
+    {
+        if (!PhotonNetwork.InRoom) return;
 
-		// ÇÑ ¹ø¸¸ ¼±ÅÃÇÏ°Ô ¸·´Â Ã¼Å©´Â ·ÎÄÃ/¼­¹ö µÑ ´Ù¿¡¼­
-		photonView.RPC(nameof(RequestPickStick), RpcTarget.MasterClient, stickIndex);
-	}
+        // ë§ˆìŠ¤í„° í´ë¼ì´ì–¸íŠ¸ì—ê²Œ ìŠ¤í‹± ì„ íƒ ìš”ì²­
+        photonView.RPC(nameof(RequestPickStick), RpcTarget.MasterClient, stickIndex);
+    }
 
-    //MasterClient¿¡¼­ ½ÇÇàµÉ RPC ÇÔ¼ö
-	[PunRPC]
-	private void RequestPickStick(int stickIndex, PhotonMessageInfo info)
-	{
-		if (!PhotonNetwork.IsMasterClient) return;
+    // ë§ˆìŠ¤í„° í´ë¼ì´ì–¸íŠ¸ì—ì„œ ì‹¤í–‰ë  RPC í•¨ìˆ˜
+    [PunRPC]
+    private void RequestPickStick(int stickIndex, PhotonMessageInfo info)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
 
-        //³ª¹µ°¡Áö °ü·Ã Á¤º¸ ºÒ·¯¿À±â
-		var room = PhotonNetwork.CurrentRoom;
-		var props = room.CustomProperties;
+        // í˜„ì¬ ìŠ¤í‹± ìƒíƒœ ì •ë³´ë¥¼ ê°€ì ¸ì˜´
+        var room = PhotonNetwork.CurrentRoom;
+        var props = room.CustomProperties;
 
-		var owners = (int[])props["StickOwner"];
-		var lengths = (int[])props["StickLengths"];
+        var owners = (int[])props["StickOwner"];
+        var lengths = (int[])props["StickLengths"];
 
-        // ¹üÀ§ Ã¼Å©
+        // ìœ íš¨ì„± ì²´í¬
         if (stickIndex < 0 || stickIndex >= owners.Length)
         {
             Debug.LogError("Error of Branch number");
             return;
         }
 
-        //ÇØ´ç ÇÔ¼ö¸¦ È£ÃâÇÑ actor ¼ıÀÚ °¡Á®¿À±â
-		int actorNumber = info.Sender.ActorNumber;
+        // ìš”ì²­ì„ ë³´ë‚¸ í”Œë ˆì´ì–´ì˜ ë²ˆí˜¸ í™•ì¸
+        int actorNumber = info.Sender.ActorNumber;
 
-        // ÀÌ¹Ì ´©°¡ »ÌÀº °¡Áö¸é °ÅÀı
+        // ì´ë¯¸ ì„ íƒëœ ìŠ¤í‹±ì¸ì§€ í™•ì¸
         if (owners[stickIndex] != -1)
         {
             Debug.LogWarning("This branch already picked");
             return;
         }
 
-        // ÀÌ À¯Àú°¡ ÀÌ¹Ì ´Ù¸¥ °¡Áö¸¦ »Ì¾Ò´ÂÁöµµ Ã¼Å©
+        // í”Œë ˆì´ì–´ê°€ ì´ë¯¸ ìŠ¤í‹±ì„ ê°€ì§€ê³  ìˆëŠ”ì§€ í™•ì¸
         if (owners.Contains(actorNumber))
         {
             Debug.LogWarning("Player already has branch");
             return;
         }
 
-		// ÁÖÀÎ ¹èÁ¤
-		owners[stickIndex] = actorNumber;
+        // ì†Œìœ ì ì„¤ì •
+        owners[stickIndex] = actorNumber;
         //Debug.LogError($"Player {actorNumber} has picked {stickIndex+1} stick. Length : {lengths[stickIndex]}");
 
-        //¾÷µ¥ÀÌÆ® µÈ Á¤º¸ ¾÷·Îµå
-		var newProps = new ExitGames.Client.Photon.Hashtable
-		{
-			["StickOwner"] = owners
-		};
-		room.SetCustomProperties(newProps);
+        // ë£¸ í”„ë¡œí¼í‹° ì—…ë°ì´íŠ¸ ë° ì‹œê°ì  íš¨ê³¼ ì²˜ë¦¬
+        var newProps = new ExitGames.Client.Photon.Hashtable
+        {
+            ["StickOwner"] = owners
+        };
+        room.SetCustomProperties(newProps);
 
         BranchSpawner.Instance.CallBackBranchClick(stickIndex, actorNumber);
-	}
+    }
 }
