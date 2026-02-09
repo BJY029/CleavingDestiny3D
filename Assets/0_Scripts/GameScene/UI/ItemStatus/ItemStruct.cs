@@ -10,7 +10,7 @@ public struct ItemStatusInfo
     public int ownerActNum;
     public int sourceActNum;
     public int remainingTurns;
-
+    public TriggerMask activateTrigger;
     public bool isHiddenToEnemy;
     public int stackCount;
 }

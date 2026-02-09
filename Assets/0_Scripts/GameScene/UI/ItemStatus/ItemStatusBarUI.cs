@@ -54,12 +54,12 @@ public class ItemStatusBarUI : MonoBehaviour
 
             if (shouldMask)
             {
-                view.BindMasked(BindImg, st.remainingTurns, st.stackCount);
+                view.BindMasked(BindImg, st.remainingTurns, st.stackCount, st.activateTrigger);
             }
             else
             {
                 var meta = ItemDB.Instance.Get(st.itemId);
-                view.Bind(meta.Icon, st.remainingTurns, st.stackCount);
+                view.Bind(meta.Icon, st.remainingTurns, st.stackCount, st.activateTrigger);
             }
         }
     }

@@ -261,6 +261,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			{ PlayerPropKeys.Item_RareWeight, playerSetting.rareWeight },
 			{ PlayerPropKeys.Item_LegendaryWeight, playerSetting.legendaryWeight},
 			{ PlayerPropKeys.VDamageProcessCompleted, false},
+			{ PlayerPropKeys.PDamageProcessCompleted, false},
 		};
 		PhotonNetwork.LocalPlayer.SetCustomProperties(ht);
 

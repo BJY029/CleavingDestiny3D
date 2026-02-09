@@ -7,18 +7,43 @@ public class StatusIconView : MonoBehaviour
     public Image icon;
     public TextMeshProUGUI RemainTurnText;
     public TextMeshProUGUI StackText;
+    public Image ActiveTimingImg;
+    public Sprite NightSprite;
 
-    public void Bind(Sprite sprite, int remainingTurns, int stackCount)
+    public void Bind(Sprite sprite, int remainingTurns, int stackCount, TriggerMask mask)
     {
         icon.sprite = sprite;
-        RemainTurnText.text = remainingTurns > 0 ? remainingTurns.ToString() : "";
-        StackText.text = stackCount > 1 ? stackCount.ToString() : "";
+
+        if (mask == TriggerMask.OnTreeDamage || mask == TriggerMask.OnVillageStart)
+        {
+            ActiveTimingImg.gameObject.SetActive(true);
+            ActiveTimingImg.sprite = NightSprite;
+            RemainTurnText.text = "";
+        }
+        else
+        {
+            RemainTurnText.text = remainingTurns > 0 ? remainingTurns.ToString() : "";
+            ActiveTimingImg.sprite = null;
+            ActiveTimingImg.gameObject.SetActive(false);
+        }
+        StackText.text = stackCount > 0 ? stackCount.ToString() : "";
     }
 
-    public void BindMasked(Sprite maskSprite, int remainingTurns, int stackCount)
+    public void BindMasked(Sprite maskSprite, int remainingTurns, int stackCount, TriggerMask mask)
     {
         icon.sprite = maskSprite;
-        RemainTurnText.text = remainingTurns > 0 ? remainingTurns.ToString() : "";
-        StackText.text = stackCount > 1 ? stackCount.ToString() : "";
+        if (mask == TriggerMask.OnTreeDamage || mask == TriggerMask.OnVillageStart)
+        {
+            ActiveTimingImg.gameObject.SetActive(true);
+            ActiveTimingImg.sprite = NightSprite;
+            RemainTurnText.text = "";
+        }
+        else
+        {
+            RemainTurnText.text = remainingTurns > 0 ? remainingTurns.ToString() : "";
+            ActiveTimingImg.sprite = null;
+            ActiveTimingImg.gameObject.SetActive(false);
+        }
+        StackText.text = stackCount > 0 ? stackCount.ToString() : "";
     }
 }

@@ -61,6 +61,7 @@ public class StatusSystem
                 st.remainingTurns--;
                 if (StatusUIModel.instance.GetStatusInfoInstance(ownerActorNum, st.spec.statusId, out var IS))
                 {
+                    IS.remainingTurns = st.remainingTurns;
                     StatusSyncHub.instance.Master_BroadcastUpdate(IS);
                 }
                 else

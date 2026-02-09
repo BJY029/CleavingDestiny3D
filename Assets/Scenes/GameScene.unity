@@ -10318,7 +10318,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b91048c56940eb469fdbb075b7e1d8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemStatusBarUI
-  ownerActorNum: 0
   iconParent: {fileID: 73251758}
   iconPrefab: {fileID: 6903400897061036413, guid: 29399eb17f520f64688fb0f9b44a163e, type: 3}
   BindImg: {fileID: 21300000, guid: f1cf0f2ae6f64df4e9275cc6fc29b910, type: 3}

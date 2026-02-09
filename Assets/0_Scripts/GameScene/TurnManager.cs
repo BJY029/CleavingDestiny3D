@@ -99,6 +99,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//PlayerStatus.Instance.InitTreeAtkMultRate();
 	}
 
+	private void RemoveUsedItem()
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+		ItemHandlingSystem.instance.InitDay();
+	}
+
 	//턴 변경 요청이 발생한 경우
 	public void RequestChangeTurn(int damage)
 	{
@@ -110,8 +116,54 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		ItemHandlingSystem.instance.RequestHit(damage, true);
 
 		//RPC로 모든 플레이어에게 턴 변경 요청을 보낸다.
-		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber);
+		//photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber);
 
+	}
+
+	//모든 클라이언트의 마을 데미지 로직이 완료되었는지 확인하는 함수
+	public void PlayerDamageChecker(int attackerNum)
+	{
+		photonView.RPC(nameof(RPC_PlayerDamageChecker), RpcTarget.MasterClient, attackerNum);
+	}
+
+	[PunRPC]
+	public void RPC_PlayerDamageChecker(int attackerNum)
+	{
+		//MasterClient만 수행
+		if (!IsInitializer()) return;
+		//모든 플레이어의 데미지 처리가 완료되었는지 확인한다.
+		if (PlayerHitCheck())
+		{
+			//RPC로 모든 플레이어에게 턴 변경 요청을 보낸다.
+			photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, attackerNum);
+			//마을 데미지 플래그 초기화
+			ResetAllPlayersHitState();
+		}
+	}
+
+	//모든 플레이어의 VDamageProcessCompleted 프로퍼티를 검사하여 반환하는 함수
+	private bool PlayerHitCheck()
+	{
+		return PhotonNetwork.PlayerList.All(p => p.CustomProperties.TryGetValue(PlayerPropKeys.PDamageProcessCompleted, out var v) && (bool)v);
+	}
+
+	//모든 플레이어의 VDamageProcessCompleted 프로퍼티를 초기화 하는 함수
+	public void ResetAllPlayersHitState()
+	{
+		// 권한 체크 (방장만 실행)
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		//변경할 속성을 담은 해시테이블 생성 (메모리 절약을 위해 루프 밖에서 생성)
+		var props = new ExitGames.Client.Photon.Hashtable()
+	{
+		{ PlayerPropKeys.PDamageProcessCompleted, false }
+	};
+
+		//방에 있는 모든 플레이어 순회하며 적용
+		foreach (Player player in PhotonNetwork.PlayerList)
+		{
+			player.SetCustomProperties(props);
+		}
 	}
 
 	[PunRPC]
@@ -249,7 +301,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		_villageActionId = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
 
 		//VilageStart�� �ߵ��Ǵ� ������ ó��
-		photonView.RPC(nameof(RPC_RequestVillageShileldProcess), RpcTarget.MasterClient, _villageActionId);
+		if (PhotonNetwork.IsMasterClient)
+			photonView.RPC(nameof(RPC_RequestVillageShileldProcess), RpcTarget.MasterClient, _villageActionId);
 		while (_villageActionId != _villageShieldProcessDone)
 			yield return null;
 
@@ -447,6 +500,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
 		photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
+		RemoveUsedItem();
 	}
 
 	//프로퍼티 변경 감지
