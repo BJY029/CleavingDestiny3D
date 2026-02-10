@@ -514,6 +514,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		{
 			turnActor = Convert.ToInt32(taObj);
 			TryOpenOfferFromRoomState();
+			StatusUIModel.instance.StatusOnChanged?.Invoke();
 		}
 
 		//턴 관련 프로퍼티가 변경되었고, 아직 처리되지 않은 경우

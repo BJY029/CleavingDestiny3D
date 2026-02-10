@@ -321,6 +321,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			ownerActNum = st.ownerActorNum,
 			sourceActNum = st.sourceActorNum,
 			remainingTurns = (st.spec.durationType == DurationType.Turns) ? -1 : st.remainingTurns,
+			type = item.type,
 			activateTrigger = st.spec.triggers,
 			stackCount = 1
 		});

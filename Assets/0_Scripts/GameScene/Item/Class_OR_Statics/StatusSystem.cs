@@ -55,7 +55,7 @@ public class StatusSystem
             }
 
             //특정 플레이어의 상태이상 객체 중, N Turn 동안 활성화 된 상태 이상인 경우
-            if (st.ownerActorNum == ownerActorNum && st.spec.durationType == DurationType.Turns)
+            if (st.ownerActorNum == ownerActorNum && (st.spec.durationType == DurationType.Turns))
             {
                 //남은 Turn 정보 1 감소
                 st.remainingTurns--;

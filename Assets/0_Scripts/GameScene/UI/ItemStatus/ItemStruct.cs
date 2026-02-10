@@ -11,6 +11,7 @@ public struct ItemStatusInfo
     public int sourceActNum;
     public int remainingTurns;
     public TriggerMask activateTrigger;
+    public ItemType type;
     public bool isHiddenToEnemy;
     public int stackCount;
 }
