@@ -7,15 +7,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+
 public class PlayerManager : MonoBehaviourPunCallbacks
 {
 	//전역 접근
 	public static PlayerManager Instance { get; private set; }
 
 	//플레이어 정보 관리용 딕셔너리(각 클라이언트마다 관리한다.)
-	private Dictionary<int, RuntimePlayer> players = new();
+	private Dictionary<int, RuntimePlayerInfo> players = new();
 	//읽기 전용 딕셔너리
-	public IReadOnlyDictionary<int, RuntimePlayer> Players => players;
+	public IReadOnlyDictionary<int, RuntimePlayerInfo> Players => players;
 
 	//중복 초기화 방지 플래그
 	private bool isAlreadyInitialized;
@@ -151,51 +152,68 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		var room = PhotonNetwork.CurrentRoom;
 		var props = room.CustomProperties;
 		int[] TurnList = (int[])props["TurnInfo"];
-		if (TurnList == null) Debug.LogError("TurnListt is null");
+		if (TurnList == null) Debug.LogError("TurnList is null");
+
+		// 각 플레이어 정보 삽입
+		for (int i = 0; i < TurnList.Length; i++)
+		{
+			int turnId = TurnList[i];
+			Player p = PhotonNetwork.CurrentRoom.GetPlayer(turnId);
+			if (p != null)
+			{
+				var rp = new RuntimePlayerInfo(p, i);
+				players.Add(rp.actorNumber, rp);
+
+				if (p == PhotonNetwork.LocalPlayer)
+				{
+					PhotonPropertyHelper.SetPlayerProp(p, PlayerPropKeys.MyTurn, i);
+				}
+			}
+			else
+			{
+				//AI 플레이어인 경우 AI 정보 삽입
+				var rp = new RuntimePlayerInfo(turnId, i);
+				players.Add(rp.actorNumber, rp);
+			}
+
+			if (IsInitializer() && i == 0)
+			{
+				PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, turnId);
+			}
+		}
+		// Debug.Log("PlayerManager: InitPlayersInfo completed. players: " + players.Count);
 
 		//각 플레이어에 대해서
-		foreach (Player p in PhotonNetwork.PlayerList)
-		{
-			//정보 삽입
-			var rp = new RuntimePlayer();
-			rp.actorNumber = p.ActorNumber;
+		// foreach (Player p in PhotonNetwork.PlayerList)
+		// {
+		// 	//정보 삽입
+		// 	var rp = new RuntimePlayerInfo(p);
 
-			//플레이어 프로퍼티 불러오기
-			var ht = p.CustomProperties;
-			//플레이어 이름, 내 턴 정보 초기화
-			rp.playerName = ht.TryGetValue("playerName", out var name) ? (string)name : "player" + rp.actorNumber;
-			rp.isMyTurn = false;
-			//해당 플레이어의 턴 정보 불러오기
-			int playerTurn = getIndex(TurnList, p.ActorNumber);
-			if (playerTurn == -1)
-			{
-				Debug.LogError("No Player Turn");
-				rp.turnIdx = -1;
-				return;
-			}
-			rp.turnIdx = playerTurn;
+		// 	// //플레이어 프로퍼티 불러오기
+		// 	// var ht = p.CustomProperties;
+		// 	// //플레이어 이름, 내 턴 정보 초기화
+		// 	// rp.playerName = ht.TryGetValue("playerName", out var name) ? (string)name : "player" + rp.actorNumber;
+		// 	//해당 플레이어의 턴 정보 불러오기
+		// 	int playerTurn = getIndex(TurnList, p.ActorNumber);
+		// 	if (playerTurn == -1)
+		// 	{
+		// 		Debug.LogError("No Player Turn");
+		// 		rp.turnIdx = -1;
+		// 		return;
+		// 	}
+		// 	rp.turnIdx = playerTurn;
 
-			if (p == PhotonNetwork.LocalPlayer)
-			{
-				PhotonPropertyHelper.SetPlayerProp(p, PlayerPropKeys.MyTurn, playerTurn);
-			}
-			if (IsInitializer() && playerTurn == 0)
-			{
-				PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, p.ActorNumber);
-			}
-			Debug.Log($"playerActorNum : {rp.actorNumber}, turn:{rp.turnIdx}");
-			players.Add(rp.actorNumber, rp);
-		}
-	}
-
-	private int getIndex(int[] list, int value)
-	{
-		for (int i = 0; i < list.Length; i++)
-		{
-			if (list[i] == value)
-				return i;
-		}
-		return -1;
+		// 	if (p == PhotonNetwork.LocalPlayer)
+		// 	{
+		// 		PhotonPropertyHelper.SetPlayerProp(p, PlayerPropKeys.MyTurn, playerTurn);
+		// 	}
+		// 	if (IsInitializer() && playerTurn == 0)
+		// 	{
+		// 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, p.ActorNumber);
+		// 	}
+		// 	Debug.Log($"playerActorNum : {rp.actorNumber}, turn:{rp.turnIdx}");
+		// 	players.Add(rp.actorNumber, rp);
+		// }
 	}
 
 	private void SpawnPlayersOnCircle()

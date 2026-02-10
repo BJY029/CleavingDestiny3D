@@ -19,43 +19,52 @@ public class BranchSpawner : MonoBehaviourPunCallbacks
 		Instance = this;
 	}
 
-	//»ı¼ºÇÒ ³ª¹µ°¡Áö ÇÁ¸®ÆÕ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	[SerializeField] private GameObject branchPrefab;
     //[SerializeField] private GameObject btnPrefab;
     //[SerializeField] private Transform branchCanvas;
-    //»ı¼ºµÉ À§Ä¡
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
     [SerializeField] private Transform spawnRoot;
-    //»ı¼º °£°İ
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     [SerializeField] private float spacing = 1.25f;
     [SerializeField] private float UISpacing = 105.71f;
-    //Àç»ı¼º ¹æÁö¸¦ À§ÇÑ ÇÃ·¡±×
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½ï¿½
     private bool spawned = false;
 
     private GameObject[] branchs;
 
-	//¸¸¾à RoomProperties°¡ ¾÷µ¥ÀÌÆ® µÈ °æ¿ì
+    private void Start()
+    {
+        // ì´ë¯¸ ë£¸ ì†ì„±ì— StickLengthsê°€ ìˆë‹¤ë©´ ì¦‰ì‹œ ìƒì„± (ì¤‘ê°„ì— ì…ì¥í•œ ê²½ìš° ë“±)
+        if (PhotonNetwork.InRoom && PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("StickLengths"))
+        {
+            SpawnSticks();
+        }
+    }
+
+	//ï¿½ï¿½ï¿½ï¿½ RoomPropertiesï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ ï¿½ï¿½ï¿½
 	public override void OnRoomPropertiesUpdate(Hashtable changedProps)
     {
-        //¾÷µ¥ÀÌÆ® µÈ Á¤º¸°¡ ³ª¹µ°¡Áö °ü·Ã Á¤º¸(Áï Ã³À½ °ü·Ã Á¤º¸°¡ ¼³Á¤µÈ °æ¿ì)ÀÌ¸é
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)ï¿½Ì¸ï¿½
         if(changedProps.ContainsKey("StickLengths"))
         {
-            //³ª¹µ°¡Áö »ı¼º
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             SpawnSticks();
         }
     }
 
     private void SpawnSticks()
     {
-        //³ª¹µ°¡Áö°¡ »ı¼ºµÈ ÈÄ ¶ó¸é ½ÇÇà ¾ÈÇÔ
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (spawned) return;
         spawned = true;
 
-        //ÇØ´ç Á¤º¸ °¡Á®¿Â ÈÄ
+        //ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
         var room = PhotonNetwork.CurrentRoom;
         int[] length = (int[])room.CustomProperties["StickLengths"];
         branchs = new GameObject[length.Length];
 
-        //°¢ Á¤º¸¿¡ ¸Â°Ô ³ª¹µ°¡Áö »ı¼º ¹× ¼³Á¤ ÁøÇà
+        //ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Â°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         for(int i = 0; i < length.Length; i++)
         {
             Vector3 pos = spawnRoot.position + new Vector3(-5 + (i * spacing), 0, 0);
@@ -90,23 +99,23 @@ public class BranchSpawner : MonoBehaviourPunCallbacks
 	{
         //UIButtons[index].GetComponent<Button>().interactable = false;
         //UIButtons[index].GetComponent<Renderer>().material.color = Color.yellow;
-        //¸¸¾à ³ª¹µ°¡Áö¸¦ ´©¸¥ ÇÃ·¹ÀÌ¾î°¡ ³ª¶ó¸é
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ï¿½ï¿½ï¿½
         if(PhotonNetwork.LocalPlayer.ActorNumber == clickActorNumber)
         {
-            //¸ğµç ³ª¹µ°¡ÁöÀÇ »óÈ£ÀÛ¿ëÀ» ¸·´Â´Ù.
+            //ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£ï¿½Û¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â´ï¿½.
             for(int i = 0; i < branchs.Length; i++)
             {
                 branchs[i].GetComponent<CapsuleCollider>().enabled = false;
             }
 		}
-		else //´Ù¸¥ ÇÃ·¹ÀÌ¾îÀÇ ÀÌº¥Æ®ÀÎ °æ¿ì
+		else //ï¿½Ù¸ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½
 		{
-            //Å¬¸¯µÈ ³ª¹µ°¡ÁöÀÇ »óÈ£ÀÛ¿ë¸¸ ¸·´Â´Ù.
+            //Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È£ï¿½Û¿ë¸¸ ï¿½ï¿½ï¿½Â´ï¿½.
 			branchs[index].GetComponent<CapsuleCollider>().enabled = false;
 		}
-        //¼±ÅÃµÈ ³ª¹µ°¡Áö´Â ´õ ÀÌ»ó ¼±ÅÃµÇÁö ¾Êµµ·Ï ¼³Á¤ÇÑ´Ù.
+        //ï¿½ï¿½ï¿½Ãµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ì»ï¿½ ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½ ï¿½Êµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
         branchs[index].GetComponent<BranchController>().SetSelected();
-        //Å¬¸¯ È½¼ö Áõ°¡
+        //Å¬ï¿½ï¿½ È½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		StickGameController.Instance.selectCount += 1;
 	}
 }

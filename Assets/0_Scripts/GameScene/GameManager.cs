@@ -7,6 +7,9 @@ public class GameManager : MonoBehaviour
 	public PlayerSetting playerDefaultSetting;
 	public RoomSetting roomDefaultSetting;
 
+	public int maxRoomPlayerCount = 2;
+	public bool isSoloPlay = false;
+
 	private void Awake()
 	{
 		if (Instance == null)
