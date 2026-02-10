@@ -225,6 +225,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					//플레이어의 상태 관리 시스템 리스트에 삽입
 					_statusSystem.Add(st);
 
+					Master_UpdateItemStatusUI(item, st);
+
 					//디버깅
 					Debug.Log($"[Item] AddStatus {ss.statusId} to {actorNum}");
 				}
@@ -262,6 +264,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 							var opst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
 
 							_statusSystem.Add(opst);
+
+							Master_UpdateItemStatusUI(item, opst);
 							//디버깅
 							Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
 						}
@@ -298,12 +302,29 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 						var gbst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
 
 						_statusSystem.Add(gbst);
+
+						Master_UpdateItemStatusUI(item, gbst);
 						//디버깅
 						Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
 					}
 				}
 				break;
 		}
+	}
+
+	private void Master_UpdateItemStatusUI(ItemSO item, StatusInstance st)
+	{
+		StatusSyncHub.instance.Master_BroadcastAdd(new ItemStatusInfo
+		{
+			itemId = item.itemId,
+			statusId = st.spec.statusId,
+			ownerActNum = st.ownerActorNum,
+			sourceActNum = st.sourceActorNum,
+			remainingTurns = (st.spec.durationType == DurationType.Turns) ? -1 : st.remainingTurns,
+			type = item.type,
+			activateTrigger = st.spec.triggers,
+			stackCount = 1
+		});
 	}
 
 	//희생 아이템 최종 처리 프로세스
@@ -406,6 +427,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		return remainTurns;
 	}
 
+
 	//StatusInstance를 생성하고 반환하는 함수
 	private StatusInstance setAndGetStatusInstance(StatusSpec ss, int ownerAct, int sourceAct, int remainTurns)
 	{
@@ -444,6 +466,13 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		_damageResolver.ResolveWhenVillageStart(ctx);
 	}
 
+	public void InitDay()
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+		_statusSystem.RemoveRemainingTurns_Zero();
+		ClearUsedDayItem();
+		ClearUsedTurnItem();
+	}
 	// public void OnTreeDamage()
 	// {
 	// 	if (!PhotonNetwork.IsMasterClient) return;
@@ -579,15 +608,15 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		string fullInfoJson = JsonUtility.ToJson(fullInfo);
 		string maskedInfoJson = JsonUtility.ToJson(maskedInfo);
 		//각 요청자와 그외 플레이어들에게 RPC로 결과 전송
-		photonView.RPC(nameof(RPC_OnAttackResult), attacker, fullInfoJson);
+		photonView.RPC(nameof(RPC_OnAttackResult), attacker, attacker.ActorNumber, fullInfoJson);
 		foreach (Player player in opposites)
 		{
-			photonView.RPC(nameof(RPC_OnAttackResult), player, maskedInfoJson);
+			photonView.RPC(nameof(RPC_OnAttackResult), player, attacker.ActorNumber, maskedInfoJson);
 		}
 	}
 
 	[PunRPC]
-	private void RPC_OnAttackResult(string json)
+	private void RPC_OnAttackResult(int attackerNum, string json)
 	{
 		var res = JsonUtility.FromJson<AttackResult>(json);
 
@@ -613,8 +642,12 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			currentBarrier = currentBarrier + res.convertedBarrier;
 			//변경된 스탯 값 프로퍼티에 업데이트
 			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage, currentTotalDamage);
+			Debug.Log($"Player{PhotonNetwork.LocalPlayer.ActorNumber}s TotalDamage : {currentTotalDamage}");
 			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, currentBarrier);
+			Debug.Log($"Player{PhotonNetwork.LocalPlayer.ActorNumber}s Barrier : {currentBarrier}");
 		}
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.PDamageProcessCompleted, true);
+		TurnManager.Instance.PlayerDamageChecker(attackerNum);
 	}
 
 	//즉시 적용되는 아이템 실행 함수
