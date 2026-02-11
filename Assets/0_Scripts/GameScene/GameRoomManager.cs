@@ -49,8 +49,12 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 				{ RoomPropKeys.MaxWaveCnt,  roomSet.maxWave },
 				{ RoomPropKeys.CurrentWave, roomSet.initialWave},
 				{ RoomPropKeys.IsVillageUpgradePhase, false },
+				{ RoomPropKeys.IsTreeBulkDamage, false},
 				{ ItemPropKeys.NEXT_UID,    roomSet.initialUID },
-				{ RoomPropKeys.VillagePhaseTime, roomSet.villagePhaseTime }
+				{ RoomPropKeys.VillagePhaseTime, roomSet.villagePhaseTime },
+				{ RoomPropKeys.MatchLoserActor, roomSet.LoserActNum},
+				{ RoomPropKeys.MatchResultReason, roomSet.MatchEndReason},
+				{ RoomPropKeys.MatchResolveTurnIndex, roomSet.ResolvedTurnIdx},
 			};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
 

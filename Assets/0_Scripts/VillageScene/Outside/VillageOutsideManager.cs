@@ -61,7 +61,7 @@ namespace Village.Outside
             outsideCam.gameObject.SetActive(false);
 
             // ! - Debug
-            PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, 500f);
+            //PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, 500f);
         }
 
         // 소멸 시 이벤트 구독 해제 (중복 호출 방지)

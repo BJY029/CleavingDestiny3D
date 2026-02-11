@@ -17,10 +17,14 @@ MonoBehaviour:
   barrierConversionRate: 0.3
   initialGold: 100
   initialTotalDamage: 0
+  initialDayGoldIncome: 50
+  initialBarrierArmor: 0
+  VillageDmgMulti: 1
   maxAtkPow: 1100
   minAtkPow: 900
   initialEnergy: 5
   maxEnergy: 5
+  energyIncomePerDay: 5
   carryOverEnergy: 0
   regenEnergyPerDay: 10
   commonWeight: 50

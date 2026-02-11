@@ -27,5 +27,10 @@ public class RoomSetting : ScriptableObject
 
     [Header("Village Settings")]
     public float villagePhaseTime = 60f;
+
+    [Header("Match Control")]
+    public int LoserActNum = -1;
+    public string MatchEndReason = MatchResultReason.NONE.ToString();
+    public int ResolvedTurnIdx = -1;
 }
 

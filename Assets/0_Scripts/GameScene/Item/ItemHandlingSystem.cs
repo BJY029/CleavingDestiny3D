@@ -548,6 +548,13 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		hp -= dmg.finalDamage;
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, hp);
 
+		//TODO: 게임 종료 검증
+		if (MatchResultManager.Instance.TryResolveResultByTreeHP())
+		{
+			Debug.Log("Match End By Tree HP 0");
+			return;
+		}
+
 		//계산된 결과를 각 클라이언트에게 브로드캐스트하는 함수 호출
 		BroadcastHitResult(cmd.attackerNum, dmg.finalDamage, dmg.convertedToBarrier, dmg.hidden, hp);
 	}
