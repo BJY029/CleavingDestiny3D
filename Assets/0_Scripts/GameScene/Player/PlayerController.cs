@@ -328,7 +328,8 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 			return;
 		}
 		if (ItemOfferCanvasController.instance.isOfferPanelOpened
-		|| ItemSelectionController.instance.IsItemSelectionActivated)
+		|| ItemSelectionController.instance.IsItemSelectionActivated
+		|| SettingCanvasController.instance.IsSettingPanelOpened)
 		{
 			SetInputLocked(true);
 			return;
@@ -468,7 +469,6 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 			isLookingAtTree = false;
 		}
 	}
-
 
 	//F키가 눌렸을 때 실행될 함수
 	private void HandleInteractFKey()

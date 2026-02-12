@@ -31,6 +31,8 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 		}
 	}
 
+
+
 	private void InitRoomProps()
 	{
 		var roomSet = GameManager.Instance.roomDefaultSetting;

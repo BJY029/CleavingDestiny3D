@@ -16,13 +16,17 @@ public class KeyInteractManager : MonoBehaviour
 
     //F키가 눌리면 발생될 이벤트
     public event Action OnInteractFKeyDown;
-
     public event Action OnInteractSpaceKeyDown;
 
     // Update is called once per frame
     void Update()
     {
         if (Keyboard.current == null) return;
+
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            SettingCanvasController.instance.ToggleSettingPanel();
+        }
 
         //만약 'F'키가 눌린 경우
         if (Keyboard.current.fKey.wasPressedThisFrame)

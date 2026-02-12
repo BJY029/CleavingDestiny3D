@@ -175,5 +175,6 @@ public enum MatchResultReason
     NONE,
     TREE_DESTROYED,
     VILLAGE_DESTROYED,
+    Player_Left,
     DRAW,
 }

@@ -4,7 +4,7 @@ using Photon.Pun;
 
 public class LobbyConnectController : MonoBehaviourPunCallbacks
 {
-    private string gameVersion = "1";
+	private string gameVersion = "1";
 
 	private void Awake()
 	{
@@ -19,28 +19,41 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 	}
 
 	private void Connect()
-    {
-        //게임 서버 지역 고정(한국)
-        PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = "kr";
-        //게임 배포 버전 설정
-        PhotonNetwork.GameVersion = gameVersion;
-        //서버 접속 시도
-        PhotonNetwork.ConnectUsingSettings();
-    }
+	{
+		if (PhotonNetwork.IsConnected)
+		{
+			LobbyUIManager.instance.setConnectedText("Connected. Joining lobby...");
+
+			if (!PhotonNetwork.InLobby)
+				PhotonNetwork.JoinLobby();
+			else
+				LobbyUIManager.instance.setConnectedText("Connected to lobby.");
+			return;
+		}
+		//게임 서버 지역 고정(한국)
+		PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = "kr";
+		//게임 배포 버전 설정
+		PhotonNetwork.GameVersion = gameVersion;
+		//서버 접속 시도
+		PhotonNetwork.ConnectUsingSettings();
+	}
 
 	//Master server 연결 후, Lobby에 연결 시도
-    public override void OnConnectedToMaster()
-    {
-        LobbyUIManager.instance.setConnectedText("Connected. Joining lobby...");
-        LobbyUIManager.instance.setNickname("Player" + PhotonNetwork.CountOfPlayers.ToString());
+	public override void OnConnectedToMaster()
+	{
+		LobbyUIManager.instance.setConnectedText("Connected. Joining lobby...");
+		LobbyUIManager.instance.setNickname("Player" + PhotonNetwork.CountOfPlayers.ToString());
 
-        PhotonNetwork.JoinLobby();
-    }
+		PhotonNetwork.JoinLobby();
+	}
 
 	//로비 연결 완료 출력
 	public override void OnJoinedLobby()
 	{
 		LobbyUIManager.instance.setConnectedText("Connected to lobby.");
+
+		Cursor.lockState = CursorLockMode.None;
+		Cursor.visible = true;
 
 		Debug.Log("Connected Region: " + PhotonNetwork.CloudRegion);
 		Debug.Log("AppVersion: " + PhotonNetwork.AppVersion);

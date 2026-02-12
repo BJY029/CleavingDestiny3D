@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Linq;
 using ExitGames.Client.Photon;
 using Photon.Pun;
@@ -10,9 +11,10 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
     //싱글턴
     public static MatchResultManager Instance;
     //경기 결과 결정 여부
-    private bool _isResultResolved = false;
+    public bool _isResultResolved { get; private set; } = false;
     //경기 결과 이유
     private MatchResultReason _lastResaon = MatchResultReason.NONE;
+    private float delay = 3.0f;
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -25,7 +27,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
     private bool IsInitializer() => PhotonNetwork.IsMasterClient;
 
     //Room Property 감지
-    public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
+    public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
     {
         //나무 체력이 변경된 경우
         if (propertiesThatChanged.ContainsKey(RoomPropKeys.TreeHP) && IsInitializer())
@@ -47,7 +49,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
     }
 
     //플레이어 프로퍼티 감지
-    public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
     {
         if (!IsInitializer() || _isResultResolved) return;
 
@@ -114,7 +116,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
     }
 
     //게임 종료 처리 수행
-    private void TrySetMatchResult(int LoserActorNum, MatchResultReason reason)
+    public void TrySetMatchResult(int LoserActorNum, MatchResultReason reason)
     {
         if (!IsInitializer() || _isResultResolved) return;
 
@@ -134,6 +136,11 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         _isResultResolved = true;
         _lastResaon = reason;
 
+        //임시 효과, 승패 UI 표시(임시)
+        string state = PhotonNetwork.LocalPlayer.ActorNumber == LoserActorNum ? "Lost" : "Win";
+        GameEndedCanvasController.instance.SetGameEndedCanvas(state, _lastResaon.ToString());
+        //일정 시간 동안 딜레이 줘서 UI 표시(임시)
+        StartCoroutine(DelayedExitProcess(delay));
         //디버그
         string loserText = "Player" + LoserActorNum;
         Debug.Log($"[MatchResult] Loser : {loserText}, Reason : {reason}, TurnCnt : {resolveTrunIndex}");
@@ -159,7 +166,21 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         _lastResaon = reason;
         _isResultResolved = true;
 
+        //임시 효과, 승패 UI 표시(임시)
+        string state = PhotonNetwork.LocalPlayer.ActorNumber == LoserActor ? "Lost" : "Win";
+        GameEndedCanvasController.instance.SetGameEndedCanvas(state, _lastResaon.ToString());
+        //일정 시간 동안 딜레이 줘서 UI 표시(임시)
+        StartCoroutine(DelayedExitProcess(delay));
         string loserText = "Player" + LoserActor;
         Debug.Log($"[MatchResult] Loser : {loserText}, Reason : {reason}, TurnCnt : {resolvedTurn}");
+    }
+
+    //임시 효과, 일정 이상 UI 표기 후 게임 나가기
+    IEnumerator DelayedExitProcess(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (GameExitHandler.instance != null)
+            GameExitHandler.instance.RequestLeaveGame();
     }
 }
