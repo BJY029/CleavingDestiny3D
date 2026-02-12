@@ -1,130 +1,160 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions; // Á¤±ÔÇ¥Çö½Ä »ç¿ëÀ» À§ÇØ Ãß°¡
+using System.IO;
+using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using Cysharp.Threading.Tasks;
 
-public enum Language
-{
-	KR,
-	EN,
-}
-
-public enum CSV_Type
-{
-	UI, Item
-}
+public enum Language { KR, EN }
+public enum CSV_Type { UI, Item, Preload, Village }
 
 public class LocalizationManager : MonoBehaviour
 {
-	public static LocalizationManager Instance;
-
-	[Header("CSV Files")]
-	public TextAsset UI_CSV;
-	public TextAsset Item_CSV;
+	private static LocalizationManager _instance;
+	public static LocalizationManager Instance
+	{
+		get
+		{
+			if (_instance == null)
+			{
+				_instance = FindFirstObjectByType<LocalizationManager>();
+				// ì”¬ì— ì—†ìœ¼ë©´ ìƒˆë¡œ ìƒì„± (ì´ ì‹œìŠ¤í…œìœ¼ë¡œ ì¸í•´ ì¸ìŠ¤í™í„°ë¡œ ì„¤ì •ì´ ë¶ˆê°€ëŠ¥í•œ ì  ìœ ì˜)
+				if (_instance == null)
+				{
+					_instance = new GameObject("LocalizationManager").AddComponent<LocalizationManager>();
+				}
+			}
+			return _instance;
+		}
+	}
 
 	[Header("Settings")]
 	public Language currentLanguage = Language.KR;
 
-	// µñ¼Å³Ê¸® °ü¸® (µ¥ÀÌÅÍ ¹«°á¼ºÀ» À§ÇØ private À¯Áö)
-	private Dictionary<string, string> _UITable = new Dictionary<string, string>();
-	private Dictionary<string, string> _ItemTable = new Dictionary<string, string>();
+	private const string PreloadCSVPath = "Preload_CSV";
+	private const string LanguageLabel = "Localization";
+
+	private Dictionary<CSV_Type, Dictionary<string, string>> _tables = new Dictionary<CSV_Type, Dictionary<string, string>>();
 
 	public event Action OnLanguageChanged;
+	public bool IsLoaded { get; private set; } = false;
 
-	// CSV ÆÄ½Ì¿ë Á¤±ÔÇ¥Çö½Ä (µû¿ÈÇ¥ ¾ÈÀÇ ½°Ç¥´Â ¹«½ÃÇÏ°í ºĞ¸®)
 	private readonly string CSV_SPLIT_REGEX = @",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";
 
 	private void Awake()
 	{
-		// 1. ½Ì±ÛÅÏ ·ÎÁ÷ ¼öÁ¤: Áßº¹µÈ '»õ·Î¿î' °´Ã¼¸¦ ÆÄ±«ÇØ¾ß ÇÔ
-		if (Instance != null && Instance != this)
+		if (_instance != null && _instance != this)
 		{
-			Destroy(this.gameObject);
+			Destroy(gameObject);
 			return;
 		}
-		Instance = this;
-		DontDestroyOnLoad(this.gameObject);
+		_instance = this;
+		DontDestroyOnLoad(gameObject);
 
-		LoadAllData();
+		InitializeLocalization().Forget();
 	}
 
-	private void LoadAllData()
+	private async UniTaskVoid InitializeLocalization()
 	{
-		LoadCSV(UI_CSV, _UITable);
-		LoadCSV(Item_CSV, _ItemTable);
+		IsLoaded = false;
+		_tables.Clear();
+		foreach (CSV_Type type in Enum.GetValues(typeof(CSV_Type)))
+			_tables[type] = new Dictionary<string, string>();
+
+		// 1. Preload_CSV ë™ê¸° ë¡œë“œ
+		LoadPreloadData();
+
+		// 2. Addressables ë¹„ë™ê¸° ë¡œë“œ
+		await LoadAddressableData();
+
+		IsLoaded = true;
+		OnLanguageChanged?.Invoke();
 	}
 
-	private void LoadCSV(TextAsset ta, Dictionary<string, string> dic)
+	private void LoadPreloadData()
 	{
-		dic.Clear();
-
-		if (ta == null)
+		TextAsset ta = Resources.Load<TextAsset>(PreloadCSVPath);
+		if (ta != null)
 		{
-			Debug.LogError($"[Localization] CSV File is missing.");
-			return;
+			ParseCSV(ta.text, _tables[CSV_Type.Preload]);
+			Debug.Log("[Localization] Preload Data Loaded.");
 		}
+	}
 
-		// À©µµ¿ì(\r\n), ¸Æ/¸®´ª½º(\n) ÁÙ¹Ù²Ş ¸ğµÎ ´ëÀÀ
-		string[] lines = ta.text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+	private async UniTask LoadAddressableData()
+	{
+		AsyncOperationHandle<IList<TextAsset>> handle = Addressables.LoadAssetsAsync<TextAsset>(LanguageLabel, null);
 
-		if (lines.Length <= 1) return;
+		try
+		{
+			var result = await handle;
+			var enumList = Enum.GetValues(typeof(CSV_Type));
 
-		// Çì´õ ÆÄ½Ì
-		string[] header = lines[0].Trim().Split(',');
+			foreach (var ta in result)
+			{
+				CSV_Type assignedType = CSV_Type.UI; // ê¸°ë³¸ê°’
 
-		// ÇöÀç ¾ğ¾î ÄÃ·³ Ã£±â
-		string langColumnName = currentLanguage.ToString();
-		int langIndex = Array.IndexOf(header, langColumnName);
+				// Enum ì´ë¦„ì„ ìˆœíšŒí•˜ë©° íŒŒì¼ëª… ì‹œì‘ ë¶€ë¶„ í™•ì¸
+				foreach (CSV_Type type in enumList)
+				{
+					if (ta.name.StartsWith(type.ToString(), StringComparison.OrdinalIgnoreCase))
+					{
+						assignedType = type;
+						break;
+					}
+				}
+
+				ParseCSV(ta.text, _tables[assignedType]);
+			}
+			Debug.Log("[Localization] Addressable Assets Loaded.");
+		}
+		finally
+		{
+			if (handle.IsValid())
+				Addressables.Release(handle);
+		}
+	}
+
+	public void LoadAllData() => InitializeLocalization().Forget();
+
+	private void ParseCSV(string csvText, Dictionary<string, string> dic)
+	{
+		using StringReader reader = new StringReader(csvText);
+		string line = reader.ReadLine();
+		if (line == null) return;
+
+		string[] header = Regex.Split(line, CSV_SPLIT_REGEX);
 		int idIndex = Array.IndexOf(header, "ID");
+		int langIndex = Array.IndexOf(header, currentLanguage.ToString());
 
-		if (langIndex == -1 || idIndex == -1)
-		{
-			Debug.LogError($"[Localization] Header Error in {ta.name}. ID or {langColumnName} column not found.");
-			return;
-		}
+		if (idIndex == -1 || langIndex == -1) return;
 
-		for (int i = 1; i < lines.Length; i++)
+		while ((line = reader.ReadLine()) != null)
 		{
-			string line = lines[i].Trim();
 			if (string.IsNullOrWhiteSpace(line)) continue;
 
-			// 2. ´Ü¼ø Split(',') ´ë½Å Á¤±ÔÇ¥Çö½Ä »ç¿ë (µû¿ÈÇ¥ ¾È ½°Ç¥ º¸È£)
 			string[] cols = Regex.Split(line, CSV_SPLIT_REGEX);
+			if (cols.Length <= Math.Max(idIndex, langIndex)) continue;
 
-			if (cols.Length <= Mathf.Max(idIndex, langIndex)) continue;
-
-			// 3. µ¥ÀÌÅÍ Á¤Á¦ (µû¿ÈÇ¥ Á¦°Å ¹× ÁÙ¹Ù²Ş Ã³¸®)
 			string id = Unquote(cols[idIndex].Trim());
-			string text = Unquote(cols[langIndex].Trim());
+			string text = Unquote(cols[langIndex].Trim()).Replace("\\n", "\n");
 
-			// 4. ÅØ½ºÆ® ³»ºÎÀÇ ÁÙ¹Ù²Ş ±âÈ£(\n)¸¦ ½ÇÁ¦ ÁÙ¹Ù²ŞÀ¸·Î º¯È¯
-			text = text.Replace("\\n", "\n");
-
-			if (string.IsNullOrEmpty(id)) continue;
-
-			if (dic.ContainsKey(id))
+			if (!string.IsNullOrEmpty(id) && !dic.ContainsKey(id))
 			{
-				Debug.LogWarning($"[Localization] Duplicate ID '{id}' in {ta.name} (line {i + 1})");
-				continue;
+				dic.Add(id, text);
 			}
-
-			dic.Add(id, text);
 		}
-
-		Debug.Log($"[Localization] Loaded {ta.name} : {dic.Count} entries.");
 	}
 
-	// ¿¢¼¿ CSV Æ¯À¯ÀÇ µû¿ÈÇ¥ Ã³¸® Á¦°Å ÇÔ¼ö
-	// ¿¹: "Hello, World" -> Hello, World
 	private string Unquote(string str)
 	{
 		if (string.IsNullOrEmpty(str)) return str;
-
-		// ¾ÕµÚ°¡ µû¿ÈÇ¥·Î °¨½ÎÁ® ÀÖ´Ù¸é Á¦°Å
+		str = str.Trim();
 		if (str.StartsWith("\"") && str.EndsWith("\""))
 		{
 			str = str.Substring(1, str.Length - 2);
-			// ¿¢¼¿Àº µû¿ÈÇ¥¸¦ Ç¥ÇöÇÒ ¶§ "" µÎ°³¸¦ ¾¸. ÀÌ¸¦ ÇÏ³ª·Î Ä¡È¯
 			str = str.Replace("\"\"", "\"");
 		}
 		return str;
@@ -132,35 +162,18 @@ public class LocalizationManager : MonoBehaviour
 
 	public string GetText(CSV_Type type, string id)
 	{
-		if (string.IsNullOrEmpty(id)) return "";
-
-		string result = id; // ±âº»°ªÀº ID
-
-		switch (type)
+		if (_tables.TryGetValue(type, out var table))
 		{
-			case CSV_Type.UI:
-				if (_UITable.TryGetValue(id, out var uiVal)) result = uiVal;
-				break;
-			case CSV_Type.Item:
-				if (_ItemTable.TryGetValue(id, out var itemVal)) result = itemVal;
-				break;
+			if (table.TryGetValue(id, out var value))
+				return value;
 		}
-
-		// °ªÀ» ¸ø Ã£¾ÒÀ» ¶§ÀÇ Ã³¸® (°³¹ß Áß¿¡¸¸ °æ°í ·Î±× ÃßÃµ)
-		if (result == id)
-		{
-			// Debug.LogWarning($"[Localization] Missing Key: {id}");
-		}
-
-		return result;
+		return id;
 	}
 
 	public void SetLanguage(Language lang)
 	{
 		if (currentLanguage == lang) return;
-
 		currentLanguage = lang;
-		LoadAllData(); // ¾ğ¾î º¯°æ ½Ã ´Ù½Ã ·Îµå
-		OnLanguageChanged?.Invoke();
+		InitializeLocalization().Forget();
 	}
 }
