@@ -36,6 +36,9 @@ namespace Village.Outside
         private VillageSceneManager villageSceneManager;
         bool isReady = false;
 
+        LocalizedString readyText = new LocalizedString(CSV_Type.Village, "UI_Ready");
+        LocalizedString notReadyText = new LocalizedString(CSV_Type.Village, "UI_NotReady");
+
         void Start()
         {
             // 메인 카메라에서 브레인 가져오기 (비용절감을 위해 캐싱)
@@ -223,7 +226,7 @@ namespace Village.Outside
         void ToggleReadyButton()
         {
             isReady = !isReady;
-            readyButtonText.SetText(isReady ? "준비 완료" : "준비 하기");
+            readyButtonText.SetText(isReady ? readyText : notReadyText);
             villageSceneManager.SetLocalPlayerReady(isReady);
         }
     }

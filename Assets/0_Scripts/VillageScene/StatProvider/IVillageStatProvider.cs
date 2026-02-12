@@ -56,13 +56,5 @@ namespace Village
         /// <param name="targetPlayer">대상 플레이어</param>
         /// <returns>방벽 방어력</returns>
         float GetBarrierArmor(Player targetPlayer = null);
-
-        /// <summary>
-        /// 특정 건물 레벨의 효과 설명 ID(Localization Key) 또는 설명 텍스트 가져오기
-        /// </summary>
-        /// <param name="facilityType">건물 유형</param>
-        /// <param name="level">레벨</param>
-        /// <returns>설명 문자열</returns>
-        string GetLevelDescriptionID(VillageType facilityType, int level);
     }
 }
