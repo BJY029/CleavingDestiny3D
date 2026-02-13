@@ -358,6 +358,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//제일 낮은 순서번호의 플레이어만 초기화 수행
 		if (!IsInitializer()) return;
 
+		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.GamePhase, GamePhaseValue.NIGHT_VILLAGE);
 		//'하루'의 길이를 가진 아이템을 삭제한다.
 		WaveEnd();
 
@@ -382,6 +383,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	public void ActivateTreeAttack()
 	{
 		if (!IsInitializer()) return;
+		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.GamePhase, GamePhaseValue.NIGHT_TREEATK);
+		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsTreeBulkDamage, true);
 		//MasterClient가 대표로 기본 나무 공격력 가져오고
 		float treeDmg = TreeStatus.Instance.getTreeAtkPow();
 		//각 클라에게 데미지 계산 요청
@@ -422,10 +425,17 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//모든 플레이어의 데미지 처리가 완료되었는지 확인한다.
 		if (AllPlayersReady())
 		{
-			//완료된 경우, 마을 종료 수행
-			CompleteDayChangeAfterUpgrade();
+			//패배 감지 수행
+			if (MatchResultManager.Instance.TryResolveResultByVillageHP())
+			{
+				Debug.Log("Game End By VillageDestroyed");
+				return;
+			}
 			//마을 데미지 플래그 초기화
 			ResetAllPlayersReadyState();
+			//완료된 경우, 마을 종료 수행
+			CompleteDayChangeAfterUpgrade();
+			PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsTreeBulkDamage, false);
 		}
 	}
 
@@ -489,6 +499,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		{
 			{RoomPropKeys.CurrentDay, day },
 			{RoomPropKeys.CurrentWave, roomSet.initialWave },
+			{RoomPropKeys.GamePhase, GamePhaseValue.DAY},
 
 			{RoomPropKeys.CurrentTurn, nextIndex },
 			{RoomPropKeys.CurrentTurnActor, nextActor },

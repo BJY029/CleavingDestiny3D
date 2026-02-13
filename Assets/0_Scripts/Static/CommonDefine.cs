@@ -69,6 +69,10 @@ public static class RoomPropKeys
     public const string IsVillageUpgradePhase = "IsVillageUpgradePhase"; // bool
     public const string VillageUpgradeStartEndTime = "VillageUpgradeStartEndTime"; //float
     public const string VillagePhaseTime = "VillagePhaseTime"; //float
+    public const string IsTreeBulkDamage = "IsTreeBulkDamage";
+    public const string MatchLoserActor = "MatchLoserActor"; //int
+    public const string MatchResultReason = "MatchResultReaon"; //string
+    public const string MatchResolveTurnIndex = "MatchResolveTurnIndex"; //int
     //public const string Weather = "Weather";
 }
 
@@ -152,6 +156,17 @@ public enum VillageType
 
 public enum GamePhaseValue
 {
-    DAY, NIGHT, END
+    DAY,
+    NIGHT_VILLAGE,
+    NIGHT_TREEATK,
+    END,
 }
 
+public enum MatchResultReason
+{
+    NONE,
+    TREE_DESTROYED,
+    VILLAGE_DESTROYED,
+    Player_Left,
+    DRAW,
+}
