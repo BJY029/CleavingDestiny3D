@@ -17,21 +17,8 @@ public class ButtonController : MatchController
         PlayWithAIBtn.onClick.AddListener(StartSoloplay);
         ExitBtn.onClick.AddListener(OnClickExitGame);
 
-        SetButtonText(MatchmakingBtn, UI_CSV.UI_PVP);
-        SetButtonText(PlayWithAIBtn, UI_CSV.UI_PVE);
-        SetButtonText(ExitBtn, UI_CSV.UI_EXIT);
         if (LoadingPanel != null)
             LoadingPanel.transform.localScale = Vector3.zero;
-    }
-
-    void SetButtonText(Button btn, string textID)
-    {
-        TextMeshProUGUI text = btn.GetComponentInChildren<TextMeshProUGUI>();
-        if (text != null)
-        {
-            text.text = LocalizationManager.Instance.GetText(CSV_Type.UI, textID);
-            return;
-        }
     }
 
     void OnClickExitGame()

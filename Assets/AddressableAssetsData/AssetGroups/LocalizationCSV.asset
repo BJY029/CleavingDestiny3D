@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: LocalizationCSV
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: LocalizationCSV
+  m_GUID: 53189d12cebafe24093f0b89e7a61ac3
+  m_SerializeEntries:
+  - m_GUID: 1d99ea66f5b7d5b41a61501bf894baca
+    m_Address: Assets/Localization/Village_CSV.csv
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Localization
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bd33c4977fe08cb40aecb4705e15f86d
+    m_Address: Assets/Localization/Item_CSV.csv
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Localization
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: da7861af316e05a45a29161013551f92
+    m_Address: Assets/Localization/UI_CSV.csv
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Localization
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: b7e19af14bd691c4f9ce34edfc3b5880, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 2ace22899b9f4204f837c246d0e01359, type: 2}
+    - {fileID: 11400000, guid: 23808773776a28d4d949ed84e915fd8e, type: 2}

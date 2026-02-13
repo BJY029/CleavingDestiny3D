@@ -1,0 +1,26 @@
+ID,KR,EN
+UI_Ready,준비 완료,Ready
+UI_NotReady,준비 안됨,Not Ready
+Building_Level,레벨: {0},Level: {0}
+Building_NextLevel,다음 레벨: {0},Next Level: {0}
+Building_NextEffect,다음 효과: {0},Next Effect: {0}
+Building_CurrentGold,보유 골드: {0},Current Gold: {0}
+Building_UpgradeCost,업그레이드 비용: {0},Upgrade Cost: {0}
+Building_Upgrade,강화하기,Upgrade
+Building_Quit,나가기,Quit
+Mine_Title,광산,Mine
+Mine_Desc,광산에서 골드를 채굴합니다.,Mine gold in the mine.
+Mine_Effect,매일 {0} 골드 획득,Get {0} gold every day.
+Farm_Title,농장,Farm
+Farm_Desc,농장에서 식량을 재배합니다.,Grow food on the farm.
+Farm_Effect,기력 최대치 {0} / 매일 기력 {1} 회복,Max Energy {0} / Daily Energy Recovery {1}
+Shop_Title,상점,Shop
+Shop_Desc,상점에서 아이템을 구매합니다.,Buy items in the shop.
+Shop_Effect,희귀 아이템 등장 확률: {0} 증가 (아이템 레벨: {1}),Increased rare item chance: {0} (Item Level: {1})
+Forge_Title,대장간,Forge
+Forge_Desc,대장간에서 도끼를 강화합니다.,Axe upgrades in the forge.
+Forge_Effect,도끼 범위 데미지: {0} ~ {1},Axe Range Damage: {0} ~ {1}
+Barrier_Title,방어막,Barrier
+Barrier_Desc,마을의 방어막을 강화합니다.,Strengthen the village's barrier.
+Barrier_Effect,마을 방어력: {0},Village Defense: {0}
+
