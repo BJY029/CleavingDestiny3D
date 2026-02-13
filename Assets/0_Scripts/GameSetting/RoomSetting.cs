@@ -14,6 +14,7 @@ public class RoomSetting : ScriptableObject
     public GamePhaseValue initialPhase = GamePhaseValue.DAY;
     public int maxWave = 3;
     public int initialWave = 0;
+    public float turnTime = 40f;
 
     [Header("Items")]
     public int initialUID = 1;

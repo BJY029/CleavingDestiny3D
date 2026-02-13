@@ -114,7 +114,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 		//데미지 계산 및 반영(아이템 효과 반영)
 		ItemHandlingSystem.instance.RequestHit(damage, true);
-
+		//타이머 중지
+		TimeManager.instance.AbortTurnTimer();
 		//RPC로 모든 플레이어에게 턴 변경 요청을 보낸다.
 		//photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber);
 
@@ -526,6 +527,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			turnActor = Convert.ToInt32(taObj);
 			TryOpenOfferFromRoomState();
 			StatusUIModel.instance.StatusOnChanged?.Invoke();
+			//자신의 턴이라면
+			if (me == turnActor)
+			{
+				//턴 타이머 시작
+				TimeManager.instance.StartTurnTimer();
+			}
 		}
 
 		//턴 관련 프로퍼티가 변경되었고, 아직 처리되지 않은 경우

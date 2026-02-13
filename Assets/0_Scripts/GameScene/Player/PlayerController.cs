@@ -502,12 +502,20 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 		return true;
 	}
 
-	public void TryHit()
+	public void TryHit(bool IsItRandom = false)
 	{
 		if (!checkTreeInteractable()) return;
 
-		//Hit 순간의 게이지 데미지 값 받기
-		damageRatio = PlayerCanvasController.Instance.SelectNow();
+		//만약, 사용자 선택이 아닌 임의의 데미지인 경우(턴 시간 초과)
+		if (IsItRandom)
+		{
+			damageRatio = Random.Range(0f, 1f);
+		}
+		else
+		{
+			//Hit 순간의 게이지 데미지 값 받기
+			damageRatio = PlayerCanvasController.Instance.SelectNow();
+		}
 
 		int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxAtkPow);
 		int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MinAtkPow);

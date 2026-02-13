@@ -54,6 +54,7 @@ public static class RoomPropKeys
 {
     public const string AllReady = "AllReady";
     public const string RoomSeed = "RoomSeed";
+    public const string TurnTime = "TurnTime";
     public const string TurnOrder = "TurnInfo";
     public const string CurrentTurn = "CurrentTurn";
     public const string CurrentTurnActor = "CurrentTurnActor";
@@ -68,6 +69,7 @@ public static class RoomPropKeys
     public const string TreeAtkPow = "TreeAtkPow";
     public const string IsVillageUpgradePhase = "IsVillageUpgradePhase"; // bool
     public const string VillageUpgradeStartEndTime = "VillageUpgradeStartEndTime"; //float
+    public const string PlayerTurnStartEndTime = "PlayerTurnStartEndTime";
     public const string VillagePhaseTime = "VillagePhaseTime"; //float
     public const string IsTreeBulkDamage = "IsTreeBulkDamage";
     public const string MatchLoserActor = "MatchLoserActor"; //int

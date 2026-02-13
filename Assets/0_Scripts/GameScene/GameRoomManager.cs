@@ -47,6 +47,7 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 				{ RoomPropKeys.CurrentDay,  roomSet.startDay},
 				{ RoomPropKeys.CurrentTurn, roomSet.initialTurn},
 				{ RoomPropKeys.TurnIndex,   roomSet.initialTurnIndex },
+				{ RoomPropKeys.TurnTime,    roomSet.turnTime},
 				{ RoomPropKeys.GamePhase,   roomSet.initialPhase },
 				{ RoomPropKeys.MaxWaveCnt,  roomSet.maxWave },
 				{ RoomPropKeys.CurrentWave, roomSet.initialWave},
