@@ -32,12 +32,12 @@ namespace Village.Outside
         private CinemachineBrain brain;
 
         [SerializeField] Button readyButton;
-        TextMeshProUGUI readyButtonText;
+        LocalizedText readyButtonText;
         private VillageSceneManager villageSceneManager;
         bool isReady = false;
 
-        LocalizedString readyText = new LocalizedString(CSV_Type.Village, "UI_Ready");
-        LocalizedString notReadyText = new LocalizedString(CSV_Type.Village, "UI_NotReady");
+        const string readyText = "UI_Ready";
+        const string notReadyText = "UI_NotReady";
 
         void Start()
         {
@@ -59,7 +59,7 @@ namespace Village.Outside
             InitializeReadyChecker();
 
             readyButton.onClick.AddListener(ToggleReadyButton);
-            readyButtonText = readyButton.GetComponentInChildren<TextMeshProUGUI>();
+            readyButtonText = readyButton.GetComponentInChildren<LocalizedText>();
 
             outsideCam.gameObject.SetActive(false);
         }
@@ -226,7 +226,7 @@ namespace Village.Outside
         void ToggleReadyButton()
         {
             isReady = !isReady;
-            readyButtonText.SetText(isReady ? readyText : notReadyText);
+            readyButtonText.TextID = isReady ? readyText : notReadyText;
             villageSceneManager.SetLocalPlayerReady(isReady);
         }
     }
