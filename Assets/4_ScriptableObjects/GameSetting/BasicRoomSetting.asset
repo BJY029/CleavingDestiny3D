@@ -29,3 +29,6 @@ MonoBehaviour:
   rare_reduction_rate: 0.5
   legendary_reduction_rate: 0.6
   villagePhaseTime: 10
+  LoserActNum: -1
+  MatchEndReason: NONE
+  ResolvedTurnIdx: -1
