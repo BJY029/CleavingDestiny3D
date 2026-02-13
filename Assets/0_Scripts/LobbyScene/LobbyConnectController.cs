@@ -16,6 +16,7 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 	{
 		//연결 시도
 		Connect();
+		Application.runInBackground = true;
 	}
 
 	private void Connect()
@@ -42,7 +43,6 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 	public override void OnConnectedToMaster()
 	{
 		LobbyUIManager.instance.setConnectedText("Connected. Joining lobby...");
-		LobbyUIManager.instance.setNickname("Player" + PhotonNetwork.CountOfPlayers.ToString());
 
 		PhotonNetwork.JoinLobby();
 	}
@@ -59,5 +59,24 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 		Debug.Log("AppVersion: " + PhotonNetwork.AppVersion);
 		Debug.Log("Connected: " + PhotonNetwork.IsConnected);
 		Debug.Log("In Lobby: " + PhotonNetwork.InLobby);
+		LobbyUIManager.instance.setNickname("Player" + PhotonNetwork.LocalPlayer.ActorNumber.ToString());
+
+		InitPlayerProps();
+	}
+
+	private void InitPlayerProps()
+	{
+		if (PhotonNetwork.LocalPlayer.CustomProperties.Count == 0) return;
+		//플레이어의 프로퍼티를 받아오기 위한 해시 선언
+		ExitGames.Client.Photon.Hashtable allClear = new ExitGames.Client.Photon.Hashtable();
+
+		//로컬 플레이어(호출자)의 프로퍼티를 돌아보면서
+		foreach (var key in PhotonNetwork.LocalPlayer.CustomProperties.Keys)
+		{
+			//프로퍼티 초기화 수행
+			allClear[key.ToString()] = null;
+		}
+		PhotonNetwork.LocalPlayer.SetCustomProperties(allClear);
+		Debug.Log("Player Props Init Completed");
 	}
 }

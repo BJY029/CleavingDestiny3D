@@ -33,6 +33,7 @@ public class GameExitHandler : MonoBehaviourPunCallbacks
     //룸을 떠난것이 감지된 경우
     public override void OnLeftRoom()
     {
+        CameraSwitchManager.Instance.GameCameraToggle(true);
         //씬 변경 로직 수행
         GoToLobby();
     }
@@ -55,12 +56,14 @@ public class GameExitHandler : MonoBehaviourPunCallbacks
     {
         //로딩창 활성화
         if (LoadingPanel != null) LoadingPanel.SetActive(true);
+        SettingCanvasController.instance.CloseSettingPanel();
         //방 안에 있으면
         if (PhotonNetwork.InRoom)
         {
-            //TODO:관련 처리 수행 후 방 떠니기
-            //플레이어 프로퍼티 초기화
-            InitPlayerProps();
+            //씬 이동 동기화 해제
+            PhotonNetwork.AutomaticallySyncScene = false;
+            //룸 떠나기
+            PhotonNetwork.LeaveRoom();
         }
         else
         {
@@ -89,51 +92,42 @@ public class GameExitHandler : MonoBehaviourPunCallbacks
         }
         PhotonNetwork.LocalPlayer.SetCustomProperties(allClear);
         //2초간 초기화가 이루어지지 않은 경우 콜백이 일어나지 않았다고 판단, 강제로 방을 떠나도록 설정
-        Invoke(nameof(ForceToLeaveRoom), 2.0f);
+        //Invoke(nameof(ForceToLeaveRoom), 2.0f);
     }
 
-    //플레이어 프로퍼티 감지
-    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
-    {
-        //프로퍼티 초기화인 경우에만 실행된다.
-        if (!isClearingProperties || !targetPlayer.IsLocal) return;
+    // //플레이어 프로퍼티 감지
+    // public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
+    // {
+    //     //프로퍼티 초기화인 경우에만 실행된다.
+    //     if (!isClearingProperties || !targetPlayer.IsLocal) return;
 
-        //프로퍼티 키 값들을 돌아보면서
-        foreach (var key in changedProps.Keys)
-        {
-            //해당되는 키 값에 매칭되는 프로퍼티가 존재하면서 동시에 초기화 되었는지 확인
-            string keyStr = key.ToString();
-            if (keysToClear.Contains(keyStr) && changedProps[key] == null)
-            {
-                //초기화 된 경우, Key 해시에서 제거
-                keysToClear.Remove(keyStr);
-            }
-        }
+    //     //프로퍼티 키 값들을 돌아보면서
+    //     foreach (var key in changedProps.Keys)
+    //     {
+    //         //해당되는 키 값에 매칭되는 프로퍼티가 존재하면서 동시에 초기화 되었는지 확인
+    //         string keyStr = key.ToString();
+    //         if (keysToClear.Contains(keyStr) && changedProps[key] == null)
+    //         {
+    //             //초기화 된 경우, Key 해시에서 제거
+    //             keysToClear.Remove(keyStr);
+    //         }
+    //     }
 
-        //만약 Key 해시의 크기가 0인 경우
-        if (keysToClear.Count == 0)
-        {
-            //강제 퇴장 로직 해제
-            CancelInvoke(nameof(ForceToLeaveRoom));
-            //방 퇴장 실행
-            ProceedToLeaveRoom();
-        }
-    }
-
-    //강제 퇴장
-    private void ForceToLeaveRoom()
-    {
-        ProceedToLeaveRoom();
-    }
+    //     //만약 Key 해시의 크기가 0인 경우
+    //     if (keysToClear.Count == 0)
+    //     {
+    //         //강제 퇴장 로직 해제
+    //         CancelInvoke(nameof(ForceToLeaveRoom));
+    //         //방 퇴장 실행
+    //         ProceedToLeaveRoom();
+    //     }
+    // }
 
     //방을 나가는 로직
     private void ProceedToLeaveRoom()
     {
         isClearingProperties = false;
-        //씬 이동 동기화 해제
-        PhotonNetwork.AutomaticallySyncScene = false;
-        //룸 떠나기
-        PhotonNetwork.LeaveRoom();
+
     }
 
     //로비로 씬 변경

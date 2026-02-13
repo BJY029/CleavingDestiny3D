@@ -32,6 +32,16 @@ public class SettingCanvasController : MonoBehaviour
     {
         CloseBtn.onClick.AddListener(ToggleSettingPanel);
         LobbyBtn.onClick.AddListener(GameExitHandler.instance.RequestLeaveGame);
+        QuitGameBtn.onClick.AddListener(OnClickExitGame);
+    }
+
+    void OnClickExitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
 
@@ -49,5 +59,11 @@ public class SettingCanvasController : MonoBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
+    }
+
+    public void CloseSettingPanel()
+    {
+        IsSettingPanelOpened = false;
+        Background.SetActive(false);
     }
 }
