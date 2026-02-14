@@ -155,7 +155,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
     }
 
     //실패로 판정시
-    private void HandleLocalFail()
+    public void HandleLocalFail()
     {
         // 실패 처리
         isGameActive = false;

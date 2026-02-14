@@ -100,11 +100,11 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 
 	private IMinigameInteractable currentMinigame;
 
-	private Transform lastHitTarget = null;
+	//private Transform lastHitTarget = null;
 
 	public bool isLookingAtTree;
 
-	private PhotonView photonView;
+
 	//마을 업그레이드 중인지 여부를 저장할 플래그
 	private bool UpgradePhase;
 	private bool WhileHittingMotion;
@@ -124,8 +124,6 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 
 	private void Awake()
 	{
-		photonView = GetComponent<PhotonView>();
-
 		//playerInput 가져오기
 		if (playerInput == null) playerInput = GetComponent<PlayerInput>();
 
@@ -322,6 +320,12 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 			return;
 		}
 
+		if (TimeManager.instance.ForceToHit)
+		{
+			SetInputLocked(true);
+			return;
+		}
+
 		if (WhileHittingMotion)
 		{
 			SetInputLocked(true);
@@ -504,17 +508,18 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 
 	public void TryHit(bool IsItRandom = false)
 	{
-		if (!checkTreeInteractable()) return;
-
 		//만약, 사용자 선택이 아닌 임의의 데미지인 경우(턴 시간 초과)
 		if (IsItRandom)
 		{
-			damageRatio = Random.Range(0f, 1f);
+			damageRatio = Random.Range(0f, 100f);
 		}
 		else
 		{
+			if (!checkTreeInteractable()) return;
 			//Hit 순간의 게이지 데미지 값 받기
 			damageRatio = PlayerCanvasController.Instance.SelectNow();
+			//타이머 중지
+			TimeManager.instance.AbortTurnTimer();
 		}
 
 		int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxAtkPow);

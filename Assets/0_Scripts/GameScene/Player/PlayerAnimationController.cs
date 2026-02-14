@@ -5,7 +5,7 @@ public class PlayerAnimationController : MonoBehaviour
     [SerializeField] private Animator animator; //플레이어 애니메이터
     [SerializeField] private int hitAnimCount = 4;//hit 모션 개수
     [SerializeField] private bool avoidRepeat = true; //기존 피격 동작 반복 재생 여부
-    [SerializeField] private bool forceRestartEvenIfHitting = false; //키 중복 입력 받을건지 여부
+    //[SerializeField] private bool forceRestartEvenIfHitting = false; //키 중복 입력 받을건지 여부
 
     //기존 피격 중복 재생 방지용
     private int lastIndex = -1;
@@ -27,7 +27,7 @@ public class PlayerAnimationController : MonoBehaviour
         int idx;
 
         //임의의 index 값을 받지 않은 경우
-		if (index == -1)
+        if (index == -1)
         {
             //랜덤으로 정해서 재생
             idx = Random.Range(0, hitAnimCount);
@@ -43,10 +43,10 @@ public class PlayerAnimationController : MonoBehaviour
         }
         //임의의 index 값 받은 경우 
         else idx = index;
-		lastIndex = idx;
+        lastIndex = idx;
 
         //애니메이션 재생
-		animator.SetInteger(HashHitIndex, idx);
+        animator.SetInteger(HashHitIndex, idx);
         animator.ResetTrigger(HashHit);
         animator.SetTrigger(HashHit);
 

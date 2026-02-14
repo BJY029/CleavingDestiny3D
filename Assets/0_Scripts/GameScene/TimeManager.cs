@@ -18,6 +18,7 @@ public class TimeManager : MonoBehaviourPunCallbacks
     [HideInInspector]
     //Master가 대표로 관리하며, 해당 플래그를 브로드캐스트 하여 클라 전체에게 공유한다.
     public bool TurnTimerActivated { get; private set; } = false;
+    public bool ForceToHit { get; private set; } = false;
     //각 플레이어에게 주어지는 시간(RoomProp에서 받아옴)
     private float PlayerTurnLimitedTime;
     //시작, 끝 시간
@@ -150,6 +151,7 @@ public class TimeManager : MonoBehaviourPunCallbacks
     //턴 종료 및 턴 넘기기 로직
     public async UniTask ProcessPlayerTurnEndByTimer_Async()
     {
+        ForceToHit = true;
         //TODO : 플레이어 이동
         //플레이어 번호
         int actNum = PhotonNetwork.LocalPlayer.ActorNumber;
@@ -158,6 +160,8 @@ public class TimeManager : MonoBehaviourPunCallbacks
         //플레이어 이동 위치 및 회전 정보
         Vector3 des = PlayerManager.Instance.hitPos[actNum - 1];
         Quaternion rot = PlayerManager.Instance.spawnRot[actNum - 1];
+
+        InitGameUIs();
         //플레이어의 PlayerController 컴포넌트
         PlayerController pc = PlayerObj.GetComponent<PlayerController>();
 
@@ -174,6 +178,16 @@ public class TimeManager : MonoBehaviourPunCallbacks
         //턴 넘기기 시도
         if (pc != null)
             pc.TryHit(true);
+
+        ForceToHit = false;
+    }
+
+    private void InitGameUIs()
+    {
+        InventoryLockCanvasController.Instance.UnSetLockpickUI();
+        ItemSelectionController.instance.CloseItemSelection();
+        LockpickController.instance.HandleLocalFail();
+        ItemOfferCanvasController.instance.Close();
     }
 
     //플레이어를 특정 위치로 이동시키는 함수
@@ -188,12 +202,5 @@ public class TimeManager : MonoBehaviourPunCallbacks
             player.transform.rotation = rotation;
             cc.enabled = true;
         }
-    }
-
-    //턴 넘기기 함수(나무 때리기)
-    private void Hit_Random(GameObject player)
-    {
-        PlayerController pc = player.GetComponent<PlayerController>();
-        pc.TryHit(true);
     }
 }
