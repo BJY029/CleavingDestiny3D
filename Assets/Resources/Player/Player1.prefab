@@ -273,7 +273,6 @@ MonoBehaviour:
   animator: {fileID: 3710110911519245321}
   hitAnimCount: 4
   avoidRepeat: 1
-  forceRestartEvenIfHitting: 0
 --- !u!114 &-1081810206017964554
 MonoBehaviour:
   m_ObjectHideFlags: 0

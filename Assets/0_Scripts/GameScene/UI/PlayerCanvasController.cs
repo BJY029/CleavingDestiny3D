@@ -4,6 +4,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Threading;
 
 public class PlayerCanvasController : MonoBehaviourPunCallbacks
 {
@@ -18,6 +19,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public TextMeshProUGUI BarrierValue;
 	public TextMeshProUGUI TreeMultValue;
 	public GameObject HitTextObj;
+
 	[SerializeField] private GameObject gaugeRoot;
 	[SerializeField] private Slider gaugeSlider;
 	public TextMeshProUGUI minDamage;
@@ -31,6 +33,10 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 
 	[Header("ItemNotifyHolder")]
 	[SerializeField] private GameObject Holder;
+
+	[Header("Timer")]
+	public GameObject TimerObj;
+	public TextMeshProUGUI TimerText;
 
 	private Coroutine gaugeCo;
 	//플레이어의 Hit 관련 UI가 활성화되었는지 여부
@@ -46,6 +52,9 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	private GameObject ItemNotifyPrefab;
 	private GameObject ItemStolenNotifyPrefab;
 	private ItemNotifyController INC;
+
+	private float _startTime = -1f;
+	private float _endTime = -1f;
 
 	private void Awake()
 	{
@@ -67,7 +76,46 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		CloseGauge();
 		HitText.text = "";
 		WarningText.text = "";
+		InitTimer();
 	}
+
+	//만약, 현재 타이머가 설정되었고, 시작 시간 또한 초기화 된 경우
+	private void Update()
+	{
+		if (!TimeManager.instance.TurnTimerActivated || _startTime == -1f) return;
+
+		//시간 계산 수행
+		float remainTime = _endTime - (float)PhotonNetwork.Time;
+
+		if (remainTime < 0)
+		{
+			remainTime = 0;
+			InitTimer();
+		}
+
+		TimerText.text = remainTime.ToString("F0");
+	}
+
+	private void InitTimer()
+	{
+		TimerText.text = "";
+		_startTime = -1f;
+		_endTime = -1f;
+	}
+
+	//타이머가 설정되면, 시작, 끝 시간을 받아와서 저장한다.
+	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
+	{
+		if (propertiesThatChanged.TryGetValue(RoomPropKeys.PlayerTurnStartEndTime, out var value))
+		{
+			if (value is Vector2 times)
+			{
+				_startTime = times.x;
+				_endTime = times.y;
+			}
+		}
+	}
+
 
 	//턴 정보에 따라서 Hit Text를 변경하는 함수
 	public void UpdateGameHitText()

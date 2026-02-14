@@ -20,7 +20,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	private int _villageActionId = 0;
 	private int _villageShieldProcessDone = -1;
-	private int _villageDamageProcessDone = -1;
+	//private int _villageDamageProcessDone = -1;
 
 	public bool isUpgradePhase;
 
@@ -29,7 +29,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	//F키가 눌리면 발생될 이벤트
 	//public event Action OnInteractFKeyDown;
 	//턴 변경 플래그
-	private bool TurnHasChanged = false;
+	//private bool TurnHasChanged = false;
 	private int _lastProcessedTrun = -1;
 	//한 번만 Offer 정보 관련 UI를 처리하기 위한 장치
 	private bool offerGenerated = false;
@@ -284,11 +284,11 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
 	}
 
-	[PunRPC]
-	public void TurnChanedInvoked()
-	{
-		TurnHasChanged = true;
-	}
+	// [PunRPC]
+	// public void TurnChanedInvoked()
+	// {
+	// 	TurnHasChanged = true;
+	// }
 
 	[PunRPC]
 	public void TreeActionProcess()
@@ -510,7 +510,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
 
 		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
-		photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
+		//photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 		RemoveUsedItem();
 	}
 
@@ -526,6 +526,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			turnActor = Convert.ToInt32(taObj);
 			TryOpenOfferFromRoomState();
 			StatusUIModel.instance.StatusOnChanged?.Invoke();
+			//자신의 턴이라면
+			if (me == turnActor)
+			{
+				//턴 타이머 시작
+				TimeManager.instance.StartTurnTimer();
+			}
 		}
 
 		//턴 관련 프로퍼티가 변경되었고, 아직 처리되지 않은 경우

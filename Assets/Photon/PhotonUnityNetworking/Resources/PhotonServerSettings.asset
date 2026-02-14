@@ -85,6 +85,10 @@ MonoBehaviour:
   - RPC_UI_RemoveStatus
   - RPC_UI_UpdateStatus
   - RPC_PlayerDamageChecker
+  - RPC_AbortTurnTimer
+  - RPC_RequesterTurnEnded
+  - RPC_StartTurnTimer
+  - Broadcast_SetTurnTimeFlag
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

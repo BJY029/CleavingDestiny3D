@@ -24,12 +24,15 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	private bool AllReadyFlag = false;
 
 	public Transform CenterObject;
+	private float hit_radius = 3.0f;
 	private float radius = 4.5f;
 	private float InvRadius = 16f;
 	private Vector3[] spawnPos;
+	public Vector3[] hitPos { get; private set; }
 	private Vector3[] spawnInvPos;
-	private Quaternion[] spawnRot;
+	public Quaternion[] spawnRot { get; private set; }
 	private Quaternion[] spawnInvRot;
+	public GameObject LocalPlayerObj { get; private set; }
 
 
 	private void Awake()
@@ -130,6 +133,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
 		GameObject spawnPlayer = PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
+		LocalPlayerObj = spawnPlayer;
 		GameObject PlayersInv = PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[myActNum - 1], spawnInvRot[myActNum - 1]);
 		PlayerStatus.Instance.SetPlayerInventory(PlayersInv);
 		InventoryBarrier ib = PlayersInv.GetComponentInChildren<InventoryBarrier>();
@@ -219,6 +223,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	private void SpawnPlayersOnCircle()
 	{
 		spawnPos = new Vector3[players.Count];
+		hitPos = new Vector3[players.Count];
 		spawnInvPos = new Vector3[players.Count];
 		spawnRot = new Quaternion[players.Count];
 		spawnInvRot = new Quaternion[players.Count];
@@ -235,6 +240,12 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 				0f,
 				Mathf.Sin(angle) * radius);
 
+			Vector3 hit_offset = new Vector3(
+				Mathf.Cos(angle) * hit_radius,
+				0f,
+				Mathf.Sin(angle) * hit_radius);
+
+
 			//플레이어 인벤토리 스폰 위치 계산
 			Vector3 InvOffset = new Vector3(
 				Mathf.Cos(angle) * InvRadius,
@@ -242,6 +253,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 				Mathf.Sin(angle) * InvRadius);
 
 			spawnPos[i] = offset + CenterObject.position;
+			hitPos[i] = hit_offset + CenterObject.position;
 			spawnInvPos[i] = InvOffset + CenterObject.position;
 			spawnRot[i] = Quaternion.LookRotation(CenterObject.position - spawnPos[i]);
 			spawnInvRot[i] = Quaternion.Euler(0f, (180f + (ang * i)) % 360f, 0f);
