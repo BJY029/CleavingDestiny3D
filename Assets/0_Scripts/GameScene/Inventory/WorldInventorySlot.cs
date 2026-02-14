@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+
+
 public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 {
 	//해당 인벤토리 슬롯 소유자
@@ -12,12 +14,12 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	public int slotIndex;
 	//해당 슬롯 Mesh 렌더러
 	private MeshRenderer quadRenderer;
-	//슬롯이 빈 경우 표시할 텍스쳐
-	private Texture2D nullTexture;
+
 	//해당 슬롯이 현재 가지고 있는 아이템 정보
 	private ItemSO currentItem;
 	//해당 슬롯의 머테리얼 관련 정보
 	private MaterialPropertyBlock mpb;
+
 
 	//슬롯 툴팁 오브젝트
 	[Header("ToolTipInfos")]
@@ -27,16 +29,16 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	public TextMeshProUGUI ItemPriceText;
 	public TextMeshProUGUI ItemDescText;
 
+	[Header("NullTexture")]
+	public Texture2D nullTexture;
+
 	private void Awake()
 	{
 		//머테리얼 정보 
 		mpb = new MaterialPropertyBlock();
 		quadRenderer = GetComponent<MeshRenderer>();
 
-		//아무 아이템이 없을 경우 삽입 할 텍스쳐
-		nullTexture = Resources.Load<Texture2D>("Material/Item/Textures/invisible");
 
-		if (nullTexture == null) Debug.LogWarning("투명 텍스처를 찾지 못했습니다.");
 	}
 
 	//현재 슬롯이 아이템을 가지고 있는지 확인

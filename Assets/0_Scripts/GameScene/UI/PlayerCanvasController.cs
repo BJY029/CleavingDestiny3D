@@ -38,6 +38,10 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public GameObject TimerObj;
 	public TextMeshProUGUI TimerText;
 
+	[Header("Prefabs")]
+	public GameObject ItemNotifyPrefab;
+	public GameObject ItemStolenNotifyPrefab;
+
 	private Coroutine gaugeCo;
 	//플레이어의 Hit 관련 UI가 활성화되었는지 여부
 	[HideInInspector]
@@ -49,8 +53,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	private TextMeshProUGUI WarningText;
 	private Animator WarningTextAnim;
 
-	private GameObject ItemNotifyPrefab;
-	private GameObject ItemStolenNotifyPrefab;
+
 	private ItemNotifyController INC;
 
 	private float _startTime = -1f;
@@ -60,9 +63,6 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	{
 		if (Instance == null) Instance = this;
 		else Destroy(gameObject);
-
-		ItemNotifyPrefab = Resources.Load<GameObject>("ItemNotify/ItemNotify");
-		ItemStolenNotifyPrefab = Resources.Load<GameObject>("ItemNotify/ItemStolenNotify");
 
 		HitText = HitTextObj.GetComponentInChildren<TextMeshProUGUI>();
 		WarningText = WarningObj.GetComponentInChildren<TextMeshProUGUI>();

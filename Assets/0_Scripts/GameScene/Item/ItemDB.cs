@@ -1,14 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class ItemDB : MonoBehaviour
 {
 	//싱글턴
-    public static ItemDB Instance;
+	public static ItemDB Instance;
 	//스크립터블 오브젝트 아이템 리스트
-    [SerializeField] List<ItemSO> items;
+	[SerializeField] List<ItemSO> items;
 	//아이템 DB
-    Dictionary<string, ItemSO> map;
+	Dictionary<string, ItemSO> map;
 	[SerializeField] Dictionary<string, Material> itemMat;
 
 	private void Awake()
@@ -33,12 +35,30 @@ public class ItemDB : MonoBehaviour
 		}
 
 		itemMat = new Dictionary<string, Material>();
-		Material[] mats = Resources.LoadAll<Material>("Material/item");
-		foreach (var mat in mats)
+
+		Addressables.LoadAssetsAsync<Material>("ItemMaterial", null).Completed += OnAllMaterialLoaded;
+
+	}
+
+	private void OnAllMaterialLoaded(AsyncOperationHandle<IList<Material>> handle)
+	{
+		if (handle.Status == AsyncOperationStatus.Succeeded)
 		{
-			itemMat.Add(mat.name, mat);
+			foreach (var mat in handle.Result)
+			{
+				if (!itemMat.ContainsKey(mat.name))
+				{
+					itemMat.Add(mat.name, mat);
+				}
+			}
+			Debug.Log($"머티리얼 로드 완료! 총 개수: {itemMat.Count}개");
+		}
+		else
+		{
+			Debug.LogError("머티리얼 로드 실패. 'ItemMaterial' 라벨이 정확히 붙어있는지 확인해주세요.");
 		}
 	}
+
 
 	//아이템 객체 얻기
 	public ItemSO Get(string id)

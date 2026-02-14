@@ -14,7 +14,318 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: Default Local Group
   m_GUID: a73ca08e28b5a9d49ad795928e719c77
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 003c102f2e32fef45a26bb78df244780
+    m_Address: Assets/Material/Item/3002.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 00e10a3efce7e54418a662419afe9317
+    m_Address: Assets/Material/Item/1002.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 03242361040611c4c91d24ce7e3a54f1
+    m_Address: Assets/Material/Item/1004.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 04d976edb0cef5a4f8424cc85d372342
+    m_Address: Assets/95_Textures/Items/1007.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0a8e792845890fe4babce40b7392a230
+    m_Address: Assets/Material/Item/3003.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 113ff7bb90bfd704091a932682b4a8fb
+    m_Address: Assets/Material/Item/1005.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 15f10934e0118cf4ba186395414e153d
+    m_Address: Assets/Material/Item/3001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 19608d539f67fb54994d8294211a8c0b
+    m_Address: Assets/Material/Item/1007.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1bbc5d3dc7ff84c4eac7ca7a97fe3ad8
+    m_Address: Assets/95_Textures/Items/1005.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1bceeeafa76d206429df1869240e315a
+    m_Address: Assets/95_Textures/Items/2000.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1e0479d7f8a19744f9452f7e2dce0d50
+    m_Address: InvisibleItem
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 20d7c114feec4c34f96880f0658d25ee
+    m_Address: Assets/95_Textures/Items/2001.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 288c14db0cad6694880effbce4c21f40
+    m_Address: Assets/Material/Item/4003.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2af2b9df912cc144594d06019ff2c59d
+    m_Address: Assets/95_Textures/Items/1000.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2c854e5b3cbe51b4694a2e5275add6e9
+    m_Address: Assets/Material/Item/2001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 36d9fe3db11825f41b043a207cff92a8
+    m_Address: Assets/95_Textures/Items/4007.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 38520f8d694887b45b286f9097547838
+    m_Address: DummyItemIcons
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3e327ce420f8a404dab57c86d9f47c82
+    m_Address: Assets/Material/Item/4008.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 41373fa543a7db4499bfb04ab92a07bf
+    m_Address: Assets/Material/Item/4001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 528eb590ee2370a4e9dd23722ae64e9f
+    m_Address: Assets/Material/Item/1003.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59869ebbeca4bd840a46a7613b1b58d4
+    m_Address: Assets/95_Textures/Items/4001.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5f7151868b243ac4b8cdce18a6c9e878
+    m_Address: Assets/95_Textures/Items/3001.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 63bdf24858b27284dadf815e7bb54de6
+    m_Address: Assets/Material/Item/4005.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 657fb509543b7e64bb4de82dc7f6e353
+    m_Address: Assets/Material/Item/4006.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 65a7ecd48d8383743a5722a200a8aa9f
+    m_Address: Assets/Material/Item/1000.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6d1611b428ae70a4793cc63f3fbc1c0c
+    m_Address: Assets/Material/Item/3000.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7c20847a4a1ef6b4b8ccdc3a961c8374
+    m_Address: Assets/95_Textures/Items/4002.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7ee987a79a69e4b47a5f09d34e099f53
+    m_Address: Assets/95_Textures/Items/1004.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 815fa73eb698e9a488253e16ef92bce8
+    m_Address: Assets/Material/Item/2003.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 82b97c18f696e5f4fb538ead3717dd06
+    m_Address: Assets/95_Textures/Items/1003.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 856f13ef136be6849ae98deb34b5663a
+    m_Address: Assets/95_Textures/Items/4000.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9377466c94692074b8422c5c7431fae1
+    m_Address: Assets/95_Textures/Items/2003.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 96c68fe13ff594a44a7c3a18f5afbdd5
+    m_Address: Assets/Material/Item/1006.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9cb6bed824223084b8ea3e185ed9b17e
+    m_Address: Assets/95_Textures/Items/1006.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a5c6845e8df3f504582ff0ee2113b9fe
+    m_Address: Assets/95_Textures/Items/4003.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa6ba9eac5b045144b5a45ce4af8ecd7
+    m_Address: Assets/95_Textures/Items/4004.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b045bd627fdf755488b36ab922070107
+    m_Address: Assets/Material/Item/4000.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b368072df70f01942904a40fa337b5a0
+    m_Address: Assets/95_Textures/Items/4005.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b3e7e86df80ab2948b0bca3768c87424
+    m_Address: Assets/95_Textures/Items/1001.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b6485e4534360444a9895da0c875cfef
+    m_Address: Assets/Material/Item/2002.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bba6add2852554b42bd521166ef6ce72
+    m_Address: Assets/Material/Item/4002.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: beb422545f9db9d438e77d10a06d2161
+    m_Address: Assets/Material/Item/4007.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bfecb3e1577f9224da6acc6876752d7b
+    m_Address: Assets/Material/Item/4004.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c01f0bb6a2447ef42aa3246d5f41998b
+    m_Address: Assets/95_Textures/Items/4008.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c56ada633f994294b9bdcf3bc219c8e8
+    m_Address: Assets/Material/Item/2000.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cf7e60a923eee644688dd45121e331a6
+    m_Address: Assets/95_Textures/Items/2002.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d2fba4f47136a9044b76532f77958267
+    m_Address: Assets/95_Textures/Items/3000.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d6c48695ef754f740ab4755cdfca613d
+    m_Address: Assets/95_Textures/Items/4006.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dca525d89a410dc40bc7e3fc76f6ab8a
+    m_Address: Assets/Material/Item/1001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dcb13cac20cfb0b4c8487f2c33a3964e
+    m_Address: Assets/95_Textures/Items/3002.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e307f0e0e4ba3c54b99746de6f222a5c
+    m_Address: Assets/95_Textures/Items/3003.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fc69032082956d24f867febaf0848705
+    m_Address: Assets/95_Textures/Items/1002.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: b7e19af14bd691c4f9ce34edfc3b5880, type: 2}
   m_SchemaSet:

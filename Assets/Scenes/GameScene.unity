@@ -7057,6 +7057,8 @@ MonoBehaviour:
   Holder: {fileID: 489264637}
   TimerObj: {fileID: 939753129}
   TimerText: {fileID: 306013213}
+  ItemNotifyPrefab: {fileID: 4320503079002190872, guid: 627194c8a0200e64c9b0929504657804, type: 3}
+  ItemStolenNotifyPrefab: {fileID: 4320503079002190872, guid: 1ddb8fda85edca949b44000dbf980508, type: 3}
   selecting: 0
 --- !u!225 &1030991279
 CanvasGroup:
