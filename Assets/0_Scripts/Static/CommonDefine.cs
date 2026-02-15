@@ -47,6 +47,8 @@ public class UI_CSV
     public const string UI_Warning_NotAvaiable = "UI_Warning_NotAvaiable";
     public const string UI_Item_LockPick_Warning = "UI_Item_LockPick_Warning";
     public const string UI_Item_LockPick_Has = "UI_Item_LockPick_Has";
+    public const string UI_Exit_Lobby = "UI_Exit_Lobby";
+    public const string UI_Exit_Game = "UI_Exit_Game";
 }
 
 //서버 CustomProperty Key

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.U2D;
 
 public class WorldInventory : MonoBehaviourPunCallbacks
 {
@@ -19,6 +18,7 @@ public class WorldInventory : MonoBehaviourPunCallbacks
 		slots = GetComponentsInChildren<WorldInventorySlot>(true)
 			.OrderBy(s => s.slotIndex).ToList();
 	}
+
 
 	private void Start()
 	{
