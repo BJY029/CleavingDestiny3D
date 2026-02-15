@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,6 +26,7 @@ public class SettingCanvasController : MonoBehaviour
     public Button CloseBtn;
     public Button QuitGameBtn;
     public Button LobbyBtn;
+
 
     public bool IsSettingPanelOpened { get; private set; } = false;
 
