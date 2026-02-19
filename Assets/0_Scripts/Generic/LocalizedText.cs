@@ -58,7 +58,7 @@ public class LocalizedText : MonoBehaviour
     {
         if (textComponent != null)
         {
-            textComponent.text = LocalizationManager.Instance.GetText(tableType, textID);
+            textComponent.SetText(LocalizationManager.Instance.GetText(tableType, textID));
         }
     }
 }
