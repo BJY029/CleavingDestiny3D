@@ -23,6 +23,8 @@ public interface IMinigameInteractable
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviourPun, IAnimNotify
 {
+	public bool IsAI = false;
+	public int PlayerActNum { private get; set; }
 	//움직임 관련 파라미터
 	[Header("Move")]
 	public float walkSpeed = 3.5f;
@@ -139,7 +141,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 		}
 
 		//만약 내 플레이어가 아니라면
-		if (!photonView.IsMine)
+		if (!photonView.IsMine || IsAI)
 		{
 			if (playerInput != null)
 			{
@@ -189,7 +191,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	//해당 캐릭터가 활성화 혹은 비활성화 되면 움직임을 제한
 	private void OnEnable()
 	{
-		if (!photonView.IsMine) return;
+		if (!photonView.IsMine || IsAI) return;
 		moveAction?.Enable();
 		lookAction?.Enable();
 		sprintAction?.Enable();
@@ -202,7 +204,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 
 	private void OnDisable()
 	{
-		if (!photonView.IsMine) return;
+		if (!photonView.IsMine || IsAI) return;
 		moveAction?.Disable();
 		lookAction?.Disable();
 		sprintAction?.Disable();
@@ -270,7 +272,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 
 	private void Start()
 	{
-		if (!photonView.IsMine)
+		if (!photonView.IsMine || IsAI)
 		{
 			return;
 		}
@@ -315,7 +317,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	private void Update()
 	{
 		//내 photonView가 아니면 실행하지 않는다.
-		if (!photonView.IsMine)
+		if (!photonView.IsMine || IsAI)
 		{
 			return;
 		}
@@ -478,7 +480,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	private void HandleInteractFKey()
 	{
 		//내 객체가 아니면 return
-		if (!photonView.IsMine) return;
+		if (!photonView.IsMine || IsAI) return;
 		//내 턴이 아니면 return
 		if (!GameHelper.IsMyTurn()) return;
 		//현재 Hit 관련 UI가 활성화되지 않은 상태인 경우 return
@@ -491,7 +493,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	private void HandleInteractSpaceKey()
 	{
 		//내 객체가 아니면 return
-		if (!photonView.IsMine) return;
+		if (!photonView.IsMine || IsAI) return;
 		//내 턴이 아니면 return
 		if (!GameHelper.IsMyTurn()) return;
 
@@ -522,8 +524,8 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 			TimeManager.instance.AbortTurnTimer();
 		}
 
-		int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxAtkPow);
-		int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MinAtkPow);
+		int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow);
+		int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
 		damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
 		//Hit 애니메이션 재생 
 		PlayHit();
@@ -556,7 +558,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 		//stateKey가 1이면, 즉 Hit 관련 모션이면
 		if (stateKey == 1)
 		{
-			if (!photonView.IsMine) return;
+			if (!photonView.IsMine || IsAI) return;
 
 			if (damage < 0)
 			{
@@ -574,7 +576,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	//회전 관련 코드 실행
 	private void LateUpdate()
 	{
-		if (!photonView.IsMine)
+		if (!photonView.IsMine || IsAI)
 		{
 			return;
 		}

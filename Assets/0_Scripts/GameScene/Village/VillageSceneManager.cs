@@ -84,7 +84,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     /// </summary>
     public void SetLocalPlayerReady(bool isReady)
     {
-        PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.PlayerVillageReady, isReady);
+        PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.PlayerVillageReady, isReady);
     }
 
     public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)

@@ -93,7 +93,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
 
         //각 플레이어들의 마을 체력 프로퍼티를 확인하여, 0 이하인 플레이어들을 받아온다.
         Player[] destroyedVillage = PhotonNetwork.PlayerList.Where(
-            p => PhotonPropertyHelper.GetPlayerProp<float>(p, PlayerPropKeys.VillageHP) <= 0f).ToArray();
+            p => PhotonPropertyHelper.GetPlayerProp<float>(p.ActorNumber, PlayerPropKeys.VillageHP) <= 0f).ToArray();
 
         //만약 마을이 파괴된 플레이어가 없는 경우
         if (destroyedVillage.Length == 0) return false;

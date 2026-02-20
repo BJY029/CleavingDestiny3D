@@ -382,9 +382,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		}
 
 		//Rate 값 계산 및 반영
-		Player player = PhotonNetwork.CurrentRoom.GetPlayer(ActNum);
-		float currentRate = PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.TreeAtkMulti);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.TreeAtkMulti, currentRate * reduceRate);
+		float currentRate = PhotonPropertyHelper.GetPlayerProp<float>(ActNum, PlayerPropKeys.TreeAtkMulti);
+		PhotonPropertyHelper.SetPlayerProp(ActNum, PlayerPropKeys.TreeAtkMulti, currentRate * reduceRate);
 		Debug.Log($"Player{ActNum}'s Village Attack Mult Rate : {currentRate * reduceRate}");
 
 		//해당 아이템 삭제
@@ -640,20 +639,20 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 		if (res.attackerNum == PhotonNetwork.LocalPlayer.ActorNumber)
 		{
-			float currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage);
-			float currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier);
+			float currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.TotalDamage);
+			float currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageBarrier);
 
 			//데미지 합계 계산
 			currentTotalDamage += res.finalDamage;
 			//Barrier 값 계산
 			currentBarrier = currentBarrier + res.convertedBarrier;
 			//변경된 스탯 값 프로퍼티에 업데이트
-			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage, currentTotalDamage);
+			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.TotalDamage, currentTotalDamage);
 			Debug.Log($"Player{PhotonNetwork.LocalPlayer.ActorNumber}s TotalDamage : {currentTotalDamage}");
-			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, currentBarrier);
+			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageBarrier, currentBarrier);
 			Debug.Log($"Player{PhotonNetwork.LocalPlayer.ActorNumber}s Barrier : {currentBarrier}");
 		}
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.PDamageProcessCompleted, true);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.PDamageProcessCompleted, true);
 		TurnManager.Instance.PlayerDamageChecker(attackerNum);
 	}
 

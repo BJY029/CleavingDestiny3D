@@ -31,9 +31,9 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	private float currentConBarrier;
 	private float currentTreeDmgMulit;
 
-	public float GetMaxVillageHp() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxVillageHP); }
-	public float GetCurrentVillageHP() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageHP); }
-	public float GetCurrentBarrier() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier); }
+	public float GetMaxVillageHp() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxVillageHP); }
+	public float GetCurrentVillageHP() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageHP); }
+	public float GetCurrentBarrier() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageBarrier); }
 
 	public void SetPlayerInventory(GameObject inv)
 	{
@@ -65,6 +65,28 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		currentTreeDmgMulit = GetValue<float>(props, PlayerPropKeys.TreeAtkMulti);
 
 		maxVillageHp = GetValue<float>(props, PlayerPropKeys.MaxVillageHP);
+	}
+
+	public void GetCurrentPlayerStatus(int aiNumber)
+	{
+		var props = PhotonNetwork.CurrentRoom.CustomProperties;
+
+		string attachedKey = $"_{aiNumber}";
+
+		currentCarryOverEnergy = GetValue<int>(props, PlayerPropKeys.CarryOverEnergy + attachedKey);
+		currentEnergy = GetValue<int>(props, PlayerPropKeys.Energy + attachedKey);
+		currentMaxEnergy = GetValue<int>(props, PlayerPropKeys.MaxEnergy + attachedKey);
+		currentMaxAtkDamage = GetValue<int>(props, PlayerPropKeys.MaxAtkPow + attachedKey);
+		currentMinAtkDamage = GetValue<int>(props, PlayerPropKeys.MinAtkPow + attachedKey);
+
+		currentVillageHP = GetValue<float>(props, PlayerPropKeys.VillageHP + attachedKey);
+		currentBarrier = GetValue<float>(props, PlayerPropKeys.VillageBarrier + attachedKey);
+		currentConBarrier = GetValue<float>(props, PlayerPropKeys.BarrierConversionRate + attachedKey);
+		currentTotalDamage = GetValue<float>(props, PlayerPropKeys.TotalDamage + attachedKey);
+
+		currentTreeDmgMulit = GetValue<float>(props, PlayerPropKeys.TreeAtkMulti + attachedKey);
+
+		maxVillageHp = GetValue<float>(props, PlayerPropKeys.MaxVillageHP + attachedKey);
 	}
 
 	// 안전하게 값을 꺼내는 유틸리티 함수
@@ -105,10 +127,10 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		currentTotalDamage = 0;
 		currentBarrier = playerSet.villageBarrier;
 
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.Energy, currentEnergy);
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.CarryOverEnergy, playerSet.carryOverEnergy);
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage, currentTotalDamage);
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, currentBarrier);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.Energy, currentEnergy);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.CarryOverEnergy, playerSet.carryOverEnergy);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.TotalDamage, currentTotalDamage);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageBarrier, currentBarrier);
 	}
 
 	// 플레이어 프로퍼티가 변경될 때 UI에 반영
@@ -140,8 +162,8 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		currentBarrier = currentTotalDamage * (1 + currentConBarrier);
 
 		// 변경된 값을 네트워크 프로퍼티에 업데이트
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.TotalDamage, currentTotalDamage);
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageBarrier, currentBarrier);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.TotalDamage, currentTotalDamage);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageBarrier, currentBarrier);
 
 		// 계산된 데미지 반환
 		return HitDamage;
@@ -174,17 +196,42 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 
 		Debug.Log($"Final Village HP : {currentVillageHP}");
 		// 프로퍼티 업데이트
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageHP, currentVillageHP);
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VDamageProcessCompleted, true);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageHP, currentVillageHP);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VDamageProcessCompleted, true);
 		InitTreeAtkMultRate();
 
 		//데미지 처리가 끝났다고 MasterClient에게 송신
 		TurnManager.Instance.TreeDamageChecker();
 	}
 
+	public void DamagedVillage(float damage, int aiNumber)
+	{
+		GetCurrentPlayerStatus(aiNumber);
+
+		damage *= currentTreeDmgMulit;
+		damage -= currentBarrier;
+		if (damage < 0) damage = 0;
+
+		currentVillageHP -= damage;
+
+		if (currentVillageHP <= 0)
+		{
+			currentVillageHP = 0;
+		}
+
+		PhotonPropertyHelper.SetPlayerProp(aiNumber, PlayerPropKeys.VillageHP, currentVillageHP);
+		PhotonPropertyHelper.SetPlayerProp(aiNumber, PlayerPropKeys.VDamageProcessCompleted, true);
+
+		TurnManager.Instance.TreeDamageChecker();
+	}
+
 	public void InitTreeAtkMultRate()
 	{
-		Player player = PhotonNetwork.LocalPlayer;
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.TreeAtkMulti, 1f);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.TreeAtkMulti, 1f);
+	}
+
+	public void InitTreeAtkMultRate(int aiNumber)
+	{
+		PhotonPropertyHelper.SetPlayerProp(aiNumber, PlayerPropKeys.TreeAtkMulti, 1f);
 	}
 }

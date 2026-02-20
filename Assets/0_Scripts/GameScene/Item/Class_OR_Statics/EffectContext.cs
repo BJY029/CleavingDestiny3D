@@ -38,8 +38,7 @@ public class EffectContext
 
 	public float GetPlayerVillageHP(int actorNum)
 	{
-		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
-		return PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.VillageHP);
+		return PhotonPropertyHelper.GetPlayerProp<float>(actorNum, PlayerPropKeys.VillageHP);
 	}
 
 	public void SetPlayerVIllageHP(int actorNum, float newHP)
@@ -50,14 +49,12 @@ public class EffectContext
 			return;
 		}
 
-		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageHP, newHP);
+		PhotonPropertyHelper.SetPlayerProp(actorNum, PlayerPropKeys.VillageHP, newHP);
 	}
 
 	public float GetPlayerVillageShield(int actorNum)
 	{
-		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
-		return PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.VillageBarrier);
+		return PhotonPropertyHelper.GetPlayerProp<float>(actorNum, PlayerPropKeys.VillageBarrier);
 	}
 
 	public void SetPlayerVIllageShield(int actorNum, float newValue)
@@ -68,14 +65,12 @@ public class EffectContext
 			return;
 		}
 
-		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.VillageBarrier, newValue);
+		PhotonPropertyHelper.SetPlayerProp(actorNum, PlayerPropKeys.VillageBarrier, newValue);
 	}
 
 	public int GetPlayerEng(int actorNum)
 	{
-		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
-		return PhotonPropertyHelper.GetPlayerProp<int>(player, PlayerPropKeys.Energy);
+		return PhotonPropertyHelper.GetPlayerProp<int>(actorNum, PlayerPropKeys.Energy);
 	}
 
 	public void SetPlayerEng(int actorNum, int newValue)
@@ -86,14 +81,12 @@ public class EffectContext
 			return;
 		}
 
-		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Energy, newValue);
+		PhotonPropertyHelper.SetPlayerProp(actorNum, PlayerPropKeys.Energy, newValue);
 	}
 
 	public float GetBarrierConversionRate(int actorNum)
 	{
-		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
-		return PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.BarrierConversionRate);
+		return PhotonPropertyHelper.GetPlayerProp<float>(actorNum, PlayerPropKeys.BarrierConversionRate);
 	}
 
 	public void AddPlayerLockPickCount(int actorNum)

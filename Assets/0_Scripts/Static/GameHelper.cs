@@ -1,18 +1,30 @@
 using Photon.Pun;
+using Photon.Realtime;
 using UnityEngine;
 
 public static class GameHelper
 {
 	//현재 내 턴인지 확인하는 함수
-    public static bool IsMyTurn()
-    {
+	public static bool IsMyTurn()
+	{
 		var room = PhotonNetwork.CurrentRoom;
 		if (room == null) return false;
 
 		int CurrentTurn = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
-		int myTurn = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MyTurn);
+		int myTurn = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MyTurn);
 
 		return CurrentTurn == myTurn;
+	}
+
+	public static bool IsCurrentTurnAI()
+	{
+		var room = PhotonNetwork.CurrentRoom;
+		if (room == null) return false;
+
+		int CurrentTurn = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
+		Player p = PhotonNetwork.CurrentRoom.GetPlayer(CurrentTurn);
+
+		return p == null;
 	}
 
 	public static int getCurrentTurnActorNum()

@@ -118,7 +118,7 @@ GameObject:
   - component: {fileID: 3458281315925677879}
   - component: {fileID: -5885677484571991951}
   m_Layer: 9
-  m_Name: Player1
+  m_Name: Player1_AI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -233,7 +233,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 755d1dcd1519a4b448be6037cdd7253e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  IsAI: 0
+  IsAI: 1
   walkSpeed: 2.5
   sprintSpeed: 6
   rotationSmoothTime: 0.08

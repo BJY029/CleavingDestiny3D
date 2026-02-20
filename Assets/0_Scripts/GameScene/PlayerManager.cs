@@ -134,12 +134,18 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		CameraSwitchManager.Instance.Branch_to_Game();
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
+
 		GameObject spawnPlayer = PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
+		PlayerController pc = spawnPlayer.GetComponent<PlayerController>();
+		pc.PlayerActNum = myActNum;
+		pc.IsAI = false;
 		LocalPlayerObj = spawnPlayer;
+
 		GameObject PlayersInv = PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[myActNum - 1], spawnInvRot[myActNum - 1]);
 		PlayerStatus.Instance.SetPlayerInventory(PlayersInv);
 		InventoryBarrier ib = PlayersInv.GetComponentInChildren<InventoryBarrier>();
 		ib.SetPermission(spawnPlayer);
+
 		TrySpawnAI();
 
 
@@ -169,8 +175,14 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 				int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
 				int opposite_num = myActNum == 1 ? 2 : 1;
 
-				GameObject spawnAI = PhotonNetwork.InstantiateRoomObject($"Player/Player{opposite_num}", spawnPos[opposite_num - 1], spawnRot[opposite_num - 1]);
+				GameObject spawnAI = PhotonNetwork.InstantiateRoomObject($"Player/Player{opposite_num}_AI", spawnPos[opposite_num - 1], spawnRot[opposite_num - 1]);
+				PlayerController AIController = spawnAI.GetComponent<PlayerController>();
+				AIController.PlayerActNum = rp.actorNumber;
+
 				GameObject spawnAIInv = PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[opposite_num - 1], spawnInvRot[opposite_num - 1]);
+				//PlayerStatus.Instance.SetPlayerInventory(spawnAIInv);
+				//InventoryBarrier ib = spawnAIInv.GetComponentInChildren<InventoryBarrier>();
+				//ib.SetPermission(spawnAIInv);
 			}
 		}
 	}
@@ -197,7 +209,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 				if (p == PhotonNetwork.LocalPlayer)
 				{
-					PhotonPropertyHelper.SetPlayerProp(p, PlayerPropKeys.MyTurn, i);
+					PhotonPropertyHelper.SetPlayerProp(p.ActorNumber, PlayerPropKeys.MyTurn, i);
 				}
 			}
 			else
@@ -338,7 +350,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		Debug.Log(roomSetting.lockCount);
 		//모든 프로퍼티가 준비 완료된 경우
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.IsReady, true);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.IsReady, true);
 
 		Debug.Log("Init Player Props Success");
 	}
