@@ -50,8 +50,11 @@ public class LocalizedText : MonoBehaviour
 
     private void OnDisable()
     {
-        // 비활성화될 때 구독 해제
-        LocalizationManager.Instance.OnLanguageChanged -= UpdateText;
+        if (LocalizationManager.Instance != null)
+        {
+            // 비활성화될 때 구독 해제
+            LocalizationManager.Instance.OnLanguageChanged -= UpdateText;
+        }
     }
 
     private void UpdateText()

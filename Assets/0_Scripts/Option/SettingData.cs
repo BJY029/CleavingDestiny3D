@@ -11,7 +11,6 @@ namespace Option
         public int screenModeIndex = 0;
         public int fpsLimitIndex = 0;
         public bool vSync = true;
-        public int languageIndex = 0;
         public float fov = 60f;
         public bool invertY = false;
         public float mouseSensitivity = 1f;

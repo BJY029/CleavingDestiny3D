@@ -8,6 +8,7 @@ namespace Option
 {
     public class GamePlaySetting : MonoBehaviour
     {
+        [Header("Gameplay Setting Elements")]
         [SerializeField] DropdownSetting resoulutionSetting;
         [SerializeField] DropdownSetting screenModeSetting;
         [SerializeField] DropdownSetting fpsLimitSetting;
@@ -17,12 +18,17 @@ namespace Option
         [SerializeField] ToggleSetting invertYSetting;
         [SerializeField] SliderWithTextSetting mouseSensitivitySetting;
 
+        [Header("Check Panel")]
+        [SerializeField] CheckPanel checkPanel;
+
         private SettingData SettingData => OptionManager.Instance.settingData;
 
         List<Resolution> resolutions;
         FullScreenMode fullScreenMode;
 
-        void Start()
+        LocalizedString checkResolutionMessage = new LocalizedString(CSV_Type.Option, "Button_CheckResol");
+
+        public void Initialize()
         {
             double maxFps = 0;
 
@@ -49,14 +55,10 @@ namespace Option
                 maxFps = Math.Max(maxFps, reso[i].refreshRateRatio.value);
             }
             resoulutionSetting.SetOptions(options);
-            resoulutionSetting.SetSelectedIndex(SettingData.resolutionIndex);
-            resoulutionSetting.AddListener(OnResolutionChanged);
 
             // 화면 모드 설정
-            List<string> screenModeKeys = new List<string> { "Option_FullScreen", "Option_Borderless", "Option_Windowed" };
+            List<string> screenModeKeys = new List<string> { "Screen_FullScreen", "Screen_Borderless", "Screen_Windowed" };
             screenModeSetting.SetLocalizedOptions(screenModeKeys, CSV_Type.Option);
-            screenModeSetting.SetSelectedIndex(SettingData.screenModeIndex);
-            screenModeSetting.AddListener(OnScreenModeChanged);
 
             // FPS 제한 설정
             int[] fpsList = new int[] { 30, 60, 120, 144, 165, 240 };
@@ -68,6 +70,18 @@ namespace Option
             }
             fpsOptions.Add("Unlimited");
             fpsLimitSetting.SetOptions(fpsOptions);
+
+            if (!OptionManager.Instance.isInitialized)
+            {
+                SetDefaultValues();
+            }
+
+            resoulutionSetting.SetSelectedIndex(SettingData.resolutionIndex);
+            resoulutionSetting.AddListener(OnResolutionChanged);
+
+            screenModeSetting.SetSelectedIndex(SettingData.screenModeIndex);
+            screenModeSetting.AddListener(OnScreenModeChanged);
+
             fpsLimitSetting.SetSelectedIndex(SettingData.fpsLimitIndex);
             fpsLimitSetting.AddListener(OnFpsLimitChanged);
 
@@ -110,10 +124,91 @@ namespace Option
                 OptionManager.Instance.settingData.mouseSensitivity = value;
                 // 게임 씬에서 입력 처리 시 적용해야함.
             });
+
+            // 저장된 설정(해상도,FPS제한 등)을 이번 실행에 적용
+            ApplySavedSettings();
+        }
+
+        private void SetDefaultValues()
+        {
+            // 해상도 초기값: 현재 화면 해상도 찾기
+            string currentRes = Screen.currentResolution.width + " x " + Screen.currentResolution.height;
+            int foundIndex = resolutions.FindIndex(r => (r.width + " x " + r.height) == currentRes);
+            SettingData.resolutionIndex = (foundIndex != -1) ? foundIndex : resolutions.Count - 1;
+
+            // 화면 모드 초기값 (FullScreenMode 기준)
+            if (Screen.fullScreenMode == FullScreenMode.Windowed) SettingData.screenModeIndex = 2;
+            else if (Screen.fullScreenMode == FullScreenMode.FullScreenWindow) SettingData.screenModeIndex = 1;
+            else SettingData.screenModeIndex = 0;
+
+            // FPS 제한: Unlimited
+            SettingData.fpsLimitIndex = fpsLimitSetting.OptionsCount - 1;
+
+            // VSync 등은 SettingData 기본값을 따름
+        }
+
+        private void ApplySavedSettings()
+        {
+            // 1. 화면 모드 적용
+            // 인덱스 유효성 검사 (0, 1, 2)
+            if (SettingData.screenModeIndex < 0 || SettingData.screenModeIndex > 2)
+            {
+                SettingData.screenModeIndex = 0; // Default: FullScreen
+            }
+            OnScreenModeChanged(SettingData.screenModeIndex);
+
+            // 2. 해상도 적용
+            // 해상도 인덱스가 유효하지 않다면 현재 해상도로 재설정
+            if (SettingData.resolutionIndex < 0 || SettingData.resolutionIndex >= resolutions.Count)
+            {
+                // 현재 화면 해상도와 일치하는 인덱스 찾기
+                string currentRes = Screen.currentResolution.width + " x " + Screen.currentResolution.height;
+                int foundIndex = -1;
+                for (int i = 0; i < resoulutionSetting.OptionsCount; i++)
+                {
+                    if (resoulutionSetting.GetOptionText(i) == currentRes)
+                    {
+                        foundIndex = i;
+                        break;
+                    }
+                }
+                SettingData.resolutionIndex = (foundIndex != -1) ? foundIndex : resolutions.Count - 1;
+            }
+            SetResolution(SettingData.resolutionIndex);
+
+            // 3. FPS 제한 적용
+            if (SettingData.fpsLimitIndex < 0 || SettingData.fpsLimitIndex >= fpsLimitSetting.OptionsCount)
+            {
+                SettingData.fpsLimitIndex = fpsLimitSetting.OptionsCount - 1; // Default: Unlimited
+            }
+            OnFpsLimitChanged(SettingData.fpsLimitIndex);
+
+            // 4. VSync 적용
+            OnVSyncChanged(SettingData.vSync);
+
         }
 
 
         private void OnResolutionChanged(int index)
+        {
+            SetResolution(index);
+
+            checkPanel.ShowWithTimeout(
+                checkResolutionMessage,
+                null,
+                () =>
+                {
+                    // 취소 시 이전 해상도로 되돌리기
+                    int prevIndex = SettingData.resolutionIndex;
+                    var prevReso = resolutions[prevIndex];
+                    Screen.SetResolution(prevReso.width, prevReso.height, fullScreenMode);
+                    resoulutionSetting.SetSelectedIndex(prevIndex);
+                },
+                15 // 15초 타임아웃
+            );
+        }
+
+        private void SetResolution(int index)
         {
             SettingData.resolutionIndex = index;
             var reso = resolutions[index];
@@ -149,8 +244,7 @@ namespace Option
 
         private void OnLanguageChanged(int index)
         {
-            SettingData.languageIndex = index;
-            LocalizationManager.Instance.currentLanguage = (Language)index;
+            LocalizationManager.Instance.SetLanguage((Language)index);
         }
     }
 }

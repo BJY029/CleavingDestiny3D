@@ -1,17 +1,23 @@
 ID,KR,EN
-Option_Title,옵션,Options
-Option_GamePlay,게임 플레이,Gameplay
-Option_Sound,사운드,Sound
-Option_KeyBind,키 설정,Key Bind
-Option_Exit,나가기,Exit
-Option_Apply,적용,Apply
-Option_Reset,초기화,Reset
-Option_Resolution,해상도,Resolution
-Option_ScreenMode,화면 모드,Screen Mode
-Option_FullScreen,전체 화면,Full Screen
-Option_Windowed,창 모드,Windowed
-Option_Borderless,경계선 없는 창 모드,Borderless
-Option_FPSLimit,프레임 제한,Frame Limit
-Option_VSync,수직 동기화,V-Sync
-Option_Language,언어,Language
-Option_LanguageID,한국어,English
+Title,옵션,Options
+Category_GamePlay,게임 플레이,Gameplay
+Category_Sound,사운드,Sound
+Category_KeyBind,키 설정,Key Bind
+Gameplay_Resolution,해상도,Resolution
+Gameplay_ScreenMode,화면 모드,Screen Mode
+Gameplay_FPSLimit,프레임 제한,Frame Limit
+Gameplay_VSync,수직 동기화,V-Sync
+Gameplay_Language,언어,Language
+Gameplay_FOV,시야각,FOV,
+Gameplay_MouseYInvert,마우스 Y축 반전,Mouse Y Invert
+Gameplay_MouseSensitivity,마우스 감도,Mouse Sensitivity
+Screen_FullScreen,전체 화면,Full Screen
+Screen_Windowed,창 모드,Windowed
+Screen_Borderless,경계선 없는 창 모드,Borderless
+Button_Aceept,확인,Accept
+Button_Exit,나가기,Exit
+Button_CheckResol,이 해상도 설정을 적용하시겠습니까? ({0}),Do you want to apply this setting? ({0})
+Button_Cancel,취소,Cancel
+Sound_MasterVolume,마스터 볼륨,Master Volume
+Sound_MusicVolume,음악 볼륨,Music Volume
+Sound_SFXVolume,효과음 볼륨,SFX Volume

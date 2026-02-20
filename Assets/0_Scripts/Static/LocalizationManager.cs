@@ -20,11 +20,6 @@ public class LocalizationManager : MonoBehaviour
 			if (_instance == null)
 			{
 				_instance = FindFirstObjectByType<LocalizationManager>();
-				// 씬에 없으면 새로 생성 (이 시스템으로 인해 인스펙터로 설정이 불가능한 점 유의)
-				if (_instance == null)
-				{
-					_instance = new GameObject("LocalizationManager").AddComponent<LocalizationManager>();
-				}
 			}
 			return _instance;
 		}
@@ -41,7 +36,7 @@ public class LocalizationManager : MonoBehaviour
 	public event Action OnLanguageChanged;
 	public bool IsLoaded { get; private set; } = false;
 
-	private const string CSV_SPLIT_REGEX = @",(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";
+	const string languageSaveKey = "Language";
 
 	private void Awake()
 	{
@@ -50,8 +45,19 @@ public class LocalizationManager : MonoBehaviour
 			Destroy(gameObject);
 			return;
 		}
+
 		_instance = this;
 		DontDestroyOnLoad(gameObject);
+
+		// 저장된 언어 설정이 있다면 불러오기
+		if (PlayerPrefs.HasKey(languageSaveKey))
+		{
+			string savedLang = PlayerPrefs.GetString(languageSaveKey);
+			if (Enum.TryParse(savedLang, out Language lang))
+			{
+				currentLanguage = lang;
+			}
+		}
 
 		InitializeLocalization().Forget();
 	}
@@ -346,6 +352,10 @@ public class LocalizationManager : MonoBehaviour
 	{
 		if (currentLanguage == lang) return;
 		currentLanguage = lang;
+
+		// 변경된 언어 설정 저장
+		PlayerPrefs.SetString(languageSaveKey, lang.ToString());
+
 		InitializeLocalization().Forget();
 	}
 
