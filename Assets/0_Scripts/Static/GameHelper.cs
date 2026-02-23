@@ -21,8 +21,8 @@ public static class GameHelper
 		var room = PhotonNetwork.CurrentRoom;
 		if (room == null) return false;
 
-		int CurrentTurn = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
-		Player p = PhotonNetwork.CurrentRoom.GetPlayer(CurrentTurn);
+		int CurrentTurnAct = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+		Player p = PhotonNetwork.CurrentRoom.GetPlayer(CurrentTurnAct);
 
 		return p == null;
 	}

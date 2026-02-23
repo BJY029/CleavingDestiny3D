@@ -21,10 +21,10 @@ public interface IMinigameInteractable
 
 //CharacterController 컴포넌트 강제 할당
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviourPun, IAnimNotify
+public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 {
 	public bool IsAI = false;
-	public int PlayerActNum { private get; set; }
+	public int PlayerActNum { get; set; }
 	//움직임 관련 파라미터
 	[Header("Move")]
 	public float walkSpeed = 3.5f;
@@ -296,7 +296,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	}
 
 	//마을 업그레이드에 돌입시 실행될 함수
-	private void VillageUpgradePahse()
+	public void VillageUpgradePhase()
 	{
 		//플레이어 카메라를 끄고
 		cam.enabled = false;
@@ -305,7 +305,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	}
 
 	//마을 업그레이드가 끝나면 실행될 함수
-	private void VillageUpgradePahseOut()
+	public void VillageUpgradePhaseOut()
 	{
 		//메인 카메라 끄고
 		CameraSwitchManager.Instance.GameCameraToggle(false);
@@ -359,7 +359,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 			if (!UpgradePhase)
 			{
 				//처리 진행후
-				VillageUpgradePahse();
+				VillageUpgradePhase();
 				//마을 업그레이드 페이즈에 돌입했음을 명시
 				UpgradePhase = true;
 			}
@@ -372,7 +372,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 			if (UpgradePhase)
 			{
 				//관련 처리 진행 후
-				VillageUpgradePahseOut();
+				VillageUpgradePhaseOut();
 				//마을 업그레이드 페이즈에서 빠져나왔음을 명시
 				UpgradePhase = false;
 			}
@@ -532,7 +532,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	}
 
 	//Hit 애니메이션을 재생하는 함수
-	private void PlayHit()
+	public void PlayHit()
 	{
 		//모션 재생 플래그 활성화
 		WhileHittingMotion = true;
@@ -566,7 +566,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 				return;
 			}
 			//Hit 한 순간의 데미지 값을 인자로 해서 턴 전환 함수 호출
-			TurnManager.Instance.RequestChangeTurn(damage);
+			TurnManager.Instance.RequestChangeTurn(damage, this);
 			damage = -1;
 			WhileHittingMotion = false;
 			//PlayerCanvasController.Instance.SetHitTextActive();

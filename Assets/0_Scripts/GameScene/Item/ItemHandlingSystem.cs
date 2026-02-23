@@ -487,17 +487,17 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	}
 
 	//턴 전환 시 호출될 함수
-	public void RequestHit(int baseDamage, bool isBasicAttack)
+	public void RequestHit(int baseDamage, bool isBasicAttack, IPlayerAction requester)
 	{
 		//json 형식으로 공격 커맨드 객체 생성
 		var cmd = new AttackCommand
 		{
-			attackerNum = PhotonNetwork.LocalPlayer.ActorNumber,
+			attackerNum = requester.PlayerActNum,//인터페이스를 통해서 플레이어의 고유 번호 받아온다.
 			baseDamage = baseDamage,
 			isBasicAttack = isBasicAttack,
 			clientNonce = UnityEngine.Random.Range(int.MinValue, int.MaxValue),
 		};
-
+		Debug.Log("커맨드 생성, RPC 전송");
 		//Json 형태로 직렬화 해서 MasterClient에게 요청 전송
 		photonView.RPC(nameof(RPC_RequestAttack), RpcTarget.MasterClient, JsonUtility.ToJson(cmd));
 	}
@@ -508,15 +508,18 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	{
 		//검증
 		if (!PhotonNetwork.IsMasterClient) return;
-
+		Debug.Log("역직렬화 수행");
 		//역직렬화
 		var cmd = JsonUtility.FromJson<AttackCommand>(json);
 
 		//요청자와 객체 정보가 같은지 확인(핵 방지)
 		if (info.Sender.ActorNumber != cmd.attackerNum)
 		{
-			Debug.LogError("[ERROR]It is not real Requester");
-			return;
+			if (!GameHelper.IsCurrentTurnAI())//현재 AI 턴 또한 아닌 경우
+			{
+				Debug.LogError("[ERROR]It is not real Requester");
+				return;
+			}
 		}
 		//턴 검증 2
 		if (!IsMyTurnCheckInMaster(cmd.attackerNum))
@@ -539,13 +542,16 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//최종 데미지 계산(아이템도 함께 반영하여 계산)
 		_damageResolver.Resolve(dmg, ctx);
 
+
 		//각 아이템의 남은 턴 수 계산, 남은 턴수가 모두 지나면 해당 아이템을 _statusSystem 리스트에서 삭제한다.
 		_statusSystem.TickTurnEnd(cmd.attackerNum);
+
 
 		//나무 데미지 업데이트
 		float hp = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeHP);
 		hp -= dmg.finalDamage;
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, hp);
+
 
 		//TODO: 게임 종료 검증
 		if (MatchResultManager.Instance.TryResolveResultByTreeHP())
@@ -561,6 +567,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	//마스터 클라이언트가 계산 결과를 각 클라이언트에게 브로드캐스트 하는 함수
 	private void BroadcastHitResult(int attackNum, int finalDmg, float finalBarrierConverted, bool hidden, float treeHPAfter)
 	{
+		Debug.Log("Broadcast in");
 		Debug.Log("Final Damage : " + finalDmg);
 
 		//플레이어 배열 가져오기
@@ -585,9 +592,15 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//예외 처리
 		if (attacker == null)
 		{
-			Debug.LogError("No Attacker Player Info");
-			return;
+			//해당 플레이어가 AI 플레이어인지 확인
+			//AI이면 그냥 null 처리
+			if (!PlayerManager.Instance.AIPlayerObj.ContainsKey(attackNum))
+			{
+				Debug.LogError("No Attacker Player Info");
+				return;
+			}
 		}
+
 
 		//공격자(요청자)에게 전달할 json 객체
 		var fullInfo = new AttackResult
@@ -613,11 +626,44 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//직렬화
 		string fullInfoJson = JsonUtility.ToJson(fullInfo);
 		string maskedInfoJson = JsonUtility.ToJson(maskedInfo);
-		//각 요청자와 그외 플레이어들에게 RPC로 결과 전송
-		photonView.RPC(nameof(RPC_OnAttackResult), attacker, attacker.ActorNumber, fullInfoJson);
-		foreach (Player player in opposites)
+
+
+		//현재 턴이 AI인 경우
+		if (GameHelper.IsCurrentTurnAI())
 		{
-			photonView.RPC(nameof(RPC_OnAttackResult), player, attacker.ActorNumber, maskedInfoJson);
+			Debug.Log("AI_OnAttackResult");
+			//AI에게 공격 결과 전송
+			AI_OnAttackResult(attackNum, fullInfoJson);
+			//만약 AI의 상대방(즉, MasterClient)에게 관련 정보를 전달하려면, 추가함수를 구성하도록 설정
+		}
+		else
+		{
+			Debug.Log("MOT AI_OnAttackResult");
+			//각 요청자와 그외 플레이어들에게 RPC로 결과 전송
+			photonView.RPC(nameof(RPC_OnAttackResult), attacker, attacker.ActorNumber, fullInfoJson);
+			if (GameManager.Instance.isSoloPlay)    //현재 싱글 플레이하는 중이면
+			{
+				foreach (var kvp in PlayerManager.Instance.Players)
+				{
+					//ai 플레이어 찾고
+					int actNum = kvp.Value.actorNumber;
+					Player p = PhotonNetwork.CurrentRoom.GetPlayer(actNum);
+
+					if (p == null)  //p == ai 플레이어
+					{
+						//해당 플레이어의 준비 여부 임의로 설정
+						PhotonPropertyHelper.SetPlayerProp(actNum, PlayerPropKeys.PDamageProcessCompleted, true);
+						TurnManager.Instance.PlayerDamageChecker(attacker.ActorNumber);
+					}
+				}
+			}
+			else
+			{
+				foreach (Player player in opposites)
+				{
+					photonView.RPC(nameof(RPC_OnAttackResult), player, attacker.ActorNumber, maskedInfoJson);
+				}
+			}
 		}
 	}
 
@@ -652,6 +698,29 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageBarrier, currentBarrier);
 			Debug.Log($"Player{PhotonNetwork.LocalPlayer.ActorNumber}s Barrier : {currentBarrier}");
 		}
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.PDamageProcessCompleted, true);
+		TurnManager.Instance.PlayerDamageChecker(attackerNum);
+	}
+
+	private void AI_OnAttackResult(int attackerNum, string json)
+	{
+		var res = JsonUtility.FromJson<AttackResult>(json);
+
+		float currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(attackerNum, PlayerPropKeys.TotalDamage);
+		float currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(attackerNum, PlayerPropKeys.VillageBarrier);
+
+		//데미지 합계 계산
+		currentTotalDamage += res.finalDamage;
+		//Barrier 값 계산
+		currentBarrier = currentBarrier + res.convertedBarrier;
+		//변경된 스탯 값 프로퍼티에 업데이트
+		PhotonPropertyHelper.SetPlayerProp(attackerNum, PlayerPropKeys.TotalDamage, currentTotalDamage);
+		Debug.Log($"Player{attackerNum}s TotalDamage : {currentTotalDamage}");
+		PhotonPropertyHelper.SetPlayerProp(attackerNum, PlayerPropKeys.VillageBarrier, currentBarrier);
+		Debug.Log($"Player{attackerNum}s Barrier : {currentBarrier}");
+
+		//AI 플레이어와 다른 플레이어(즉 마스트 클라)의 준비 여부 설정
+		PhotonPropertyHelper.SetPlayerProp(attackerNum, PlayerPropKeys.PDamageProcessCompleted, true);
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.PDamageProcessCompleted, true);
 		TurnManager.Instance.PlayerDamageChecker(attackerNum);
 	}

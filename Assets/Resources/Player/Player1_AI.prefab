@@ -110,13 +110,11 @@ GameObject:
   m_Component:
   - component: {fileID: 4748059610868810890}
   - component: {fileID: 3710110911519245321}
-  - component: {fileID: 7825513209988416640}
   - component: {fileID: 5684972878656882415}
-  - component: {fileID: 6656179815138805705}
+  - component: {fileID: 4777240268774313513}
   - component: {fileID: -7706094444651068393}
   - component: {fileID: -1081810206017964554}
-  - component: {fileID: 3458281315925677879}
-  - component: {fileID: -5885677484571991951}
+  - component: {fileID: -4189926361347790040}
   m_Layer: 9
   m_Name: Player1_AI
   m_TagString: Untagged
@@ -166,36 +164,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &7825513209988416640
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 171133721816373843}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.PlayerInput
-  m_Actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  m_NotificationBehavior: 0
-  m_UIInputModule: {fileID: 0}
-  m_DeviceLostEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_DeviceRegainedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ControlsChangedEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  m_ActionEvents: []
-  m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: Keyboard&Mouse
-  m_DefaultActionMap: Player
-  m_SplitScreenIndex: -1
-  m_Camera: {fileID: 0}
 --- !u!143 &5684972878656882415
 CharacterController:
   m_ObjectHideFlags: 0
@@ -221,7 +189,7 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.8, z: 0}
---- !u!114 &6656179815138805705
+--- !u!114 &4777240268774313513
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -230,35 +198,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 171133721816373843}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 755d1dcd1519a4b448be6037cdd7253e, type: 3}
+  m_Script: {fileID: 11500000, guid: 07c4da82bb2fab5488caecdcb15a8e08, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  IsAI: 1
-  walkSpeed: 2.5
+  m_EditorClassIdentifier: Assembly-CSharp::AIController
+  walkSpeed: 3.5
   sprintSpeed: 6
   rotationSmoothTime: 0.08
   accelation: 12
   deceleration: 12
-  jumpHeight: 1.2
-  gravity: -20
-  groundCheck: {fileID: 8673037600978355289}
-  groundLayers:
-    serializedVersion: 2
-    m_Bits: 8
-  pivotTransform: {fileID: 8768914202102556574}
-  _mainCamera: {fileID: 2149352489403332841}
-  cameraDistance: 1
-  mouseSensitivity: 0.1
-  TopClamp: 35
-  BottomClamp: -80
-  playerInput: {fileID: 7825513209988416640}
-  isGrounded: 0
-  RayDistance: 5
-  RayMultiplyer: 0
-  targetLayer:
-    serializedVersion: 2
-    m_Bits: 1408
-  isLookingAtTree: 0
 --- !u!114 &-7706094444651068393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -293,69 +240,33 @@ MonoBehaviour:
   OwnershipTransfer: 0
   observableSearch: 2
   ObservedComponents:
-  - {fileID: 3458281315925677879}
-  - {fileID: -5885677484571991951}
+  - {fileID: 0}
+  - {fileID: 0}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
---- !u!114 &3458281315925677879
-MonoBehaviour:
+--- !u!195 &-4189926361347790040
+NavMeshAgent:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 171133721816373843}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonTransformView
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0
-  m_UseLocal: 1
---- !u!114 &-5885677484571991951
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 171133721816373843}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhotonUnityNetworking::Photon.Pun.PhotonAnimatorView
-  ShowLayerWeightsInspector: 1
-  ShowParameterInspector: 1
-  m_SynchronizeParameters:
-  - Type: 1
-    SynchronizeType: 0
-    Name: Speed_X
-  - Type: 1
-    SynchronizeType: 0
-    Name: Speed_Z
-  - Type: 4
-    SynchronizeType: 0
-    Name: Jump
-  - Type: 4
-    SynchronizeType: 0
-    Name: Grounded
-  - Type: 4
-    SynchronizeType: 0
-    Name: FreeFall
-  - Type: 1
-    SynchronizeType: 0
-    Name: MotionSpeed
-  - Type: 3
-    SynchronizeType: 0
-    Name: HitIndex
-  - Type: 9
-    SynchronizeType: 0
-    Name: Hit
-  m_SynchronizeLayers:
-  - SynchronizeType: 0
-    LayerIndex: 0
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!1 &545750753240696844
 GameObject:
   m_ObjectHideFlags: 0

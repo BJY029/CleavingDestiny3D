@@ -18,6 +18,11 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	//읽기 전용 딕셔너리
 	public IReadOnlyDictionary<int, RuntimePlayerInfo> Players => players;
 
+	public Dictionary<int, GameObject> AIPlayerObj = new Dictionary<int, GameObject>();
+
+	//AI 에서 사용되는 플래그, 준비 완료 여부를 나타낸다.
+	public bool succeedToPreapreGame = false;
+
 	//중복 초기화 방지 플래그
 	private bool isAlreadyInitialized;
 	//MAsterClietn 에서만 사용
@@ -157,6 +162,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
+
+		//AI에서 사용될 플래그, AI 모드에선 MasterClient만 해당 코드를 수행하므로, 별도의 처리 없이 그냥 플래그 초기화
+		succeedToPreapreGame = true;
 	}
 
 	//Masterclient가(즉 싱글 모드의 로컬 플레이어) AI 스폰 수행
@@ -171,13 +179,20 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 			if (p == null)
 			{
+				object[] initData = new object[1] { rp.actorNumber };
 				//int aiActNum = rp.actorNumber;
 				int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
 				int opposite_num = myActNum == 1 ? 2 : 1;
 
-				GameObject spawnAI = PhotonNetwork.InstantiateRoomObject($"Player/Player{opposite_num}_AI", spawnPos[opposite_num - 1], spawnRot[opposite_num - 1]);
-				PlayerController AIController = spawnAI.GetComponent<PlayerController>();
-				AIController.PlayerActNum = rp.actorNumber;
+				GameObject spawnAI = PhotonNetwork.InstantiateRoomObject(
+					$"Player/Player{opposite_num}_AI",
+					spawnPos[opposite_num - 1],
+					spawnRot[opposite_num - 1],
+					0,
+					initData);
+				AIPlayerObj.Add(rp.actorNumber, spawnAI);
+				//PlayerController AIController = spawnAI.GetComponent<PlayerController>();
+				//AIController.PlayerActNum = rp.actorNumber;
 
 				GameObject spawnAIInv = PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[opposite_num - 1], spawnInvRot[opposite_num - 1]);
 				//PlayerStatus.Instance.SetPlayerInventory(spawnAIInv);
