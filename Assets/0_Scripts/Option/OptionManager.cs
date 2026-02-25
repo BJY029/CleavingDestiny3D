@@ -16,6 +16,7 @@ namespace Option
 
         [SerializeField] CategorySwapper categorySwapper;
         [SerializeField] GamePlaySetting gamePlaySetting;
+        [SerializeField] SoundSetting soundSetting;
 
         private void Awake()
         {
@@ -36,7 +37,9 @@ namespace Option
             optionMenu = transform.GetChild(0).gameObject;
             optionMenu.SetActive(false);
             categorySwapper.SwapCategory(0);
+
             gamePlaySetting.Initialize();
+            soundSetting.Initialize();
         }
 
         /// <summary>
@@ -53,10 +56,14 @@ namespace Option
             }
         }
 
-        void SaveSetting()
+        async void SaveSetting()
         {
             string json = JsonUtility.ToJson(settingData);
-            File.WriteAllText(Application.persistentDataPath + "/setting.json", json);
+            string path = Application.persistentDataPath + "/setting.json";
+            await File.WriteAllTextAsync(path, json);
+#if UNITY_EDITOR
+            Debug.Log("Settings saved to: " + path);
+#endif
         }
 
         void LoadSetting()
@@ -72,6 +79,10 @@ namespace Option
             {
                 isInitialized = false;
                 settingData = new SettingData(); // 기본 설정으로 초기화
+
+#if UNITY_EDITOR
+                Debug.Log("No existing settings found. Initialized with default settings.");
+#endif
             }
         }
     }

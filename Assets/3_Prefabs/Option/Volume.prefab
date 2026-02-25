@@ -659,6 +659,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1988116830799624192}
   - component: {fileID: 8421971435975184815}
+  - component: {fileID: 3195330769665887133}
   m_Layer: 5
   m_Name: Volume
   m_TagString: Untagged
@@ -714,6 +715,20 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &3195330769665887133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8312249858193890568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f45dd6d6f1df0a42a76d9f85ec6bcd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Option.Element.SliderWithToggleSetting
+  slider: {fileID: 1630305690560775831}
+  toggle: {fileID: 5367298322480035666}
 --- !u!1 &8860724252957617445
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,54 +1,36 @@
-using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Option.Element
 {
-    public class SliderWithTextSetting : MonoBehaviour
+    public class SliderWithTextSetting : BaseSliderSetting
     {
-        [SerializeField] Slider slider;
         [SerializeField] TextMeshProUGUI valueText;
-        Action<float> onValueChanged;
-
 
         void Start()
         {
-            if (slider == null)
+            if (valueText != null)
             {
-                slider = GetComponentInChildren<Slider>();
+                valueText.SetText("{0}", Mathf.RoundToInt(slider.value));
             }
-            slider.onValueChanged.AddListener(OnSliderValueChanged);
         }
 
-        public void AddListener(Action<float> listener)
+        public override void SetValue(float value)
         {
-            onValueChanged -= listener;
-            onValueChanged += listener;
-        }
-
-        public void SetValue(float value)
-        {
-            slider.value = value;
+            base.SetValue(value);
             if (valueText != null)
             {
                 valueText.SetText("{0}", Mathf.RoundToInt(value));
             }
         }
 
-        public void SetMinMax(float min, float max)
-        {
-            slider.minValue = min;
-            slider.maxValue = max;
-        }
-
-        void OnSliderValueChanged(float value)
+        protected override void OnSliderValueChangedInternal(float value)
         {
             if (valueText != null)
             {
                 valueText.SetText("{0}", Mathf.RoundToInt(value));
             }
-            onValueChanged?.Invoke(value);
+            base.OnSliderValueChangedInternal(value);
         }
     }
 }
