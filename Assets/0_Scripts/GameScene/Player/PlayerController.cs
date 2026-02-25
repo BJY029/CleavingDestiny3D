@@ -523,7 +523,8 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 			//타이머 중지
 			TimeManager.instance.AbortTurnTimer();
 		}
-
+		//Offer 패널 접근 막기
+		ItemOfferCanvasController.instance.Close();
 		int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow);
 		int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
 		damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));

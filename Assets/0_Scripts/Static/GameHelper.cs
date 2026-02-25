@@ -1,5 +1,6 @@
 using Photon.Pun;
 using Photon.Realtime;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public static class GameHelper
@@ -18,10 +19,14 @@ public static class GameHelper
 
 	public static bool IsCurrentTurnAI()
 	{
+		//싱글 플레이 모드가 아니면 그냥 false 처리
+		if (!GameManager.Instance.isSoloPlay) return false;
 		var room = PhotonNetwork.CurrentRoom;
 		if (room == null) return false;
 
 		int CurrentTurnAct = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+		//-1은 초기화 상태(즉 아무 상태도 아님)
+		if (CurrentTurnAct == -1) return false;
 		Player p = PhotonNetwork.CurrentRoom.GetPlayer(CurrentTurnAct);
 
 		return p == null;

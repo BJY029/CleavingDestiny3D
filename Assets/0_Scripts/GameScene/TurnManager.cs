@@ -15,15 +15,18 @@ using Cysharp.Threading.Tasks;
 
 public class TurnManager : MonoBehaviourPunCallbacks
 {
+	private bool IsSinglePlayer => !PhotonNetwork.IsConnectedAndReady || !PhotonNetwork.InRoom || PhotonNetwork.OfflineMode;
 	[SerializeField]
 	private float VillageUpgradeLimitedTime;
 
 	public VillageSceneManager villageSceneManager;
 
-	private int _villageActionId = 0;
+	//private int _villageActionId = 0;
+	private bool _isTreeActionRunning = false;
 	private int _villageShieldProcessDone = -1;
 	//private int _villageDamageProcessDone = -1;
 
+	public bool isVillagePhase = false;
 	public bool isUpgradePhase;
 
 	public static TurnManager Instance;
@@ -256,6 +259,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	private void ChangeToNextTurn()
 	{
 		if (!IsInitializer()) return;
+
 		//턴 정보를 담은 리스트를 불러온다.
 		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
 		if (TurnOrder == null || TurnOrder.Length == 0)
@@ -287,6 +291,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			int MaxWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.MaxWaveCnt);
 			if (currentWaveCnt >= MaxWaveCnt)
 			{
+				//중요!!
+				//턴 전환 오류가 나지 않도록 -1로 초기화 하기
+				PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, -1);
 				//날짜 변경인 경우
 				//마을 공격 액션 수행
 				photonView.RPC(nameof(TreeActionProcess), RpcTarget.All);
@@ -326,29 +333,41 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	[PunRPC]
 	public void TreeActionProcess()
 	{
+		//TreeActionProcess가 실행중일때 중복 호출 막기
+		if (_isTreeActionRunning) return;
+		_isTreeActionRunning = true;
 		StartCoroutine(TreeAction());
 	}
 
 	IEnumerator TreeAction()
 	{
-		_villageActionId = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-
-		//VilageStart�� �ߵ��Ǵ� ������ ó��
-		if (PhotonNetwork.IsMasterClient)
-			photonView.RPC(nameof(RPC_RequestVillageShileldProcess), RpcTarget.MasterClient, _villageActionId);
-		while (_villageActionId != _villageShieldProcessDone)
+		//싱글 플래이 모드라면, 바로 마을 모드 진입
+		if (IsSinglePlayer)
+		{
+			ItemHandlingSystem.instance.OnVillageStart();
 			yield return null;
+		}
+		else
+		{
+			int currentActionID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+			_villageShieldProcessDone = -1;
 
-		// photonView.RPC(nameof(RPC_RequestVillageDamageProcess), RpcTarget.MasterClient, dmg, _villageActionId);
-		// while (_villageActionId != _villageDamageProcessDone)
-		// 	yield return null;
 
+			if (PhotonNetwork.IsMasterClient)
+				photonView.RPC(nameof(RPC_RequestVillageShileldProcess), RpcTarget.MasterClient, currentActionID);
 
-		//���� ������ ó�� ����
-		//PlayerStatus.Instance.DamagedVillage(dmg);
-		//���� ������ �߰�
-		//���� ����� �����Ѵ�.
+			float timeout = 5f;
+			while (currentActionID != _villageShieldProcessDone && timeout > 0)
+			{
+				timeout -= Time.deltaTime;
+				yield return null;
+			}
+			if (timeout <= 0)
+				Debug.LogWarning("TreeAction RPC Timeout! 강제로 다음 페이즈로 넘어갑니다.");
+
+		}
 		StartVillageUpgradePhase();
+		_isTreeActionRunning = false;
 	}
 
 	[PunRPC]
@@ -399,6 +418,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		bool isAlreadyUpgraded = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		if (isAlreadyUpgraded) return;
 
+		isVillagePhase = true;
+
 		//현재 시간
 		float startTime = (float)PhotonNetwork.Time;
 		//종료 시간
@@ -439,6 +460,15 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 		//각 클라이에서 자신의 Multi 적용하여 데미지 계산 및 적용 수행
 		PlayerStatus.Instance.DamagedVillage(treeDmg);
+		//만약 싱글 모드라면
+		if (IsSinglePlayer && PhotonNetwork.IsMasterClient)
+		{
+			//모든 AI의 마을에 데미지 넣기
+			foreach (int aiNum in PlayerManager.Instance.AIPlayerObj.Keys)
+			{
+				PlayerStatus.Instance.DamagedVillage(treeDmg, aiNum);
+			}
+		}
 		//임시 코드
 		//yield return new WaitForSeconds(2f);
 		yield return null;
@@ -545,6 +575,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//다음 날짜 값을 계산.
 		int day = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentDay) + 1;
 
+		isVillagePhase = false;
+
 		//다음 턴 정보 계산
 		// ** 만약 방 설정을 추가할거라면 SO가 아닌 방 설정값을 참조하도록 변경 필요 **
 		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
@@ -594,13 +626,16 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			//MasterClient이면서, 현재 턴이 AI 턴인 경우
 			else if (PhotonNetwork.IsMasterClient && GameHelper.IsCurrentTurnAI())
 			{
+				//만약 현재 마을 페이즈라면, AI 턴은 수행하지 않는다.
+				if (isVillagePhase) return;
 				//AI 턴 비동기 함수 호출
 				Debug.Log($"AI Turn(AI num : {turnActor}).. Processing by MasterClient");
 				AI_PlayTurnAsync(turnActor).Forget();
+				ItemOfferCanvasController.instance.Close();
 			}
-			else//오류 상황
+			else
 			{
-				Debug.LogError($"ERROR! Turn Actor : {turnActor}");
+				ItemOfferCanvasController.instance.Close();
 			}
 		}
 
@@ -629,6 +664,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//변경된 Offer 프로퍼티가 내 것에 해당되는 경우
 		if (propertiesThatChanged.TryGetValue(myOfferKey, out var offerObj))
 		{
+			Debug.Log("Offer Generated");
 			//그리고 offer가 처음 제공되는 경우
 			if (offerGenerated)
 			{
@@ -646,8 +682,11 @@ public class TurnManager : MonoBehaviourPunCallbacks
 						ItemOfferCanvasController.instance.Close();
 						return;
 					}
-					//관련 UI를 처리한다.
-					ItemOfferCanvasController.instance.initItemOfferPanel(offers, me);
+					if (!isVillagePhase)
+						//관련 UI를 처리한다.
+						ItemOfferCanvasController.instance.initItemOfferPanel(offers, me);
+					else
+						ItemOfferCanvasController.instance.Close();
 				}
 				else
 				{
@@ -681,7 +720,11 @@ public class TurnManager : MonoBehaviourPunCallbacks
 					ItemOfferCanvasController.instance.Close();
 					return;
 				}
-				ItemOfferCanvasController.instance.initItemOfferPanel(offer, me);
+
+				if (!isVillagePhase)
+					ItemOfferCanvasController.instance.initItemOfferPanel(offer, me);
+				else
+					ItemOfferCanvasController.instance.Close();
 			}
 		}
 

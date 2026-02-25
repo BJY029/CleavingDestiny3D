@@ -16,6 +16,9 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     private float _endTime = -1.0f;
     private bool _isPhaseActive = false;
 
+    //싱글 플레이 모드 확인용 플래그
+    private bool IsSinglePlayer => !PhotonNetwork.IsConnectedAndReady || !PhotonNetwork.InRoom || PhotonNetwork.OfflineMode;
+
     void Start()
     {
         if (TurnManager.Instance != null)
