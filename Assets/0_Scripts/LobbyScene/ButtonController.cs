@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Option;
 
 public class ButtonController : MatchController
 {
@@ -9,6 +10,7 @@ public class ButtonController : MatchController
     public Button MatchmakingBtn;
     public Button PlayWithAIBtn;
     public Button ExitBtn;
+    public Button OptionBtn;
 
     private void Start()
     {
@@ -16,6 +18,7 @@ public class ButtonController : MatchController
         StopMatching.onClick.AddListener(CancelMatch);
         PlayWithAIBtn.onClick.AddListener(StartSoloplay);
         ExitBtn.onClick.AddListener(OnClickExitGame);
+        OptionBtn.onClick.AddListener(OnClickOption);
 
         if (LoadingPanel != null)
             LoadingPanel.transform.localScale = Vector3.zero;
@@ -28,5 +31,10 @@ public class ButtonController : MatchController
 #else
         Application.Quit();
 #endif
+    }
+
+    void OnClickOption()
+    {
+        OptionManager.Instance.SetOptionMenu(true);
     }
 }
