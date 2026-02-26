@@ -16,6 +16,9 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     private float _endTime = -1.0f;
     private bool _isPhaseActive = false;
 
+    //싱글 플레이 모드 확인용 플래그
+    private bool IsSinglePlayer => !PhotonNetwork.IsConnectedAndReady || !PhotonNetwork.InRoom || PhotonNetwork.OfflineMode;
+
     void Start()
     {
         if (TurnManager.Instance != null)
@@ -84,7 +87,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     /// </summary>
     public void SetLocalPlayerReady(bool isReady)
     {
-        PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.PlayerVillageReady, isReady);
+        PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.PlayerVillageReady, isReady);
     }
 
     public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)

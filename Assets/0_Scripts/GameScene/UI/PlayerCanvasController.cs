@@ -143,8 +143,8 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	{
 		gaugeRoot.SetActive(true);
 		selecting = true;
-		maxDamage.text = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxAtkPow).ToString();
-		minDamage.text = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MinAtkPow).ToString();
+		maxDamage.text = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow).ToString();
+		minDamage.text = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow).ToString();
 		if (gaugeCo != null) StopCoroutine(gaugeCo);
 		gaugeCo = StartCoroutine(GaugeLoop());
 	}

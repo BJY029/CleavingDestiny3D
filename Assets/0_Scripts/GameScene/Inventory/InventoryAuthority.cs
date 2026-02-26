@@ -206,7 +206,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		}
 
 		//Check player's energy and prevent to use item
-		int playerEng = PhotonPropertyHelper.GetPlayerProp<int>(player, PlayerPropKeys.Energy);
+		int playerEng = PhotonPropertyHelper.GetPlayerProp<int>(requestActor, PlayerPropKeys.Energy);
 		if (playerEng - item.itemCost < 0)
 		{
 			photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_Energy);
@@ -215,7 +215,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		}
 
 		//기력량 업데이트
-		PhotonPropertyHelper.SetPlayerProp(player, PlayerPropKeys.Energy, playerEng - item.itemCost);
+		PhotonPropertyHelper.SetPlayerProp(requestActor, PlayerPropKeys.Energy, playerEng - item.itemCost);
 
 
 		//사용한 아이템 인벤토리에서 제거

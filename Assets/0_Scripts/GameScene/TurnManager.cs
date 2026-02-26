@@ -10,18 +10,23 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Village;
 using UnityEngine.SceneManagement;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 
 public class TurnManager : MonoBehaviourPunCallbacks
 {
+	private bool IsSinglePlayer => !PhotonNetwork.IsConnectedAndReady || !PhotonNetwork.InRoom || PhotonNetwork.OfflineMode;
 	[SerializeField]
 	private float VillageUpgradeLimitedTime;
 
 	public VillageSceneManager villageSceneManager;
 
-	private int _villageActionId = 0;
+	//private int _villageActionId = 0;
+	private bool _isTreeActionRunning = false;
 	private int _villageShieldProcessDone = -1;
 	//private int _villageDamageProcessDone = -1;
 
+	public bool isVillagePhase = false;
 	public bool isUpgradePhase;
 
 	public static TurnManager Instance;
@@ -106,14 +111,15 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	}
 
 	//턴 변경 요청이 발생한 경우
-	public void RequestChangeTurn(int damage)
+	public void RequestChangeTurn(int damage, IPlayerAction requester)
 	{
 		//만약 현재 마을 페이즈가 실행중인 경우, 턴 변경 요청은 무시한다.
 		bool isUpgradePhase = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		if (isUpgradePhase) return;
 
 		//데미지 계산 및 반영(아이템 효과 반영)
-		ItemHandlingSystem.instance.RequestHit(damage, true);
+		Debug.Log("RequestHit");
+		ItemHandlingSystem.instance.RequestHit(damage, true, requester);
 
 		//RPC로 모든 플레이어에게 턴 변경 요청을 보낸다.
 		//photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber);
@@ -134,6 +140,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//모든 플레이어의 데미지 처리가 완료되었는지 확인한다.
 		if (PlayerHitCheck())
 		{
+			Debug.Log("All Player Hit Succeed");
 			//RPC로 모든 플레이어에게 턴 변경 요청을 보낸다.
 			photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, attackerNum);
 			//마을 데미지 플래그 초기화
@@ -144,7 +151,32 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	//모든 플레이어의 VDamageProcessCompleted 프로퍼티를 검사하여 반환하는 함수
 	private bool PlayerHitCheck()
 	{
-		return PhotonNetwork.PlayerList.All(p => p.CustomProperties.TryGetValue(PlayerPropKeys.PDamageProcessCompleted, out var v) && (bool)v);
+		bool isPlayerAllHit = PhotonNetwork.PlayerList.All(p => p.CustomProperties.TryGetValue(PlayerPropKeys.PDamageProcessCompleted, out var v) && (bool)v);
+		if (!isPlayerAllHit) return false;
+
+		//싱글 플레이 모드인 경우
+		if (GameManager.Instance.isSoloPlay)
+		{
+			//room 프로퍼티 가져와서
+			var roomProps = PhotonNetwork.CurrentRoom.CustomProperties;
+			foreach (var kvp in PlayerManager.Instance.Players)
+			{
+				//ai 플레이어 찾고
+				int actNum = kvp.Value.actorNumber;
+				Player p = PhotonNetwork.CurrentRoom.GetPlayer(actNum);
+
+				if (p == null)  //p == ai 플레이어
+				{
+					string aiKey = $"{PlayerPropKeys.PDamageProcessCompleted}_{actNum}";
+					//프로퍼티 값 확인
+					if (!roomProps.TryGetValue(aiKey, out var v) || !(bool)v)
+					{
+						return false;
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 	//모든 플레이어의 VDamageProcessCompleted 프로퍼티를 초기화 하는 함수
@@ -177,8 +209,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		int currentTurnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
 		int currentTurnActor = TurnOrder[currentTurnIndex];
 
+		//만약 턴 정보가 일치하거나, AI 모드인 경우 true
+		bool isRequestVaild = (currentTurnActor == requesterActorNumber) ||
+								(info.Sender.IsMasterClient && GameHelper.IsCurrentTurnAI());
+
 		//턴 변경을 요청한 플레이어와, 현재 턴에 해당하는 플레이어가 일치하지 않는 경우
-		if (currentTurnActor != requesterActorNumber)
+		if (!isRequestVaild)
 		{
 			Debug.LogError("Turn request ERROR!!\ncurrentTurnActor : " + currentTurnActor + " requestActor : " + requesterActorNumber);
 			return;
@@ -223,6 +259,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	private void ChangeToNextTurn()
 	{
 		if (!IsInitializer()) return;
+
 		//턴 정보를 담은 리스트를 불러온다.
 		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
 		if (TurnOrder == null || TurnOrder.Length == 0)
@@ -254,6 +291,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			int MaxWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.MaxWaveCnt);
 			if (currentWaveCnt >= MaxWaveCnt)
 			{
+				//중요!!
+				//턴 전환 오류가 나지 않도록 -1로 초기화 하기
+				PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, -1);
 				//날짜 변경인 경우
 				//마을 공격 액션 수행
 				photonView.RPC(nameof(TreeActionProcess), RpcTarget.All);
@@ -293,29 +333,41 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	[PunRPC]
 	public void TreeActionProcess()
 	{
+		//TreeActionProcess가 실행중일때 중복 호출 막기
+		if (_isTreeActionRunning) return;
+		_isTreeActionRunning = true;
 		StartCoroutine(TreeAction());
 	}
 
 	IEnumerator TreeAction()
 	{
-		_villageActionId = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-
-		//VilageStart�� �ߵ��Ǵ� ������ ó��
-		if (PhotonNetwork.IsMasterClient)
-			photonView.RPC(nameof(RPC_RequestVillageShileldProcess), RpcTarget.MasterClient, _villageActionId);
-		while (_villageActionId != _villageShieldProcessDone)
+		//싱글 플래이 모드라면, 바로 마을 모드 진입
+		if (IsSinglePlayer)
+		{
+			ItemHandlingSystem.instance.OnVillageStart();
 			yield return null;
+		}
+		else
+		{
+			int currentActionID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+			_villageShieldProcessDone = -1;
 
-		// photonView.RPC(nameof(RPC_RequestVillageDamageProcess), RpcTarget.MasterClient, dmg, _villageActionId);
-		// while (_villageActionId != _villageDamageProcessDone)
-		// 	yield return null;
 
+			if (PhotonNetwork.IsMasterClient)
+				photonView.RPC(nameof(RPC_RequestVillageShileldProcess), RpcTarget.MasterClient, currentActionID);
 
-		//���� ������ ó�� ����
-		//PlayerStatus.Instance.DamagedVillage(dmg);
-		//���� ������ �߰�
-		//���� ����� �����Ѵ�.
+			float timeout = 5f;
+			while (currentActionID != _villageShieldProcessDone && timeout > 0)
+			{
+				timeout -= Time.deltaTime;
+				yield return null;
+			}
+			if (timeout <= 0)
+				Debug.LogWarning("TreeAction RPC Timeout! 강제로 다음 페이즈로 넘어갑니다.");
+
+		}
 		StartVillageUpgradePhase();
+		_isTreeActionRunning = false;
 	}
 
 	[PunRPC]
@@ -366,6 +418,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		bool isAlreadyUpgraded = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		if (isAlreadyUpgraded) return;
 
+		isVillagePhase = true;
+
 		//현재 시간
 		float startTime = (float)PhotonNetwork.Time;
 		//종료 시간
@@ -406,6 +460,15 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 		//각 클라이에서 자신의 Multi 적용하여 데미지 계산 및 적용 수행
 		PlayerStatus.Instance.DamagedVillage(treeDmg);
+		//만약 싱글 모드라면
+		if (IsSinglePlayer && PhotonNetwork.IsMasterClient)
+		{
+			//모든 AI의 마을에 데미지 넣기
+			foreach (int aiNum in PlayerManager.Instance.AIPlayerObj.Keys)
+			{
+				PlayerStatus.Instance.DamagedVillage(treeDmg, aiNum);
+			}
+		}
 		//임시 코드
 		//yield return new WaitForSeconds(2f);
 		yield return null;
@@ -442,7 +505,33 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	//모든 플레이어의 VDamageProcessCompleted 프로퍼티를 검사하여 반환하는 함수
 	private bool AllPlayersReady()
 	{
-		return PhotonNetwork.PlayerList.All(p => p.CustomProperties.TryGetValue(PlayerPropKeys.VDamageProcessCompleted, out var v) && (bool)v);
+		bool usersReady = PhotonNetwork.PlayerList.All(p => p.CustomProperties.TryGetValue(PlayerPropKeys.VDamageProcessCompleted, out var v) && (bool)v);
+
+		if (!usersReady) return false;
+
+		//싱글 플레이 모드인 경우
+		if (GameManager.Instance.isSoloPlay)
+		{
+			//room 프로퍼티 가져와서
+			var roomProps = PhotonNetwork.CurrentRoom.CustomProperties;
+			foreach (var kvp in PlayerManager.Instance.Players)
+			{
+				//ai 플레이어 찾고
+				int actNum = kvp.Value.actorNumber;
+				Player p = PhotonNetwork.CurrentRoom.GetPlayer(actNum);
+
+				if (p == null)  //p == ai 플레이어
+				{
+					string aiKey = $"{PlayerPropKeys.VDamageProcessCompleted}_{actNum}";
+					//프로퍼티 값 확인
+					if (!roomProps.TryGetValue(aiKey, out var v) || !(bool)v)
+					{
+						return false;
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 	//모든 플레이어의 VDamageProcessCompleted 프로퍼티를 초기화 하는 함수
@@ -485,6 +574,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 		//다음 날짜 값을 계산.
 		int day = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentDay) + 1;
+
+		isVillagePhase = false;
 
 		//다음 턴 정보 계산
 		// ** 만약 방 설정을 추가할거라면 SO가 아닌 방 설정값을 참조하도록 변경 필요 **
@@ -532,6 +623,20 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				//턴 타이머 시작
 				TimeManager.instance.StartTurnTimer();
 			}
+			//MasterClient이면서, 현재 턴이 AI 턴인 경우
+			else if (PhotonNetwork.IsMasterClient && GameHelper.IsCurrentTurnAI())
+			{
+				//만약 현재 마을 페이즈라면, AI 턴은 수행하지 않는다.
+				if (isVillagePhase) return;
+				//AI 턴 비동기 함수 호출
+				Debug.Log($"AI Turn(AI num : {turnActor}).. Processing by MasterClient");
+				AI_PlayTurnAsync(turnActor).Forget();
+				ItemOfferCanvasController.instance.Close();
+			}
+			else
+			{
+				ItemOfferCanvasController.instance.Close();
+			}
 		}
 
 		//턴 관련 프로퍼티가 변경되었고, 아직 처리되지 않은 경우
@@ -559,6 +664,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//변경된 Offer 프로퍼티가 내 것에 해당되는 경우
 		if (propertiesThatChanged.TryGetValue(myOfferKey, out var offerObj))
 		{
+			Debug.Log("Offer Generated");
 			//그리고 offer가 처음 제공되는 경우
 			if (offerGenerated)
 			{
@@ -576,8 +682,11 @@ public class TurnManager : MonoBehaviourPunCallbacks
 						ItemOfferCanvasController.instance.Close();
 						return;
 					}
-					//관련 UI를 처리한다.
-					ItemOfferCanvasController.instance.initItemOfferPanel(offers, me);
+					if (!isVillagePhase)
+						//관련 UI를 처리한다.
+						ItemOfferCanvasController.instance.initItemOfferPanel(offers, me);
+					else
+						ItemOfferCanvasController.instance.Close();
 				}
 				else
 				{
@@ -611,10 +720,36 @@ public class TurnManager : MonoBehaviourPunCallbacks
 					ItemOfferCanvasController.instance.Close();
 					return;
 				}
-				ItemOfferCanvasController.instance.initItemOfferPanel(offer, me);
+
+				if (!isVillagePhase)
+					ItemOfferCanvasController.instance.initItemOfferPanel(offer, me);
+				else
+					ItemOfferCanvasController.instance.Close();
 			}
 		}
 
 		VillageUpgradeLimitedTime = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.VillagePhaseTime);
+	}
+
+	//비동기로 플레이어 턴 처리 수행
+	private async UniTaskVoid AI_PlayTurnAsync(int aiActorNum)
+	{
+		//객체 파괴시 토큰 파괴
+		CancellationToken token = this.GetCancellationTokenOnDestroy();
+		//게임 시작 준비가 완료된 후에 아래 함수를 수행하도록 설정
+		//게임 시작시 ai 플레이어가 생성되기 전에 딕셔너리에서 찾는 것을 방지하기 위함
+		await UniTask.WaitUntil(() => PlayerManager.Instance.succeedToPreapreGame, cancellationToken: token);
+		TimeManager.instance.StartTurnTimer();
+		//AI 딕셔너리에서 고유 번호에 해당되는 AI 오브젝트 불러오기
+		if (PlayerManager.Instance.AIPlayerObj.TryGetValue(aiActorNum, out var p))
+		{
+			//해당 AI 컨트롤러의 턴 수행
+			AIController ac = p.GetComponent<AIController>();
+			await ac.PlayTurnAsync();
+		}
+		else
+		{
+			Debug.LogError($"[TurnManager] Can't find {aiActorNum} AI!");
+		}
 	}
 }

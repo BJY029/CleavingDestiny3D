@@ -25,14 +25,15 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 	{
 		//마스터 클라이언트만 실행
 		if (!PhotonNetwork.IsMasterClient) return "";
-		
+
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(turnActor);
 		if (player == null) return "";
 
 		string playerInv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(turnActor));
 		int playerInvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(turnActor));
 		//만약 인벤토리가 가득찼다고 판별될 경우, 에러 메시지로 return 전송한다.
-		if (ItemInfoSerializer.isFullInventory(ItemInfoSerializer.Decode(playerInv, playerInvCap))){
+		if (ItemInfoSerializer.isFullInventory(ItemInfoSerializer.Decode(playerInv, playerInvCap)))
+		{
 			Debug.LogWarning($"Player {turnActor} Inv is Full");
 			return ERROR.FULL_INV.ToString();
 		}
@@ -65,10 +66,10 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 		//각 플레이어의 아이템 등장 확률을 프로퍼티에서 불러와 딕셔너리에 저장
 		Dictionary<ItemClass, float> RarityWeight = new()
 		{
-			{ItemClass.Common, PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.Item_CommonWeight) },
-			{ItemClass.Hero, PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.Item_HeroWeight) },
-			{ItemClass.Rare, PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.Item_RareWeight) },
-			{ItemClass.Legendary, PhotonPropertyHelper.GetPlayerProp<float>(player, PlayerPropKeys.Item_LegendaryWeight) },
+			{ItemClass.Common, PhotonPropertyHelper.GetPlayerProp<float>(player.ActorNumber, PlayerPropKeys.Item_CommonWeight) },
+			{ItemClass.Hero, PhotonPropertyHelper.GetPlayerProp<float>(player.ActorNumber, PlayerPropKeys.Item_HeroWeight) },
+			{ItemClass.Rare, PhotonPropertyHelper.GetPlayerProp<float>(player.ActorNumber, PlayerPropKeys.Item_RareWeight) },
+			{ItemClass.Legendary, PhotonPropertyHelper.GetPlayerProp<float>(player.ActorNumber, PlayerPropKeys.Item_LegendaryWeight) },
 		};
 
 		//각 아이템에 점수(key) 부여 알고리즘

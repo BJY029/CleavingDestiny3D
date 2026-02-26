@@ -1,4 +1,8 @@
 ﻿<Solution>
+
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="PhotonRealtime.csproj" />
+
   <Project Path="Unity.Timeline.csproj" />
   <Project Path="Unity.RenderPipelines.GPUDriven.Runtime.csproj" />
   <Project Path="Unity.PlasticSCM.Editor.csproj" />
@@ -34,6 +38,7 @@
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.InferenceEngine.csproj" />
   <Project Path="UniTask.csproj" />
+
   <Project Path="PhotonUnityNetworking.Editor.csproj" />
   <Project Path="Unity.Searcher.Editor.csproj" />
   <Project Path="Unity.ResourceManager.csproj" />

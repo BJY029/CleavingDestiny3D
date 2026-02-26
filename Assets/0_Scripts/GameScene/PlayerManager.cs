@@ -18,6 +18,11 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	//읽기 전용 딕셔너리
 	public IReadOnlyDictionary<int, RuntimePlayerInfo> Players => players;
 
+	public Dictionary<int, GameObject> AIPlayerObj = new Dictionary<int, GameObject>();
+
+	//AI 에서 사용되는 플래그, 준비 완료 여부를 나타낸다.
+	public bool succeedToPreapreGame = false;
+
 	//중복 초기화 방지 플래그
 	private bool isAlreadyInitialized;
 	//MAsterClietn 에서만 사용
@@ -125,19 +130,30 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		InitPlayersInfo();
 		SpawnPlayersOnCircle();
+
 		InitPlayerProps();
+		if (IsInitializer()) InitAIProps();
 
 		yield return handelUI;
 
 		CameraSwitchManager.Instance.Branch_to_Game();
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
+
 		GameObject spawnPlayer = PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
+		PlayerController pc = spawnPlayer.GetComponent<PlayerController>();
+		pc.PlayerActNum = myActNum;
+		pc.IsAI = false;
 		LocalPlayerObj = spawnPlayer;
+
 		GameObject PlayersInv = PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[myActNum - 1], spawnInvRot[myActNum - 1]);
 		PlayerStatus.Instance.SetPlayerInventory(PlayersInv);
 		InventoryBarrier ib = PlayersInv.GetComponentInChildren<InventoryBarrier>();
 		ib.SetPermission(spawnPlayer);
+
+		TrySpawnAI();
+
+
 		CameraSwitchManager.Instance.Off_ExceptPlayerCam();
 
 		GameCanvasController.Instance.gameObject.SetActive(true);
@@ -146,6 +162,44 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
+
+		//AI에서 사용될 플래그, AI 모드에선 MasterClient만 해당 코드를 수행하므로, 별도의 처리 없이 그냥 플래그 초기화
+		succeedToPreapreGame = true;
+	}
+
+	//Masterclient가(즉 싱글 모드의 로컬 플레이어) AI 스폰 수행
+	private void TrySpawnAI()
+	{
+		if (!IsInitializer()) return;
+
+		foreach (var kvp in players)
+		{
+			RuntimePlayerInfo rp = kvp.Value;
+			Player p = PhotonNetwork.CurrentRoom.GetPlayer(rp.actorNumber);
+
+			if (p == null)
+			{
+				object[] initData = new object[1] { rp.actorNumber };
+				//int aiActNum = rp.actorNumber;
+				int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
+				int opposite_num = myActNum == 1 ? 2 : 1;
+
+				GameObject spawnAI = PhotonNetwork.InstantiateRoomObject(
+					$"Player/Player{opposite_num}_AI",
+					spawnPos[opposite_num - 1],
+					spawnRot[opposite_num - 1],
+					0,
+					initData);
+				AIPlayerObj.Add(rp.actorNumber, spawnAI);
+				//PlayerController AIController = spawnAI.GetComponent<PlayerController>();
+				//AIController.PlayerActNum = rp.actorNumber;
+
+				GameObject spawnAIInv = PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[opposite_num - 1], spawnInvRot[opposite_num - 1]);
+				//PlayerStatus.Instance.SetPlayerInventory(spawnAIInv);
+				//InventoryBarrier ib = spawnAIInv.GetComponentInChildren<InventoryBarrier>();
+				//ib.SetPermission(spawnAIInv);
+			}
+		}
 	}
 
 	//미니게임으로부터 turn 순서가 정해지면, 해당 정보 기반으로 플레이어 정보 채워넣을 예정
@@ -170,7 +224,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 				if (p == PhotonNetwork.LocalPlayer)
 				{
-					PhotonPropertyHelper.SetPlayerProp(p, PlayerPropKeys.MyTurn, i);
+					PhotonPropertyHelper.SetPlayerProp(p.ActorNumber, PlayerPropKeys.MyTurn, i);
 				}
 			}
 			else
@@ -311,9 +365,65 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		Debug.Log(roomSetting.lockCount);
 		//모든 프로퍼티가 준비 완료된 경우
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.IsReady, true);
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.IsReady, true);
 
 		Debug.Log("Init Player Props Success");
+	}
+
+	//기존 멀티 환경에서의 PlayerProperty를
+	//AI 환경에선 프로퍼티를 RoomProperty로 설정
+	//TODO : 각 플레이어 프로퍼티 접근 로직을 변경해야 함
+	private void InitAIProps()
+	{
+		var playerSetting = GameManager.Instance.playerDefaultSetting;
+		var roomSetting = GameManager.Instance.roomDefaultSetting;
+
+		foreach (var kvp in players)
+		{
+			RuntimePlayerInfo rp = kvp.Value;
+
+			Player p = PhotonNetwork.CurrentRoom.GetPlayer(rp.actorNumber);
+			if (p == null)
+			{
+				var ht = new ExitGames.Client.Photon.Hashtable
+		{
+			{ $"{PlayerPropKeys.VillageHP}_{rp.actorNumber}", playerSetting.villageHP},
+			{ $"{PlayerPropKeys.MaxVillageHP}_{rp.actorNumber}", playerSetting.villageHP},
+			{ $"{PlayerPropKeys.VillageBarrier}_{rp.actorNumber}", playerSetting.villageBarrier},
+			{ $"{PlayerPropKeys.TreeAtkMulti}_{rp.actorNumber}", playerSetting.VillageDmgMulti},
+			{ $"{PlayerPropKeys.BarrierArmor}_{rp.actorNumber}", playerSetting.initialBarrierArmor},
+			{ $"{PlayerPropKeys.VillageUpgrades}_{rp.actorNumber}", playerSetting.initialVillageUpgrades},
+			{ $"{PlayerPropKeys.Gold}_{rp.actorNumber}", playerSetting.initialGold },
+			{ $"{PlayerPropKeys.DayGoldIncome}_{rp.actorNumber}", playerSetting.initialDayGoldIncome},
+			{ $"{PlayerPropKeys.MaxAtkPow}_{rp.actorNumber}", playerSetting.maxAtkPow },
+			{ $"{PlayerPropKeys.MinAtkPow}_{rp.actorNumber}", playerSetting.minAtkPow},
+			{ $"{PlayerPropKeys.Energy}_{rp.actorNumber}", playerSetting.initialEnergy},
+			{ $"{PlayerPropKeys.MaxEnergy}_{rp.actorNumber}", playerSetting.maxEnergy },
+			{ $"{PlayerPropKeys.EnergyIncome}_{rp.actorNumber}", playerSetting.energyIncomePerDay},
+			{ $"{PlayerPropKeys.CarryOverEnergy}_{rp.actorNumber}", playerSetting.carryOverEnergy},
+			{ $"{PlayerPropKeys.DayTimeDamage}_{rp.actorNumber}", playerSetting.dayTimeDamage },
+			{ $"{PlayerPropKeys.TotalDamage}_{rp.actorNumber}", playerSetting.initialTotalDamage },
+			{ $"{PlayerPropKeys.BarrierConversionRate}_{rp.actorNumber}", playerSetting.barrierConversionRate },
+			{ $"{PlayerPropKeys.Item_CommonWeight}_{rp.actorNumber}", playerSetting.commonWeight },
+			{ $"{PlayerPropKeys.Item_HeroWeight}_{rp.actorNumber}", playerSetting.heroWeight },
+			{ $"{PlayerPropKeys.Item_RareWeight}_{rp.actorNumber}", playerSetting.rareWeight },
+			{ $"{PlayerPropKeys.Item_LegendaryWeight}_{rp.actorNumber}", playerSetting.legendaryWeight},
+			{ $"{PlayerPropKeys.VDamageProcessCompleted}_{rp.actorNumber}", false},
+			{ $"{PlayerPropKeys.PDamageProcessCompleted}_{rp.actorNumber}", false},
+			{ItemPropKeys.INV(rp.actorNumber), ItemInfoSerializer.MakeEmptyInv(playerSetting.inventoryCapacity) },
+			{ItemPropKeys.INV_CAPACITY(rp.actorNumber), playerSetting.inventoryCapacity },
+			{ItemPropKeys.OFFER(rp.actorNumber),"" },
+			{ItemPropKeys.LOCKPICK(rp.actorNumber), roomSetting.lockpickCount },
+			{ItemPropKeys.LOCKCNT(rp.actorNumber), roomSetting.lockCount},
+			{ItemPropKeys.COMMON_RATE(rp.actorNumber), roomSetting.common_reduction_rate},
+			{ItemPropKeys.HERO_RATE(rp.actorNumber), roomSetting.hero_reduction_rate},
+			{ItemPropKeys.RARE_RATE(rp.actorNumber), roomSetting.rare_reduction_rate},
+			{ItemPropKeys.LEGENDARY_RATE(rp.actorNumber), roomSetting.legendary_reduction_rate},
+		};
+
+				PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
+			}
+		}
 	}
 
 	bool AllPlayersReady()

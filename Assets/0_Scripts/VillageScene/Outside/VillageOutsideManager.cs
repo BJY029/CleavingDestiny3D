@@ -108,7 +108,7 @@ namespace Village.Outside
         public void RemoveHP()
         {
             float currentHp = PlayerStatus.Instance.GetCurrentVillageHP();
-            PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer, PlayerPropKeys.VillageHP, currentHp - 500f);
+            PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageHP, currentHp - 500f);
         }
 
         public async Awaitable GotoOutside()

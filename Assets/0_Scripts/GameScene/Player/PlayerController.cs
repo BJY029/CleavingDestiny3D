@@ -21,8 +21,10 @@ public interface IMinigameInteractable
 
 //CharacterController 컴포넌트 강제 할당
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviourPun, IAnimNotify
+public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 {
+	public bool IsAI = false;
+	public int PlayerActNum { get; set; }
 	//움직임 관련 파라미터
 	[Header("Move")]
 	public float walkSpeed = 3.5f;
@@ -139,7 +141,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 		}
 
 		//만약 내 플레이어가 아니라면
-		if (!photonView.IsMine)
+		if (!photonView.IsMine || IsAI)
 		{
 			if (playerInput != null)
 			{
@@ -189,7 +191,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	//해당 캐릭터가 활성화 혹은 비활성화 되면 움직임을 제한
 	private void OnEnable()
 	{
-		if (!photonView.IsMine) return;
+		if (!photonView.IsMine || IsAI) return;
 		moveAction?.Enable();
 		lookAction?.Enable();
 		sprintAction?.Enable();
@@ -202,7 +204,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 
 	private void OnDisable()
 	{
-		if (!photonView.IsMine) return;
+		if (!photonView.IsMine || IsAI) return;
 		moveAction?.Disable();
 		lookAction?.Disable();
 		sprintAction?.Disable();
@@ -270,7 +272,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 
 	private void Start()
 	{
-		if (!photonView.IsMine)
+		if (!photonView.IsMine || IsAI)
 		{
 			return;
 		}
@@ -294,7 +296,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	}
 
 	//마을 업그레이드에 돌입시 실행될 함수
-	private void VillageUpgradePahse()
+	public void VillageUpgradePhase()
 	{
 		//플레이어 카메라를 끄고
 		cam.enabled = false;
@@ -303,7 +305,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	}
 
 	//마을 업그레이드가 끝나면 실행될 함수
-	private void VillageUpgradePahseOut()
+	public void VillageUpgradePhaseOut()
 	{
 		//메인 카메라 끄고
 		CameraSwitchManager.Instance.GameCameraToggle(false);
@@ -315,7 +317,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	private void Update()
 	{
 		//내 photonView가 아니면 실행하지 않는다.
-		if (!photonView.IsMine)
+		if (!photonView.IsMine || IsAI)
 		{
 			return;
 		}
@@ -357,7 +359,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 			if (!UpgradePhase)
 			{
 				//처리 진행후
-				VillageUpgradePahse();
+				VillageUpgradePhase();
 				//마을 업그레이드 페이즈에 돌입했음을 명시
 				UpgradePhase = true;
 			}
@@ -370,7 +372,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 			if (UpgradePhase)
 			{
 				//관련 처리 진행 후
-				VillageUpgradePahseOut();
+				VillageUpgradePhaseOut();
 				//마을 업그레이드 페이즈에서 빠져나왔음을 명시
 				UpgradePhase = false;
 			}
@@ -478,7 +480,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	private void HandleInteractFKey()
 	{
 		//내 객체가 아니면 return
-		if (!photonView.IsMine) return;
+		if (!photonView.IsMine || IsAI) return;
 		//내 턴이 아니면 return
 		if (!GameHelper.IsMyTurn()) return;
 		//현재 Hit 관련 UI가 활성화되지 않은 상태인 경우 return
@@ -491,7 +493,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	private void HandleInteractSpaceKey()
 	{
 		//내 객체가 아니면 return
-		if (!photonView.IsMine) return;
+		if (!photonView.IsMine || IsAI) return;
 		//내 턴이 아니면 return
 		if (!GameHelper.IsMyTurn()) return;
 
@@ -521,16 +523,17 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 			//타이머 중지
 			TimeManager.instance.AbortTurnTimer();
 		}
-
-		int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MaxAtkPow);
-		int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer, PlayerPropKeys.MinAtkPow);
+		//Offer 패널 접근 막기
+		ItemOfferCanvasController.instance.Close();
+		int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow);
+		int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
 		damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
 		//Hit 애니메이션 재생 
 		PlayHit();
 	}
 
 	//Hit 애니메이션을 재생하는 함수
-	private void PlayHit()
+	public void PlayHit()
 	{
 		//모션 재생 플래그 활성화
 		WhileHittingMotion = true;
@@ -556,7 +559,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 		//stateKey가 1이면, 즉 Hit 관련 모션이면
 		if (stateKey == 1)
 		{
-			if (!photonView.IsMine) return;
+			if (!photonView.IsMine || IsAI) return;
 
 			if (damage < 0)
 			{
@@ -564,7 +567,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 				return;
 			}
 			//Hit 한 순간의 데미지 값을 인자로 해서 턴 전환 함수 호출
-			TurnManager.Instance.RequestChangeTurn(damage);
+			TurnManager.Instance.RequestChangeTurn(damage, this);
 			damage = -1;
 			WhileHittingMotion = false;
 			//PlayerCanvasController.Instance.SetHitTextActive();
@@ -574,7 +577,7 @@ public class PlayerController : MonoBehaviourPun, IAnimNotify
 	//회전 관련 코드 실행
 	private void LateUpdate()
 	{
-		if (!photonView.IsMine)
+		if (!photonView.IsMine || IsAI)
 		{
 			return;
 		}
