@@ -15,6 +15,12 @@ MonoBehaviour:
   m_GroupName: LocalizationCSV
   m_GUID: 53189d12cebafe24093f0b89e7a61ac3
   m_SerializeEntries:
+  - m_GUID: 0f1475ee4bb8f6843bf2e5ff43fd83fa
+    m_Address: Assets/Localization/Option_CSV.csv
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Localization
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1d99ea66f5b7d5b41a61501bf894baca
     m_Address: Assets/Localization/Village_CSV.csv
     m_ReadOnly: 0
