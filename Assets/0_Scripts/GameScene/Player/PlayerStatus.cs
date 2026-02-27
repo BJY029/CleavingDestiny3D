@@ -117,29 +117,10 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_initPlayerStatus), RpcTarget.All);
 	}
 
-	public void InitPlayerStatus(int actNum)
-	{
-		GetCurrentPlayerStatus(actNum);
-		// ScriptableObject 기반 초기화
-		var playerSet = GameManager.Instance.playerDefaultSetting;
-
-		Debug.Log($"Current Village HP : {currentVillageHP}");
-
-		currentEnergy = (currentMaxEnergy == 0 ? playerSet.initialEnergy : currentMaxEnergy) + currentCarryOverEnergy;
-		currentTotalDamage = 0;
-		currentBarrier = playerSet.villageBarrier;
-
-		PhotonPropertyHelper.SetPlayerProp(actNum, PlayerPropKeys.Energy, currentEnergy);
-		PhotonPropertyHelper.SetPlayerProp(actNum, PlayerPropKeys.CarryOverEnergy, playerSet.carryOverEnergy);
-		PhotonPropertyHelper.SetPlayerProp(actNum, PlayerPropKeys.TotalDamage, currentTotalDamage);
-		PhotonPropertyHelper.SetPlayerProp(actNum, PlayerPropKeys.VillageBarrier, currentBarrier);
-	}
-
 	[PunRPC]
 	public void RPC_initPlayerStatus()
 	{
 		GetCurrentPlayerStatus();
-		// ScriptableObject 기반 초기화
 		var playerSet = GameManager.Instance.playerDefaultSetting;
 
 		Debug.Log($"Current Village HP : {currentVillageHP}");
@@ -148,19 +129,57 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		currentTotalDamage = 0;
 		currentBarrier = playerSet.villageBarrier;
 
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.Energy, currentEnergy);
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.CarryOverEnergy, playerSet.carryOverEnergy);
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.TotalDamage, currentTotalDamage);
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageBarrier, currentBarrier);
+		// 변경 사항을 하나의 Hashtable에 담습니다.
+		ExitGames.Client.Photon.Hashtable newProps = new ExitGames.Client.Photon.Hashtable
+	{
+		{ PlayerPropKeys.Energy, currentEnergy },
+		{ PlayerPropKeys.CarryOverEnergy, playerSet.carryOverEnergy },
+		{ PlayerPropKeys.TotalDamage, currentTotalDamage },
+		{ PlayerPropKeys.VillageBarrier, currentBarrier }
+	};
+
+		// 한 번의 호출로 모든 프로퍼티를 동기화합니다. 
+		// (콜백도 1번만 발생하며, 저장된 값으로 온전히 동기화됨)
+		PhotonNetwork.LocalPlayer.SetCustomProperties(newProps);
+
+		Debug.LogWarning($"PLAYER// Energe : {currentEnergy}, TotalDamage : {currentTotalDamage}, Barrier : {currentBarrier}");
+
+		SetPlayerStatusUI();
 
 		if (PhotonNetwork.IsMasterClient && IsSinglePlayer)
 		{
-			//모든 AI의 마을에 데미지 넣기
 			foreach (int aiNum in PlayerManager.Instance.AIPlayerObj.Keys)
 			{
-				InitPlayerStatus(aiNum);
+				InitAIStatus(aiNum);
 			}
 		}
+	}
+
+	public void InitAIStatus(int actNum)
+	{
+		GetCurrentPlayerStatus(actNum);
+		var playerSet = GameManager.Instance.playerDefaultSetting;
+
+		Debug.Log($"Current AI Village HP : {currentVillageHP}");
+
+		currentEnergy = (currentMaxEnergy == 0 ? playerSet.initialEnergy : currentMaxEnergy) + currentCarryOverEnergy;
+		currentTotalDamage = 0;
+		currentBarrier = playerSet.villageBarrier;
+
+		// AI 상태 업데이트도 묶어서 처리합니다.
+		ExitGames.Client.Photon.Hashtable newAIProps = new ExitGames.Client.Photon.Hashtable
+	{
+		{ PlayerPropKeys.Energy, currentEnergy },
+		{ PlayerPropKeys.CarryOverEnergy, playerSet.carryOverEnergy },
+		{ PlayerPropKeys.TotalDamage, currentTotalDamage },
+		{ PlayerPropKeys.VillageBarrier, currentBarrier }
+	};
+
+		// AI 프로퍼티를 룸 프로퍼티에 저장하는 로직이라면 아래처럼 적용
+		PhotonNetwork.CurrentRoom.SetCustomProperties(newAIProps);
+		// (만약 PhotonPropertyHelper 안에 AI를 위한 일괄 처리 함수가 있다면 그걸 사용하셔도 됩니다.)
+
+		Debug.LogWarning($"AI// Energe : {currentEnergy}, TotalDamage : {currentTotalDamage}, Barrier : {currentBarrier}");
 	}
 
 	// 플레이어 프로퍼티가 변경될 때 UI에 반영

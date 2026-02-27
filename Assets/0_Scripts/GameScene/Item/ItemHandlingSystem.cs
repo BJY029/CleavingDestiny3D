@@ -497,7 +497,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			isBasicAttack = isBasicAttack,
 			clientNonce = UnityEngine.Random.Range(int.MinValue, int.MaxValue),
 		};
-		Debug.Log("커맨드 생성, RPC 전송");
+		//Debug.Log("커맨드 생성, RPC 전송");
 		//Json 형태로 직렬화 해서 MasterClient에게 요청 전송
 		photonView.RPC(nameof(RPC_RequestAttack), RpcTarget.MasterClient, JsonUtility.ToJson(cmd));
 	}
@@ -508,7 +508,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	{
 		//검증
 		if (!PhotonNetwork.IsMasterClient) return;
-		Debug.Log("역직렬화 수행");
+		//Debug.Log("역직렬화 수행");
 		//역직렬화
 		var cmd = JsonUtility.FromJson<AttackCommand>(json);
 
