@@ -31,8 +31,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 	private StatusSystem _statusSystem;
 	private GameEventBus _gameEventBus;
-	private DamageResolver _damageResolver;
-	private DeterministicRng _rng;
+	public DamageResolver _damageResolver { get; private set; }
+	public DeterministicRng _rng { get; private set; }
 	//Inventory usage limits
 	private Dictionary<int, List<string>> UsedTurnItem;
 	private Dictionary<int, List<string>> UsedDayItem;

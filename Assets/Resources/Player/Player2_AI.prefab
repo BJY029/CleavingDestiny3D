@@ -1451,6 +1451,11 @@ GameObject:
   - component: {fileID: 2492846899768299628}
   - component: {fileID: 4067812600072088979}
   - component: {fileID: -3373479491274141899}
+  - component: {fileID: 919099234606160331}
+  - component: {fileID: 5969454767045476057}
+  - component: {fileID: -1127030571770921806}
+  - component: {fileID: 6603769908479633231}
+  - component: {fileID: -2190861357193818984}
   - component: {fileID: -6779181724308204353}
   - component: {fileID: 2716088925901640895}
   - component: {fileID: -9051022522488421207}
@@ -1544,6 +1549,68 @@ MonoBehaviour:
   rotationSmoothTime: 0.08
   accelation: 12
   deceleration: 12
+--- !u!114 &919099234606160331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cd3b8ce54cd39e4792f433cac00aa55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIBrain
+--- !u!114 &5969454767045476057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c574453d13332104bb4892e701263214, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIVillageUpgrader
+--- !u!114 &-1127030571770921806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3d102608818e0e4fab3dd510770503a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AITreeAttacker
+  jitterMin: -100
+  jitterMax: 100
+--- !u!114 &6603769908479633231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bde637bd842abb241bfac7dbbf33fbeb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIItemSelector
+--- !u!114 &-2190861357193818984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56fcbb6b44729c0499ceeb0d867c29af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIInventoryManager
 --- !u!114 &-6779181724308204353
 MonoBehaviour:
   m_ObjectHideFlags: 0

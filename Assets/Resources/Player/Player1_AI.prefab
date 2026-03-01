@@ -112,6 +112,11 @@ GameObject:
   - component: {fileID: 3710110911519245321}
   - component: {fileID: 5684972878656882415}
   - component: {fileID: 4777240268774313513}
+  - component: {fileID: -6125655930517416145}
+  - component: {fileID: 2876885551497215331}
+  - component: {fileID: 4411511653207790959}
+  - component: {fileID: -9106697140285719882}
+  - component: {fileID: 2169078213238885499}
   - component: {fileID: -7706094444651068393}
   - component: {fileID: -1081810206017964554}
   - component: {fileID: -4189926361347790040}
@@ -206,6 +211,68 @@ MonoBehaviour:
   rotationSmoothTime: 0.08
   accelation: 12
   deceleration: 12
+--- !u!114 &-6125655930517416145
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171133721816373843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cd3b8ce54cd39e4792f433cac00aa55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIBrain
+--- !u!114 &2876885551497215331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171133721816373843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c574453d13332104bb4892e701263214, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIVillageUpgrader
+--- !u!114 &4411511653207790959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171133721816373843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3d102608818e0e4fab3dd510770503a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AITreeAttacker
+  jitterMin: -100
+  jitterMax: 100
+--- !u!114 &-9106697140285719882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171133721816373843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bde637bd842abb241bfac7dbbf33fbeb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIItemSelector
+--- !u!114 &2169078213238885499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171133721816373843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56fcbb6b44729c0499ceeb0d867c29af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIInventoryManager
 --- !u!114 &-7706094444651068393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -239,9 +306,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   observableSearch: 2
-  ObservedComponents:
-  - {fileID: 0}
-  - {fileID: 0}
+  ObservedComponents: []
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -537,6 +602,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
@@ -1219,6 +1285,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!135 &2384862218650511369
 SphereCollider:
@@ -1330,6 +1397,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &6360715357728955260
 MeshCollider:
@@ -1625,6 +1693,7 @@ SkinnedMeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   serializedVersion: 2
   m_Quality: 0
   m_UpdateWhenOffscreen: 0

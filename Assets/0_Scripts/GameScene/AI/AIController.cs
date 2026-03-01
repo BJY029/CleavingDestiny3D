@@ -12,6 +12,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 {
     //AI 플레이어 고유 번호(현재는 1000 으로 고정 번호 부여)
     public int PlayerActNum { get; set; }
+    AIBrain aiBrain;
 
     //AI 움직임 처리용(아직 구현 안함)
     private NavMeshAgent agent;
@@ -68,6 +69,8 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         {
             PlayerActNum = info.photonView.OwnerActorNr;
         }
+        aiBrain = GetComponent<AIBrain>();
+        aiBrain.InitializeBrain(PlayerActNum);
     }
 
     private void Awake()
@@ -122,7 +125,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
         int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PlayerActNum, PlayerPropKeys.MaxAtkPow);
         int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PlayerActNum, PlayerPropKeys.MinAtkPow);
-        damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
+        damage = Mathf.RoundToInt(aiBrain.TreeAttacker.SelectDamage());
         //Hit 애니메이션 재생 
         PlayHit();
     }

@@ -24,10 +24,13 @@ public class AIBrain : MonoBehaviour
         MyActorNum = actorNum;
 
         ItemSelector = GetComponent<AIItemSelector>();
+        ItemSelector?.Initialize(this);
 
         VillageUpgrader = GetComponent<AIVillageUpgrader>();
+        VillageUpgrader?.Initialize(this);
 
         TreeAttacker = GetComponent<AITreeAttacker>();
+        TreeAttacker?.Initialize(this);
 
     }
 }
