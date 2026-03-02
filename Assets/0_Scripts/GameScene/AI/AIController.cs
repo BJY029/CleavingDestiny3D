@@ -69,6 +69,8 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         {
             PlayerActNum = info.photonView.OwnerActorNr;
         }
+
+        //AI 로직을 담당하는 AIBrain 초기화
         aiBrain = GetComponent<AIBrain>();
         aiBrain.InitializeBrain(PlayerActNum);
     }
@@ -125,6 +127,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
         int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PlayerActNum, PlayerPropKeys.MaxAtkPow);
         int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PlayerActNum, PlayerPropKeys.MinAtkPow);
+        //최적의 데미지 계산 및 반영
         damage = Mathf.RoundToInt(aiBrain.TreeAttacker.SelectDamage());
         //Hit 애니메이션 재생 
         PlayHit();
