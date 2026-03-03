@@ -17,10 +17,11 @@ MonoBehaviour:
   itemDesc_ID: DESC_DMG_DULL
   itemCost: 2
   type: 0
-  target: 0
+  target: 2
   itemClass: 0
   itemWeight: 1
-  oncePerWave: 0
+  oncePerTurn: 0
+  oncePerDay: 0
   oncePerGame: 0
   effects:
   - effectType: 0
@@ -33,11 +34,13 @@ MonoBehaviour:
       durationType: 0
       durationTurns: 0
       triggers: 2
-      tags: 1
+      tags: 0
       priority: 200
       multiplier: 0.8
+      convertRate: 0
       flatValue: 0
       randMin: 0
       randMax: 0
       bypassConversion: 0
       basicOnly: 0
+      consumeOnTrigger: 0

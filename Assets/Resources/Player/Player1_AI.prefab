@@ -261,6 +261,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bde637bd842abb241bfac7dbbf33fbeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIItemSelector
+  scoreTable: {fileID: 11400000, guid: 8be15f59696026042be4c2b2f5f22632, type: 2}
+  playerSetting: {fileID: 11400000, guid: 0ab68fb3dcfba894bbce6a7513b5a994, type: 2}
+  roomSetting: {fileID: 11400000, guid: a435e1ecc7289e04ca99639220cc8e4b, type: 2}
+  AIThinkDelay_ms: 3000
 --- !u!114 &2169078213238885499
 MonoBehaviour:
   m_ObjectHideFlags: 0

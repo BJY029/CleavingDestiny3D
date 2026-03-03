@@ -88,6 +88,14 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
         CancellationToken token = this.GetCancellationTokenOnDestroy();
 
+        string myOfferKey = ItemPropKeys.OFFER(PlayerActNum);
+        string offerStr = PhotonPropertyHelper.GetRoomProp<string>(myOfferKey);
+
+        //일정 시간 딜레이 준 후
+        await UniTask.Delay(1000, cancellationToken: token);
+
+        await aiBrain.ItemSelector.ChooseItemAsync(offerStr);
+
         //일정 시간 딜레이 준 후
         await UniTask.Delay(1500, cancellationToken: token);
 

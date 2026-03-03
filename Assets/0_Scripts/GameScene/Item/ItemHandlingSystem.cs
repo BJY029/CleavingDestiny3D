@@ -151,6 +151,18 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_UseLockPick), RpcTarget.MasterClient, actorNum);
 	}
 
+	public bool HasDebuff(int actNum)
+	{
+		foreach (var st in _statusSystem.ALL)
+		{
+			if (st.spec.tags == TagMask.Negative && st.ownerActorNum == actNum)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	[PunRPC]
 	public void RPC_UseLockPick(int actorNum)
 	{
@@ -235,6 +247,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			//아이템 적용 대상이 다른 플레이어인 경우
 			case ItemTarget.Opponent:
 			case ItemTarget.OpponentVillage:
+			case ItemTarget.OpponentTree:
 				foreach (EffectSpec es in item.effects)
 				{
 					Player[] playerNums = PhotonNetwork.PlayerList;

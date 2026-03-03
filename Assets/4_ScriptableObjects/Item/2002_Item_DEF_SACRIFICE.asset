@@ -17,7 +17,7 @@ MonoBehaviour:
   itemDesc_ID: DESC_DEF_SACRIFICE
   itemCost: 6
   type: 1
-  target: 0
+  target: 3
   itemClass: 2
   itemWeight: 1
   oncePerTurn: 0

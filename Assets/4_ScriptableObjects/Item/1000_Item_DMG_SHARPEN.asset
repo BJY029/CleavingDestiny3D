@@ -17,7 +17,7 @@ MonoBehaviour:
   itemDesc_ID: DESC_DMG_SHARPEN
   itemCost: 1
   type: 0
-  target: 0
+  target: 2
   itemClass: 0
   itemWeight: 1
   oncePerTurn: 0
@@ -34,7 +34,7 @@ MonoBehaviour:
       durationType: 0
       durationTurns: 0
       triggers: 2
-      tags: 1
+      tags: 0
       priority: 200
       multiplier: 1.5
       convertRate: 0
