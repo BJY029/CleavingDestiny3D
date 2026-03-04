@@ -20,6 +20,7 @@ MonoBehaviour:
   initialPhase: 0
   maxWave: 3
   initialWave: 0
+  turnTime: 40
   initialUID: 1
   itemOfferCount: 3
   lockpickCount: 0
@@ -28,7 +29,7 @@ MonoBehaviour:
   hero_reduction_rate: 0.4
   rare_reduction_rate: 0.5
   legendary_reduction_rate: 0.6
-  villagePhaseTime: 10
+  villagePhaseTime: 200
   LoserActNum: -1
   MatchEndReason: NONE
   ResolvedTurnIdx: -1

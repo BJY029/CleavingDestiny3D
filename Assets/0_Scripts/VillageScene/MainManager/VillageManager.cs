@@ -107,14 +107,19 @@ namespace Village
             switch (facilityType)
             {
                 case VillageType.Mine:
-                    _propCache[PlayerPropKeys.DayGoldIncome] = _statProvider.GetGoldIncomePerDay();
+                    _propCache[PlayerPropKeys.DayGoldIncome] = _statProvider.GetGoldIncomePerDay(nextLevel);
                     break;
                 case VillageType.Farm:
-                    _propCache[PlayerPropKeys.MaxEnergy] = _statProvider.GetMaxEnergy();
-                    _propCache[PlayerPropKeys.EnergyIncome] = _statProvider.GetEnergyIncomePerDay();
+                    _propCache[PlayerPropKeys.MaxEnergy] = _statProvider.GetMaxEnergy(nextLevel);
+                    _propCache[PlayerPropKeys.EnergyIncome] = _statProvider.GetEnergyIncomePerDay(nextLevel);
                     break;
                 case VillageType.Shop:
-                    _propCache[PlayerPropKeys.BarrierArmor] = _statProvider.GetBarrierArmor();
+                    _propCache[PlayerPropKeys.BarrierArmor] = _statProvider.GetBarrierArmor(nextLevel);
+                    break;
+                case VillageType.Forge:
+                    var (min, max) = _statProvider.GetAxeRangeDamage(nextLevel);
+                    _propCache[PlayerPropKeys.MinAtkPow] = min;
+                    _propCache[PlayerPropKeys.MaxAtkPow] = max;
                     break;
                     // TODO: 대장간 등 추가 예정인 건물들에 대한 로직
             }

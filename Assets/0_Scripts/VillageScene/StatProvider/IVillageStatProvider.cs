@@ -32,29 +32,31 @@ namespace Village
         /// <summary>
         /// 일일 골드 수입 획득량 가져오기 (주로 광산 레벨 비례)
         /// </summary>
-        /// <param name="targetPlayer">대상 플레이어</param>
+        /// <param name="level">건물 레벨</param>
         /// <returns>일일 골드 수입량</returns>
-        int GetGoldIncomePerDay(Player targetPlayer = null);
+        int GetGoldIncomePerDay(int level);
 
         /// <summary>
         /// 최대 에너지(행동력) 수치 가져오기 (주로 농장 레벨 비례)
         /// </summary>
-        /// <param name="targetPlayer">대상 플레이어</param>
+        /// <param name="level">건물 레벨</param>
         /// <returns>최대 에너지</returns>
-        float GetMaxEnergy(Player targetPlayer = null);
+        float GetMaxEnergy(int level);
 
         /// <summary>
         /// 일일 에너지(행동력) 회복량 가져오기
         /// </summary>
-        /// <param name="targetPlayer">대상 플레이어</param>
+        /// <param name="level">건물 레벨</param>
         /// <returns>일일 에너지 회복량</returns>
-        float GetEnergyIncomePerDay(Player targetPlayer = null);
+        float GetEnergyIncomePerDay(int level);
+
+        (float min, float max) GetAxeRangeDamage(int level);
 
         /// <summary>
         /// 방벽 방어력 수치 가져오기 (주로 상점/방어 시설 레벨 비례)
         /// </summary>
-        /// <param name="targetPlayer">대상 플레이어</param>
+        /// <param name="level">건물 레벨</param>
         /// <returns>방벽 방어력</returns>
-        float GetBarrierArmor(Player targetPlayer = null);
+        float GetBarrierArmor(int level);
     }
 }

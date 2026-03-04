@@ -15,7 +15,7 @@ MonoBehaviour:
   villageHP: 5000
   villageBarrier: 0
   barrierConversionRate: 0.3
-  initialGold: 100
+  initialGold: 500
   initialTotalDamage: 0
   initialDayGoldIncome: 50
   initialBarrierArmor: 0
@@ -31,6 +31,6 @@ MonoBehaviour:
   heroWeight: 30
   rareWeight: 20
   legendaryWeight: 10
-  initialVillageUpgrades: 0000000000000000000000000000000000000000
+  initialVillageUpgrades: 0100000000000000000000000100000000000000
   inventoryCapacity: 8
   dayTimeDamage: 0

@@ -120,9 +120,8 @@ namespace Village
         }
 
         // 1. 일일 골드 수입 (Mine 레벨 비례) (미리 계산된 값 사용)
-        public int GetGoldIncomePerDay(Player targetPlayer = null)
+        public int GetGoldIncomePerDay(int level)
         {
-            int level = GetVillageLevel(VillageType.Mine, targetPlayer);
             if (_villageDataDict.TryGetValue(VillageType.Mine, out VillageLevelData levelData) &&
                 levelData.TryGetEffectValue(level, out int incomeGold))
             {
@@ -132,24 +131,21 @@ namespace Village
         }
 
         // maxEnergy = base + (level * 5)
-        public float GetMaxEnergy(Player targetPlayer = null)
+        public float GetMaxEnergy(int level)
         {
-            int level = GetVillageLevel(VillageType.Farm, targetPlayer);
-            return _villageBalanceData.EnemyMaxBase + (level * _villageBalanceData.EnemyMaxMultiplier);
+            return _villageBalanceData.EnergyMaxBase + (level * _villageBalanceData.EnergyMaxMultiplier);
         }
 
-        // Energy =  base + (level * 3.2)<반올림>
-        public float GetEnergyIncomePerDay(Player targetPlayer = null)
+        // Energy =  base + (level * 3.2)
+        public float GetEnergyIncomePerDay(int level)
         {
-            int level = GetVillageLevel(VillageType.Farm, targetPlayer);
             return _villageBalanceData.EnergyIncomeBase + (level * _villageBalanceData.EnergyIncomeMultiplier);
         }
 
         // barrier(w) = barrier(w-1) * (1.5)^(w-1) (미리 계산된 값 사용)
-        public float GetBarrierArmor(Player targetPlayer = null)
+        public float GetBarrierArmor(int level)
         {
-            int level = GetVillageLevel(VillageType.Shop, targetPlayer);
-            if (_villageDataDict.TryGetValue(VillageType.Shop, out VillageLevelData levelData) &&
+            if (_villageDataDict.TryGetValue(VillageType.Barrier, out VillageLevelData levelData) &&
                 levelData.TryGetEffectValue(level, out int barrierArmor))
             {
                 return barrierArmor;
@@ -157,23 +153,16 @@ namespace Village
             return 0; // 오류 시 0 반환
         }
 
-        // TODO: 상점 강화 함수 필요
-        // TODO: 대장간 강화 함수 필요
-
-        public string GetLevelDescriptionID(VillageType facilityType, int level)
+        // minPow = 1000 - (Level * 100 * 0.5)
+        // maxPow = 1000 + (Level * 100 * 1.5)
+        public (float min, float max) GetAxeRangeDamage(int level)
         {
-            if (_villageDataDict.TryGetValue(facilityType, out var levelData))
-            {
-                if (levelData.TryGetEffectValue(level, out int _))
-                {
-                    var descriptions = levelData.LevelDescriptionID;
-                    if (level >= 0 && level < descriptions.Length)
-                    {
-                        return descriptions[level];
-                    }
-                }
-            }
-            return string.Empty; // 오류 시 빈 문자열 반환
+            return (
+                _villageBalanceData.AxeDamageBase - ((level + 1) * _villageBalanceData.AxeDamageLevelMultiplier * _villageBalanceData.AxeDamageMinMultiplier),
+                _villageBalanceData.AxeDamageBase + ((level + 1) * _villageBalanceData.AxeDamageLevelMultiplier * _villageBalanceData.AxeDamageMaxMultiplier)
+            );
         }
+
+        // TODO: 상점 강화 함수 필요
     }
 }
