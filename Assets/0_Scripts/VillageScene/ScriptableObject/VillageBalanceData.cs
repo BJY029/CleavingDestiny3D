@@ -3,6 +3,27 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "VillageBalanceData", menuName = "Scriptable Objects/VillageBalanceData")]
 public class VillageBalanceData : ScriptableObject
 {
+    [Header("General")]
+    [SerializeField]
+    private int maxLevel = 5;
+    public int MaxLevel => maxLevel;
+
+    [Header("Upgrade Cost")]
+    [SerializeField]
+    private int upgradeCostBase = 100;
+    public int UpgradeCostBase => upgradeCostBase;
+
+    // Cost(L) = Base * Multiplier^(L)
+    [SerializeField]
+    private float upgradeCostMultiplier = 2f;
+    public float UpgradeCostMultiplier => upgradeCostMultiplier;
+
+    [Header("Mine (Gold Income)")]
+    // Gold(L) = Base * (L^2 + L)
+    [SerializeField]
+    private int goldIncomeBase = 50;
+    public int GoldIncomeBase => goldIncomeBase;
+
     [Header("Farm (Energy Income & Max Energy)")]
     [SerializeField]
     private float energyIncomeBase = 5;
@@ -39,6 +60,16 @@ public class VillageBalanceData : ScriptableObject
     [SerializeField]
     private float axeDamageMaxMultiplier = 1.5f;
     public float AxeDamageMaxMultiplier => axeDamageMaxMultiplier;
+
+    [Header("Barrier (Armor)")]
+    // Armor(L) = Base * Multiplier^(L-1)
+    [SerializeField]
+    private float barrierArmorBase = 100f;
+    public float BarrierArmorBase => barrierArmorBase;
+
+    [SerializeField]
+    private float barrierArmorMultiplier = 2f;
+    public float BarrierArmorMultiplier => barrierArmorMultiplier;
 
 
 }
