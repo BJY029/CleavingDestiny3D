@@ -43,6 +43,7 @@ public class AIItemSelector : AILogicModule
         ItemSO bestItem = null;
         float highestScore = -9999f;
 
+        Debug.Log(offerString);
         var ItemList = offerString.Split("|");
         if (ItemList == null)
         {

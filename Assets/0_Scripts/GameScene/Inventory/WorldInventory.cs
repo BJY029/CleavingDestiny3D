@@ -20,10 +20,26 @@ public class WorldInventory : MonoBehaviourPunCallbacks
 	}
 
 
-	private void Start()
+	// private void Start()
+	// {
+	// 	//인벤토리 소유자 초기화
+	// 	owner = photonView.OwnerActorNr;
+	// 	//슬롯 초기화
+	// 	RefreshInv();
+	// }
+
+	public void OnPhotonInstantiate(PhotonMessageInfo info)
 	{
-		//인벤토리 소유자 초기화
-		owner = photonView.OwnerActorNr;
+		//플레이어 고유 번호를 초기화 한다.
+		if (info.photonView.InstantiationData != null && info.photonView.InstantiationData.Length > 0)
+		{
+			owner = (int)info.photonView.InstantiationData[0];
+		}
+		else
+		{
+			owner = info.photonView.OwnerActorNr;
+		}
+
 		//슬롯 초기화
 		RefreshInv();
 	}

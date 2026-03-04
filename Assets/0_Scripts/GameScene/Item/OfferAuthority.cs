@@ -26,9 +26,6 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 		//마스터 클라이언트만 실행
 		if (!PhotonNetwork.IsMasterClient) return "";
 
-		Player player = PhotonNetwork.CurrentRoom.GetPlayer(turnActor);
-		if (player == null) return "";
-
 		string playerInv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(turnActor));
 		int playerInvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(turnActor));
 		//만약 인벤토리가 가득찼다고 판별될 경우, 에러 메시지로 return 전송한다.
@@ -46,7 +43,7 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 
 
 		//아이템 3개 뽑아서 문자열 리스트 받아오기
-		List<string> offer = Pick3(player, turnIndex, turnActor, roomSeed, items);
+		List<string> offer = Pick3(turnIndex, turnActor, roomSeed, items);
 
 		//해당 문자열을 직렬화하기
 		return string.Join("|", offer); // "potion|bomb|shield"
@@ -57,8 +54,9 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 
 	//MasterClient만 수행
 	//Efraimidis-Spirakis 알고리즘
-	public List<string> Pick3(Player player, int turnIndex, int actor, int roomSeed, List<ItemSO> items)
+	public List<string> Pick3(int turnIndex, int actor, int roomSeed, List<ItemSO> items)
 	{
+		int playerActNum = actor;
 		//결정론적 난수 생성
 		//turnIndex와 actor가 같으면 재현 가능한 난수 생성기
 		var rng = new System.Random(roomSeed ^ (turnIndex * 73856093) ^ (actor * 19349663) ^ 12345);
@@ -66,10 +64,10 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 		//각 플레이어의 아이템 등장 확률을 프로퍼티에서 불러와 딕셔너리에 저장
 		Dictionary<ItemClass, float> RarityWeight = new()
 		{
-			{ItemClass.Common, PhotonPropertyHelper.GetPlayerProp<float>(player.ActorNumber, PlayerPropKeys.Item_CommonWeight) },
-			{ItemClass.Hero, PhotonPropertyHelper.GetPlayerProp<float>(player.ActorNumber, PlayerPropKeys.Item_HeroWeight) },
-			{ItemClass.Rare, PhotonPropertyHelper.GetPlayerProp<float>(player.ActorNumber, PlayerPropKeys.Item_RareWeight) },
-			{ItemClass.Legendary, PhotonPropertyHelper.GetPlayerProp<float>(player.ActorNumber, PlayerPropKeys.Item_LegendaryWeight) },
+			{ItemClass.Common, PhotonPropertyHelper.GetPlayerProp<float>(playerActNum, PlayerPropKeys.Item_CommonWeight) },
+			{ItemClass.Hero, PhotonPropertyHelper.GetPlayerProp<float>(playerActNum, PlayerPropKeys.Item_HeroWeight) },
+			{ItemClass.Rare, PhotonPropertyHelper.GetPlayerProp<float>(playerActNum, PlayerPropKeys.Item_RareWeight) },
+			{ItemClass.Legendary, PhotonPropertyHelper.GetPlayerProp<float>(playerActNum, PlayerPropKeys.Item_LegendaryWeight) },
 		};
 
 		//각 아이템에 점수(key) 부여 알고리즘

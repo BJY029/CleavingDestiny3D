@@ -629,7 +629,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				//만약 현재 마을 페이즈라면, AI 턴은 수행하지 않는다.
 				if (isVillagePhase) return;
 				//AI 턴 비동기 함수 호출
-				Debug.Log($"AI Turn(AI num : {turnActor}).. Processing by MasterClient");
 				AI_PlayTurnAsync(turnActor).Forget();
 				ItemOfferCanvasController.instance.Close();
 			}
@@ -664,7 +663,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//변경된 Offer 프로퍼티가 내 것에 해당되는 경우
 		if (propertiesThatChanged.TryGetValue(myOfferKey, out var offerObj))
 		{
-			Debug.Log("Offer Generated");
+			Debug.Log($"Offer Generated: {offerObj as string ?? ""}");
 			//그리고 offer가 처음 제공되는 경우
 			if (offerGenerated)
 			{
@@ -696,6 +695,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				//플래그 처리
 				offerGenerated = false;
 			}
+		}
+
+		string AIOfferKey = ItemPropKeys.OFFER(1000);
+		if (propertiesThatChanged.TryGetValue(AIOfferKey, out var offer))
+		{
+			Debug.Log($"AI OFFERS gen : {offer as string ?? ""}");
 		}
 	}
 
@@ -731,25 +736,37 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		VillageUpgradeLimitedTime = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.VillagePhaseTime);
 	}
 
+	private bool _isAIWorking = false;
 	//비동기로 플레이어 턴 처리 수행
 	private async UniTaskVoid AI_PlayTurnAsync(int aiActorNum)
 	{
-		//객체 파괴시 토큰 파괴
-		CancellationToken token = this.GetCancellationTokenOnDestroy();
-		//게임 시작 준비가 완료된 후에 아래 함수를 수행하도록 설정
-		//게임 시작시 ai 플레이어가 생성되기 전에 딕셔너리에서 찾는 것을 방지하기 위함
-		await UniTask.WaitUntil(() => PlayerManager.Instance.succeedToPreapreGame, cancellationToken: token);
-		TimeManager.instance.StartTurnTimer();
-		//AI 딕셔너리에서 고유 번호에 해당되는 AI 오브젝트 불러오기
-		if (PlayerManager.Instance.AIPlayerObj.TryGetValue(aiActorNum, out var p))
+		if (_isAIWorking) return;
+
+		_isAIWorking = true;
+		Debug.Log($"AI Turn(AI num : {aiActorNum}).. Processing by MasterClient");
+		try
 		{
-			//해당 AI 컨트롤러의 턴 수행
-			AIController ac = p.GetComponent<AIController>();
-			await ac.PlayTurnAsync();
+			//객체 파괴시 토큰 파괴
+			CancellationToken token = this.GetCancellationTokenOnDestroy();
+			//게임 시작 준비가 완료된 후에 아래 함수를 수행하도록 설정
+			//게임 시작시 ai 플레이어가 생성되기 전에 딕셔너리에서 찾는 것을 방지하기 위함
+			await UniTask.WaitUntil(() => PlayerManager.Instance.succeedToPreapreGame, cancellationToken: token);
+			TimeManager.instance.StartTurnTimer();
+			//AI 딕셔너리에서 고유 번호에 해당되는 AI 오브젝트 불러오기
+			if (PlayerManager.Instance.AIPlayerObj.TryGetValue(aiActorNum, out var p))
+			{
+				//해당 AI 컨트롤러의 턴 수행
+				AIController ac = p.GetComponent<AIController>();
+				await ac.PlayTurnAsync();
+			}
+			else
+			{
+				Debug.LogError($"[TurnManager] Can't find {aiActorNum} AI!");
+			}
 		}
-		else
+		finally
 		{
-			Debug.LogError($"[TurnManager] Can't find {aiActorNum} AI!");
+			_isAIWorking = false;
 		}
 	}
 }

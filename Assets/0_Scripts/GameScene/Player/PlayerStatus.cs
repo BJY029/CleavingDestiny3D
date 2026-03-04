@@ -19,6 +19,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 
 	//플레이어의 인벤토리
 	private GameObject myInventory;
+	private GameObject AIInventory;
 	// 플레이어 프로퍼티 변수
 	private int currentEnergy;
 	private int currentMaxEnergy;
@@ -44,9 +45,20 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		myInventory = inv;
 	}
 
+	public void SetAIInventory(GameObject inv)
+	{
+		if (inv == null) return;
+		AIInventory = inv;
+	}
+
 	public GameObject GetPlayerInventory()
 	{
 		return myInventory;
+	}
+
+	public GameObject GetAIInventory()
+	{
+		return AIInventory;
 	}
 
 	// 플레이어 프로퍼티 값 불러오기
