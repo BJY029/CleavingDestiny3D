@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class WorldInventory : MonoBehaviourPunCallbacks
+public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCallback
 {
 	//인벤토리 소유자 정보
 	int owner = -1;
+	public InventoryBarrier InvBarrier;
 	//해당 인벤토리의 슬롯들 
 	[SerializeField] private List<WorldInventorySlot> slots = new();
 
@@ -31,15 +32,18 @@ public class WorldInventory : MonoBehaviourPunCallbacks
 	public void OnPhotonInstantiate(PhotonMessageInfo info)
 	{
 		//플레이어 고유 번호를 초기화 한다.
+		//만약 생성시 넘어온 추가 정보가 있는 경우
 		if (info.photonView.InstantiationData != null && info.photonView.InstantiationData.Length > 0)
 		{
 			owner = (int)info.photonView.InstantiationData[0];
 		}
-		else
+		else//추가 정보가 없는 경우(실제 플레이어)
 		{
-			owner = info.photonView.OwnerActorNr;
+			owner = photonView.OwnerActorNr;
 		}
 
+		//인벤토리 주인 설정
+		InvBarrier.owner = owner;
 		//슬롯 초기화
 		RefreshInv();
 	}

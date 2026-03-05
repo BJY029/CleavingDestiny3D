@@ -45,6 +45,8 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     private float damageRatio;
     private int damage;
 
+    public bool isLookingAtTree { get; set; }
+
     //특정 인벤토리에 들어가기 위한 키(값 = 인벤토리 주인 ActorNum)
     private int InvAdmissionTicket = -1;
     public void SetInvAdmissionTicket(int Num)
@@ -73,6 +75,10 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         //AI 로직을 담당하는 AIBrain 초기화
         aiBrain = GetComponent<AIBrain>();
         aiBrain.InitializeBrain(PlayerActNum);
+
+
+        //임시 플래그 설정, 움직임 구현 시 설정해야 함
+        isLookingAtTree = true;
     }
 
     private void Awake()

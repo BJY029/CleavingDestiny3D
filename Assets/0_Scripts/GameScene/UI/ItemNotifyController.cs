@@ -32,8 +32,26 @@ public class ItemNotifyController : MonoBehaviour
 	//Overload
 	public void SetUI(ItemSO item, Player FromPlayer, Player ToPlayer)
 	{
-		string FromName = string.IsNullOrEmpty(FromPlayer.NickName) ? $"Player{FromPlayer.ActorNumber}" : FromPlayer.NickName;
-		string ToName = string.IsNullOrEmpty(ToPlayer.NickName) ? $"Player{ToPlayer.ActorNumber}" : ToPlayer.NickName;
+		string FromName, ToName;
+
+		if ((FromPlayer == null || ToPlayer == null) && GameManager.Instance.isSoloPlay)
+		{
+			if (FromPlayer == null)
+			{
+				FromName = "AI";
+				ToName = string.IsNullOrEmpty(ToPlayer.NickName) ? $"Player{ToPlayer.ActorNumber}" : ToPlayer.NickName;
+			}
+			else
+			{
+				FromName = string.IsNullOrEmpty(FromPlayer.NickName) ? $"Player{FromPlayer.ActorNumber}" : FromPlayer.NickName;
+				ToName = "AI";
+			}
+		}
+		else
+		{
+			FromName = string.IsNullOrEmpty(FromPlayer.NickName) ? $"Player{FromPlayer.ActorNumber}" : FromPlayer.NickName;
+			ToName = string.IsNullOrEmpty(ToPlayer.NickName) ? $"Player{ToPlayer.ActorNumber}" : ToPlayer.NickName;
+		}
 
 		NickName.text = ToName + " stole " + FromName + "'s item!";
 		ItemSprite.sprite = AtlasManager.instance.GetItemSprite(item.itemId);

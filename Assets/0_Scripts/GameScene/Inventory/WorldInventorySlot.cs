@@ -113,13 +113,24 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	}
 
 	//슬롯이 내 것인지 확인
-	public bool IsMine => PhotonNetwork.LocalPlayer.ActorNumber == ownerActor;
+	public bool IsMine(int actNum) => actNum == ownerActor;
 
 	//Ray가 Enter한 경우
-	public void OnLookEnter(PlayerController pc)
+	public void OnLookEnter(IPlayerAction pc)
 	{
+		PlayerController playerCtrl = pc as PlayerController;
+		AIController aiCtrl = pc as AIController;
+
+		if (playerCtrl == null && aiCtrl == null)
+		{
+			Debug.LogError("pc is not PlayerController or AIController");
+			return;
+		}
+
+		int ActNum = (playerCtrl != null) ? playerCtrl.PlayerActNum : aiCtrl.PlayerActNum;
+
 		if (!HasItem()) return;
-		if (!IsMine)
+		if (!IsMine(ActNum))
 		{
 			if (pc.GetInvAdmissionticket() != ownerActor) return;
 		}
@@ -129,7 +140,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	}
 
 	//Ray가 Exit 한 경우
-	public void OnLookExit(PlayerController pc)
+	public void OnLookExit(IPlayerAction pc)
 	{
 		//if (!IsMine) return;
 		ToolTipPanel.SetActive(false);
@@ -137,13 +148,24 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	}
 
 	//이제 구현해야 할 부분
-	public void OnInteract(PlayerController pc)
+	public void OnInteract(IPlayerAction pc)
 	{
+		PlayerController playerCtrl = pc as PlayerController;
+		AIController aiCtrl = pc as AIController;
+
+		if (playerCtrl == null && aiCtrl == null)
+		{
+			Debug.LogError("pc is not PlayerController or AIController");
+			return;
+		}
+
+		int ActNum = (playerCtrl != null) ? playerCtrl.PlayerActNum : aiCtrl.PlayerActNum;
+
 		if (!HasItem()) return;
-		if (!IsMine)
+		if (!IsMine(ActNum))
 		{
 			if (pc.GetInvAdmissionticket() != ownerActor) return;
-			int ToActorNum = pc.photonView.Owner.ActorNumber;
+			int ToActorNum = ActNum;
 			//키 제거
 			pc.SetInvAdmissionTicket(-1);
 			//TODO: 선택된 아이템 상호작용한 플레이어의 인벤토리로 옮기기
