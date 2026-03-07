@@ -178,13 +178,15 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		currentTotalDamage = 0;
 		currentBarrier = playerSet.villageBarrier;
 
+		string attachedKey = $"_{actNum}";
+
 		// AI 상태 업데이트도 묶어서 처리합니다.
 		ExitGames.Client.Photon.Hashtable newAIProps = new ExitGames.Client.Photon.Hashtable
 	{
-		{ PlayerPropKeys.Energy, currentEnergy },
-		{ PlayerPropKeys.CarryOverEnergy, playerSet.carryOverEnergy },
-		{ PlayerPropKeys.TotalDamage, currentTotalDamage },
-		{ PlayerPropKeys.VillageBarrier, currentBarrier }
+		{ PlayerPropKeys.Energy + attachedKey, currentEnergy },
+		{ PlayerPropKeys.CarryOverEnergy + attachedKey, playerSet.carryOverEnergy },
+		{ PlayerPropKeys.TotalDamage + attachedKey, currentTotalDamage },
+		{ PlayerPropKeys.VillageBarrier + attachedKey, currentBarrier }
 	};
 
 		// AI 프로퍼티를 룸 프로퍼티에 저장하는 로직이라면 아래처럼 적용

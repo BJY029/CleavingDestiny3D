@@ -6,24 +6,6 @@ using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public struct AIContext
-{
-    public int curEnergy;
-    public int curMaxEnergy;
-
-    public float curTreeHP;
-    public float curTreeToxicDmg;
-    public float curVillageHP;
-    public float curOppVillageHp;
-    public float curVillageBarrier;
-
-    public int curInvCap;
-    public string curInvStr;
-    public string curOppInvStr;
-
-    public int maxWaveCnt;
-    public int curWaveCnt;
-}
 
 public class AIItemSelector : AILogicModule
 {
@@ -44,7 +26,7 @@ public class AIItemSelector : AILogicModule
         await UniTask.Delay(AIThinkDelay_ms, cancellationToken: this.GetCancellationTokenOnDestroy());
 
         //  1. 스냅샷 생성
-        AIContext context = GetCurAIStat(brain.MyActorNum);
+        AIContext context = brain.GetCurAIStat(brain.MyActorNum);
 
         ItemSO bestItem = null;
         float highestScore = -9999f;
@@ -283,39 +265,6 @@ public class AIItemSelector : AILogicModule
             }
         }
         return false;
-    }
-
-    private AIContext GetCurAIStat(int aiNum)
-    {
-        var props = PhotonNetwork.CurrentRoom.CustomProperties;
-
-        AIContext context = new AIContext();
-
-        context.curTreeHP = GetValue<float>(props, RoomPropKeys.TreeHP);
-        context.curInvCap = GetValue<int>(props, ItemPropKeys.INV_CAPACITY(aiNum));
-        context.curInvStr = GetValue<string>(props, ItemPropKeys.INV(aiNum));
-        context.curOppInvStr = GetValue<string>(props, ItemPropKeys.INV(PhotonNetwork.LocalPlayer.ActorNumber));
-        context.maxWaveCnt = GetValue<int>(props, RoomPropKeys.MaxWaveCnt);
-        context.curWaveCnt = GetValue<int>(props, RoomPropKeys.CurrentWave);
-        context.curTreeToxicDmg = GetValue<float>(props, RoomPropKeys.TreeAtkPow);
-
-        string attachedKey = $"_{aiNum}";
-        context.curVillageHP = GetValue<float>(props, PlayerPropKeys.VillageHP + attachedKey);
-        context.curVillageBarrier = GetValue<float>(props, PlayerPropKeys.VillageBarrier + attachedKey);
-        context.curEnergy = GetValue<int>(props, PlayerPropKeys.Energy + attachedKey);
-        context.curMaxEnergy = GetValue<int>(props, PlayerPropKeys.MaxEnergy + attachedKey);
-
-        context.curOppVillageHp = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageHP);
-        return context;
-    }
-
-    private T GetValue<T>(ExitGames.Client.Photon.Hashtable prop, string key)
-    {
-        if (prop.TryGetValue(key, out object value))
-        {
-            return (T)value;
-        }
-        return default(T);
     }
 
 }

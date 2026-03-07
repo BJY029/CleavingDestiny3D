@@ -34,4 +34,8 @@ public class AIItemScoreTableSO : ScriptableObject
     public float purifyBonus = 200f;
     public float killCatchBonus = 150f;
     public float gimmicBonus = 100f;
+
+    [Header("위기 판독 비율")]
+    public float EmgVillageHPRatio = 0.2f;
+    public float EmgTreeHpRatio = 0.15f;
 }
