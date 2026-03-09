@@ -231,6 +231,10 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 				PlayerStatus.Instance.SetAIInventory(spawnAIInv);
 				InventoryBarrier ib = spawnAIInv.GetComponentInChildren<InventoryBarrier>();
 				//ib.SetPermission(spawnAIInv);
+
+				//ai 플레이어의 인벤토리 등록
+				AIController ai = spawnAI.GetComponent<AIController>();
+				ai.aiBrain.InventoryManager.AIInv = spawnAIInv.GetComponent<WorldInventory>();
 			}
 		}
 	}

@@ -7,6 +7,9 @@ using System;
 
 public class AIInventoryManager : AILogicModule
 {
+    [HideInInspector]
+    public WorldInventory AIInv { private get; set; }
+
     [Header("AI 아이템 사용 설정을 위한 점수표")]
     public AIItemScoreTableSO scoreTable;
 
@@ -52,7 +55,7 @@ public class AIInventoryManager : AILogicModule
             //인벤토리를 돌아본다.
             foreach (var slot in InvSlots)
             {
-                Debug.Log($"{slot.itemID}");
+                //Debug.Log($"{slot.itemID}");
                 ItemSO item = ItemDB.Instance.Get(slot.itemID);
                 if (item == null) continue;
 
@@ -70,6 +73,8 @@ public class AIInventoryManager : AILogicModule
                 float score = EvaluateUtilityCurves(item, context);
                 score += EvaluateGimmicks(item, context);
 
+                Debug.Log($"이름 : {item.displayName_ID}, 점수 : {score}");
+
                 if (score > highestScore)
                 {
                     highestScore = score;
@@ -86,7 +91,7 @@ public class AIInventoryManager : AILogicModule
             else
             {
                 //만족하는 아이템이 없으면 그만 찾는다.
-                Debug.Log($"[AI {brain.MyActorNum}] 더 이상 쓸만한 아이템이 없거나 기력을 아낍니다. 턴 종료.");
+                Debug.Log($"[AI {brain.MyActorNum}] 더 이상 쓸만한 아이템이 없거나 기력을 아낍니다. 턴 종료. (가장 높은 점수 : {highestScore:F1})");
                 canUseMore = false;
             }
         }
@@ -228,6 +233,8 @@ public class AIInventoryManager : AILogicModule
 
     private async UniTask ExecuteItemUsageAsync(ItemSO item)
     {
-
+        //ai 인벤토리에서의 아이템 소모 및 효과 적용
+        AIInv.InteractSlotByAI(gameObject.GetComponent<AIController>(), item);
+        await UniTask.Delay(1000, cancellationToken: this.GetCancellationTokenOnDestroy());
     }
 }

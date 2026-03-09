@@ -16,7 +16,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	private MeshRenderer quadRenderer;
 
 	//해당 슬롯이 현재 가지고 있는 아이템 정보
-	private ItemSO currentItem;
+	public ItemSO currentItem { get; private set; }
 	//해당 슬롯의 머테리얼 관련 정보
 	private MaterialPropertyBlock mpb;
 
@@ -147,7 +147,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 		//Highlight();
 	}
 
-	//이제 구현해야 할 부분
+	//특정 슬롯으로부터 상호작용 발동 시 해당 슬롯의 아이템 사용 로직 활성화
 	public void OnInteract(IPlayerAction pc)
 	{
 		PlayerController playerCtrl = pc as PlayerController;
@@ -161,9 +161,14 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 
 		int ActNum = (playerCtrl != null) ? playerCtrl.PlayerActNum : aiCtrl.PlayerActNum;
 
-		if (!HasItem()) return;
+		if (!HasItem())
+		{
+			Debug.LogWarning("Non Item in slot");
+			return;
+		}
 		if (!IsMine(ActNum))
 		{
+			Debug.Log("stealing item activated");
 			if (pc.GetInvAdmissionticket() != ownerActor) return;
 			int ToActorNum = ActNum;
 			//키 제거
@@ -176,7 +181,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 
 		ToolTipPanel.SetActive(false);
 		Debug.Log("Interacted!!");
-		InventoryAuthority.Instance.RequestUseItem(slotIndex, this);
+		InventoryAuthority.Instance.RequestUseItem(slotIndex, ActNum, this);
 
 	}
 

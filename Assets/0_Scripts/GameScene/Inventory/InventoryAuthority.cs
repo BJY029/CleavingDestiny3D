@@ -26,10 +26,10 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_TakeOffer), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber, itemId);
 	}
 
-	public void RequestUseItem(int slotIdx, WorldInventorySlot wi)
+	public void RequestUseItem(int slotIdx, int ActNum, WorldInventorySlot wi)
 	{
 		wis = wi;
-		photonView.RPC(nameof(RPC_UseItem), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber, slotIdx);
+		photonView.RPC(nameof(RPC_UseItem), RpcTarget.MasterClient, ActNum, slotIdx);
 	}
 
 	public void RequestSteelItem(int FromActor, int ToActor, int SelectedSlotIdx, WorldInventorySlot wi)
@@ -146,8 +146,11 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
 		if (turnActor != requestActor)
 		{
-			Debug.LogError("Requester isn't Current turn");
-			return;
+			if (!GameManager.Instance.isSoloPlay)
+			{
+				Debug.LogError("Requester isn't Current turn");
+				return;
+			}
 		}
 
 		//요청자 INV 정보 가져오기
@@ -191,17 +194,20 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(requestActor);
 
+
 		//희생 아이템이면서, 아이템 갯수가 1개 이하인 경우
 		if (itemCnt <= 1 && item.itemId == "2002")
 		{
-			photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_NotEnoughItem);
+			if (player != null)
+				photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_NotEnoughItem);
 			return;
 		}
 
 		//Check whether you are trying to use an item that can only be used once per turn or day.
 		if (!ItemHandlingSystem.instance.CheckItemAvaiable(requestActor, itemId))
 		{
-			photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_NotAvaiable);
+			if (player != null)
+				photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_NotAvaiable);
 			return;
 		}
 
@@ -209,8 +215,11 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		int playerEng = PhotonPropertyHelper.GetPlayerProp<int>(requestActor, PlayerPropKeys.Energy);
 		if (playerEng - item.itemCost < 0)
 		{
-			photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_Energy);
-			photonView.RPC(nameof(RPC_SetItemSlotUI), player, false);
+			if (player != null)
+			{
+				photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_Energy);
+				photonView.RPC(nameof(RPC_SetItemSlotUI), player, false);
+			}
 			return;
 		}
 
@@ -220,7 +229,13 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		//사용한 아이템 인벤토리에서 제거
 		slots[slotIdx] = (0, null);
-		photonView.RPC(nameof(RPC_SetItemSlotUI), player, true);
+		if (player != null)
+			photonView.RPC(nameof(RPC_SetItemSlotUI), player, true);
+		else
+		{
+			wis.SetCurrentItemNull(true);
+			wis = null;
+		}
 
 		//아이템 사용 UI 띄우기
 		PlayerCanvasController.Instance.PopUpItemNotify(item.itemId, player);

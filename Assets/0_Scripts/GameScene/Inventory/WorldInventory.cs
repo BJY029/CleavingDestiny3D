@@ -94,4 +94,19 @@ public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCal
 		for (int i = n; i < slots.Count; i++)
 			slots[i].SetSlot(null, owner);
 	}
+
+	//AI 전용 아이템 사용 함수
+	public void InteractSlotByAI(AIController player, ItemSO item)
+	{
+		foreach (var slot in slots)
+		{
+			//ai가 사용한 아이템이 인벤토리 내에 존재하면 사용 실시
+			if (slot.currentItem == item)
+			{
+				slot.OnInteract(player);
+				return;
+			}
+		}
+		Debug.Log($"[AI {player.PlayerActNum}] Inventory Interact ERROR");
+	}
 }

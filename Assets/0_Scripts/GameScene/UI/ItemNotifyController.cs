@@ -18,7 +18,11 @@ public class ItemNotifyController : MonoBehaviour
 
 	public void SetUI(ItemSO item, Player player)
 	{
-		string name = string.IsNullOrEmpty(player.NickName) ? $"Player{player.ActorNumber}" : player.NickName;
+		string name;
+		if (player == null && GameManager.Instance.isSoloPlay)
+			name = "AI";
+		else
+			name = string.IsNullOrEmpty(player.NickName) ? $"Player{player.ActorNumber}" : player.NickName;
 
 		NickName.text = name + "\'s";
 		ItemSprite.sprite = AtlasManager.instance.GetItemSprite(item.itemId);

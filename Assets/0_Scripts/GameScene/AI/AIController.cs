@@ -12,7 +12,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 {
     //AI 플레이어 고유 번호(현재는 1000 으로 고정 번호 부여)
     public int PlayerActNum { get; set; }
-    AIBrain aiBrain;
+    public AIBrain aiBrain;
 
     //AI 움직임 처리용(아직 구현 안함)
     private NavMeshAgent agent;
@@ -104,6 +104,10 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
         //일정 시간 딜레이 준 후
         await UniTask.Delay(1500, cancellationToken: token);
+
+        await aiBrain.InventoryManager.ProcessInventoryAsync();
+
+        await UniTask.Delay(1000, cancellationToken: token);
 
         //턴 변경 시도
         TryHit();
