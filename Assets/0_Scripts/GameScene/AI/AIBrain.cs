@@ -47,6 +47,8 @@ public class AIBrain : MonoBehaviour
     //나무 타격 데미지 결정 모듈
     public AITreeAttacker TreeAttacker { get; private set; }
 
+    public AINevMeshController aINevMeshController { get; private set; }
+
     //각 모듈 찾아서 연결 후 초기화
     public void InitializeBrain(int actorNum)
     {
@@ -64,6 +66,8 @@ public class AIBrain : MonoBehaviour
         TreeAttacker = GetComponent<AITreeAttacker>();
         TreeAttacker?.Initialize(this);
 
+        aINevMeshController = GetComponent<AINevMeshController>();
+        aINevMeshController?.Initialize(this);
     }
 
     public AIContext GetCurAIStat(int aiNum)

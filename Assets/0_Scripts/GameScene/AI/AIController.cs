@@ -3,19 +3,15 @@ using Cysharp.Threading.Tasks;
 using System.Threading;
 using Photon.Pun;
 using UnityEngine;
-using UnityEngine.AI;
 using Unity.VisualScripting;
 
-[RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(PhotonView))]
 public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInstantiateMagicCallback
 {
     //AI 플레이어 고유 번호(현재는 1000 으로 고정 번호 부여)
     public int PlayerActNum { get; set; }
-    public AIBrain aiBrain;
 
-    //AI 움직임 처리용(아직 구현 안함)
-    private NavMeshAgent agent;
+    [HideInInspector] public AIBrain aiBrain;
 
     //움직임 관련 파라미터
     [Header("Move")]
@@ -77,14 +73,62 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         aiBrain.InitializeBrain(PlayerActNum);
 
 
+
         //임시 플래그 설정, 움직임 구현 시 설정해야 함
         isLookingAtTree = true;
     }
 
     private void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        AssignAnimationIDs();
+    }
+
+    //움직임에 따른 애니메이션 업데이트
+    private void Update()
+    {
+        //NevMeshAgent의 속도 값 받아오기
+        Vector3 velocity = aiBrain.aINevMeshController.agent.velocity;
+        //현재 속도 값 구하기(벡터 크기)
+        float currentSpeed = velocity.magnitude;
+
+        //속도 값 Clamp
+        float maxSpeed = aiBrain.aINevMeshController.agent.speed;
+        float speed01 = (maxSpeed > 0f) ? Mathf.Clamp01(currentSpeed / maxSpeed) : 0f;
+
+        //거의 움직이지 않는 경우
+        if (currentSpeed < 0.01f || speed01 < 0.01f)
+        {
+            animator.SetFloat(_animIDSpeedX, 0f, 0.1f, Time.deltaTime);
+            animator.SetFloat(_animIDSpeedZ, 0f, 0.1f, Time.deltaTime);
+        }
+        else
+        {
+            //방향 구하기(벡터 방향)
+            Vector3 dir = velocity.normalized;
+
+            //ㅎ현재 전방 및 우측 방향을 수평면에 정사영
+            Vector3 fwd = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+            Vector3 right = Vector3.ProjectOnPlane(transform.right, Vector3.up).normalized;
+
+            //내적으로 캐릭터 이동 방향 구하기
+            float moveX = Vector3.Dot(dir, right) * speed01;
+            float moveZ = Vector3.Dot(dir, fwd) * speed01;
+
+            //애니메이션 반영
+            animator.SetFloat(_animIDSpeedX, moveX, 0.1f, Time.deltaTime);
+            animator.SetFloat(_animIDSpeedZ, moveZ, 0.1f, Time.deltaTime);
+        }
+    }
+
+    private void AssignAnimationIDs()
+    {
+        _animIDSpeedX = Animator.StringToHash("Speed_X");
+        _animIDSpeedZ = Animator.StringToHash("Speed_Z");
+        _animIDGrounded = Animator.StringToHash("Grounded");
+        _animIDJump = Animator.StringToHash("Jump");
+        _animIDFreeFall = Animator.StringToHash("FreeFall");
+        _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
     }
 
     //플레이어 턴 처리 비동기 함수(임시)
@@ -109,6 +153,8 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
         await UniTask.Delay(1000, cancellationToken: token);
 
+        //Hit 위치로 이동
+        await aiBrain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_HIT, token);
         //턴 변경 시도
         TryHit();
     }

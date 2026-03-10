@@ -1,9 +1,6 @@
 using UnityEngine;
-using System.Collections.Generic;
-using Photon.Pun;
 using Cysharp.Threading.Tasks;
-using Unity.VisualScripting;
-using System;
+using System.Threading;
 
 public class AIInventoryManager : AILogicModule
 {
@@ -25,6 +22,11 @@ public class AIInventoryManager : AILogicModule
 
     public async UniTask ProcessInventoryAsync()
     {
+        CancellationToken token = this.GetCancellationTokenOnDestroy();
+
+        //NevMesh를 통해 이동 명령 보내기(비동기 처리)
+        await brain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_INV, token);
+        //이동 끝난 후
         Debug.Log($"[AI {brain.MyActorNum}] 인벤토리 아이템 사용 판단 시작");
 
         bool canUseMore = true;

@@ -174,3 +174,13 @@ public enum MatchResultReason
     Player_Left,
     DRAW,
 }
+
+public enum LocationCommand
+{
+    MY_INV,
+    MY_INV_ENTRY,
+    MY_HIT,
+    OPP_INV,
+    OPP_INV_ENTRY,
+    OPP_HIT,
+}

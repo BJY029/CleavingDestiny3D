@@ -110,8 +110,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4748059610868810890}
   - component: {fileID: 3710110911519245321}
-  - component: {fileID: 5684972878656882415}
+  - component: {fileID: 7837226916856445683}
   - component: {fileID: 4777240268774313513}
+  - component: {fileID: -6142168861529792115}
   - component: {fileID: -6125655930517416145}
   - component: {fileID: 2876885551497215331}
   - component: {fileID: 4411511653207790959}
@@ -169,8 +170,8 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!143 &5684972878656882415
-CharacterController:
+--- !u!136 &7837226916856445683
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -184,16 +185,14 @@ CharacterController:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 1.47
-  m_Radius: 0.41
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.8, z: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1.61
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.75, z: 0}
 --- !u!114 &4777240268774313513
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -212,6 +211,19 @@ MonoBehaviour:
   rotationSmoothTime: 0.08
   accelation: 12
   deceleration: 12
+--- !u!114 &-6142168861529792115
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171133721816373843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ef407429edc75841aa65b8b44e4db47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AINevMeshController
+  wayPointData: {fileID: 11400000, guid: 04a6ec45e289ce04ab46b084ff95ffff, type: 2}
 --- !u!114 &-6125655930517416145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -330,15 +342,15 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
+  m_Speed: 2.5
+  m_Acceleration: 6
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 2
+  m_Height: 1.5
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
