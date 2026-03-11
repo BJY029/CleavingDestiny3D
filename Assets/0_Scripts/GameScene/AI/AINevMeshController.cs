@@ -4,12 +4,15 @@ using Photon.Pun;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using System;
+using Unity.AppUI.UI;
+using Unity.VisualScripting;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class AINevMeshController : AILogicModule
 {
     //위치 데이터 스크립터블 오브젝트
     public WayPointSO wayPointData;
+    public float rotationSpeed = 10f;
 
     //AI 움직임 처리용 NavMeshAgent
     public NavMeshAgent agent;
@@ -17,7 +20,7 @@ public class AINevMeshController : AILogicModule
     //플레이어 순서 기준 실제 위치 데이터 값 저장용
     private Vector3 myInvPos;
     private Vector3 myInvEntryPos;
-    private Vector3 myHitPos;
+    public Vector3 myHitPos { get; private set; }
     private Vector3 oppInvPos;
     private Vector3 oppInvEntryPos;
     private Vector3 oppHitPos;
@@ -69,6 +72,20 @@ public class AINevMeshController : AILogicModule
         }
     }
 
+    private Vector3 GetLookAtPosFromCommand(LocationCommand cmd)
+    {
+        switch (cmd)
+        {
+            case LocationCommand.MY_INV: return myInvPos * 2;
+            case LocationCommand.MY_INV_ENTRY: return myInvEntryPos * 2;
+            case LocationCommand.MY_HIT: return myHitPos / 2;
+            case LocationCommand.OPP_INV: return oppInvPos * 2;
+            case LocationCommand.OPP_INV_ENTRY: return oppInvEntryPos * 2;
+            case LocationCommand.OPP_HIT: return oppHitPos / 2;
+            default: return transform.position;
+        }
+    }
+
     private async UniTaskVoid ExecuteMoveAsync(Vector3 destination, CancellationToken token)
     {
         try
@@ -104,5 +121,52 @@ public class AINevMeshController : AILogicModule
 
         //도착 후 정지
         agent.velocity = Vector3.zero;
+
+        Vector3 targetRotPos = GetLookAtPosFromCommand(command);
+
+        await LookAtTargetAsync(targetRotPos, token);
+    }
+
+    //특정 방향으로 AI를 부드럽게 회전시키는 함수
+    public async UniTask LookAtTargetAsync(Vector3 targetPosition, CancellationToken token)
+    {
+        //agent 자동 회전 끄기
+        agent.updateRotation = false;
+
+        //목표 방향 구하기
+        Vector3 direction = (targetPosition - transform.position).normalized;
+
+        //y축은 0으로 고정(위아래 회전 방지)
+        direction.y = 0;
+
+        //이미 목표 회전 값이면 실행 안함
+        if (direction == Vector3.zero) return;
+
+        //목표 회전 값 구하기
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+
+        //회전 수행(각도 차이가 1 이하가 될 때 까지)
+        while (Quaternion.Angle(transform.rotation, targetRotation) > 1f)
+        {
+            //보간을 통한 부드로운 회전
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+            //다음 프레임 까지 대기
+            await UniTask.Yield(PlayerLoopTiming.Update, token);
+        }
+        //최종 회전값으로 고정
+        transform.rotation = targetRotation;
+        //agent 자동 회전 켜기
+        agent.updateRotation = true;
+    }
+
+    //특정 방향으로 AI 플레이어를 스냅 회전 시키는 함수
+    public void SnapToTarget(LocationCommand cmd)
+    {
+        Vector3 targetPosition = GetLookAtPosFromCommand(cmd);
+        Vector3 direction = (targetPosition - transform.position).normalized;
+        direction.y = 0;
+
+        if (direction != Vector3.zero)
+            transform.rotation = Quaternion.LookRotation(direction);
     }
 }

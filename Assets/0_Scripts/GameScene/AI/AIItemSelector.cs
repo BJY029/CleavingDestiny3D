@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Photon.Pun;
 using Photon.Realtime;
@@ -15,7 +16,7 @@ public class AIItemSelector : AILogicModule
 
     public int AIThinkDelay_ms = 3000;
 
-    public async UniTask ChooseItemAsync(string offerString)
+    public async UniTask ChooseItemAsync(string offerString, CancellationToken token)
     {
         //인벤토리 꽉 찬 경우 선택 실행 안함
         if (string.Equals(offerString, ERROR.FULL_INV.ToString()))
@@ -23,7 +24,7 @@ public class AIItemSelector : AILogicModule
             Debug.LogWarning("AI Player's Inv is FULL!!");
             return;
         }
-        await UniTask.Delay(AIThinkDelay_ms, cancellationToken: this.GetCancellationTokenOnDestroy());
+        await UniTask.Delay(AIThinkDelay_ms, cancellationToken: token);
 
         //  1. 스냅샷 생성
         AIContext context = brain.GetCurAIStat(brain.MyActorNum);

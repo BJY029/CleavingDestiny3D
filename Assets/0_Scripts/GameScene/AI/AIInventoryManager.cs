@@ -20,10 +20,8 @@ public class AIInventoryManager : AILogicModule
     public float useDelay = 1.2f;
 
 
-    public async UniTask ProcessInventoryAsync()
+    public async UniTask ProcessInventoryAsync(CancellationToken token)
     {
-        CancellationToken token = this.GetCancellationTokenOnDestroy();
-
         //NevMesh를 통해 이동 명령 보내기(비동기 처리)
         await brain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_INV, token);
         //이동 끝난 후
@@ -38,7 +36,7 @@ public class AIInventoryManager : AILogicModule
         {
             safetyLoopCount++;
 
-            await UniTask.Delay(System.TimeSpan.FromSeconds(useDelay), cancellationToken: this.GetCancellationTokenOnDestroy());
+            await UniTask.Delay(System.TimeSpan.FromSeconds(useDelay), cancellationToken: token);
 
             //  1. 스냅샷 생성
             AIContext context = brain.GetCurAIStat(brain.MyActorNum);
@@ -88,7 +86,7 @@ public class AIInventoryManager : AILogicModule
             {
                 Debug.Log($"[AI {brain.MyActorNum}] '{bestItemToUse.displayName_ID}' 사용! (점수 : {highestScore:F1}, 아이템 기력: {bestItemToUse.itemCost}");
                 //구현 예정
-                await ExecuteItemUsageAsync(bestItemToUse);
+                await ExecuteItemUsageAsync(bestItemToUse, token);
             }
             else
             {
@@ -233,10 +231,10 @@ public class AIInventoryManager : AILogicModule
         return false;
     }
 
-    private async UniTask ExecuteItemUsageAsync(ItemSO item)
+    private async UniTask ExecuteItemUsageAsync(ItemSO item, CancellationToken token)
     {
         //ai 인벤토리에서의 아이템 소모 및 효과 적용
         AIInv.InteractSlotByAI(gameObject.GetComponent<AIController>(), item);
-        await UniTask.Delay(1000, cancellationToken: this.GetCancellationTokenOnDestroy());
+        await UniTask.Delay(1000, cancellationToken: token);
     }
 }
