@@ -30,7 +30,7 @@ namespace Village
             // 씬이 새로 로드될 때 Photon에 저장된 기존 골드 정보를 가져옴
             if (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue(PlayerPropKeys.Gold, out object gold))
             {
-                _cachedGold = (int)gold;
+                _cachedGold = Convert.ToInt32(gold);
             }
             else
             {
@@ -58,7 +58,7 @@ namespace Village
             {
                 if (changedProps.TryGetValue(PlayerPropKeys.Gold, out object gold))
                 {
-                    _cachedGold = (int)gold;
+                    _cachedGold = Convert.ToInt32(gold);
                     OnGoldChanged?.Invoke(_cachedGold);
                 }
             }
@@ -70,6 +70,11 @@ namespace Village
             int currentGold = GetMyGold();
             int currentLevel = _statProvider.GetVillageLevel(facilityType);
             int cost = _statProvider.GetLevelUpgradedCost(facilityType, currentLevel);
+
+            if (cost <= 0)
+            {
+                return false;
+            }
 
             if (currentGold >= cost)
             {
@@ -87,8 +92,8 @@ namespace Village
             _propCache.Clear();
             _propCache[PlayerPropKeys.Gold] = _cachedGold;
 
-            // 캐싱된 Enum 길이를 사용하여 배열 할당
-            int[] currentUpgrades = (int[])myPlayer.CustomProperties[PlayerPropKeys.VillageUpgrades] ?? new int[_villageTypeCount];
+            // Photon 역직렬화 타입(int[]/object[]) 차이를 흡수하고, 원본 배열 오염을 막기 위해 복사본을 사용
+            int[] currentUpgrades = GetUpgradeLevelsSnapshot(myPlayer);
             int nextLevel = currentLevel + 1;
             currentUpgrades[(int)facilityType] = nextLevel;
             _propCache[PlayerPropKeys.VillageUpgrades] = currentUpgrades;
@@ -113,7 +118,7 @@ namespace Village
                     _propCache[PlayerPropKeys.MaxEnergy] = _statProvider.GetMaxEnergy(nextLevel);
                     _propCache[PlayerPropKeys.EnergyIncome] = _statProvider.GetEnergyIncomePerDay(nextLevel);
                     break;
-                case VillageType.Shop:
+                case VillageType.Barrier:
                     _propCache[PlayerPropKeys.BarrierArmor] = _statProvider.GetBarrierArmor(nextLevel);
                     break;
                 case VillageType.Forge:
@@ -123,6 +128,36 @@ namespace Village
                     break;
                     // TODO: 대장간 등 추가 예정인 건물들에 대한 로직
             }
+        }
+
+        private static int[] GetUpgradeLevelsSnapshot(Player player)
+        {
+            int[] levels = new int[_villageTypeCount];
+
+            if (player == null
+                || player.CustomProperties == null
+                || !player.CustomProperties.TryGetValue(PlayerPropKeys.VillageUpgrades, out object village)
+                || village == null)
+            {
+                return levels;
+            }
+
+            if (village is int[] intList)
+            {
+                Array.Copy(intList, levels, Mathf.Min(intList.Length, _villageTypeCount));
+                return levels;
+            }
+
+            if (village is object[] objList)
+            {
+                int count = Mathf.Min(objList.Length, _villageTypeCount);
+                for (int i = 0; i < count; i++)
+                {
+                    levels[i] = objList[i] == null ? 0 : Convert.ToInt32(objList[i]);
+                }
+            }
+
+            return levels;
         }
     }
 }

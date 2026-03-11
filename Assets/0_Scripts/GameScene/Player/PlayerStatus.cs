@@ -28,12 +28,15 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	private float maxVillageHp;
 	private float currentTotalDamage;
 	private float currentBarrier;
+	private float currentBarrierArmor;
 	private float currentConBarrier;
 	private float currentTreeDmgMulit;
 
 	public float GetMaxVillageHp() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxVillageHP); }
 	public float GetCurrentVillageHP() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageHP); }
-	public float GetCurrentBarrier() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageBarrier); }
+	public float GetCurrentBarrier() { return GetCurrentConvertedBarrier() + GetCurrentBarrierArmor(); }
+	public float GetCurrentConvertedBarrier() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageBarrier); }
+	public float GetCurrentBarrierArmor() { return PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.BarrierArmor); }
 
 	public void SetPlayerInventory(GameObject inv)
 	{
@@ -59,6 +62,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 
 		currentVillageHP = GetValue<float>(props, PlayerPropKeys.VillageHP);
 		currentBarrier = GetValue<float>(props, PlayerPropKeys.VillageBarrier);
+		currentBarrierArmor = GetValue<float>(props, PlayerPropKeys.BarrierArmor);
 		currentConBarrier = GetValue<float>(props, PlayerPropKeys.BarrierConversionRate);
 		currentTotalDamage = GetValue<float>(props, PlayerPropKeys.TotalDamage);
 
@@ -81,6 +85,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 
 		currentVillageHP = GetValue<float>(props, PlayerPropKeys.VillageHP + attachedKey);
 		currentBarrier = GetValue<float>(props, PlayerPropKeys.VillageBarrier + attachedKey);
+		currentBarrierArmor = GetValue<float>(props, PlayerPropKeys.BarrierArmor + attachedKey);
 		currentConBarrier = GetValue<float>(props, PlayerPropKeys.BarrierConversionRate + attachedKey);
 		currentTotalDamage = GetValue<float>(props, PlayerPropKeys.TotalDamage + attachedKey);
 
@@ -99,12 +104,38 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		return default(T);
 	}
 
+	private float GetCurrentTotalDefense()
+	{
+		// 낮 데미지 전환 배리어 + 마을 업그레이드 기본 방어력
+		return currentBarrier + currentBarrierArmor;
+	}
+
+	/// <summary>
+	/// 현재 플레이어 프로퍼티를 기준으로 실제 적용될 마을 피해량을 예측한다.
+	/// (트리 배율 적용 후 총 방어력 차감, 최소 0 보정)
+	/// </summary>
+	/// <param name="incomingDamage">트리의 원본 공격력</param>
+	/// <returns>최종 예상 피해량</returns>
+	public float GetExpectedVillageDamage(float incomingDamage)
+	{
+		GetCurrentPlayerStatus();
+		return GetExpectedVillageDamageInternal(incomingDamage);
+	}
+
+	private float GetExpectedVillageDamageInternal(float incomingDamage)
+	{
+		// 실제 마을 피해식과 동일한 계산 순서
+		float adjustedDamage = incomingDamage * currentTreeDmgMulit;
+		adjustedDamage -= GetCurrentTotalDefense();
+		return Mathf.Max(0f, adjustedDamage);
+	}
+
 	// UI 업데이트
 	public void SetPlayerStatusUI()
 	{
 		GetCurrentPlayerStatus();
 		PlayerCanvasController.Instance.updatePlayerStatus(
-			currentEnergy.ToString(), currentVillageHP.ToString(), currentTotalDamage.ToString(), currentBarrier.ToString(), currentTreeDmgMulit.ToString());
+			currentEnergy.ToString(), currentVillageHP.ToString(), currentTotalDamage.ToString(), GetCurrentTotalDefense().ToString(), currentTreeDmgMulit.ToString());
 	}
 
 	// 턴 전환 시 플레이어 상태 초기화
@@ -125,7 +156,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 
 		currentEnergy = (currentMaxEnergy == 0 ? playerSet.initialEnergy : currentMaxEnergy) + currentCarryOverEnergy;
 		currentTotalDamage = 0;
-		currentBarrier = playerSet.villageBarrier;
+		currentBarrier = 0f;
 
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.Energy, currentEnergy);
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.CarryOverEnergy, playerSet.carryOverEnergy);
@@ -142,6 +173,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 			changedProps.ContainsKey(PlayerPropKeys.VillageHP) ||
 			changedProps.ContainsKey(PlayerPropKeys.TotalDamage) ||
 			changedProps.ContainsKey(PlayerPropKeys.VillageBarrier) ||
+			changedProps.ContainsKey(PlayerPropKeys.BarrierArmor) ||
 			changedProps.ContainsKey(PlayerPropKeys.TreeAtkMulti))
 		{
 			SetPlayerStatusUI();
@@ -158,8 +190,8 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		int HitDamage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
 		// 누적 데미지 합산
 		currentTotalDamage += HitDamage;
-		// 배리어 수치 계산
-		currentBarrier = currentTotalDamage * (1 + currentConBarrier);
+		// 낮에 가한 누적 데미지를 전환 비율만큼 배리어로 환산
+		currentBarrier = currentTotalDamage * currentConBarrier;
 
 		// 변경된 값을 네트워크 프로퍼티에 업데이트
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.TotalDamage, currentTotalDamage);
@@ -176,12 +208,9 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		GetCurrentPlayerStatus();
 		Debug.Log($"Original Tree Damage : {damage}");
 		Debug.Log($"Multiplied value : {currentTreeDmgMulit}");
-		damage *= currentTreeDmgMulit;
+		damage = GetExpectedVillageDamageInternal(damage);
 
 		Debug.Log("Final Tree Damage : " + damage);
-		// 배리어로 데미지 경감
-		damage -= currentBarrier;
-		if (damage < 0) damage = 0;
 
 		// 남은 데미지를 마을 체력에서 차감
 		currentVillageHP -= damage;
@@ -208,9 +237,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	{
 		GetCurrentPlayerStatus(aiNumber);
 
-		damage *= currentTreeDmgMulit;
-		damage -= currentBarrier;
-		if (damage < 0) damage = 0;
+		damage = GetExpectedVillageDamageInternal(damage);
 
 		currentVillageHP -= damage;
 

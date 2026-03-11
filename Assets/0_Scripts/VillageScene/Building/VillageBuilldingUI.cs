@@ -99,7 +99,7 @@ namespace Village.Building
 
         private void UpdateUpgradeButton(int nextUpgradeCost, int currentGold)
         {
-            bool canUpgrade = currentGold >= nextUpgradeCost;
+            bool canUpgrade = nextUpgradeCost > 0 && currentGold >= nextUpgradeCost;
             LocalizedString upgradeCostStr = new LocalizedString(CSV_Type.Village, canUpgrade ? "Upgrade_Cost" : "Upgrade_Cost_Not_Enough");
             upgradeCostText.SetText(upgradeCostStr, nextUpgradeCost);
 
@@ -145,22 +145,8 @@ namespace Village.Building
         {
             if (VillageSystem.VillageLogic.TryUpgradeLevel(currentBuildingType))
             {
-                int currentLevel = VillageStat.GetVillageLevel(currentBuildingType);
-                int currentGold = VillageSystem.VillageLogic.GetMyGold();
-
-                currentGoldText.SetText("{0}", currentGold);
-                UpdateUpgradeButton(VillageStat.GetLevelUpgradedCost(currentBuildingType), currentGold);
-
-                // 업그레이드 성공 시 UI 갱신
-                for (int i = 0; i < buildingEffectList.Length; i++)
-                {
-                    var effect = buildingEffectList[i];
-                    // i가 currentLevel 이하일 때만 라인 활성화
-                    effect.SetEffectLineEnabled(i <= currentLevel);
-
-                    // i가 현재 레벨과 딱 맞을 때만 이펙트 활성화
-                    effect.SetEffectActivated(i == currentLevel);
-                }
+                // 성공 시 현재 타입 기준으로 전체 UI를 다시 그려, 텍스트/버튼/이펙트 상태를 일관되게 유지
+                SetBuildingUI(currentBuildingType);
             }
         }
 
