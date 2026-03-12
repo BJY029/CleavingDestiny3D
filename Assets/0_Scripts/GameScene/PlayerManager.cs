@@ -328,7 +328,8 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			{ PlayerPropKeys.VillageBarrier, playerSetting.villageBarrier},
 			{PlayerPropKeys.TreeAtkMulti, playerSetting.VillageDmgMulti},
 			{ PlayerPropKeys.BarrierArmor, playerSetting.initialBarrierArmor},
-			{ PlayerPropKeys.VillageUpgrades, playerSetting.initialVillageUpgrades},
+			// 참조 복사를 방지하기 위해 Clone() 또는 ToArray() 사용
+			{ PlayerPropKeys.VillageUpgrades, (int[])playerSetting.initialVillageUpgrades.Clone()},
 			{ PlayerPropKeys.Gold, playerSetting.initialGold },
 			{ PlayerPropKeys.DayGoldIncome, playerSetting.initialDayGoldIncome},
 			{ PlayerPropKeys.MaxAtkPow, playerSetting.maxAtkPow },
@@ -392,7 +393,8 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			{ $"{PlayerPropKeys.VillageBarrier}_{rp.actorNumber}", playerSetting.villageBarrier},
 			{ $"{PlayerPropKeys.TreeAtkMulti}_{rp.actorNumber}", playerSetting.VillageDmgMulti},
 			{ $"{PlayerPropKeys.BarrierArmor}_{rp.actorNumber}", playerSetting.initialBarrierArmor},
-			{ $"{PlayerPropKeys.VillageUpgrades}_{rp.actorNumber}", playerSetting.initialVillageUpgrades},
+			// 참조 복사를 방지하기 위해 Clone() 사용 (스크립터블 값이 바뀌는 문제가 있었음)
+			{ $"{PlayerPropKeys.VillageUpgrades}_{rp.actorNumber}", (int[])playerSetting.initialVillageUpgrades.Clone()},
 			{ $"{PlayerPropKeys.Gold}_{rp.actorNumber}", playerSetting.initialGold },
 			{ $"{PlayerPropKeys.DayGoldIncome}_{rp.actorNumber}", playerSetting.initialDayGoldIncome},
 			{ $"{PlayerPropKeys.MaxAtkPow}_{rp.actorNumber}", playerSetting.maxAtkPow },

@@ -32,19 +32,8 @@ namespace Village
             // 씬 로드 시 초기 상태 설정
             SetCanvasState(true);
 
-            VillageSystem.VillageLogic.OnGoldChanged += UpdateGoldText;
-
             // OpenVillageBtn.onClick.AddListener(OnClickOpenVillage);
             // CloseVillageBtn.onClick.AddListener(OnClickCloseVillage);
-        }
-
-        private void OnDestroy()
-        {
-            // 이벤트 구독 해제
-            if (VillageSystem.VillageLogic != null)
-            {
-                VillageSystem.VillageLogic.OnGoldChanged -= UpdateGoldText;
-            }
         }
 
         private void Update()
@@ -56,10 +45,6 @@ namespace Village
             TimeSlider.value = remain / duration;
         }
 
-        private void UpdateGoldText(int gold)
-        {
-            goldText.SetText("Gold: {0}", gold);
-        }
 
         public void OnClickAddGoldButton()
         {

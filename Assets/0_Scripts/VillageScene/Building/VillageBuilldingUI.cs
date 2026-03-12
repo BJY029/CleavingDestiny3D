@@ -15,10 +15,8 @@ namespace Village.Building
         [SerializeField] private TextMeshProUGUI titleText;
 
         [SerializeField] private TextMeshProUGUI descriptionText;
-        [SerializeField] private TextMeshProUGUI currentLevelText;
-        [SerializeField] private TextMeshProUGUI currentEffectText;
-        [SerializeField] private TextMeshProUGUI nextLevelText;
-        [SerializeField] private TextMeshProUGUI nextEffectText;
+
+        [SerializeField] BuildingEffect[] buildingEffectList;
 
         [Header("Economy Texts")]
         [SerializeField] private TextMeshProUGUI currentGoldText;
@@ -50,9 +48,9 @@ namespace Village.Building
         {
             currentBuildingType = buildingType;
 
-            // 관련 데이터 가져오기 (인터페이스에 맞게 수정)
+            // 레벨 가져오기
             int currentLevel = VillageStat.GetVillageLevel(currentBuildingType);
-            int nextLevel = currentLevel + 1;
+            Debug.Log($"Setting UI for {currentBuildingType}, Level: {currentLevel}");
 
             // 현재 레벨 기준 다음 업그레이드 비용 가져오기
             int nextUpgradeCost = VillageStat.GetLevelUpgradedCost(currentBuildingType);
@@ -61,48 +59,64 @@ namespace Village.Building
             // Localization 키 생성
             string titleKey = $"{currentBuildingType}_Title";
             string descKey = $"{currentBuildingType}_Desc";
-            string effectFormatKey = $"{currentBuildingType}_Effect";
+            // string effectFormatKey = $"{currentBuildingType}_Effect";
 
             // UI 텍스트 업데이트
             titleText.SetText(new LocalizedString(CSV_Type.Village, titleKey));
             descriptionText.SetText(new LocalizedString(CSV_Type.Village, descKey));
 
-            // 레벨 정보 포맷팅
-            currentLevelText.SetText(new LocalizedString(CSV_Type.Village, "Building_Level"), currentLevel);
-            nextLevelText.SetText(new LocalizedString(CSV_Type.Village, "Building_NextLevel"), nextLevel);
+            for (int i = 0; i < buildingEffectList.Length; i++)
+            {
+                var effect = buildingEffectList[i];
+                // i가 currentLevel 이하일 때만 라인 활성화
+                effect.SetEffectLineEnabled(i <= currentLevel);
 
-            // 현재 수치 데이터 가져오기 (플레이어 기준)
-            object[] currentParams = GetBuildingParams(currentBuildingType);
+                // i가 현재 레벨과 딱 맞을 때만 이펙트 활성화
+                effect.SetEffectActivated(i == currentLevel);
 
-            // 효과 정보 포맷팅
-            string currentEffectFormatted = string.Format(new LocalizedString(CSV_Type.Village, effectFormatKey), currentParams);
+                // 효과 설명 업데이트
+                string effectKey = $"{currentBuildingType}_Effect";
+                if (!string.IsNullOrEmpty(effectKey))
+                {
+                    LocalizedString effectDesc = new(CSV_Type.Village, effectKey);
+                    var effectValue = GetBuildingParams(currentBuildingType, i);
+                    if (effectValue.Item2 < 0f)
+                    {
+                        effect.EffectValueText.SetText(effectDesc, effectValue.Item1);
+                    }
+                    else
+                    {
+                        effect.EffectValueText.SetText(effectDesc, effectValue.Item1, effectValue.Item2);
+                    }
+                }
+            }
 
-            // TODO: 인터페이스에 레벨을 인자로 받아 미래 수치를 가져오는 함수가 없음, 나중에 구현해야함
-            string nextEffectFormatted = "???";
+            currentGoldText.SetText("{0}", currentGold);
 
-            currentEffectText.SetText(currentEffectFormatted);
-            nextEffectText.SetText(string.Format(new LocalizedString(CSV_Type.Village, "Building_NextEffect"), nextEffectFormatted));
-
-            // 경제 정보 포맷팅
-            currentGoldText.SetText(new LocalizedString(CSV_Type.Village, "Building_CurrentGold"), currentGold);
-            upgradeCostText.SetText(new LocalizedString(CSV_Type.Village, "Building_UpgradeCost"), nextUpgradeCost);
-
-            // 업그레이드 버튼 활성화 여부 설정
-            upgradeButton.interactable = currentGold >= nextUpgradeCost;
+            // 업그레이드 버튼 설정
+            UpdateUpgradeButton(nextUpgradeCost, currentGold);
         }
 
-        /// <summary>
-        /// IVillageStatProvider의 실제 함수명으로 매칭합니다.
-        /// </summary>
-        private object[] GetBuildingParams(VillageType type)
+        private void UpdateUpgradeButton(int nextUpgradeCost, int currentGold)
+        {
+            bool canUpgrade = nextUpgradeCost > 0 && currentGold >= nextUpgradeCost;
+            LocalizedString upgradeCostStr = new LocalizedString(CSV_Type.Village, canUpgrade ? "Upgrade_Cost" : "Upgrade_Cost_Not_Enough");
+            upgradeCostText.SetText(upgradeCostStr, nextUpgradeCost);
+
+            // 업그레이드 버튼 활성화 여부 설정
+            upgradeButton.interactable = canUpgrade;
+        }
+
+        private (float, float) GetBuildingParams(VillageType type, int level)
         {
             return type switch
             {
-                VillageType.Mine => new object[] { VillageStat.GetGoldIncomePerDay() },
-                VillageType.Farm => new object[] { VillageStat.GetMaxEnergy(), VillageStat.GetEnergyIncomePerDay() },
-                VillageType.Barrier => new object[] { VillageStat.GetBarrierArmor() },
-                // TODO: 상점, 대장간은 아직 미구현
-                _ => new object[] { 0, 0 }
+                VillageType.Mine => (VillageStat.GetGoldIncomePerDay(level), -1f),
+                VillageType.Farm => (VillageStat.GetMaxEnergy(level), VillageStat.GetEnergyIncomePerDay(level)),
+                VillageType.Barrier => (VillageStat.GetBarrierArmor(level), -1f),
+                VillageType.Forge => VillageStat.GetAxeRangeDamage(level),
+                // TODO: 상점 미구현
+                _ => (0f, 0f)
             };
         }
 
@@ -131,7 +145,7 @@ namespace Village.Building
         {
             if (VillageSystem.VillageLogic.TryUpgradeLevel(currentBuildingType))
             {
-                // 업그레이드 성공 시 UI 갱신
+                // 성공 시 현재 타입 기준으로 전체 UI를 다시 그려, 텍스트/버튼/이펙트 상태를 일관되게 유지
                 SetBuildingUI(currentBuildingType);
             }
         }

@@ -113,12 +113,12 @@ namespace Village.Outside
 
         public async Awaitable GotoOutside()
         {
-            // 1. [연출] 줌아웃 시동
+            // 줌아웃 시동
             _ = insideCam.TweenOrthoSize(insideSizeOrigin * 1.2f, 1.0f, Ease.OutQuad);
 
             await FadeCanvas.Instance.FadeInAsync(0.4f);
 
-            // 2. 오브젝트/카메라 교체 + 강제 컷(Cut)
+            // 2. 오브젝트/카메라 교체 + 강제 컷
             villageInsideObject.SetActive(false);
 
             foreach (var obj in outsideObjectsToEnable)
@@ -147,7 +147,7 @@ namespace Village.Outside
 
         public async Awaitable ReturnToVillage()
         {
-            // 1. [연출] 빨려들어가는 느낌
+            // 빨려들어가는 느낌
             _ = outsideCam.TweenOrthoSize(outsideSizeZoomed, 0.5f, Ease.InCubic);
 
             await FadeCanvas.Instance.FadeInAsync(0.5f, endDelay: 0.1f);
@@ -166,13 +166,13 @@ namespace Village.Outside
             // 즉시 전환 (블렌드 스킵)
             await CutToCamera(insideCam);
 
-            // 3. 내부 카메라 초기값 설정 (이미 Cut 되었으므로 튀지 않음)
+            // 내부 카메라 초기값 설정 (이미 Cut 되었으므로 튀지 않음)
             insideCam.Lens.OrthographicSize = insideSizeOrigin * 1.3f;
 
-            // 4. 즉시 밝아짐 (딜레이 삭제됨)
+            // 즉시 밝아짐 (딜레이 삭제됨)
             var fadeTask = FadeCanvas.Instance.FadeOutAsync(0.5f);
 
-            // 5. [연출] 착륙
+            // 착륙
             _ = insideCam.TweenOrthoSize(insideSizeOrigin, 0.8f, Ease.OutCubic);
 
             await fadeTask;
@@ -218,7 +218,7 @@ namespace Village.Outside
             float maxHp = PlayerStatus.Instance.GetMaxVillageHp();
             float shield = PlayerStatus.Instance.GetCurrentBarrier();
 
-            float damage = TreeStatus.Instance.getTreeAtkPow();
+            float damage = PlayerStatus.Instance.GetExpectedVillageDamage(TreeStatus.Instance.getTreeAtkPow());
 
             villageHpBar.UpdateStats(currentHp, maxHp, shield, damage);
         }

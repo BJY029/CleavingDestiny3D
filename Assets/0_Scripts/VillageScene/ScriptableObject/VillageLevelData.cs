@@ -28,6 +28,7 @@ public class VillageLevelData : ScriptableObject
 
     [SerializeField, Tooltip("각 레벨 업그레이드 시 적용되는 효과 값")]
     private int[] effectValues;
+    public int[] EffectValues => effectValues;
 
     public bool TryGetEffectValue(int level, out int effectValue)
     {
@@ -51,7 +52,7 @@ public class VillageLevelData : ScriptableObject
         return true;
     }
 
-    [SerializeField, Tooltip("건물 설명 ID")]
-    private string[] levelDescriptionID;
-    public string[] LevelDescriptionID => levelDescriptionID;
+#if UNITY_EDITOR
+    [SerializeField, Tooltip("게임에 반영되지 않음")] string effectComment;
+#endif
 }
