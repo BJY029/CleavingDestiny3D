@@ -31,8 +31,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 	private StatusSystem _statusSystem;
 	private GameEventBus _gameEventBus;
-	private DamageResolver _damageResolver;
-	private DeterministicRng _rng;
+	public DamageResolver _damageResolver { get; private set; }
+	public DeterministicRng _rng { get; private set; }
 	//Inventory usage limits
 	private Dictionary<int, List<string>> UsedTurnItem;
 	private Dictionary<int, List<string>> UsedDayItem;
@@ -151,6 +151,18 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_UseLockPick), RpcTarget.MasterClient, actorNum);
 	}
 
+	public bool HasDebuff(int actNum)
+	{
+		foreach (var st in _statusSystem.ALL)
+		{
+			if (st.spec.tags == TagMask.Negative && st.ownerActorNum == actNum)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	[PunRPC]
 	public void RPC_UseLockPick(int actorNum)
 	{
@@ -235,6 +247,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			//아이템 적용 대상이 다른 플레이어인 경우
 			case ItemTarget.Opponent:
 			case ItemTarget.OpponentVillage:
+			case ItemTarget.OpponentTree:
 				foreach (EffectSpec es in item.effects)
 				{
 					Player[] playerNums = PhotonNetwork.PlayerList;
@@ -497,7 +510,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			isBasicAttack = isBasicAttack,
 			clientNonce = UnityEngine.Random.Range(int.MinValue, int.MaxValue),
 		};
-		Debug.Log("커맨드 생성, RPC 전송");
+		//Debug.Log("커맨드 생성, RPC 전송");
 		//Json 형태로 직렬화 해서 MasterClient에게 요청 전송
 		photonView.RPC(nameof(RPC_RequestAttack), RpcTarget.MasterClient, JsonUtility.ToJson(cmd));
 	}
@@ -508,7 +521,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	{
 		//검증
 		if (!PhotonNetwork.IsMasterClient) return;
-		Debug.Log("역직렬화 수행");
+		//Debug.Log("역직렬화 수행");
 		//역직렬화
 		var cmd = JsonUtility.FromJson<AttackCommand>(json);
 

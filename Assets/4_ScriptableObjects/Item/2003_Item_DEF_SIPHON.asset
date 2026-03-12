@@ -17,10 +17,11 @@ MonoBehaviour:
   itemDesc_ID: DESC_DEF_SIPHON
   itemCost: 8
   type: 1
-  target: 0
+  target: 3
   itemClass: 3
   itemWeight: 1
-  oncePerWave: 1
+  oncePerTurn: 0
+  oncePerDay: 0
   oncePerGame: 0
   effects:
   - effectType: 6

@@ -29,7 +29,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
     //잠금 해제 성공 시, 베리어를 해제하기 위한 인자들
     private int TargetBarrierOwnerActNum = -1;
     private InventoryBarrier IB;
-    private PlayerController RequesterPC;
+    private IPlayerAction Requester;
 
     private TextMeshProUGUI DescText;
     void Awake()
@@ -53,7 +53,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
     }
 
     //게임 시작시 함수
-    public void SetGameActive(int ActorNumber, InventoryBarrier ib, PlayerController PC)
+    public void SetGameActive(int ActorNumber, InventoryBarrier ib, IPlayerAction PC)
     {
         TargetBarrierOwnerActNum = ActorNumber;
         //특정 플레이어의 Lock 수를 가져온다.
@@ -69,7 +69,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
         //잠금 해제를 당하는 인벤토리 베리어
         IB = ib;
         //잠금 해제를 시도하는 플레이어
-        RequesterPC = PC;
+        Requester = PC;
     }
 
     //게임 그만하기
@@ -135,12 +135,26 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
             gameObj.SetActive(false);
             //잠금 해제를 성공한 플레이어
             int ActNum = PhotonNetwork.LocalPlayer.ActorNumber;
+            GameObject player;
+            if (Requester is PlayerController childObj)
+            {
+                player = childObj.gameObject;
+            }
+            else if (Requester is AIController childObjAI)
+            {
+                player = childObjAI.gameObject;
+            }
+            else
+            {
+                Debug.LogError("Requester has non PlayerController or AIController");
+                return;
+            }
             //잠금 해제를 성공한 플레이어 오브젝트
-            GameObject player = RequesterPC.gameObject;
+            //GameObject player = Requester.gameObject;
             //잠금 해제를 당한 베리어에 입장할 수 있는 권한 부여
             IB.GrantPermission(ActNum, player);
             //잠금 해제를 성공한 플레이어에게 해당 인벤토리에 상호작용이 가능하도록 키를 부여
-            RequesterPC.SetInvAdmissionTicket(TargetBarrierOwnerActNum);
+            Requester.SetInvAdmissionTicket(TargetBarrierOwnerActNum);
             //알림 전송
             photonView.RPC(nameof(RPC_NotifyUnlockSuccess), RpcTarget.MasterClient, ActNum);
 
@@ -170,7 +184,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
     private void InitGameInfo()
     {
         IB = null;
-        RequesterPC = null;
+        Requester = null;
         TargetBarrierOwnerActNum = -1;
     }
     //MasterClient의 최종 처리(문 열기 처리)

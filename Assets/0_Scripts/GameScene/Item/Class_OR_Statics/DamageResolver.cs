@@ -56,6 +56,31 @@ public class DamageResolver
         }, ctx);
     }
 
+    public (float dmgMultiRate, float dmgOverrideDmg, float BarrierConvRate) ResolveRatio(DamagePacket dmg, EffectContext ctx)
+    {
+        //공격 직전 트리거 발행
+        _bus.publish(new GameEvent
+        {
+            type = TriggerMask.OnBeforeAttack,
+            actorNum = dmg.attackerNum,
+            payload = dmg
+        }, ctx);
+
+        //공격력->방어력 전환 단계 트리거 발행
+        _bus.publish(new GameEvent
+        {
+            type = TriggerMask.OnDamageConvert,
+            actorNum = dmg.attackerNum,
+            payload = dmg
+        }, ctx);
+
+        float baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum);
+        float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate + dmg.convertRateDelta;
+        rate = Mathf.Clamp01(rate);
+
+        return (dmg.multiplier, dmg.overrideDamage, rate);
+    }
+
     public void ResolveWhenStartTurn(EffectContext ctx, int currentActNum)
     {
         _bus.publish(new GameEvent

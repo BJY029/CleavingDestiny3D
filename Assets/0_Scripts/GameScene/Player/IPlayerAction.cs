@@ -8,6 +8,8 @@ public interface IPlayerAction
     /// </summary>
     public int PlayerActNum { get; set; }
 
+    public bool isLookingAtTree { get; set; }
+
     /// <summary>
     /// Village phase entry processing function
     /// </summary>

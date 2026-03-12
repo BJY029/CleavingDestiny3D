@@ -1449,8 +1449,14 @@ GameObject:
   m_Component:
   - component: {fileID: 859809363513216392}
   - component: {fileID: 2492846899768299628}
-  - component: {fileID: 4067812600072088979}
+  - component: {fileID: -8149197761533716747}
   - component: {fileID: -3373479491274141899}
+  - component: {fileID: 7639534108227341128}
+  - component: {fileID: 919099234606160331}
+  - component: {fileID: 5969454767045476057}
+  - component: {fileID: -1127030571770921806}
+  - component: {fileID: 6603769908479633231}
+  - component: {fileID: -2190861357193818984}
   - component: {fileID: -6779181724308204353}
   - component: {fileID: 2716088925901640895}
   - component: {fileID: -9051022522488421207}
@@ -1502,8 +1508,8 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!143 &4067812600072088979
-CharacterController:
+--- !u!136 &-8149197761533716747
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -1517,16 +1523,14 @@ CharacterController:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Height: 1.64
-  m_Radius: 0.41
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.82, z: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1.76
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.78, z: 0}
 --- !u!114 &-3373479491274141899
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1539,11 +1543,98 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07c4da82bb2fab5488caecdcb15a8e08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIController
+  aiBrain: {fileID: 0}
   walkSpeed: 3.5
   sprintSpeed: 6
   rotationSmoothTime: 0.08
   accelation: 12
   deceleration: 12
+--- !u!114 &7639534108227341128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ef407429edc75841aa65b8b44e4db47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AINevMeshController
+  wayPointData: {fileID: 11400000, guid: 04a6ec45e289ce04ab46b084ff95ffff, type: 2}
+  rotationSpeed: 10
+  agent: {fileID: 0}
+--- !u!114 &919099234606160331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cd3b8ce54cd39e4792f433cac00aa55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIBrain
+--- !u!114 &5969454767045476057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c574453d13332104bb4892e701263214, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIVillageUpgrader
+--- !u!114 &-1127030571770921806
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3d102608818e0e4fab3dd510770503a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AITreeAttacker
+  jitterMin: -100
+  jitterMax: 100
+--- !u!114 &6603769908479633231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bde637bd842abb241bfac7dbbf33fbeb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIItemSelector
+  scoreTable: {fileID: 11400000, guid: 8be15f59696026042be4c2b2f5f22632, type: 2}
+  playerSetting: {fileID: 11400000, guid: 0ab68fb3dcfba894bbce6a7513b5a994, type: 2}
+  roomSetting: {fileID: 11400000, guid: a435e1ecc7289e04ca99639220cc8e4b, type: 2}
+  AIThinkDelay_ms: 3000
+--- !u!114 &-2190861357193818984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5556663898360386153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56fcbb6b44729c0499ceeb0d867c29af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIInventoryManager
+  scoreTable: {fileID: 11400000, guid: 8be15f59696026042be4c2b2f5f22632, type: 2}
+  playerSetting: {fileID: 11400000, guid: 0ab68fb3dcfba894bbce6a7513b5a994, type: 2}
+  roomSetting: {fileID: 11400000, guid: a435e1ecc7289e04ca99639220cc8e4b, type: 2}
+  usageThreshold: 50
+  useDelay: 1.2
 --- !u!114 &-6779181724308204353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1591,15 +1682,15 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
+  m_Speed: 2.5
+  m_Acceleration: 6
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 2
+  m_Height: 1.6
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4

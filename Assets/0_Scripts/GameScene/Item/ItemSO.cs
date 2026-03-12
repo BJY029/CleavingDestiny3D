@@ -16,7 +16,7 @@ public enum ItemClass
 //아이템 적용 타겟
 public enum ItemTarget
 {
-    Self, Opponent, Tree, SelfVillage, OpponentVillage, Global
+    Self, Opponent, Tree, SelfVillage, OpponentVillage, OpponentTree, Global
 }
 
 //아이템 효과 타입

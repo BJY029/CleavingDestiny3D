@@ -5,10 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class WorldInventory : MonoBehaviourPunCallbacks
+public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCallback
 {
 	//인벤토리 소유자 정보
 	int owner = -1;
+	public InventoryBarrier InvBarrier;
 	//해당 인벤토리의 슬롯들 
 	[SerializeField] private List<WorldInventorySlot> slots = new();
 
@@ -20,10 +21,29 @@ public class WorldInventory : MonoBehaviourPunCallbacks
 	}
 
 
-	private void Start()
+	// private void Start()
+	// {
+	// 	//인벤토리 소유자 초기화
+	// 	owner = photonView.OwnerActorNr;
+	// 	//슬롯 초기화
+	// 	RefreshInv();
+	// }
+
+	public void OnPhotonInstantiate(PhotonMessageInfo info)
 	{
-		//인벤토리 소유자 초기화
-		owner = photonView.OwnerActorNr;
+		//플레이어 고유 번호를 초기화 한다.
+		//만약 생성시 넘어온 추가 정보가 있는 경우
+		if (info.photonView.InstantiationData != null && info.photonView.InstantiationData.Length > 0)
+		{
+			owner = (int)info.photonView.InstantiationData[0];
+		}
+		else//추가 정보가 없는 경우(실제 플레이어)
+		{
+			owner = photonView.OwnerActorNr;
+		}
+
+		//인벤토리 주인 설정
+		InvBarrier.owner = owner;
 		//슬롯 초기화
 		RefreshInv();
 	}
@@ -73,5 +93,20 @@ public class WorldInventory : MonoBehaviourPunCallbacks
 		// (확장성 고려)남은 슬롯 비우기
 		for (int i = n; i < slots.Count; i++)
 			slots[i].SetSlot(null, owner);
+	}
+
+	//AI 전용 아이템 사용 함수
+	public void InteractSlotByAI(AIController player, ItemSO item)
+	{
+		foreach (var slot in slots)
+		{
+			//ai가 사용한 아이템이 인벤토리 내에 존재하면 사용 실시
+			if (slot.currentItem == item)
+			{
+				slot.OnInteract(player);
+				return;
+			}
+		}
+		Debug.Log($"[AI {player.PlayerActNum}] Inventory Interact ERROR");
 	}
 }

@@ -1,20 +1,17 @@
-using System.Collections;
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using Photon.Pun;
 using UnityEngine;
+using System;
 using UnityEngine.AI;
-using Unity.VisualScripting;
 
-[RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(PhotonView))]
 public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInstantiateMagicCallback
 {
     //AI 플레이어 고유 번호(현재는 1000 으로 고정 번호 부여)
     public int PlayerActNum { get; set; }
 
-    //AI 움직임 처리용(아직 구현 안함)
-    private NavMeshAgent agent;
+    [HideInInspector] public AIBrain aiBrain;
 
     //움직임 관련 파라미터
     [Header("Move")]
@@ -44,6 +41,8 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     private float damageRatio;
     private int damage;
 
+    public bool isLookingAtTree { get; set; }
+
     //특정 인벤토리에 들어가기 위한 키(값 = 인벤토리 주인 ActorNum)
     private int InvAdmissionTicket = -1;
     public void SetInvAdmissionTicket(int Num)
@@ -54,6 +53,9 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     {
         return InvAdmissionTicket;
     }
+
+    //시간 제한과 같은 모종의 이유로 AI 로직 취소할 때 사용하는 토큰
+    private CancellationTokenSource turnCts;
 
 
     //프로퍼티 생성시 호출되는 함수
@@ -68,12 +70,77 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         {
             PlayerActNum = info.photonView.OwnerActorNr;
         }
+
+        //AI 로직을 담당하는 AIBrain 초기화
+        aiBrain = GetComponent<AIBrain>();
+        aiBrain.InitializeBrain(PlayerActNum);
+
+
+
+        //임시 플래그 설정, 움직임 구현 시 설정해야 함
+        isLookingAtTree = true;
     }
 
     private void Awake()
     {
-        agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        AssignAnimationIDs();
+    }
+
+    //움직임에 따른 애니메이션 업데이트
+    private void Update()
+    {
+        //NevMeshAgent의 속도 값 받아오기
+        Vector3 velocity = aiBrain.aINevMeshController.agent.velocity;
+        //현재 속도 값 구하기(벡터 크기)
+        float currentSpeed = velocity.magnitude;
+
+        //속도 값 Clamp
+        float maxSpeed = aiBrain.aINevMeshController.agent.speed;
+        float speed01 = (maxSpeed > 0f) ? Mathf.Clamp01(currentSpeed / maxSpeed) : 0f;
+
+        //거의 움직이지 않는 경우
+        if (currentSpeed < 0.01f || speed01 < 0.01f)
+        {
+            animator.SetFloat(_animIDSpeedX, 0f, 0.1f, Time.deltaTime);
+            animator.SetFloat(_animIDSpeedZ, 0f, 0.1f, Time.deltaTime);
+        }
+        else
+        {
+            //방향 구하기(벡터 방향)
+            Vector3 dir = velocity.normalized;
+
+            //ㅎ현재 전방 및 우측 방향을 수평면에 정사영
+            Vector3 fwd = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+            Vector3 right = Vector3.ProjectOnPlane(transform.right, Vector3.up).normalized;
+
+            //내적으로 캐릭터 이동 방향 구하기
+            float moveX = Vector3.Dot(dir, right) * speed01;
+            float moveZ = Vector3.Dot(dir, fwd) * speed01;
+
+            //애니메이션 반영
+            animator.SetFloat(_animIDSpeedX, moveX, 0.1f, Time.deltaTime);
+            animator.SetFloat(_animIDSpeedZ, moveZ, 0.1f, Time.deltaTime);
+        }
+    }
+
+    private void AssignAnimationIDs()
+    {
+        _animIDSpeedX = Animator.StringToHash("Speed_X");
+        _animIDSpeedZ = Animator.StringToHash("Speed_Z");
+        _animIDGrounded = Animator.StringToHash("Grounded");
+        _animIDJump = Animator.StringToHash("Jump");
+        _animIDFreeFall = Animator.StringToHash("FreeFall");
+        _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+    }
+
+    private void ResetAnimation()
+    {
+        if (animator != null)
+        {
+            animator.SetFloat("Speed_X", 0f);
+            animator.SetFloat("Speed_Z", 0f);
+        }
     }
 
     //플레이어 턴 처리 비동기 함수(임시)
@@ -81,13 +148,67 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
-        CancellationToken token = this.GetCancellationTokenOnDestroy();
+        //기존에 실행하고 있는 UniTask 가 있으면 즉시 중단
+        if (turnCts != null)
+        {
+            turnCts.Cancel();
+            turnCts.Dispose();
+        }
+        //토큰 새로 발행
+        turnCts = new CancellationTokenSource();
+        CancellationToken token = turnCts.Token;
 
-        //일정 시간 딜레이 준 후
-        await UniTask.Delay(1500, cancellationToken: token);
+        try
+        {
+            string myOfferKey = ItemPropKeys.OFFER(PlayerActNum);
+            string offerStr = PhotonPropertyHelper.GetRoomProp<string>(myOfferKey);
 
-        //턴 변경 시도
-        TryHit();
+            //일정 시간 딜레이 준 후
+            await UniTask.Delay(1000, cancellationToken: token);
+
+            await aiBrain.ItemSelector.ChooseItemAsync(offerStr, token);
+
+            //일정 시간 딜레이 준 후
+            await UniTask.Delay(1500, cancellationToken: token);
+
+            await aiBrain.InventoryManager.ProcessInventoryAsync(token);
+
+            await UniTask.Delay(1000, cancellationToken: token);
+
+            //Hit 위치로 이동
+            await aiBrain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_HIT, token);
+            //턴 변경 시도
+            TryHit();
+        }
+        //중간에 토큰이 취소될 경우 호출됨
+        catch (OperationCanceledException)
+        {
+            Debug.LogWarning($"[AI {PlayerActNum}] Turn time ended...");
+        }
+    }
+
+    //제한 시간이 끝났을 때 AI 플레이어를 강제로 텔레포트 시키는 함수
+    public void ForceStopAndTeleportToHit()
+    {
+        //턴 관련 토큰을 취소시켜 AI 로직을 중단시킨다.
+        if (turnCts != null)
+        {
+            turnCts.Cancel();
+        }
+
+        //NevMeshAgent의 계산을 중지시킨다.
+        NavMeshAgent agent = aiBrain.aINevMeshController.agent;
+        if (agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.ResetPath();
+            agent.velocity = Vector3.zero;
+        }
+        //순간 이동 및 회전을 수행한다.
+        agent.Warp(aiBrain.aINevMeshController.myHitPos);
+        aiBrain.aINevMeshController.SnapToTarget(LocationCommand.MY_HIT);
+        //애니메이션 초기화
+        ResetAnimation();
     }
 
     //구현 예정
@@ -102,27 +223,21 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     }
 
     //턴 변경(나무 때리기) 처리 함수
-    public void TryHit(bool IsItRandom = true)
+    public void TryHit(bool IsItRandom = false)
     {
         //현재 임시로 랜덤 데미지 부여하도록 설정
         if (IsItRandom)
-        {
-            damageRatio = Random.Range(0f, 100f);
-        }
+            damageRatio = UnityEngine.Random.Range(0f, 100f);
         else
-        {
-            //if (!checkTreeInteractable()) return;
-            //Hit 순간의 게이지 데미지 값 받기
-            //damageRatio = PlayerCanvasController.Instance.SelectNow();
             //타이머 중지
-            //TimeManager.instance.AbortTurnTimer();
-        }
-        //타이머 중지
-        TimeManager.instance.AbortTurnTimer();
+            TimeManager.instance.AbortTurnTimer();
 
         int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PlayerActNum, PlayerPropKeys.MaxAtkPow);
         int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PlayerActNum, PlayerPropKeys.MinAtkPow);
-        damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
+        //최적의 데미지 계산 및 반영
+        damage = (IsItRandom) ?
+            currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100))
+            : Mathf.RoundToInt(aiBrain.TreeAttacker.SelectDamage());
         //Hit 애니메이션 재생 
         PlayHit();
     }

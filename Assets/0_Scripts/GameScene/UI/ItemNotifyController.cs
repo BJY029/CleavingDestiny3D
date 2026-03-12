@@ -18,7 +18,11 @@ public class ItemNotifyController : MonoBehaviour
 
 	public void SetUI(ItemSO item, Player player)
 	{
-		string name = string.IsNullOrEmpty(player.NickName) ? $"Player{player.ActorNumber}" : player.NickName;
+		string name;
+		if (player == null && GameManager.Instance.isSoloPlay)
+			name = "AI";
+		else
+			name = string.IsNullOrEmpty(player.NickName) ? $"Player{player.ActorNumber}" : player.NickName;
 
 		NickName.text = name + "\'s";
 		ItemSprite.sprite = AtlasManager.instance.GetItemSprite(item.itemId);
@@ -32,8 +36,26 @@ public class ItemNotifyController : MonoBehaviour
 	//Overload
 	public void SetUI(ItemSO item, Player FromPlayer, Player ToPlayer)
 	{
-		string FromName = string.IsNullOrEmpty(FromPlayer.NickName) ? $"Player{FromPlayer.ActorNumber}" : FromPlayer.NickName;
-		string ToName = string.IsNullOrEmpty(ToPlayer.NickName) ? $"Player{ToPlayer.ActorNumber}" : ToPlayer.NickName;
+		string FromName, ToName;
+
+		if ((FromPlayer == null || ToPlayer == null) && GameManager.Instance.isSoloPlay)
+		{
+			if (FromPlayer == null)
+			{
+				FromName = "AI";
+				ToName = string.IsNullOrEmpty(ToPlayer.NickName) ? $"Player{ToPlayer.ActorNumber}" : ToPlayer.NickName;
+			}
+			else
+			{
+				FromName = string.IsNullOrEmpty(FromPlayer.NickName) ? $"Player{FromPlayer.ActorNumber}" : FromPlayer.NickName;
+				ToName = "AI";
+			}
+		}
+		else
+		{
+			FromName = string.IsNullOrEmpty(FromPlayer.NickName) ? $"Player{FromPlayer.ActorNumber}" : FromPlayer.NickName;
+			ToName = string.IsNullOrEmpty(ToPlayer.NickName) ? $"Player{ToPlayer.ActorNumber}" : ToPlayer.NickName;
+		}
 
 		NickName.text = ToName + " stole " + FromName + "'s item!";
 		ItemSprite.sprite = AtlasManager.instance.GetItemSprite(item.itemId);

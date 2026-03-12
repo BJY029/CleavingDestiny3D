@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using System.Linq;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 
 public class InventoryBarrier : MonoBehaviourPunCallbacks, ILookInteractable
 {
+	public int owner;
 	private Collider barrierCollider;
 	private MeshRenderer barrierRenderer;
 	private GameObject ownerPlayer;
@@ -75,38 +77,78 @@ public class InventoryBarrier : MonoBehaviourPunCallbacks, ILookInteractable
 	}
 
 
-	public void OnLookEnter(PlayerController pc)
+	public void OnLookEnter(IPlayerAction pc)
 	{
-		if (pc.gameObject == ownerPlayer) return;
+		// 1. as 연산자로 캐스팅을 시도합니다. (타입이 다르면 null이 들어감)
+		PlayerController playerCtrl = pc as PlayerController;
+		AIController aiCtrl = pc as AIController;
 
-		int lockpickCnt = ItemHandlingSystem.instance.HasLockPick(PhotonNetwork.LocalPlayer.ActorNumber);
+		// 2. 둘 다 null이라면 잘못된 타입이 들어온 것
+		if (playerCtrl == null && aiCtrl == null)
+		{
+			Debug.LogError("pc is not PlayerController or AIController");
+			return;
+		}
+
+		// 3. GameObject 소유자 확인 (둘 중 null이 아닌 쪽의 gameObject를 참조)
+		GameObject targetObj = (playerCtrl != null) ? playerCtrl.gameObject : aiCtrl.gameObject;
+		if (targetObj == ownerPlayer) return;
+
+
+		int lockpickCnt = ItemHandlingSystem.instance.HasLockPick((playerCtrl != null) ? playerCtrl.PlayerActNum : aiCtrl.PlayerActNum);
 		if (lockpickCnt <= 0)
 			InventoryLockCanvasController.Instance.SetLockpickUI(UI_CSV.UI_Item_LockPick_Warning);
 		else
 			InventoryLockCanvasController.Instance.SetLockpickUI(UI_CSV.UI_Item_LockPick_Has, lockpickCnt);
 	}
 
-	public void OnLookExit(PlayerController pc)
+	public void OnLookExit(IPlayerAction pc)
 	{
-		if (pc.gameObject == ownerPlayer) return;
+		// 1. as 연산자로 캐스팅을 시도합니다. (타입이 다르면 null이 들어감)
+		PlayerController playerCtrl = pc as PlayerController;
+		AIController aiCtrl = pc as AIController;
+
+		// 2. 둘 다 null이라면 잘못된 타입이 들어온 것
+		if (playerCtrl == null && aiCtrl == null)
+		{
+			Debug.LogError("pc is not PlayerController or AIController");
+			return;
+		}
+
+		// 3. GameObject 소유자 확인 (둘 중 null이 아닌 쪽의 gameObject를 참조)
+		GameObject targetObj = (playerCtrl != null) ? playerCtrl.gameObject : aiCtrl.gameObject;
+		if (targetObj == ownerPlayer) return;
+
 		InventoryLockCanvasController.Instance.UnSetLockpickUI();
 	}
 
-	public void OnInteract(PlayerController pc)
+	public void OnInteract(IPlayerAction pc)
 	{
-		if (pc.gameObject == ownerPlayer) return;
+		// 1. as 연산자로 캐스팅을 시도합니다. (타입이 다르면 null이 들어감)
+		PlayerController playerCtrl = pc as PlayerController;
+		AIController aiCtrl = pc as AIController;
+
+		// 2. 둘 다 null이라면 잘못된 타입이 들어온 것
+		if (playerCtrl == null && aiCtrl == null)
+		{
+			Debug.LogError("pc is not PlayerController or AIController");
+			return;
+		}
+
+		// 3. GameObject 소유자 확인 (둘 중 null이 아닌 쪽의 gameObject를 참조)
+		GameObject targetObj = (playerCtrl != null) ? playerCtrl.gameObject : aiCtrl.gameObject;
+		if (targetObj == ownerPlayer) return;
+
 		if (LockpickController.instance.IsGameActive()) return;
 
-		int lockpickCnt = ItemHandlingSystem.instance.HasLockPick(PhotonNetwork.LocalPlayer.ActorNumber);
+		int ActNum = (playerCtrl != null) ? playerCtrl.PlayerActNum : aiCtrl.PlayerActNum;
+
+		int lockpickCnt = ItemHandlingSystem.instance.HasLockPick(ActNum);
 		if (lockpickCnt <= 0) return;
-
-		int ActNum = PhotonNetwork.LocalPlayer.ActorNumber;
-
-		int ownerPlayerActNum = photonView.Owner.ActorNumber;
 
 		ItemHandlingSystem.instance.UseLockPick(ActNum);
 		InventoryLockCanvasController.Instance.UnSetLockpickUI();
-		LockpickController.instance.SetGameActive(ownerPlayerActNum, this, pc);
+		LockpickController.instance.SetGameActive(owner, this, pc);
 
 	}
 }

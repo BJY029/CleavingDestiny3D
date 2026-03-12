@@ -5,12 +5,13 @@ using ExitGames.Client.Photon;
 using Photon.Pun.UtilityScripts;
 using System.Data.Common;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public interface ILookInteractable
 {
-	void OnLookEnter(PlayerController pc);
-	void OnLookExit(PlayerController pc);
-	void OnInteract(PlayerController pc);
+	void OnLookEnter(IPlayerAction pc);
+	void OnLookExit(IPlayerAction pc);
+	void OnInteract(IPlayerAction pc);
 }
 
 //미니게임 상호작용 인터페이스
@@ -104,7 +105,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
 	//private Transform lastHitTarget = null;
 
-	public bool isLookingAtTree;
+	public bool isLookingAtTree { get; set; }
 
 
 	//마을 업그레이드 중인지 여부를 저장할 플래그

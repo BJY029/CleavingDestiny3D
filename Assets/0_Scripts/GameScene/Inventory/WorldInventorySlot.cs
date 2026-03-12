@@ -16,7 +16,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	private MeshRenderer quadRenderer;
 
 	//해당 슬롯이 현재 가지고 있는 아이템 정보
-	private ItemSO currentItem;
+	public ItemSO currentItem { get; private set; }
 	//해당 슬롯의 머테리얼 관련 정보
 	private MaterialPropertyBlock mpb;
 
@@ -113,13 +113,24 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	}
 
 	//슬롯이 내 것인지 확인
-	public bool IsMine => PhotonNetwork.LocalPlayer.ActorNumber == ownerActor;
+	public bool IsMine(int actNum) => actNum == ownerActor;
 
 	//Ray가 Enter한 경우
-	public void OnLookEnter(PlayerController pc)
+	public void OnLookEnter(IPlayerAction pc)
 	{
+		PlayerController playerCtrl = pc as PlayerController;
+		AIController aiCtrl = pc as AIController;
+
+		if (playerCtrl == null && aiCtrl == null)
+		{
+			Debug.LogError("pc is not PlayerController or AIController");
+			return;
+		}
+
+		int ActNum = (playerCtrl != null) ? playerCtrl.PlayerActNum : aiCtrl.PlayerActNum;
+
 		if (!HasItem()) return;
-		if (!IsMine)
+		if (!IsMine(ActNum))
 		{
 			if (pc.GetInvAdmissionticket() != ownerActor) return;
 		}
@@ -129,21 +140,37 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	}
 
 	//Ray가 Exit 한 경우
-	public void OnLookExit(PlayerController pc)
+	public void OnLookExit(IPlayerAction pc)
 	{
 		//if (!IsMine) return;
 		ToolTipPanel.SetActive(false);
 		//Highlight();
 	}
 
-	//이제 구현해야 할 부분
-	public void OnInteract(PlayerController pc)
+	//특정 슬롯으로부터 상호작용 발동 시 해당 슬롯의 아이템 사용 로직 활성화
+	public void OnInteract(IPlayerAction pc)
 	{
-		if (!HasItem()) return;
-		if (!IsMine)
+		PlayerController playerCtrl = pc as PlayerController;
+		AIController aiCtrl = pc as AIController;
+
+		if (playerCtrl == null && aiCtrl == null)
 		{
+			Debug.LogError("pc is not PlayerController or AIController");
+			return;
+		}
+
+		int ActNum = (playerCtrl != null) ? playerCtrl.PlayerActNum : aiCtrl.PlayerActNum;
+
+		if (!HasItem())
+		{
+			Debug.LogWarning("Non Item in slot");
+			return;
+		}
+		if (!IsMine(ActNum))
+		{
+			Debug.Log("stealing item activated");
 			if (pc.GetInvAdmissionticket() != ownerActor) return;
-			int ToActorNum = pc.photonView.Owner.ActorNumber;
+			int ToActorNum = ActNum;
 			//키 제거
 			pc.SetInvAdmissionTicket(-1);
 			//TODO: 선택된 아이템 상호작용한 플레이어의 인벤토리로 옮기기
@@ -154,7 +181,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 
 		ToolTipPanel.SetActive(false);
 		Debug.Log("Interacted!!");
-		InventoryAuthority.Instance.RequestUseItem(slotIndex, this);
+		InventoryAuthority.Instance.RequestUseItem(slotIndex, ActNum, this);
 
 	}
 
