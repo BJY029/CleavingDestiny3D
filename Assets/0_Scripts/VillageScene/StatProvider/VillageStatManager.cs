@@ -116,32 +116,32 @@ namespace Village
         }
 
         // maxEnergy = base + (level * 5)
-        public float GetMaxEnergy(int level)
+        public int GetMaxEnergy(int level)
         {
-            return _villageBalanceData.EnergyMaxBase + (level * _villageBalanceData.EnergyMaxMultiplier);
+            return Mathf.RoundToInt(_villageBalanceData.EnergyMaxBase + (level * _villageBalanceData.EnergyMaxMultiplier));
         }
 
         // Energy =  base + (level * 3.2)
-        public float GetEnergyIncomePerDay(int level)
+        public int GetEnergyIncomePerDay(int level)
         {
-            return _villageBalanceData.EnergyIncomeBase + (level * _villageBalanceData.EnergyIncomeMultiplier);
+            return Mathf.RoundToInt(_villageBalanceData.EnergyIncomeBase + (level * _villageBalanceData.EnergyIncomeMultiplier));
         }
 
         // barrier(L) = 0 if L=1, else Base * Multiplier^(L-1)
         // input level is 0-indexed (L = level + 1)
-        public float GetBarrierArmor(int level)
+        public int GetBarrierArmor(int level)
         {
-            if (level <= 0) return 0f;
-            return _villageBalanceData.BarrierArmorBase * Mathf.Pow(_villageBalanceData.BarrierArmorMultiplier, level - 1);
+            if (level <= 0) return 0;
+            return Mathf.RoundToInt(_villageBalanceData.BarrierArmorBase * Mathf.Pow(_villageBalanceData.BarrierArmorMultiplier, level - 1));
         }
 
         // minPow = 1000 - (Level * 100 * 0.5)
         // maxPow = 1000 + (Level * 100 * 1.5)
-        public (float min, float max) GetAxeRangeDamage(int level)
+        public (int min, int max) GetAxeRangeDamage(int level)
         {
             return (
-                _villageBalanceData.AxeDamageBase - ((level + 1) * _villageBalanceData.AxeDamageLevelMultiplier * _villageBalanceData.AxeDamageMinMultiplier),
-                _villageBalanceData.AxeDamageBase + ((level + 1) * _villageBalanceData.AxeDamageLevelMultiplier * _villageBalanceData.AxeDamageMaxMultiplier)
+                 Mathf.RoundToInt(_villageBalanceData.AxeDamageBase - ((level + 1) * _villageBalanceData.AxeDamageLevelMultiplier * _villageBalanceData.AxeDamageMinMultiplier)),
+                Mathf.RoundToInt(_villageBalanceData.AxeDamageBase + ((level + 1) * _villageBalanceData.AxeDamageLevelMultiplier * _villageBalanceData.AxeDamageMaxMultiplier))
             );
         }
 
