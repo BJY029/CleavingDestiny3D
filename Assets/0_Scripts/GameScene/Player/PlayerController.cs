@@ -127,6 +127,9 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
 	private void Awake()
 	{
+		//애니메이터 할당(할당 실패시 false로 설정)
+		hasAnimator = TryGetComponent(out animator);
+
 		//playerInput 가져오기
 		if (playerInput == null) playerInput = GetComponent<PlayerInput>();
 
@@ -161,12 +164,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 		{
 			playerInput.neverAutoSwitchControlSchemes = true;
 		}
-
-		//커서 설정
-
-
-		//애니메이터 할당(할당 실패시 false로 설정)
-		hasAnimator = TryGetComponent(out animator);
 
 		//애니메이션 접근 파라미터를 해시코드로 관리
 		AssignAnimationIDs();
@@ -270,21 +267,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 		}
 	}
 
-
-	private void Start()
-	{
-		if (!photonView.IsMine || IsAI)
-		{
-			return;
-		}
-		//애니메이터 할당(할당 실패시 false로 설정)
-		hasAnimator = TryGetComponent(out animator);
-		//마우스 고정 및 숨기기
-		//Cursor.lockState = CursorLockMode.Locked;
-		//Cursor.visible = false;
-		//애니메이션 접근 파라미터를 해시코드로 관리
-		AssignAnimationIDs();
-	}
 	//애니메이터 파라미터를 해시코드로 저장해서 관리한다.
 	private void AssignAnimationIDs()
 	{

@@ -143,8 +143,10 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	{
 		gaugeRoot.SetActive(true);
 		selecting = true;
-		maxDamage.text = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow).ToString();
-		minDamage.text = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow).ToString();
+		// maxDamage.text = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow).ToString();
+		maxDamage.SetText("{0}", PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow));
+		// minDamage.text = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow).ToString();
+		minDamage.SetText("{0}", PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow));
 		if (gaugeCo != null) StopCoroutine(gaugeCo);
 		gaugeCo = StartCoroutine(GaugeLoop());
 	}
@@ -274,19 +276,25 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	[PunRPC]
 	private void RPC_SetActiveCanvas(bool active)
 	{
-		if (active)
+		if (TryGetComponent(out canvasGroup))
 		{
-			canvasGroup = GetComponent<CanvasGroup>();
-			canvasGroup.alpha = 1f;
-			canvasGroup.interactable = true;
-			canvasGroup.blocksRaycasts = true;
+			canvasGroup.alpha = active ? 1f : 0f;
+			canvasGroup.interactable = active;
+			canvasGroup.blocksRaycasts = active;
 		}
-		else
-		{
-			canvasGroup = GetComponent<CanvasGroup>();
-			canvasGroup.alpha = 0f;
-			canvasGroup.interactable = false;
-			canvasGroup.blocksRaycasts = false;
-		}
+		// if (active)
+		// {
+		// 	canvasGroup = GetComponent<CanvasGroup>();
+		// 	canvasGroup.alpha = 1f;
+		// 	canvasGroup.interactable = true;
+		// 	canvasGroup.blocksRaycasts = true;
+		// }
+		// else
+		// {
+		// 	canvasGroup = GetComponent<CanvasGroup>();
+		// 	canvasGroup.alpha = 0f;
+		// 	canvasGroup.interactable = false;
+		// 	canvasGroup.blocksRaycasts = false;
+		// }
 	}
 }

@@ -1,35 +1,80 @@
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
+using System;
 
-//º¸´Ù ´õ ½±°Ô PhotonÀÇ Customproperty¸¦ ¼³Á¤ÇÏ°í °¡Á®¿Ã ¼ö ÀÖ°Ô ÇØÁÖ´Â ÄÚµå
+//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Photonï¿½ï¿½ Custompropertyï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½Úµï¿½
 public class PhotonPropertyHelper
 {
-    //¹æ CustomProperty ¼³Á¤
+    private static T ConvertValue<T>(object value, T defaultValue = default)
+    {
+        if (value == null) return defaultValue;
+        if (value is T typedValue) return typedValue;
+
+        try
+        {
+            Type targetType = typeof(T);
+
+            if (targetType == typeof(int))
+            {
+                // floatâ†’int ë³€í™˜ ì‹œ ë°˜ì˜¬ë¦¼ ì ìš©
+                if (value is float floatValue)
+                    return (T)(object)UnityEngine.Mathf.RoundToInt(floatValue);
+                return (T)(object)Convert.ToInt32(value);
+            }
+            if (targetType == typeof(float))
+                return (T)(object)Convert.ToSingle(value);
+            if (targetType == typeof(double))
+                return (T)(object)Convert.ToDouble(value);
+            if (targetType == typeof(long))
+                return (T)(object)Convert.ToInt64(value);
+            if (targetType == typeof(bool))
+                return (T)(object)Convert.ToBoolean(value);
+
+            if (targetType.IsEnum)
+                return (T)Enum.ToObject(targetType, Convert.ToInt32(value));
+
+            return (T)Convert.ChangeType(value, targetType);
+        }
+        catch
+        {
+            return defaultValue;
+        }
+    }
+
+    // Hashtableì—ì„œ ì•ˆì „í•˜ê²Œ ê°’ì„ ì¶”ì¶œí•˜ëŠ” ê³µê°œ ë©”ì„œë“œ
+    public static T GetHashtableValue<T>(Hashtable props, string key, T defaultValue = default)
+    {
+        if (props == null || !props.TryGetValue(key, out object value))
+            return defaultValue;
+        return ConvertValue(value, defaultValue);
+    }
+
+    //ï¿½ï¿½ CustomProperty ï¿½ï¿½ï¿½ï¿½
     public static void SetRoomProp(string key, object value)
     {
         var ht = new Hashtable { { key, value } };
         PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
     }
 
-    //¹æÀÇ CustomProperty¸¦ Key¸¦ ÅëÇØ Á¢±Ù ÈÄ °¡Á®¿À±â
+    //ï¿½ï¿½ï¿½ï¿½ CustomPropertyï¿½ï¿½ Keyï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     public static T GetRoomProp<T>(string key, T defaultValue = default)
     {
         var room = PhotonNetwork.CurrentRoom;
         if (room == null || room.CustomProperties == null) return defaultValue;
         if (!room.CustomProperties.ContainsKey(key)) return defaultValue;
 
-        return (T)room.CustomProperties[key];
+        return ConvertValue(room.CustomProperties[key], defaultValue);
     }
 
-    //ÇÃ·¹ÀÌ¾î CustomProperty ¼³Á¤
+    //ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ CustomProperty ï¿½ï¿½ï¿½ï¿½
     // public static void SetPlayerProp(Player player, string key, object value)
     // {
     //     var ht = new Hashtable { { key, value } };
     //     player.SetCustomProperties(ht);
     // }
 
-    //actor ¹øÈ£¸¦ ±â¹İÀ¸·Î ÇÃ·¹ÀÌ¾î ÇÁ·ÎÆÛÆ¼ ¼¼ÆÃ(ai °â¿ë»ç¿ë)
+    //actor ï¿½ï¿½È£ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¼ ï¿½ï¿½ï¿½ï¿½(ai ï¿½ï¿½ï¿½ï¿½ï¿½)
     public static void SetPlayerProp(int actorNumber, string key, object value)
     {
         Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNumber);
@@ -50,7 +95,7 @@ public class PhotonPropertyHelper
         }
     }
 
-    // //ÇÃ·¹ÀÌ¾îÀÇ CustomProperty¸¦ Key¸¦ ÅëÇØ Á¢±Ù ÈÄ °¡Á®¿À±â
+    // //ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ CustomPropertyï¿½ï¿½ Keyï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     // public static T GetPlayerProp<T>(Player player, string key, T defaultValue = default)
     // {
     //     var props = player.CustomProperties;
@@ -58,7 +103,7 @@ public class PhotonPropertyHelper
     //     return (T)props[key];
     // }
 
-    //actor ¹øÈ£¸¦ ±â¹İÀ¸·Î ÇÃ·¹ÀÌ¾î ÇÁ·ÎÆÛÆ¼ °¡Á®¿À±â(ai °â¿ë»ç¿ë)
+    //actor ï¿½ï¿½È£ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¼ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ai ï¿½ï¿½ï¿½ï¿½ï¿½)
     public static T GetPlayerProp<T>(int actorNumber, string key, T defaultValue = default)
     {
         Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNumber);
@@ -66,7 +111,7 @@ public class PhotonPropertyHelper
         {
             var props = player.CustomProperties;
             if (props == null || !props.ContainsKey(key)) return defaultValue;
-            return (T)props[key];
+            return ConvertValue(props[key], defaultValue);
         }
         else
         {
@@ -74,8 +119,8 @@ public class PhotonPropertyHelper
             string aiKey = $"{key}_{actorNumber}";
             var roomProps = PhotonNetwork.CurrentRoom.CustomProperties;
             if (roomProps != null && roomProps.ContainsKey(aiKey))
-                return (T)roomProps[aiKey];
+                return ConvertValue(roomProps[aiKey], defaultValue);
         }
-        return default;
+        return defaultValue;
     }
 }

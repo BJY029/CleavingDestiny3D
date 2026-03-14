@@ -41,22 +41,22 @@ namespace Village
         /// </summary>
         /// <param name="level">건물 레벨</param>
         /// <returns>최대 에너지</returns>
-        float GetMaxEnergy(int level);
+        int GetMaxEnergy(int level);
 
         /// <summary>
         /// 일일 에너지(행동력) 회복량 가져오기
         /// </summary>
         /// <param name="level">건물 레벨</param>
         /// <returns>일일 에너지 회복량</returns>
-        float GetEnergyIncomePerDay(int level);
+        int GetEnergyIncomePerDay(int level);
 
-        (float min, float max) GetAxeRangeDamage(int level);
+        (int min, int max) GetAxeRangeDamage(int level);
 
         /// <summary>
         /// 방벽 방어력 수치 가져오기 (주로 상점/방어 시설 레벨 비례)
         /// </summary>
         /// <param name="level">건물 레벨</param>
         /// <returns>방벽 방어력</returns>
-        float GetBarrierArmor(int level);
+        int GetBarrierArmor(int level);
     }
 }
