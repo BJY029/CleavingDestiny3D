@@ -864,6 +864,13 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 		if (candidates.Count == 0)
 		{
+			if (GameManager.Instance.isSoloPlay)
+			{
+				foreach (int num in PlayerManager.Instance.AIPlayerObj.Keys)
+				{
+					candidates.Add(num);
+				}
+			}
 			return -1;
 		}
 
