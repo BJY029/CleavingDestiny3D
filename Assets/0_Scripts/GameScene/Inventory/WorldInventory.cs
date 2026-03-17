@@ -109,4 +109,17 @@ public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCal
 		}
 		Debug.Log($"[AI {player.PlayerActNum}] Inventory Interact ERROR");
 	}
+
+	public void InteractSlotForStealByAI(AIController player, ItemSO item)
+	{
+		foreach (var slot in slots)
+		{
+			if (slot.currentItem == item)
+			{
+				slot.OnInteract(player);
+				return;
+			}
+		}
+		Debug.Log($"Stealing Inventory Interact ERROR");
+	}
 }

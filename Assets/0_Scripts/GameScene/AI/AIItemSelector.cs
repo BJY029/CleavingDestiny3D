@@ -54,7 +54,10 @@ public class AIItemSelector : AILogicModule
             Debug.Log($"[AI {brain.MyActorNum}] {item.displayName_ID} 평가 점수(Curve) : {score:F1}");
 
             if (score > highestScore)
+            {
+                highestScore = score;
                 bestItem = item;
+            }
         }
 
         InsertItemToInv(bestItem, context);
@@ -88,6 +91,9 @@ public class AIItemSelector : AILogicModule
     private float EvaluateItemWithCurves(ItemSO item, AIContext ctx)
     {
         float score = 0f;
+
+        //test
+        if (item.itemId == "4000") score += 100000;
 
         score += EvaluateDuplicateItem(item, ctx);
 

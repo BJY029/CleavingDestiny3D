@@ -119,7 +119,7 @@ public class AIInventoryManager : AILogicModule
     }
 
     //곡선 평가 로직을 통해 각 상황에 맞게 아이템에 점수 부여
-    private float EvaluateUtilityCurves(ItemSO item, AIContext ctx)
+    public float EvaluateUtilityCurves(ItemSO item, AIContext ctx)
     {
         float curveScore = 0f;
         float villageHPRatio = ctx.curVillageHP / playerSetting.villageHP;
@@ -171,11 +171,13 @@ public class AIInventoryManager : AILogicModule
             curveScore += scoreTable.dmgTreeMaxScore * Mathf.Pow(treeHPRatio, 2f);
         }
 
+        //test
+        if (item.itemId == "4000") curveScore += 100000;
         return curveScore;
     }
 
 
-    private float EvaluateGimmicks(ItemSO item, AIContext ctx)
+    public float EvaluateGimmicks(ItemSO item, AIContext ctx)
     {
         float gimmickScore = 0f;
         float villageHPRatio = ctx.curVillageHP / playerSetting.villageHP;

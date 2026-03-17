@@ -118,6 +118,7 @@ GameObject:
   - component: {fileID: 4411511653207790959}
   - component: {fileID: -9106697140285719882}
   - component: {fileID: 2169078213238885499}
+  - component: {fileID: 3630900598691098007}
   - component: {fileID: -7706094444651068393}
   - component: {fileID: -1081810206017964554}
   - component: {fileID: -4189926361347790040}
@@ -224,6 +225,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AINevMeshController
   wayPointData: {fileID: 11400000, guid: 04a6ec45e289ce04ab46b084ff95ffff, type: 2}
+  rotationSpeed: 10
+  agent: {fileID: 0}
 --- !u!114 &-6125655930517416145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -295,6 +298,18 @@ MonoBehaviour:
   roomSetting: {fileID: 11400000, guid: a435e1ecc7289e04ca99639220cc8e4b, type: 2}
   usageThreshold: 50
   useDelay: 1.2
+--- !u!114 &3630900598691098007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171133721816373843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21bb70e5b5642db46af64b072fb834a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIItemActionManager
 --- !u!114 &-7706094444651068393
 MonoBehaviour:
   m_ObjectHideFlags: 0

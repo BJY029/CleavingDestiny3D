@@ -177,6 +177,14 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
             //Hit 위치로 이동
             await aiBrain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_HIT, token);
+
+            //임시 코드
+            int lockpickCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.LOCKPICK(PlayerActNum));
+            if (lockpickCnt > 0)
+            {
+                await aiBrain.ItemActionManager.ProcessLockpickItem(token);
+            }
+
             //턴 변경 시도
             TryHit();
         }
