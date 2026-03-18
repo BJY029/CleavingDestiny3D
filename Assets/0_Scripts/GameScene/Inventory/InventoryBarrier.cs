@@ -147,8 +147,18 @@ public class InventoryBarrier : MonoBehaviourPunCallbacks, ILookInteractable
 		if (lockpickCnt <= 0) return;
 
 		ItemHandlingSystem.instance.UseLockPick(ActNum);
-		InventoryLockCanvasController.Instance.UnSetLockpickUI();
-		LockpickController.instance.SetGameActive(owner, this, pc);
+		//실제 플레이어인 경우에만 UI 활성화
+		if (playerCtrl != null)
+		{
+			InventoryLockCanvasController.Instance.UnSetLockpickUI();
+			LockpickController.instance.SetGameActive(owner, this, pc);
+		}
+		//AI 플레이어는 별도로 처리
+		//멤버 변수만 초기화한다.
+		else
+		{
+			LockpickController.instance.SetGameActiveForAI(owner, this, pc);
+		}
 
 	}
 }

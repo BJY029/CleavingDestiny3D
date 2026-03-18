@@ -44,6 +44,14 @@ public class AIItemActionManager : AILogicModule
     //락픽 게임 시도
     private bool TryLockPick(AIContext context)
     {
+        //AI 플레이어 인벤토리 객체 찾아오기
+        if (PlayerManager.Instance.PlayersInv.TryGetValue((PhotonNetwork.LocalPlayer.ActorNumber), out var inv))
+        {
+            //인벤토리 방어 스크립트에서(InventoryBarrier.cs) 상호작용 호출
+            //즉 게임 시작 처리
+            //내부적으로 멤버 변수들만 초기화함
+            inv.InvBarrier.OnInteract(gameObject.GetComponent<AIController>());
+        }
         //상대방 인벤토리 락 수 
         int extraLocks = context.OppLockCnt;
         //상대방 락수에 기반한 락픽 성공 확률 계산
@@ -53,11 +61,14 @@ public class AIItemActionManager : AILogicModule
 
         if (roll <= finalSuccessProbability)
         {
+            //성공 했음을 알림
+            LockpickController.instance.IsAISuccess(true);
             Debug.Log("[AI 락픽 성공!]");
             return true;
         }
         else
         {
+            LockpickController.instance.IsAISuccess(false);
             Debug.Log("[AI 락픽 실패]");
             return false;
         }
@@ -105,6 +116,7 @@ public class AIItemActionManager : AILogicModule
         //ai 인벤토리에서의 아이템 소모 및 효과 적용
         if (PlayerManager.Instance.PlayersInv.TryGetValue((PhotonNetwork.LocalPlayer.ActorNumber), out var inv))
         {
+            //inv.InvBarrier.OnInteract(gameObject.GetComponent<AIController>())
             inv.InteractSlotForStealByAI(gameObject.GetComponent<AIController>(), item);
             await UniTask.Delay(1000, cancellationToken: token);
         }
