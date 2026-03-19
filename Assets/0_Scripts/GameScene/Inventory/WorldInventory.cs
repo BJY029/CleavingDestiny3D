@@ -95,6 +95,16 @@ public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCal
 			slots[i].SetSlot(null, owner);
 	}
 
+	public int GetItemCnt()
+	{
+		int cnt = 0;
+		foreach (var slot in slots)
+		{
+			if (slot.currentItem != null) cnt++;
+		}
+		return cnt;
+	}
+
 	//AI 전용 아이템 사용 함수
 	public void InteractSlotByAI(AIController player, ItemSO item)
 	{

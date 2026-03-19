@@ -9,12 +9,58 @@ public class AIItemActionManager : AILogicModule
     public float baseLockPassRate = 0.8f;
     public float baseLockDuration = 1.0f;
 
-    public async UniTask ProcessLockpickItem(CancellationToken token)
+    [Tooltip("아이템을 사용하기 위한 최소 점수 조건")]
+    public float usageThreshold = 50f;
+
+    //락픽 사용이 가능한지 판단하는 함수
+    private bool CheckLockpickPossible(AIContext context)
     {
+        //AI 플레이어 락픽 개수 카운트
+        int lockpickCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.LOCKPICK(brain.MyActorNum));
+        if (lockpickCnt <= 0) return false;
+
+        //각 플레이어 인벤토리 내 아이템 개수 기반 판단
+        int AIItemInvMaxCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(brain.MyActorNum));
+        int AIItemsCnt = -1, OppItemsCnt = -1;
+
+        if (PlayerManager.Instance.PlayersInv.TryGetValue((brain.MyActorNum), out WorldInventory MyInv))
+        {
+            AIItemsCnt = MyInv.GetItemCnt();
+        }
+        else
+        {
+            Debug.LogError("Failed to count AI's Inv Item Count");
+            return false;
+        }
+
+        if (PlayerManager.Instance.PlayersInv.TryGetValue(PhotonNetwork.LocalPlayer.ActorNumber, out WorldInventory OppInv))
+        {
+            OppItemsCnt = OppInv.GetItemCnt();
+        }
+        else
+        {
+            Debug.LogError("Failed to count Player's Inv Item Count");
+            return false;
+        }
+
+        if (AIItemsCnt >= AIItemInvMaxCnt || OppItemsCnt <= 0) return false;
+
+        return true;
+    }
+
+    public async UniTask<bool> ProcessLockpickItem(CancellationToken token)
+    {
+        //AI 스탯 불러오기
         AIContext context = brain.GetCurAIStat(brain.MyActorNum);
+        //락픽 사용 가능한 상태인지 확인
+        if (!CheckLockpickPossible(context)) return false;
 
-        if (context.LockpickCnt <= 0) return;
+        //가져올만한 아이템 계산
+        ItemSO item = GetBestItemInOppInv(context);
+        //만약 가져올만한 아이템이 없다면 락픽 사용하지 않음
+        if (item == null) return false;
 
+        //상대방 인벤토리 입구로 이동
         await brain.aINevMeshController.MoveToLocationAsync(LocationCommand.OPP_INV_ENTRY, token);
 
         //상대방 잠금 수에 비례한 락픽 해제 시간 적용
@@ -25,20 +71,18 @@ public class AIItemActionManager : AILogicModule
         {
             //자신 자리로 되돌아 가기
             await brain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_HIT, token);
-            return;
+            return false;
         }
 
         //싱대방 인벤토리 안으로 들어가기
         await brain.aINevMeshController.MoveToLocationAsync(LocationCommand.OPP_INV, token);
-
-        //가져올만한 아이템 계산
-        ItemSO item = GetBestItemInOppInv(context);
 
         //TODO: 해당되는 아이템 가져오기
         await StealItemUsageAsync(item, token);
 
         //자리 돌아가기
         await brain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_HIT, token);
+        return true;
     }
 
     //락픽 게임 시도
@@ -83,18 +127,23 @@ public class AIItemActionManager : AILogicModule
         var InvSlots = ItemInfoSerializer.Decode(OppInvStr, OppInvCap);
 
         ItemSO bestItem = null;
-        float highestScore = -999f;
+        float highestScore = usageThreshold;
         //인벤토리를 돌아본다.
         foreach (var slot in InvSlots)
         {
             //Debug.Log($"{slot.itemID}");
             ItemSO item = ItemDB.Instance.Get(slot.itemID);
             if (item == null) continue;
+
+            //필터링 : 기력 부족으로 아예 사용 불가하면 패스
+            if (item.itemCost > context.curEnergy) continue;
+            //필터링 : 위기 사항이 아닌데 이번 예산 기력을 넘어가면 pass, 기력 사용량이 0이면 통과
+            if (item.itemCost > brain.InventoryManager.CalcEnergyBudget(context) && item.itemCost > 0) continue;
             //필터링 : 제약 조건(턴 당 1회 등)에 걸리면 패스
             if (!ItemHandlingSystem.instance.CheckItemAvaiable(brain.MyActorNum, item.itemId)) continue;
 
 
-            //  4. 아이템 점수 계산(아이템 선택 로직과 동일한 알고리즘)
+            // 아이템 점수 계산(아이템 선택 로직과 동일한 알고리즘)
             // 예외 상황에 대한 처리 필요(희생 아이템인데 보유 아이템이 1개뿐인 경우 등)
             float score = brain.InventoryManager.EvaluateUtilityCurves(item, context);
             score += brain.InventoryManager.EvaluateGimmicks(item, context);

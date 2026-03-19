@@ -98,7 +98,7 @@ public class AIInventoryManager : AILogicModule
     }
 
     //현재 기력 기준 기력 에산 계산
-    private int CalcEnergyBudget(AIContext ctx)
+    public int CalcEnergyBudget(AIContext ctx)
     {
         int remainTurns = roomSetting.maxWave - ctx.curWaveCnt;
 
