@@ -29,6 +29,7 @@ namespace Village
 
         [SerializeField]
         private VillageBalanceData _villageBalanceData;
+        public VillageBalanceData VillageBalance => _villageBalanceData;
 
         private readonly Dictionary<VillageType, VillageLevelData> _villageDataDict = new Dictionary<VillageType, VillageLevelData>();
 

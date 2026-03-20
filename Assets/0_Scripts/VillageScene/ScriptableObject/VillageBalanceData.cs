@@ -72,4 +72,26 @@ public class VillageBalanceData : ScriptableObject
     public float BarrierArmorMultiplier => barrierArmorMultiplier;
 
 
+    [Header("Shop")]
+    [SerializeField]
+    private int shopItemCount = 5;
+    public int ShopItemCount => shopItemCount;
+
+    [SerializeField]
+    private float shopRareItemChanceBase = 0.05f; // 5% at level 1
+    public float ShopRareItemChanceBase => shopRareItemChanceBase;
+
+    [SerializeField]
+    private float shopRareItemChanceMultiplier = 0.05f; // +5% per level
+    public float ShopRareItemChanceMultiplier => shopRareItemChanceMultiplier;
+
+    [SerializeField]
+    private int shopReloadCost = 50;
+
+    [SerializeField]
+    private int shopReloadCostIncrement = 20;
+    public int GetShopReloadCost(int reloadCount)
+    {
+        return shopReloadCost + (reloadCount * shopReloadCostIncrement);
+    }
 }

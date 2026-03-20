@@ -4,6 +4,8 @@ namespace Village
 {
     public interface IVillageStatProvider
     {
+        public VillageBalanceData VillageBalance { get; }
+
         /// <summary>
         /// 특정 플레이어의 건물의 현재 레벨을 안전하게 가져오기
         /// </summary>

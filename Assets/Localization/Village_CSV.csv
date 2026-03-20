@@ -1,7 +1,7 @@
 ID,KR,EN
 UI_Ready,준비 완료,Ready
 UI_NotReady,준비 안됨,Not Ready
-Upgrade_Cost,업그레이드 비용: {0},Upgrade Cost: {0}
+Upgrade_Cost,{0} <color=yellow>G</color> 필요,Cost: {0} <color=yellow>G</color>
 Upgrade_Cost_Not_Enough,<color=red>비용 부족: {0}</color>,<color=red>Not Enough: {0}</color>
 Current_Gold,현재 골드:,Current Gold:
 Building_Upgrade,강화하기,Upgrade
@@ -12,13 +12,15 @@ Mine_Effect,일일 골드 수입: <color=#FFD700>{0}</color>,Daily Gold Income: 
 Farm_Title,농장,Farm
 Farm_Desc,농장에서 식량을 재배합니다.,Grow food on the farm.
 Farm_Effect,최대 행동력: <color=#FFD700>{0}</color> / 일일 회복: <color=#FFD700>{1}</color>,Max Energy: <color=#FFD700>{0}</color> / Daily Recovery: <color=#FFD700>{1}</color>
-Shop_Title,상점,Shop
-Shop_Desc,상점에서 아이템을 구매합니다.,Buy items in the shop.
-Shop_Effect,희귀 확률: <color=#FFD700>{0}</color> / 아이템 레벨: <color=#FFD700>{1}</color>,Rare Chance: <color=#FFD700>{0}</color> / Item Level: <color=#FFD700>{1}</color>
 Forge_Title,대장간,Forge
 Forge_Desc,대장간에서 도끼를 강화합니다.,Axe upgrades in the forge.
 Forge_Effect,도끼 범위 피해: <color=#FFD700>{0}</color> ~ <color=#FFD700>{1}</color>,Axe AoE Damage: <color=#FFD700>{0}</color> ~ <color=#FFD700>{1}</color>
 Barrier_Title,방어막,Barrier
 Barrier_Desc,마을의 방어막을 강화합니다.,Strengthen the village's barrier.
 Barrier_Effect,방어막 방어력: <color=#FFD700>{0}</color>,Barrier Defense: <color=#FFD700>{0}</color>
+Shop_Title,상점,Shop
+Shop_Desc,상점에서 아이템을 구매합니다.,Buy items in the shop.
+Shop_Effect,Lv {0} - 희귀 등장 확률: <color=#FFD700>{1}%</color> 증가, Lv {0} - Rare Appearance Chance: <color=#FFD700>{1}%</color> Increase
+Shop_Reload, 새로고침 ({0} <color=yellow>G</color>), Reload ({0} <color=yellow>G</color>)
+Shop_Buy,구매,Buy
 
