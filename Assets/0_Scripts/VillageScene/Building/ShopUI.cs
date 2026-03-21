@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -36,6 +37,7 @@ namespace Village.Building
             for (int i = 0; i < itemCount; i++)
             {
                 ShopItem newItem = Instantiate(shopItemPrefab, shopItemContainer);
+                newItem.ParentShopUI = this; // 생성된 아이템에 ShopUI 참조 설정
                 shopItems[i] = newItem;
                 newItem.gameObject.SetActive(false); // 초기에는 비활성화
             }
@@ -78,11 +80,14 @@ namespace Village.Building
         private void ReloadShop()
         {
             Debug.Log("ShopUI: Shop Reloaded");
+            ShopItemSelect(null); // 아이템 선택 해제
 
             foreach (var item in shopItems)
             {
                 if (item == null) continue;
+                var itemData = ItemDB.Instance.Get("1000");
                 item.gameObject.SetActive(true);
+                item.SetShopItem(itemData);
             }
         }
 
@@ -123,6 +128,23 @@ namespace Village.Building
         private void OnClickBuyButton()
         {
             Debug.Log("ShopUI: Buy Button Clicked");
+        }
+
+        public void ShopItemSelect(ShopItem shopItem)
+        {
+            selectedItemIndex = -1; // 일단 선택된 아이템 인덱스 초기화
+            // 클릭된 아이템이 shopItems 배열에서 몇 번째 인덱스인지 찾기
+            for (int i = 0; i < shopItems.Length; i++)
+            {
+                bool isSelectedItem = shopItems[i] == shopItem;
+                shopItems[i].SetSelected(isSelectedItem); // 클릭된 아이템은 선택 상태로, 나머지는 선택 해제
+                if (isSelectedItem)
+                {
+                    selectedItemIndex = i;
+                }
+            }
+
+            RefreshShopStatusUI();
         }
     }
 }
