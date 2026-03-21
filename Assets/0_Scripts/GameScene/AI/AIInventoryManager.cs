@@ -1,6 +1,7 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Threading;
+using UnityEngine.Rendering.Universal;
 
 public class AIInventoryManager : AILogicModule
 {
@@ -19,6 +20,14 @@ public class AIInventoryManager : AILogicModule
 
     public float useDelay = 1.2f;
 
+    //전역 변수들
+    string InvStr;
+    int capacity;
+
+    //희생 아이템 정보
+    ItemSO SacrificeItem;
+    int SacrificeUID;
+
 
     public async UniTask ProcessInventoryAsync(CancellationToken token)
     {
@@ -28,6 +37,9 @@ public class AIInventoryManager : AILogicModule
         Debug.Log($"[AI {brain.MyActorNum}] 인벤토리 아이템 사용 판단 시작");
 
         bool canUseMore = true;
+
+        SacrificeItem = null;
+        SacrificeUID = -1;
         //무한 루프 방지용 장치
         int safetyLoopCount = 0;
         int safetyLoopCountMax = playerSetting.inventoryCapacity;
@@ -45,8 +57,8 @@ public class AIInventoryManager : AILogicModule
             int energyBudeget = CalcEnergyBudget(context);
 
             //  3. AI 인벤토리 가져오기
-            string InvStr = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(brain.MyActorNum));
-            int capacity = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(brain.MyActorNum));
+            InvStr = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(brain.MyActorNum));
+            capacity = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(brain.MyActorNum));
             var InvSlots = ItemInfoSerializer.Decode(InvStr, capacity);
 
             ItemSO bestItemToUse = null;
@@ -119,6 +131,7 @@ public class AIInventoryManager : AILogicModule
     }
 
     //곡선 평가 로직을 통해 각 상황에 맞게 아이템에 점수 부여
+    //수정 시 EvaultateSacrificeItem() 함께 수정
     public float EvaluateUtilityCurves(ItemSO item, AIContext ctx)
     {
         float curveScore = 0f;
@@ -154,11 +167,20 @@ public class AIInventoryManager : AILogicModule
         {
             if (item.target == ItemTarget.SelfVillage)
             {
-                float deficit_1 = 1.0f - villageHPRatio;
-                float barrier_toxic_Ratio = ctx.curVillageBarrier / ctx.curTreeToxicDmg;
-                float deficit_2 = 1.0f - barrier_toxic_Ratio;
-                float deficit = (deficit_1 + deficit_2) / 2.0f;
-                curveScore += scoreTable.defVillageMaxScore * Mathf.Pow(deficit, 2f);
+                //희생 아이템
+                if (item.itemId == "2002")
+                {
+                    curveScore += CalcSacrificeItemScore(ctx);
+                }
+                else
+                {
+                    float deficit_1 = 1.0f - villageHPRatio;
+                    float barrier_toxic_Ratio = ctx.curVillageBarrier / ctx.curTreeToxicDmg;
+                    float deficit_2 = 1.0f - barrier_toxic_Ratio;
+                    float deficit = (deficit_1 + deficit_2) / 2.0f;
+
+                    curveScore += scoreTable.defVillageMaxScore * Mathf.Pow(deficit, 2f);
+                }
             }
             else if (item.target == ItemTarget.Tree)
             {
@@ -172,7 +194,65 @@ public class AIInventoryManager : AILogicModule
         }
 
         //test
-        if (item.itemId == "4000") curveScore += 100000;
+        //if (item.itemId == "2002") curveScore += 100000;
+        return curveScore;
+    }
+
+    //희생 아이템 계산 전용 함수
+    private float EvaluateSacrificeItem(ItemSO item, AIContext ctx)
+    {
+        float curveScore = 0f;
+        float villageHPRatio = ctx.curVillageHP / playerSetting.villageHP;
+        float treeHPRatio = ctx.curTreeHP / roomSetting.treeHP;
+
+        if (item.type == ItemType.Heal)
+        {
+            if (item.target == ItemTarget.SelfVillage)
+            {
+                float deficit = 1.0f - villageHPRatio;
+                curveScore += scoreTable.defVillageMaxScore * Mathf.Pow(deficit, 2f);
+            }
+            else if (item.target == ItemTarget.Tree)
+            {
+                float deficit = 1.0f - treeHPRatio;
+                curveScore += scoreTable.healTreeMaxScore * Mathf.Pow(deficit, 2f);
+            }
+            else
+            {
+                //기력 회복주 아이템
+                if (item.itemId == "3002")
+                {
+                    int avg = GetInvItemCostAvg(ctx.curInvStr, ctx.curInvCap);
+                    if (avg < ctx.curEnergy + 3)
+                        curveScore += scoreTable.healEnergyScore;
+                }
+                //TODO : 기력 이월 아이템 제작 시 해당 코드 또한 별도 적용
+                //if(item.itemId == "3003")
+            }
+        }
+        else if (item.type == ItemType.Defence)
+        {
+            if (item.target == ItemTarget.SelfVillage)
+            {
+                //희생 아이템에 대해서 별도로 처리하지 않음
+                float deficit_1 = 1.0f - villageHPRatio;
+                float barrier_toxic_Ratio = ctx.curVillageBarrier / ctx.curTreeToxicDmg;
+                float deficit_2 = 1.0f - barrier_toxic_Ratio;
+                float deficit = (deficit_1 + deficit_2) / 2.0f;
+
+                curveScore += scoreTable.defVillageMaxScore * Mathf.Pow(deficit, 2f);
+            }
+            else if (item.target == ItemTarget.Tree)
+            {
+                float deficit = 1.0f - treeHPRatio;
+                curveScore += scoreTable.healTreeMaxScore * Mathf.Pow(deficit, 2f);
+            }
+        }
+        else if (item.type == ItemType.Damage && item.target == ItemTarget.Tree)
+        {
+            curveScore += scoreTable.dmgTreeMaxScore * Mathf.Pow(treeHPRatio, 2f);
+        }
+
         return curveScore;
     }
 
@@ -222,6 +302,75 @@ public class AIInventoryManager : AILogicModule
         return gimmickScore;
     }
 
+    private float CalcSacrificeItemScore(AIContext context)
+    {
+        var InvSlots = ItemInfoSerializer.Decode(InvStr, capacity);
+        int ItemsCnt = brain.GetPlayerItemCnt(brain.MyActorNum);
+        if (ItemsCnt <= 1) return -999999f;
+
+        ItemSO bestSacrifice = null;
+        float lowerUtility = 9999f;
+
+        //희생 아이템이 인벤토리에 2개 이상 존재하는 경우, 첫 번째 희생 아이템만 처리하도록 설정
+        bool firstSacrficeItem = false;
+
+        foreach (var slot in InvSlots)
+        {
+            ItemSO item = ItemDB.Instance.Get(slot.itemID);
+            if (item == null) continue;
+
+            if (slot.itemID == "2002" && !firstSacrficeItem)
+            {
+                firstSacrficeItem = true;
+                continue;
+            }
+            float utility = EvaluateSacrificeItem(item, context);
+
+            if (utility < lowerUtility)
+            {
+                lowerUtility = utility;
+                bestSacrifice = item;
+
+                //선택된 희생할 아이템 저장
+                SacrificeItem = bestSacrifice;
+                SacrificeUID = slot.uniqueId;
+            }
+        }
+
+        if (bestSacrifice != null)
+        {
+            float reductionRate = GetSacrificeReductionRate(bestSacrifice.itemClass);
+            float preventedDamage = context.curTreeToxicDmg * reductionRate;
+
+            //점수 환산(ex 300 데미지 막아주면 30점 획득)
+            float benefitScore = preventedDamage / 10f;
+
+            float villageHPRatio = context.curVillageHP / playerSetting.villageHP;
+            //체력이 40% 이하라면 점수 2배
+            if (villageHPRatio < 0.4f)
+            {
+                benefitScore *= 2f;
+            }
+
+            benefitScore = benefitScore - (lowerUtility * 0.5f);
+
+            return benefitScore;
+        }
+        return 0f;
+    }
+
+    private float GetSacrificeReductionRate(ItemClass itemClass)
+    {
+        return itemClass switch
+        {
+            ItemClass.Common => roomSetting.common_reduction_rate,
+            ItemClass.Hero => roomSetting.hero_reduction_rate,
+            ItemClass.Rare => roomSetting.rare_reduction_rate,
+            ItemClass.Legendary => roomSetting.legendary_reduction_rate,
+            _ => 0.0f
+        };
+    }
+
     private int GetInvItemCostAvg(string Inv, int Cap)
     {
         var inv = ItemInfoSerializer.Decode(Inv, Cap);
@@ -242,8 +391,26 @@ public class AIInventoryManager : AILogicModule
 
     private async UniTask ExecuteItemUsageAsync(ItemSO item, CancellationToken token)
     {
-        //ai 인벤토리에서의 아이템 소모 및 효과 적용
-        AIInv.InteractSlotByAI(gameObject.GetComponent<AIController>(), item);
+        //희생 아이템인 경우
+        if (item.itemId == "2002")
+        {
+            if (brain.GetPlayerItemCnt(brain.MyActorNum) <= 1) return;
+            if (SacrificeItem == null || SacrificeUID == -1)
+            {
+                Debug.LogError("Sacrifice Item Info Error");
+                return;
+            }
+            //ai 인벤토리에서의 아이템 소모 및 효과 적용
+            AIInv.InteractSlotByAI(gameObject.GetComponent<AIController>(), item);
+            await UniTask.Delay(1000, cancellationToken: token);
+            //희생할 아이템 삭제
+            ItemHandlingSystem.instance.ProcessSacrificeItem(brain.MyActorNum, SacrificeUID);
+        }
+        else
+        {
+            //ai 인벤토리에서의 아이템 소모 및 효과 적용
+            AIInv.InteractSlotByAI(gameObject.GetComponent<AIController>(), item);
+        }
         await UniTask.Delay(1000, cancellationToken: token);
     }
 }

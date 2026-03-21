@@ -25,6 +25,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 	public Dictionary<int, GameObject> AIPlayerObj = new Dictionary<int, GameObject>();
 
+	//AI 모드에서 사용되는 AI Actnum 저장용(만약에만약에 AI가 여러명이 된다면 폐기해야 함)
+	public int AIActNum { get; private set; }
+
 	//AI 에서 사용되는 플래그, 준비 완료 여부를 나타낸다.
 	public bool succeedToPreapreGame = false;
 
@@ -223,6 +226,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 					0,
 					initData);
 				AIPlayerObj.Add(rp.actorNumber, spawnAI);
+				AIActNum = rp.actorNumber;
 				//PlayerController AIController = spawnAI.GetComponent<PlayerController>();
 				//AIController.PlayerActNum = rp.actorNumber;
 

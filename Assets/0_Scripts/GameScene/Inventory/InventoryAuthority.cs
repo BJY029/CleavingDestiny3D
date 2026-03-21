@@ -62,7 +62,11 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		//사용한 아이템 인벤토리에서 제거
 		slots[removaldx] = (0, null);
-		photonView.RPC(nameof(RPC_RefreshItemInv), player);
+		if (player != null)
+			photonView.RPC(nameof(RPC_RefreshItemInv), player);
+		//AI 플레이어의 삭제 요청인 경우
+		else if (GameManager.Instance.isSoloPlay)
+			RefreshAIItemInv();
 
 		//아이템 사용 UI 띄우기
 		//PlayerCanvasController.Instance.PopUpItemNotify(item.itemId, player);
@@ -407,6 +411,14 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 	{
 		GameObject PlayerInv = PlayerStatus.Instance.GetPlayerInventory();
 		WorldInventory WI = PlayerInv.GetComponent<WorldInventory>();
+		WI.RefreshInv();
+	}
+
+	//AI 플레이어 인벤토리 갱신 함수
+	public void RefreshAIItemInv()
+	{
+		GameObject AIInv = PlayerStatus.Instance.GetAIInventory();
+		WorldInventory WI = AIInv?.GetComponent<WorldInventory>();
 		WI.RefreshInv();
 	}
 

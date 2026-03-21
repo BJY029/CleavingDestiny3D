@@ -93,7 +93,7 @@ public class AIItemSelector : AILogicModule
         float score = 0f;
 
         //test
-        if (item.itemId == "4000") score += 100000;
+        //if (item.itemId == "2002") score += 100000;
 
         score += EvaluateDuplicateItem(item, ctx);
 

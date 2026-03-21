@@ -12,42 +12,6 @@ public class AIItemActionManager : AILogicModule
     [Tooltip("아이템을 사용하기 위한 최소 점수 조건")]
     public float usageThreshold = 50f;
 
-    //락픽 사용이 가능한지 판단하는 함수
-    private bool CheckLockpickPossible(AIContext context)
-    {
-        //AI 플레이어 락픽 개수 카운트
-        int lockpickCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.LOCKPICK(brain.MyActorNum));
-        if (lockpickCnt <= 0) return false;
-
-        //각 플레이어 인벤토리 내 아이템 개수 기반 판단
-        int AIItemInvMaxCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(brain.MyActorNum));
-        int AIItemsCnt = -1, OppItemsCnt = -1;
-
-        if (PlayerManager.Instance.PlayersInv.TryGetValue((brain.MyActorNum), out WorldInventory MyInv))
-        {
-            AIItemsCnt = MyInv.GetItemCnt();
-        }
-        else
-        {
-            Debug.LogError("Failed to count AI's Inv Item Count");
-            return false;
-        }
-
-        if (PlayerManager.Instance.PlayersInv.TryGetValue(PhotonNetwork.LocalPlayer.ActorNumber, out WorldInventory OppInv))
-        {
-            OppItemsCnt = OppInv.GetItemCnt();
-        }
-        else
-        {
-            Debug.LogError("Failed to count Player's Inv Item Count");
-            return false;
-        }
-
-        if (AIItemsCnt >= AIItemInvMaxCnt || OppItemsCnt <= 0) return false;
-
-        return true;
-    }
-
     public async UniTask<bool> ProcessLockpickItem(CancellationToken token)
     {
         //AI 스탯 불러오기
@@ -84,6 +48,31 @@ public class AIItemActionManager : AILogicModule
         await brain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_HIT, token);
         return true;
     }
+
+
+    //락픽 사용이 가능한지 판단하는 함수
+    private bool CheckLockpickPossible(AIContext context)
+    {
+        //AI 플레이어 락픽 개수 카운트
+        int lockpickCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.LOCKPICK(brain.MyActorNum));
+        if (lockpickCnt <= 0) return false;
+
+        //각 플레이어 인벤토리 내 아이템 개수 기반 판단
+        int AIItemInvMaxCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(brain.MyActorNum));
+        int AIItemsCnt = brain.GetPlayerItemCnt(brain.MyActorNum);
+        int OppItemsCnt = brain.GetPlayerItemCnt(PhotonNetwork.LocalPlayer.ActorNumber);
+
+        if (AIItemsCnt == -1)
+        {
+            Debug.LogError("AI Inv Cnt Error");
+            return false;
+        }
+        if (AIItemsCnt >= AIItemInvMaxCnt || OppItemsCnt <= 0) return false;
+
+        return true;
+    }
+
+
 
     //락픽 게임 시도
     private bool TryLockPick(AIContext context)

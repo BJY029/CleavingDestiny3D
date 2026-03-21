@@ -79,6 +79,23 @@ public class AIBrain : MonoBehaviour
         ItemActionManager?.Initialize(this);
     }
 
+    //ActNum의 인벤토리 내 아이템 개수 반환
+    public int GetPlayerItemCnt(int ActNum)
+    {
+        int ItemsCnt = -1;
+
+        if (PlayerManager.Instance.PlayersInv.TryGetValue((ActNum), out WorldInventory MyInv))
+        {
+            ItemsCnt = MyInv.GetItemCnt();
+        }
+        else
+        {
+            Debug.LogError($"Failed to count {ActNum}'s Inv Item Count");
+            return -1;
+        }
+        return ItemsCnt;
+    }
+
     public AIContext GetCurAIStat(int aiNum)
     {
         var props = PhotonNetwork.CurrentRoom.CustomProperties;

@@ -121,6 +121,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		return GetExpectedVillageDamageInternal(incomingDamage);
 	}
 
+	//incomingDamage는 나무의 원본 독성 데미지 
 	private float GetExpectedVillageDamageInternal(float incomingDamage)
 	{
 		// 실제 마을 피해식과 동일한 계산 순서
