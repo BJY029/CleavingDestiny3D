@@ -17,8 +17,16 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	private Dictionary<int, RuntimePlayerInfo> players = new();
 	//읽기 전용 딕셔너리
 	public IReadOnlyDictionary<int, RuntimePlayerInfo> Players => players;
+	//플레이어 인벤토리 관리용 딕셔너리(각 클라가 자신의 인벤토리만 관리한다. 즉 딕셔너리당 1개만 저장됨)
+	//만약 싱글 플레이 모드인 경우, MasterClient가 자신의 인벤과 AI의 인벤 두 개를 저장한다.
+	private Dictionary<int, WorldInventory> playersInv = new Dictionary<int, WorldInventory>();
+	//읽기 전용 딕셔너리
+	public IReadOnlyDictionary<int, WorldInventory> PlayersInv => playersInv;
 
 	public Dictionary<int, GameObject> AIPlayerObj = new Dictionary<int, GameObject>();
+
+	//AI 모드에서 사용되는 AI Actnum 저장용(만약에만약에 AI가 여러명이 된다면 폐기해야 함)
+	public int AIActNum { get; private set; }
 
 	//AI 에서 사용되는 플래그, 준비 완료 여부를 나타낸다.
 	public bool succeedToPreapreGame = false;
@@ -175,6 +183,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		GameObject PlayersInv = PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[myActNum - 1], spawnInvRot[myActNum - 1]);
 		PlayerStatus.Instance.SetPlayerInventory(PlayersInv);
 		InventoryBarrier ib = PlayersInv.GetComponentInChildren<InventoryBarrier>();
+		playersInv.Add(myActNum, PlayersInv.GetComponent<WorldInventory>());
 		ib.SetPermission(spawnPlayer);
 
 		TrySpawnAI();
@@ -217,6 +226,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 					0,
 					initData);
 				AIPlayerObj.Add(rp.actorNumber, spawnAI);
+				AIActNum = rp.actorNumber;
 				//PlayerController AIController = spawnAI.GetComponent<PlayerController>();
 				//AIController.PlayerActNum = rp.actorNumber;
 
@@ -234,6 +244,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 				//ai 플레이어의 인벤토리 등록
 				AIController ai = spawnAI.GetComponent<AIController>();
+				playersInv.Add(rp.actorNumber, spawnAIInv.GetComponent<WorldInventory>());
 				ai.aiBrain.InventoryManager.AIInv = spawnAIInv.GetComponent<WorldInventory>();
 			}
 		}

@@ -12,10 +12,10 @@ public static class GameHelper
 		if (room == null) return false;
 
 		int CurrentTurn = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
-		if (GameManager.Instance.isSoloPlay && IsCurrentTurnAI())
-		{
-			return true;
-		}
+		// if (GameManager.Instance.isSoloPlay && IsCurrentTurnAI())
+		// {
+		// 	return true;
+		// }
 		int myTurn = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MyTurn);
 
 		return CurrentTurn == myTurn;

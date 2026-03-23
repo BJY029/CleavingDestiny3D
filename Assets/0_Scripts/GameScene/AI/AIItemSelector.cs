@@ -54,7 +54,10 @@ public class AIItemSelector : AILogicModule
             Debug.Log($"[AI {brain.MyActorNum}] {item.displayName_ID} 평가 점수(Curve) : {score:F1}");
 
             if (score > highestScore)
+            {
+                highestScore = score;
                 bestItem = item;
+            }
         }
 
         InsertItemToInv(bestItem, context);
@@ -88,6 +91,9 @@ public class AIItemSelector : AILogicModule
     private float EvaluateItemWithCurves(ItemSO item, AIContext ctx)
     {
         float score = 0f;
+
+        //test
+        //if (item.itemId == "2002") score += 100000;
 
         score += EvaluateDuplicateItem(item, ctx);
 
@@ -176,15 +182,23 @@ public class AIItemSelector : AILogicModule
                 //if(item.itemId == "3003")
             }
         }
-        else if (item.type == ItemType.Defence && item.target == ItemTarget.SelfVillage)
+        else if (item.type == ItemType.Defence)
         {
-            float deficit_1 = 1.0f - villageHPRatio;
-            float barrier_toxic_Ratio = ctx.curVillageBarrier / ctx.curTreeToxicDmg;
-            float deficit_2 = 1.0f - barrier_toxic_Ratio;
-            float deficit = (deficit_1 + deficit_2) / 2.0f;
-
-            curveScore += scoreTable.defVillageMaxScore * Mathf.Pow(deficit, 2f);
+            if (item.target == ItemTarget.SelfVillage)
+            {
+                float deficit_1 = 1.0f - villageHPRatio;
+                float barrier_toxic_Ratio = ctx.curVillageBarrier / ctx.curTreeToxicDmg;
+                float deficit_2 = 1.0f - barrier_toxic_Ratio;
+                float deficit = (deficit_1 + deficit_2) / 2.0f;
+                curveScore += scoreTable.defVillageMaxScore * Mathf.Pow(deficit, 2f);
+            }
+            else if (item.target == ItemTarget.Tree)
+            {
+                float deficit = 1.0f - treeHPRatio;
+                curveScore += scoreTable.healTreeMaxScore * Mathf.Pow(deficit, 2f);
+            }
         }
+
         else if (item.type == ItemType.Damage && item.target == ItemTarget.Tree)
         {
             curveScore += scoreTable.dmgTreeMaxScore * Mathf.Pow(treeHPRatio, 2f);

@@ -72,6 +72,36 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
         Requester = PC;
     }
 
+
+    public void SetGameActiveForAI(int ActorNumber, InventoryBarrier ib, IPlayerAction PC)
+    {
+        //잠금 해제하고자 하는 베리어 주인 Actor 번호
+        TargetBarrierOwnerActNum = ActorNumber;
+        //잠금 해제를 당하는 인벤토리 베리어
+        IB = ib;
+        //잠금 해제를 시도하는 플레이어
+        Requester = PC;
+    }
+
+    //성공하면 성공한 플레이어에게 권한 부여
+    public void IsAISuccess(bool b)
+    {
+        if (b)
+        {
+            GameObject player;
+            if (Requester is AIController childObjAI)
+            {
+                player = childObjAI.gameObject;
+                int ActNum = player.GetComponent<AIController>().PlayerActNum;
+                //잠금 해제를 당한 베리어에 입장할 수 있는 권한 부여
+                IB.GrantPermission(ActNum, player);
+                //잠금 해제를 성공한 플레이어에게 해당 인벤토리에 상호작용이 가능하도록 키를 부여
+                Requester.SetInvAdmissionTicket(TargetBarrierOwnerActNum);
+            }
+        }
+        InitGameInfo();
+    }
+
     //게임 그만하기
     public void StopGameActive()
     {

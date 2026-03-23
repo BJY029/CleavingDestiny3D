@@ -187,9 +187,11 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//If Sacrifice Item
 		if (item.itemId == "2002")
 		{
-			ItemSelectionController.instance.SetItemSelectionActive(actorNum, itemUID);
+			if (!GameHelper.IsCurrentTurnAI())
+			{
+				ItemSelectionController.instance.SetItemSelectionActive(actorNum, itemUID);
+			}
 		}
-
 		//If Lockpick Item
 		if (item.itemId == "4000")
 		{
@@ -864,6 +866,13 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 		if (candidates.Count == 0)
 		{
+			if (GameManager.Instance.isSoloPlay)
+			{
+				foreach (int num in PlayerManager.Instance.AIPlayerObj.Keys)
+				{
+					candidates.Add(num);
+				}
+			}
 			return -1;
 		}
 

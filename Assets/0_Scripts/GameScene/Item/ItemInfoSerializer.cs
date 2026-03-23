@@ -107,6 +107,7 @@ public static class ItemInfoSerializer
                 sum += ItemDB.Instance.Get(slots[i].itemId).itemCost;
             }
         }
+        if (cnt == 0) return 0;
         return Mathf.RoundToInt(sum / cnt);
     }
 

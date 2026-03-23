@@ -166,6 +166,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 			Debug.LogWarning("Non Item in slot");
 			return;
 		}
+		//아이템 훔치기인 경우
 		if (!IsMine(ActNum))
 		{
 			Debug.Log("stealing item activated");
@@ -177,7 +178,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 			InventoryAuthority.Instance.RequestSteelItem(ownerActor, ToActorNum, slotIndex, this);
 			return;
 		}
-		if (!GameHelper.IsMyTurn()) return;
+		if (!GameHelper.IsCurrentTurnAI() && !GameHelper.IsMyTurn()) return;
 
 		ToolTipPanel.SetActive(false);
 		Debug.Log("Interacted!!");

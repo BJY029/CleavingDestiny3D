@@ -4,6 +4,7 @@ using Photon.Pun;
 using UnityEngine;
 using System;
 using UnityEngine.AI;
+using Photon.Realtime;
 
 [RequireComponent(typeof(PhotonView))]
 public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInstantiateMagicCallback
@@ -164,19 +165,31 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
             string offerStr = PhotonPropertyHelper.GetRoomProp<string>(myOfferKey);
 
             //일정 시간 딜레이 준 후
-            await UniTask.Delay(1000, cancellationToken: token);
+            await UniTask.Delay(500, cancellationToken: token);
 
+            //아이템 선택 로직 수행
             await aiBrain.ItemSelector.ChooseItemAsync(offerStr, token);
 
-            //일정 시간 딜레이 준 후
-            await UniTask.Delay(1500, cancellationToken: token);
+            //임시 코드(Lockpick 연산 수행)
+            await aiBrain.ItemActionManager.ProcessLockpickItem(token);
 
+            //일정 시간 딜레이 준 후
+            await UniTask.Delay(500, cancellationToken: token);
+
+            //인벤토리 연산 수행
             await aiBrain.InventoryManager.ProcessInventoryAsync(token);
 
-            await UniTask.Delay(1000, cancellationToken: token);
+            await UniTask.Delay(500, cancellationToken: token);
+
+            //임시 코드(Lockpick 연산 수행)
+            if (await aiBrain.ItemActionManager.ProcessLockpickItem(token))
+            {
+                await aiBrain.InventoryManager.ProcessInventoryAsync(token);
+            }
 
             //Hit 위치로 이동
             await aiBrain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_HIT, token);
+
             //턴 변경 시도
             TryHit();
         }
@@ -186,6 +199,8 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
             Debug.LogWarning($"[AI {PlayerActNum}] Turn time ended...");
         }
     }
+
+
 
     //제한 시간이 끝났을 때 AI 플레이어를 강제로 텔레포트 시키는 함수
     public void ForceStopAndTeleportToHit()

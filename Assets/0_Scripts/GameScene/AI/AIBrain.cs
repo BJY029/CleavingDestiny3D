@@ -19,6 +19,10 @@ public struct AIContext
 
     public int maxWaveCnt;
     public int curWaveCnt;
+
+    public int LockpickCnt;
+    public int MyLockCnt;
+    public int OppLockCnt;
 }
 
 //각 AI 모듈이 상속받을 기본 클래스
@@ -49,6 +53,8 @@ public class AIBrain : MonoBehaviour
 
     public AINevMeshController aINevMeshController { get; private set; }
 
+    public AIItemActionManager ItemActionManager { get; private set; }
+
     //각 모듈 찾아서 연결 후 초기화
     public void InitializeBrain(int actorNum)
     {
@@ -68,6 +74,26 @@ public class AIBrain : MonoBehaviour
 
         aINevMeshController = GetComponent<AINevMeshController>();
         aINevMeshController?.Initialize(this);
+
+        ItemActionManager = GetComponent<AIItemActionManager>();
+        ItemActionManager?.Initialize(this);
+    }
+
+    //ActNum의 인벤토리 내 아이템 개수 반환
+    public int GetPlayerItemCnt(int ActNum)
+    {
+        int ItemsCnt = -1;
+
+        if (PlayerManager.Instance.PlayersInv.TryGetValue((ActNum), out WorldInventory MyInv))
+        {
+            ItemsCnt = MyInv.GetItemCnt();
+        }
+        else
+        {
+            Debug.LogError($"Failed to count {ActNum}'s Inv Item Count");
+            return -1;
+        }
+        return ItemsCnt;
     }
 
     public AIContext GetCurAIStat(int aiNum)
@@ -83,6 +109,8 @@ public class AIBrain : MonoBehaviour
         context.maxWaveCnt = GetValue<int>(props, RoomPropKeys.MaxWaveCnt);
         context.curWaveCnt = GetValue<int>(props, RoomPropKeys.CurrentWave);
         context.curTreeToxicDmg = GetValue<float>(props, RoomPropKeys.TreeAtkPow);
+        context.LockpickCnt = GetValue<int>(props, ItemPropKeys.LOCKPICK(aiNum));
+        context.MyLockCnt = GetValue<int>(props, ItemPropKeys.LOCKCNT(aiNum));
 
         string attachedKey = $"_{aiNum}";
         context.curVillageHP = GetValue<float>(props, PlayerPropKeys.VillageHP + attachedKey);
@@ -90,7 +118,9 @@ public class AIBrain : MonoBehaviour
         context.curEnergy = GetValue<int>(props, PlayerPropKeys.Energy + attachedKey);
         context.curMaxEnergy = GetValue<int>(props, PlayerPropKeys.MaxEnergy + attachedKey);
 
-        context.curOppVillageHp = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageHP);
+        int OppActNum = PhotonNetwork.LocalPlayer.ActorNumber;
+        context.curOppVillageHp = PhotonPropertyHelper.GetPlayerProp<float>(OppActNum, PlayerPropKeys.VillageHP);
+        context.OppLockCnt = GetValue<int>(props, ItemPropKeys.LOCKCNT(OppActNum));
         return context;
     }
 
