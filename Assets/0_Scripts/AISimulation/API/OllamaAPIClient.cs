@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
 
+/*
 public class OllamaAPIClient : MonoBehaviour
 {
     private readonly string apiURL = "http://localhost:11434/v1/chat/completion";
@@ -38,3 +39,4 @@ public class OllamaAPIClient : MonoBehaviour
         }
     }
 }
+*/

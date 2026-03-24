@@ -212,6 +212,8 @@ MonoBehaviour:
   rotationSmoothTime: 0.08
   accelation: 12
   deceleration: 12
+  AICanvas: {fileID: 7581484061504611596, guid: 1c3156f67125f8b47a1d632d8839511d, type: 3}
+  Parent: {fileID: 0}
 --- !u!114 &-6142168861529792115
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -310,6 +312,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21bb70e5b5642db46af64b072fb834a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIItemActionManager
+  baseLockPassRate: 0.8
+  baseLockDuration: 1
+  usageThreshold: 50
 --- !u!114 &-7706094444651068393
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -4,7 +4,6 @@ using Photon.Pun;
 using UnityEngine;
 using System;
 using UnityEngine.AI;
-using Photon.Realtime;
 
 [RequireComponent(typeof(PhotonView))]
 public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInstantiateMagicCallback
@@ -33,6 +32,9 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     private int _animIDJump;
     private int _animIDFreeFall;
     private int _animIDMotionSpeed;
+
+    public GameObject AICanvas;
+    private AICanvasController canvasController;
 
 
     //마을 업그레이드 중인지 여부를 저장할 플래그
@@ -76,7 +78,9 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         aiBrain = GetComponent<AIBrain>();
         aiBrain.InitializeBrain(PlayerActNum);
 
-
+        GameObject canvas = Instantiate(AICanvas);
+        canvasController = canvas.GetComponent<AICanvasController>();
+        canvasController.PlayerActNum = PlayerActNum;
 
         //임시 플래그 설정, 움직임 구현 시 설정해야 함
         isLookingAtTree = true;

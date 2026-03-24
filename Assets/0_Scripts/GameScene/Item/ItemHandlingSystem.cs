@@ -256,11 +256,21 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					//AddStatus 외의 다른 아이템 효과로 정의된 아이템일 경우
 					if (es.effectType != ItemEffect.AddStatus)
 					{
-						//나를 제외한 다른 모든 플레이어에게 해당 즉시 적용 아이템 효과를 적용한다.
-						foreach (Player player in playerNums)
+						if (GameManager.Instance.isSoloPlay)
 						{
-							if (player.ActorNumber != actorNum)
-								ItemProcessImm(player.ActorNumber, es);
+							foreach (int num in PlayerManager.Instance.AIPlayerObj.Keys)
+							{
+								ItemProcessImm(num, es);
+							}
+						}
+						else
+						{
+							//나를 제외한 다른 모든 플레이어에게 해당 즉시 적용 아이템 효과를 적용한다.
+							foreach (Player player in playerNums)
+							{
+								if (player.ActorNumber != actorNum)
+									ItemProcessImm(player.ActorNumber, es);
+							}
 						}
 						continue;
 					}
@@ -297,10 +307,20 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					//AddStatus 외의 다른 아이템 효과로 정의된 아이템일 경우
 					if (es.effectType != ItemEffect.AddStatus)
 					{
-						//모두에게 즉시 적용
-						foreach (Player player in playerNums)
+						if (GameManager.Instance.isSoloPlay)
 						{
-							ItemProcessImm(player.ActorNumber, es);
+							foreach (int num in PlayerManager.Instance.AIPlayerObj.Keys)
+							{
+								ItemProcessImm(num, es);
+							}
+						}
+						else
+						{
+							//모두에게 즉시 적용
+							foreach (Player player in playerNums)
+							{
+								ItemProcessImm(player.ActorNumber, es);
+							}
 						}
 						continue;
 					}
@@ -873,7 +893,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					candidates.Add(num);
 				}
 			}
-			return -1;
+			else return -1;
 		}
 
 		int randomIndex = _rng.Range(0, candidates.Count);
