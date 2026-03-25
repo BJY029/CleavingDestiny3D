@@ -1,10 +1,11 @@
 using System.Text;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 
-/*
+
 public class OllamaAPIClient : MonoBehaviour
 {
     private readonly string apiURL = "http://localhost:11434/v1/chat/completion";
@@ -27,8 +28,8 @@ public class OllamaAPIClient : MonoBehaviour
 
             if (www.result == UnityWebRequest.Result.Success)
             {
-                var rawResponse = JsonConvert.DeserializeObject<dynamic>(www.downloadHandler.text);
-                string aiAnswer = rawResponse.choices[0].message.content;
+                JObject rawResponse = JObject.Parse(www.downloadHandler.text);
+                string aiAnswer = (string)rawResponse["choices"][0]["content"];
                 return JsonConvert.DeserializeObject<LLMDecision>(aiAnswer);
             }
             else
@@ -39,4 +40,3 @@ public class OllamaAPIClient : MonoBehaviour
         }
     }
 }
-*/
