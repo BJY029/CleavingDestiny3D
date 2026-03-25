@@ -1,13 +1,18 @@
 using System;
+using System.Collections.Generic;
+using Photon.Pun;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Village.Building
 {
-
     public class ShopUI : VillageBuilldingUI
     {
+        static int shopNonceCounter = 0; // 상점 리롤 시마다 증가하는 nonce 카운터
+        private int lastSentNonce = -1; // 내가 보낸 마지막 nonce 추적
+        private bool isWaitingForResult = false; // 서버 응답 대기 상태
+
         [SerializeField] ShopItem shopItemPrefab;
 
         [SerializeField] private Button reloadButton;
@@ -29,7 +34,7 @@ namespace Village.Building
             base.Awake();
 
             reloadButton.onClick.AddListener(OnClickReloadButton);
-            buyButton.onClick.AddListener(OnClickBuyButton); // 구매 버튼은 업그레이드 버튼과 동일한 로직으로 처리
+            buyButton.onClick.AddListener(OnClickBuyButton);
 
             // 아이템 프리팹 생성
             int itemCount = VillageStat.VillageBalance.ShopItemCount;
@@ -37,69 +42,121 @@ namespace Village.Building
             for (int i = 0; i < itemCount; i++)
             {
                 ShopItem newItem = Instantiate(shopItemPrefab, shopItemContainer);
-                newItem.ParentShopUI = this; // 생성된 아이템에 ShopUI 참조 설정
+                newItem.ParentShopUI = this;
                 shopItems[i] = newItem;
-                newItem.gameObject.SetActive(false); // 초기에는 비활성화
+                newItem.gameObject.SetActive(false);
             }
+        }
+
+        void OnEnable()
+        {
+            OfferAuthority.Instance.OnShopRerollReceived += OnRandonShopItemReceived;
+        }
+
+        void OnDisable()
+        {
+            if (OfferAuthority.Instance != null)
+                OfferAuthority.Instance.OnShopRerollReceived -= OnRandonShopItemReceived;
+        }
+
+        void OnRandonShopItemReceived(int shopNonce, string[] itemIds)
+        {
+            // 최신 응답인지 검증 (네트워크 순서 꼬임 방지)
+            if (shopNonce < lastSentNonce) return;
+
+            Debug.Log($"ShopUI received random shop items for nonce {shopNonce}");
+
+            isWaitingForResult = false;
+
+            for (int i = 0; i < shopItems.Length; i++)
+            {
+                if (i < itemIds.Length)
+                {
+                    var itemData = ItemDB.Instance.Get(itemIds[i]);
+                    shopItems[i].SetShopItem(itemData);
+                    shopItems[i].gameObject.SetActive(true);
+
+                    // 로딩 효과 해제
+                    var cg = shopItems[i].GetComponent<CanvasGroup>();
+                    if (cg != null) cg.alpha = 1.0f;
+                }
+                else
+                {
+                    shopItems[i].gameObject.SetActive(false);
+                }
+            }
+
+            RefreshShopStatusUI();
         }
 
         public override void SetBuildingUI(VillageType buildingType)
         {
             base.SetBuildingUI(buildingType);
 
-            RefreshShopStatusUI();
-
-            // 상점은 처음 열 때 아이템을 세팅해주고, 이후에는 새로고침 버튼을 눌렀을 때 아이템이 세팅되도록 함
             if (IsFirstShopOpen)
             {
                 IsFirstShopOpen = false;
-                ReloadShop();
+                RequestNewItems();
             }
+
+            RefreshShopStatusUI();
         }
 
-        // 상점 물품 새로고침 + 돈 소모
         public void OnClickReloadButton()
         {
+            if (isWaitingForResult) return;
+
             int reloadCost = VillageStat.VillageBalance.GetShopReloadCost(reloadCount);
             if (VillageSystem.VillageLogic.GetMyGold() < reloadCost)
             {
+                RefreshStatusUI(); // 현재 골드 텍스트 갱신
                 RefreshShopStatusUI();
                 return;
             }
 
             VillageSystem.VillageLogic.AddGold(-reloadCost);
-
             reloadCount++;
-            ReloadShop();
 
+            RequestNewItems();
+
+            // 공용 UI(골드 텍스트)와 상점 UI 즉시 갱신
             RefreshStatusUI();
             RefreshShopStatusUI();
         }
 
-        // 상점 물품 새로고침
-        private void ReloadShop()
+        private void RequestNewItems()
         {
-            Debug.Log("ShopUI: Shop Reloaded");
-            ShopItemSelect(null); // 아이템 선택 해제
+            isWaitingForResult = true;
+            lastSentNonce = ++shopNonceCounter;
 
+            int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) + 1;
+            OfferAuthority.Instance.RequestShopReroll(PhotonNetwork.LocalPlayer.ActorNumber, turnIndex, lastSentNonce);
+
+            // 로딩 중 효과 표시
             foreach (var item in shopItems)
             {
                 if (item == null) continue;
-                var itemData = ItemDB.Instance.Get("1000");
-                item.gameObject.SetActive(true);
-                item.SetShopItem(itemData);
+                var cg = item.GetComponent<CanvasGroup>();
+                if (cg == null) cg = item.gameObject.AddComponent<CanvasGroup>();
+                cg.alpha = 0.5f;
             }
+
+            ShopItemSelect(null); // 리롤 시 선택 해제
         }
 
         private void RefreshShopStatusUI()
         {
             int currentLevel = VillageStat.GetVillageLevel(currentBuildingType);
-            float rareAppearanceChance = VillageStat.VillageBalance.ShopRareItemChanceBase + (currentLevel * VillageStat.VillageBalance.ShopRareItemChanceMultiplier);
-            shopEffectText.SetText(LocalizationManager.Instance.GetText(CSV_Type.Village, "Shop_Effect"), currentLevel, rareAppearanceChance * 100f);
+            float rareChance = VillageStat.VillageBalance.ShopRareChanceBase + (currentLevel * VillageStat.VillageBalance.ShopRareChanceMultiplier);
+            shopEffectText.SetText(LocalizationManager.Instance.GetText(CSV_Type.Village, "Shop_Effect"), currentLevel, rareChance * 100f);
 
             int reloadCost = VillageStat.VillageBalance.GetShopReloadCost(reloadCount);
+            int currentGold = VillageSystem.VillageLogic.GetMyGold();
+
             reloadCostText.SetText(LocalizationManager.Instance.GetText(CSV_Type.Village, "Shop_Reload"), reloadCost);
-            reloadButton.interactable = VillageSystem.VillageLogic.GetMyGold() >= reloadCost;
+
+            // 대기 중이 아니고 돈이 충분할 때만 버튼 활성화
+            reloadButton.interactable = !isWaitingForResult && currentGold >= reloadCost;
 
             if (selectedItemIndex < 0 || selectedItemIndex >= shopItems.Length)
             {
@@ -108,14 +165,11 @@ namespace Village.Building
             }
             else
             {
-                // 선택된 아이템의 설명을 가져와서 UI에 표시
                 ShopItem selectedItem = shopItems[selectedItemIndex];
                 if (selectedItem != null)
                 {
                     itemDescriptionText.SetText(selectedItem.GetItemDescription());
-
-                    // TODO: 아이템 구매 가능 여부에 따라 구매 버튼 활성화/비활성화 처리 (예: 골드 부족 시 비활성화)
-                    buyButton.interactable = true; // 아이템이 선택되면 구매 버튼 활성화
+                    buyButton.interactable = !isWaitingForResult && currentGold >= 0; // TODO: 가격 조건 추가
                 }
                 else
                 {
@@ -132,18 +186,13 @@ namespace Village.Building
 
         public void ShopItemSelect(ShopItem shopItem)
         {
-            selectedItemIndex = -1; // 일단 선택된 아이템 인덱스 초기화
-            // 클릭된 아이템이 shopItems 배열에서 몇 번째 인덱스인지 찾기
+            selectedItemIndex = -1;
             for (int i = 0; i < shopItems.Length; i++)
             {
                 bool isSelectedItem = shopItems[i] == shopItem;
-                shopItems[i].SetSelected(isSelectedItem); // 클릭된 아이템은 선택 상태로, 나머지는 선택 해제
-                if (isSelectedItem)
-                {
-                    selectedItemIndex = i;
-                }
+                shopItems[i].SetSelected(isSelectedItem);
+                if (isSelectedItem) selectedItemIndex = i;
             }
-
             RefreshShopStatusUI();
         }
     }

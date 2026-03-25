@@ -10,6 +10,7 @@ namespace Village.Building
         [SerializeField] Image itemIcon;
         [SerializeField] TextMeshProUGUI itemGoldText;
         [SerializeField] Image selectedItemHighlight;
+        public CanvasGroup canvasGroup; // 아이템의 상호작용 가능 여부를 제어하기 위한 CanvasGroup
 
         public ShopUI ParentShopUI { get; set; } // 아이템이 속한 ShopUI 참조
 

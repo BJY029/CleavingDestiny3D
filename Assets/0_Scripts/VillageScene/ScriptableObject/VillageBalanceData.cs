@@ -74,16 +74,43 @@ public class VillageBalanceData : ScriptableObject
 
     [Header("Shop")]
     [SerializeField]
-    private int shopItemCount = 5;
+    private int shopItemCount = 3;
     public int ShopItemCount => shopItemCount;
 
+    [Header("Shop Rarity - Rare")]
     [SerializeField]
-    private float shopRareItemChanceBase = 0.05f; // 5% at level 1
-    public float ShopRareItemChanceBase => shopRareItemChanceBase;
+    private float shopRareChanceBase = 0.05f; // 레벨 1 기본 확률
+    public float ShopRareChanceBase => shopRareChanceBase;
 
     [SerializeField]
-    private float shopRareItemChanceMultiplier = 0.05f; // +5% per level
-    public float ShopRareItemChanceMultiplier => shopRareItemChanceMultiplier;
+    private float shopRareChanceMultiplier = 0.05f; // 레벨당 증가량
+    public float ShopRareChanceMultiplier => shopRareChanceMultiplier;
+
+    [Header("Shop Rarity - Hero")]
+    [SerializeField]
+    private int shopHeroMinLevel = 3; // 등장 최소 레벨
+    public int ShopHeroMinLevel => shopHeroMinLevel;
+
+    [SerializeField]
+    private float shopHeroChanceBase = 0.02f; // 최소 레벨 달성 시 기본 확률
+    public float ShopHeroChanceBase => shopHeroChanceBase;
+
+    [SerializeField]
+    private float shopHeroChanceMultiplier = 0.03f; // 최소 레벨 이후 레벨당 증가량
+    public float ShopHeroChanceMultiplier => shopHeroChanceMultiplier;
+
+    [Header("Shop Rarity - Legendary")]
+    [SerializeField]
+    private int shopLegendaryMinLevel = 5; // 등장 최소 레벨
+    public int ShopLegendaryMinLevel => shopLegendaryMinLevel;
+
+    [SerializeField]
+    private float shopLegendaryChanceBase = 0.01f; // 최소 레벨 달성 시 기본 확률
+    public float ShopLegendaryChanceBase => shopLegendaryChanceBase;
+
+    [SerializeField]
+    private float shopLegendaryChanceMultiplier = 0.01f; // 최소 레벨 이후 레벨당 증가량
+    public float ShopLegendaryChanceMultiplier => shopLegendaryChanceMultiplier;
 
     [SerializeField]
     private int shopReloadCost = 50;

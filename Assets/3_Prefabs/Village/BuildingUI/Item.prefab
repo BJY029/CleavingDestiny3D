@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: -2094178037640346087}
   - component: {fileID: 1707546481243807966}
   - component: {fileID: 4884645597121592114}
+  - component: {fileID: 8948136563221537644}
   m_Layer: 5
   m_Name: Item
   m_TagString: Untagged
@@ -56,6 +57,7 @@ MonoBehaviour:
   itemIcon: {fileID: 4282045674760991300}
   itemGoldText: {fileID: 7923228555169263484}
   selectedItemHighlight: {fileID: 3484027287798667742}
+  canvasGroup: {fileID: 8948136563221537644}
 --- !u!222 &1707546481243807966
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -94,6 +96,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &8948136563221537644
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 120041207658652454}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &4686895381357328583
 GameObject:
   m_ObjectHideFlags: 0

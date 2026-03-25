@@ -89,6 +89,8 @@ MonoBehaviour:
   - RPC_RequesterTurnEnded
   - RPC_StartTurnTimer
   - Broadcast_SetTurnTimeFlag
+  - RPC_ReceiveShopRerollResult
+  - RPC_RequestShopReroll
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
