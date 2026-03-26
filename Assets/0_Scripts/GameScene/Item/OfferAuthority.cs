@@ -131,6 +131,7 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 	{
 		if (!PhotonNetwork.IsMasterClient) return "";
 
+		// 플레이어 인벤토리 확인
 		string playerInv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(turnActor));
 		int playerInvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(turnActor));
 		if (ItemInfoSerializer.isFullInventory(ItemInfoSerializer.Decode(playerInv, playerInvCap)))

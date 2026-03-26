@@ -9,7 +9,7 @@ namespace Village.Building
 {
     public class ShopUI : VillageBuilldingUI
     {
-        static int shopNonceCounter = 0; // 상점 리롤 시마다 증가하는 nonce 카운터
+        int shopNonceCounter = 0; // 상점 리롤 시마다 증가하는 nonce 카운터
         private int lastSentNonce = -1; // 내가 보낸 마지막 nonce 추적
         private bool isWaitingForResult = false; // 서버 응답 대기 상태
 
@@ -152,12 +152,14 @@ namespace Village.Building
 
             int reloadCost = VillageStat.VillageBalance.GetShopReloadCost(reloadCount);
             int currentGold = VillageSystem.VillageLogic.GetMyGold();
+            bool isInventoryFull = IsMyInventoryFull();
 
             reloadCostText.SetText(LocalizationManager.Instance.GetText(CSV_Type.Village, "Shop_Reload"), reloadCost);
 
             // 대기 중이 아니고 돈이 충분할 때만 버튼 활성화
             reloadButton.interactable = !isWaitingForResult && currentGold >= reloadCost;
 
+            // 선택된 아이템이 있을 때만 설명과 구매 버튼 활성화
             if (selectedItemIndex < 0 || selectedItemIndex >= shopItems.Length)
             {
                 itemDescriptionText.SetText(string.Empty);
@@ -169,19 +171,73 @@ namespace Village.Building
                 if (selectedItem != null)
                 {
                     itemDescriptionText.SetText(selectedItem.GetItemDescription());
-                    buyButton.interactable = !isWaitingForResult && currentGold >= 0; // TODO: 가격 조건 추가
+                    // 구매 버튼은 대기 중이 아니고, 아이템 가격보다 골드가 충분할 때만 활성화
+
+                    buyButton.interactable = !isWaitingForResult && !isInventoryFull && currentGold >= selectedItem.Price;
                 }
                 else
                 {
+                    // 선택된 아이템이 null인 경우 설명 초기화 및 구매 버튼 비활성화
                     itemDescriptionText.SetText(string.Empty);
                     buyButton.interactable = false;
                 }
             }
         }
 
+        // 구매 버튼(Buy Button) 클릭 시 실행되는 함수
         private void OnClickBuyButton()
         {
-            Debug.Log("ShopUI: Buy Button Clicked");
+            // 1. 현재 선택된 아이템이 유효한지 검사합니다.
+            if (selectedItemIndex < 0 || selectedItemIndex >= shopItems.Length) return;
+
+            // 인벤토리가 가득 찼다면 구매를 막습니다.
+            if (IsMyInventoryFull())
+            {
+                RefreshShopStatusUI();
+                return;
+            }
+
+            ShopItem selectedItem = shopItems[selectedItemIndex];
+            if (selectedItem == null || selectedItem.IsEmpty) return;
+
+            // 2. 아이템 정보(ID, 가격)를 가져옵니다.
+            int price = selectedItem.Price;
+            string itemId = selectedItem.ItemData.itemId;
+
+            // 3. 클라이언트 환경에서 골드가 충분한지 미리 확인합니다.
+            if (VillageSystem.VillageLogic.GetMyGold() < price)
+            {
+                RefreshShopStatusUI(); // UI 갱신 (버튼 비활성화 등)
+                return;
+            }
+
+            // 4. [서버 요청] 인벤토리 권한을 관리하는 Singleton 인스턴스에 구매를 요청합니다.
+            // 이 요청은 RPC를 통해 MasterClient에서 최종 검증 및 처리가 이루어집니다.
+            if (InventoryAuthority.Instance != null)
+            {
+                InventoryAuthority.Instance.RequestBuyShopItem(
+                    PhotonNetwork.LocalPlayer.ActorNumber,
+                    itemId,
+                    price
+                );
+
+                // 5. [UI 처리] 구매 요청을 보낸 후 즉시 아이템 선택을 해제하여 중복 클릭을 방지합니다.
+                ShopItemSelect(null);
+                RefreshShopStatusUI();
+            }
+            else
+            {
+                Debug.LogError("InventoryAuthority Instance is null! GameScene이 제대로 로드되었는지 확인하세요.");
+            }
+        }
+
+        private bool IsMyInventoryFull()
+        {
+            int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
+            string playerInv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(myActor));
+            int playerInvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(myActor));
+
+            return ItemInfoSerializer.isFullInventory(ItemInfoSerializer.Decode(playerInv, playerInvCap));
         }
 
         public void ShopItemSelect(ShopItem shopItem)

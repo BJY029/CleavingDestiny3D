@@ -91,6 +91,7 @@ MonoBehaviour:
   - Broadcast_SetTurnTimeFlag
   - RPC_ReceiveShopRerollResult
   - RPC_RequestShopReroll
+  - RPC_BuyShopItem
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

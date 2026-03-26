@@ -121,4 +121,19 @@ public class VillageBalanceData : ScriptableObject
     {
         return shopReloadCost + (reloadCount * shopReloadCostIncrement);
     }
+
+    [Header("Shop Item Prices")]
+    [SerializeField] private int priceCommon = 100;
+    [SerializeField] private int priceHero = 300;
+    [SerializeField] private int priceRare = 600;
+    [SerializeField] private int priceLegendary = 1200;
+
+    public int GetItemPrice(ItemClass itemClass) => itemClass switch
+    {
+        ItemClass.Common => priceCommon,
+        ItemClass.Hero => priceHero,
+        ItemClass.Rare => priceRare,
+        ItemClass.Legendary => priceLegendary,
+        _ => priceCommon
+    };
 }

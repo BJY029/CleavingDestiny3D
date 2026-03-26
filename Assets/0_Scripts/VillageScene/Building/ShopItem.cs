@@ -15,6 +15,8 @@ namespace Village.Building
         public ShopUI ParentShopUI { get; set; } // 아이템이 속한 ShopUI 참조
 
         ItemSO currentItem;
+        public ItemSO ItemData => currentItem;
+        public int Price { get; private set; }
         public bool IsEmpty => currentItem == null; // 아이템이 없는 경우 true 반환
         public bool IsSelected { get; private set; } // 아이템이 선택된 상태인지 여부
 
@@ -22,7 +24,10 @@ namespace Village.Building
         {
             currentItem = item;
             itemIcon.sprite = item.Icon; // 아이템 아이콘 설정
-            itemGoldText.text = $"{100} <color=yellow>G</color>";   // TODO 아이템 가격 설정 - 일단 고정값으로 100골드 표시
+
+            // 등급별 가격 설정
+            Price = VillageSystem.VillageStat.VillageBalance.GetItemPrice(item.itemClass);
+            itemGoldText.SetText("{0} <color=yellow>G</color>", Price);
         }
 
         public string GetItemDescription()
