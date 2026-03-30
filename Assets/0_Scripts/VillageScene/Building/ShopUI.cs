@@ -146,9 +146,31 @@ namespace Village.Building
 
         private void RefreshShopStatusUI()
         {
-            int currentLevel = VillageStat.GetVillageLevel(currentBuildingType);
+            int currentLevel = VillageStat.GetVillageLevel(currentBuildingType) + 1; // 레벨은 0부터 시작하므로 +1
+
             float rareChance = VillageStat.VillageBalance.ShopRareChanceBase + (currentLevel * VillageStat.VillageBalance.ShopRareChanceMultiplier);
-            shopEffectText.SetText(LocalizationManager.Instance.GetText(CSV_Type.Village, "Shop_Effect"), currentLevel, rareChance * 100f);
+            float heroChance = 0f;
+            if (currentLevel >= VillageStat.VillageBalance.ShopHeroMinLevel)
+            {
+                int heroLevelOffset = currentLevel - VillageStat.VillageBalance.ShopHeroMinLevel;
+                heroChance = VillageStat.VillageBalance.ShopHeroChanceBase + (heroLevelOffset * VillageStat.VillageBalance.ShopHeroChanceMultiplier);
+            }
+
+            float legendaryChance = 0f;
+            if (currentLevel >= VillageStat.VillageBalance.ShopLegendaryMinLevel)
+            {
+                int legendaryLevelOffset = currentLevel - VillageStat.VillageBalance.ShopLegendaryMinLevel;
+                legendaryChance = VillageStat.VillageBalance.ShopLegendaryChanceBase + (legendaryLevelOffset * VillageStat.VillageBalance.ShopLegendaryChanceMultiplier);
+            }
+
+
+
+            shopEffectText.SetText(
+                LocalizationManager.Instance.GetText(CSV_Type.Village, "Shop_Effect"),
+                rareChance * 100f,
+                heroChance * 100f,
+                legendaryChance * 100f
+            );
 
             int reloadCost = VillageStat.VillageBalance.GetShopReloadCost(reloadCount);
             int currentGold = VillageSystem.VillageLogic.GetMyGold();

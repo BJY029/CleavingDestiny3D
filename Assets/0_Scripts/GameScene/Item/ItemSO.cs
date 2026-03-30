@@ -1,28 +1,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//¾ÆÀÌÅÛ Å¸ÀÔ
+//ì•„ì´í…œ íƒ€ì…
 public enum ItemType
 {
     Damage, Defence, Heal, Gimmick
 }
 
-//¾ÆÀÌÅÛ Èñ±Íµµ
+//ì•„ì´í…œ í¬ê·€ë„
 public enum ItemClass
 {
     Common, Hero, Rare, Legendary
 }
 
-//¾ÆÀÌÅÛ Àû¿ë Å¸°Ù
+//ì•„ì´í…œ ì ìš© íƒ€ê²Ÿ
 public enum ItemTarget
 {
     Self, Opponent, Tree, SelfVillage, OpponentVillage, OpponentTree, Global
 }
 
-//¾ÆÀÌÅÛ È¿°ú Å¸ÀÔ
+//ì•„ì´í…œ íš¨ê³¼ íƒ€ì…
 public enum ItemEffect
 {
-    AddStatus,//StatusInstance µû·Î »ı¼º
+    AddStatus,//StatusInstance ë”°ë¡œ ìƒì„±
     DeltaTreeUp,
     DeltaVillageHp,
     DeltaPlayerEng,
@@ -33,50 +33,50 @@ public enum ItemEffect
 }
 
 
-//¾ÆÀÌÅÛ »ç¿ë ½ÃÁ¡ Æ®¸®°Å
+//ì•„ì´í…œ ì‚¬ìš© ì‹œì  íŠ¸ë¦¬ê±°
 [System.Flags]
 public enum TriggerMask
 {
     None = 0,
-    OnTurnStart = 1 << 0,       //ÅÏ ½ÃÀÛ½Ã Àû¿ë
-    OnBeforeAttack = 1 << 1,    //°ø°İ Àü Àû¿ë
-    OnAfterAttack = 1 << 2,     //°ø°İ ÈÄ Àû¿ë
-    OnDamageConvert = 1 << 3,   //µ¥¹ÌÁö-¹æ¾î·Â º¯È¯ Àû¿ë
-    OnTurnEnd = 1 << 4,         //ÅÏ Á¾·á½Ã Àû¿ë
-    OnVillageStart = 1 << 5,    //¸¶À» ÆäÀÌÁî ½ÃÀÛ½Ã Àû¿ë
+    OnTurnStart = 1 << 0,       //í„´ ì‹œì‘ì‹œ ì ìš©
+    OnBeforeAttack = 1 << 1,    //ê³µê²© ì „ ì ìš©
+    OnAfterAttack = 1 << 2,     //ê³µê²© í›„ ì ìš©
+    OnDamageConvert = 1 << 3,   //ë°ë¯¸ì§€-ë°©ì–´ë ¥ ë³€í™˜ ì ìš©
+    OnTurnEnd = 1 << 4,         //í„´ ì¢…ë£Œì‹œ ì ìš©
+    OnVillageStart = 1 << 5,    //ë§ˆì„ í˜ì´ì¦ˆ ì‹œì‘ì‹œ ì ìš©
     OnTreeDamage = 1 << 6,
 }
 
-//¾ÆÀÌÅÛ ÅÂ±×
+//ì•„ì´í…œ íƒœê·¸
 [System.Flags]
 public enum TagMask
 {
     None = 0,
-    Positive = 1 << 0,      //¹öÇÁ¿ë ¾ÆÀÌÅÛ(ÇÃ·¹ÀÌ¾î¿¡°Ô ÀÌµæÀÎ È¿°ú)
-    Negative = 1 << 1,      //µğ¹öÇÁ ¾ÆÀÌÅÛ(ÇÃ·¹ÀÌ¾î ¼ÕÇØ, '½ÅÀÇ °¡È£' °°Àº Á¤È­ ¾ÆÀÌÅÛµéÀÌ ÇØ´ç ÅÂ±× ´Ş¸° ¾ÆÀÌÅÛ È¿°ú Á¦°Å)
-    Curse = 1 << 2,         //ÀúÁÖ ¾ÆÀÌÅÛ
-    Taunt = 1 << 3,         //µµ¹ß ¾ÆÀÌÅÛ
-    Termite = 1 << 4,       //Èò°³¹Ì ¾ÆÀÌÅÛ
-    Hidden = 1 << 5,        //·£´ı ¾ÆÀÌÅÛ
-    Counterable = 1 << 6,   //Ä«¿îÅÍ¿ë ¾ÆÀÌÅÛ
+    Positive = 1 << 0,      //ë²„í”„ìš© ì•„ì´í…œ(í”Œë ˆì´ì–´ì—ê²Œ ì´ë“ì¸ íš¨ê³¼)
+    Negative = 1 << 1,      //ë””ë²„í”„ ì•„ì´í…œ(í”Œë ˆì´ì–´ ì†í•´, 'ì‹ ì˜ ê°€í˜¸' ê°™ì€ ì •í™” ì•„ì´í…œë“¤ì´ í•´ë‹¹ íƒœê·¸ ë‹¬ë¦° ì•„ì´í…œ íš¨ê³¼ ì œê±°)
+    Curse = 1 << 2,         //ì €ì£¼ ì•„ì´í…œ
+    Taunt = 1 << 3,         //ë„ë°œ ì•„ì´í…œ
+    Termite = 1 << 4,       //í°ê°œë¯¸ ì•„ì´í…œ
+    Hidden = 1 << 5,        //ëœë¤ ì•„ì´í…œ
+    Counterable = 1 << 6,   //ì¹´ìš´í„°ìš© ì•„ì´í…œ
 }
 
-//¾ÆÀÌÅÛ È¿°ú Àû¿ë ±â°£
+//ì•„ì´í…œ íš¨ê³¼ ì ìš© ê¸°ê°„
 public enum DurationType
 {
-    ThisTurn,   //ÀÌ¹ø ÅÏ
-    NextTurn,   //´ÙÀ½ ÅÏ±îÁö
-    Turns,      //N ÅÏ
-    UntilWaveEnd,//¿À´Ã
+    ThisTurn,   //ì´ë²ˆ í„´
+    NextTurn,   //ë‹¤ìŒ í„´ê¹Œì§€
+    Turns,      //N í„´
+    UntilWaveEnd,//ì˜¤ëŠ˜
 }
 
 [CreateAssetMenu(fileName = "ItemSO", menuName = "Scriptable Objects/ItemSO")]
 public class ItemSO : ScriptableObject
 {
-    public string itemId;       //°íÀ¯ ID
-    public string displayName_ID;  //UI¿¡¼­ º¸¿©Áö´Â ÀÌ¸§ CSV ID
-    public string itemDesc_ID;     //¾ÆÀÌÅÛ ¼³¸í CSV ID
-    public int itemCost;        //ÇÊ¿äÇÑ ±â·Â·®
+    public string itemId;       //ê³ ìœ  ID
+    public string displayName_ID;  //UIì—ì„œ ë³´ì—¬ì§€ëŠ” ì´ë¦„ CSV ID
+    public string itemDesc_ID;     //ì•„ì´í…œ ì„¤ëª… CSV ID
+    public int itemCost;        //í•„ìš”í•œ ê¸°ë ¥ëŸ‰
     public Sprite Icon
     {
         get
@@ -88,53 +88,53 @@ public class ItemSO : ScriptableObject
             return null;
         }
     }
-    public ItemType type;       //¾ÆÀÌÅÛ Type
-    public ItemTarget target;   //¾ÆÀÌÅÛ Àû¿ë Å¸°Ù
-    public ItemClass itemClass; //¾ÆÀÌÅÛ µî±Ş
+    public ItemType type;       //ì•„ì´í…œ Type
+    public ItemTarget target;   //ì•„ì´í…œ ì ìš© íƒ€ê²Ÿ
+    public ItemClass itemClass; //ì•„ì´í…œ ë“±ê¸‰
 
-    public float itemWeight = 1f; //¾ÆÀÌÅÛ µîÀå È®·ü(°°Àº µî±Ş ³» È®·ü, ±âº» 1)
+    public float itemWeight = 1f; //ì•„ì´í…œ ë“±ì¥ í™•ë¥ (ê°™ì€ ë“±ê¸‰ ë‚´ í™•ë¥ , ê¸°ë³¸ 1)
 
-    //¾ÆÀÌÅÛ »ç¿ë Á¦¾à
-    public bool oncePerTurn;    //ÅÏ ´ç ÇÑ¹ø
-    public bool oncePerDay;     //ÇÏ·ç ´ç ÇÑ¹ø
-    public bool oncePerGame;    //°ÔÀÓ ´ç ÇÑ¹ø
+    //ì•„ì´í…œ ì‚¬ìš© ì œì•½
+    public bool oncePerTurn;    //í„´ ë‹¹ í•œë²ˆ
+    public bool oncePerDay;     //í•˜ë£¨ ë‹¹ í•œë²ˆ
+    public bool oncePerGame;    //ê²Œì„ ë‹¹ í•œë²ˆ
 
-    public List<EffectSpec> effects; //¾ÆÀÌÅÛ ÀÌÆåÆ®µé
+    public List<EffectSpec> effects; //ì•„ì´í…œ ì´í™íŠ¸ë“¤
 }
 
 [System.Serializable]
 public class EffectSpec
 {
-    //¾ÆÀÌÅÛ È¿°ú Å¸ÀÔ
+    //ì•„ì´í…œ íš¨ê³¼ íƒ€ì…
     public ItemEffect effectType;
 
-    //¹ü¿ë ÆÄ¶ó¹ÌÅÍ
+    //ë²”ìš© íŒŒë¼ë¯¸í„°
     public int intValue1;
     public int intValue2;
     public float floatValue1;
     public float floatValue2;
 
 
-    //effectTypeÀÌ AddStatusÀÎ °æ¿ì, ´ÙÀ½ °´Ã¼·Î Å¸ÀÔ Á¤ÀÇ
+    //effectTypeì´ AddStatusì¸ ê²½ìš°, ë‹¤ìŒ ê°ì²´ë¡œ íƒ€ì… ì •ì˜
     public StatusSpec statusSpce;
 }
 
 [System.Serializable]
 public class StatusSpec
 {
-    public string statusId;             //¾ÆÀÌÅÛ ID
-    public DurationType durationType;   //¾ÆÀÌÅÛ Àû¿ë ±â°£
-    public int durationTurns;           //durationTypeÀÌ TurnsÀÎ °æ¿ì, ÇØ´ç Turns °ª
-    public TriggerMask triggers;        //¾ÆÀÌÅÛ ¹ßµ¿ ½ÃÁ¡
-    public TagMask tags;                //¾ÆÀÌÅÛ ÅÂ±×
+    public string statusId;             //ì•„ì´í…œ ID
+    public DurationType durationType;   //ì•„ì´í…œ ì ìš© ê¸°ê°„
+    public int durationTurns;           //durationTypeì´ Turnsì¸ ê²½ìš°, í•´ë‹¹ Turns ê°’
+    public TriggerMask triggers;        //ì•„ì´í…œ ë°œë™ ì‹œì 
+    public TagMask tags;                //ì•„ì´í…œ íƒœê·¸
 
-    public int priority;                //µ¥¹ÌÁö ÆÄÀÌÇÁ¶óÀÎ ¿ì¼± ¼øÀ§
+    public int priority;                //ë°ë¯¸ì§€ íŒŒì´í”„ë¼ì¸ ìš°ì„  ìˆœìœ„
 
-    public float multiplier;            //µ¥¹ÌÁö ¹è¼ö
+    public float multiplier;            //ë°ë¯¸ì§€ ë°°ìˆ˜
     public float convertRate;
-    public int flatValue;               //°íÁ¤ µ¥¹ÌÁö/È¸º¹/½Çµå µî
-    public int randMin, randMax;        //·£´ı ¹üÀ§
-    public bool bypassConversion;       //Èò°³¹Ì µ¥¹ÌÁö µî ¹æ¾î·ÂÀ¸·Î ÀüÈ¯µÇÁö ¾Ê´Â µ¥¹ÌÁö
-    public bool basicOnly;              //ÆòÅ¸ µ¥¹ÌÁö¸¸ ´ÙÀ½À¸·Î Àû¿ë
-    public bool consumeOnTrigger;       //Æ®¸®°Å ¹ß»ı½Ã ¼Òºñ ÈÄ »èÁ¦ ÇÒÁö ÇÃ·¡±×
+    public int flatValue;               //ê³ ì • ë°ë¯¸ì§€/íšŒë³µ/ì‹¤ë“œ ë“±
+    public int randMin, randMax;        //ëœë¤ ë²”ìœ„
+    public bool bypassConversion;       //í°ê°œë¯¸ ë°ë¯¸ì§€ ë“± ë°©ì–´ë ¥ìœ¼ë¡œ ì „í™˜ë˜ì§€ ì•ŠëŠ” ë°ë¯¸ì§€
+    public bool basicOnly;              //í‰íƒ€ ë°ë¯¸ì§€ë§Œ ë‹¤ìŒìœ¼ë¡œ ì ìš©
+    public bool consumeOnTrigger;       //íŠ¸ë¦¬ê±° ë°œìƒì‹œ ì†Œë¹„ í›„ ì‚­ì œ í• ì§€ í”Œë˜ê·¸
 }

@@ -7,8 +7,8 @@ public class BuildingEffect : MonoBehaviour
     [SerializeField] Sprite currentEffectSprite;
     [SerializeField] Sprite enabledCircleSprite;
 
-    Sprite originalEffectSprite;
-    Sprite originalCircleSprite;
+    [SerializeField] Sprite originalEffectSprite;
+    [SerializeField] Sprite originalCircleSprite;
 
     [SerializeField] Image effectImage;
     [SerializeField] Image circleImage;
@@ -16,12 +16,6 @@ public class BuildingEffect : MonoBehaviour
 
     [SerializeField] TextMeshProUGUI effectValueText;
     public TextMeshProUGUI EffectValueText => effectValueText;
-
-    void Awake()
-    {
-        originalEffectSprite = effectImage.sprite;
-        originalCircleSprite = circleImage.sprite;
-    }
 
     public void SetEffectLineEnabled(bool enabled)
     {

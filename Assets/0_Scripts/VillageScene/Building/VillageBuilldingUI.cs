@@ -102,8 +102,15 @@ namespace Village.Building
 
         private void UpdateUpgradeButton(int nextUpgradeCost, int currentGold)
         {
-            bool canUpgrade = nextUpgradeCost > 0 && currentGold >= nextUpgradeCost;
-            LocalizedString upgradeCostStr = new LocalizedString(CSV_Type.Village, canUpgrade ? "Upgrade_Cost" : "Upgrade_Cost_Not_Enough");
+            if (nextUpgradeCost <= 0)
+            {
+                upgradeCostText.SetText(new LocalizedString(CSV_Type.Village, "Upgrade_Max_Level"));
+                upgradeButton.interactable = false;
+                return;
+            }
+
+            bool canUpgrade = currentGold >= nextUpgradeCost;
+            var upgradeCostStr = new LocalizedString(CSV_Type.Village, canUpgrade ? "Upgrade_Cost" : "Upgrade_Cost_Not_Enough");
             upgradeCostText.SetText(upgradeCostStr, nextUpgradeCost);
 
             // 업그레이드 버튼 활성화 여부 설정

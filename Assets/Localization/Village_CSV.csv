@@ -3,6 +3,7 @@ UI_Ready,준비 완료,Ready
 UI_NotReady,준비 안됨,Not Ready
 Upgrade_Cost,{0} <color=yellow>G</color> 필요,Cost: {0} <color=yellow>G</color>
 Upgrade_Cost_Not_Enough,<color=red>비용 부족: {0}</color>,<color=red>Not Enough: {0}</color>
+Upgrade_Max_Level,최대 레벨 달성,Max Level
 Current_Gold,현재 골드:,Current Gold:
 Building_Upgrade,강화하기,Upgrade
 Building_Quit,나가기,Quit
@@ -20,7 +21,7 @@ Barrier_Desc,마을의 방어막을 강화합니다.,Strengthen the village's ba
 Barrier_Effect,방어막 방어력: <color=#FFD700>{0}</color>,Barrier Defense: <color=#FFD700>{0}</color>
 Shop_Title,상점,Shop
 Shop_Desc,상점에서 아이템을 구매합니다.,Buy items in the shop.
-Shop_Effect,Lv {0} - 희귀 등장 확률: <color=#FFD700>{1}%</color> 증가, Lv {0} - Rare Appearance Chance: <color=#FFD700>{1}%</color> Increase
+Shop_Effect,레어 아이템: {0}%\n에픽 아이템: {1}%\n레전드 아이템: {2}%,Rare Items: {0}%\nEpic Items: {1}%\nLegendary Items: {2}%
 Shop_Reload, 새로고침 ({0} <color=yellow>G</color>), Reload ({0} <color=yellow>G</color>)
 Shop_Buy,구매,Buy
 
