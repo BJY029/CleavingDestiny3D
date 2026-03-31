@@ -32,15 +32,19 @@ public class LLMGameStateDTO
     public List<ItemInfoDTO> oppInventory;
 }
 
+//플레이어 상태 정의 DTO
 [System.Serializable]
 public class PlayerStatusDTO
 {
+    public int maxTreeHitDmg, minTreeHitDmg;
     public float villageHP;
     public float barrier;
+    public int maxEnergy;
     public int energy;
     public bool hasDebuff;
 }
 
+//아이템 정보 정의 DTO
 [System.Serializable]
 public class ItemInfoDTO
 {
@@ -54,6 +58,7 @@ public class ItemInfoDTO
     public ItemType type;
 }
 
+//
 [System.Serializable]
 public class LLMDecision
 {
@@ -68,4 +73,37 @@ public class LLMAction
     public string actionType;
     public string itemId;
     public string targetId;
+}
+
+
+//AI 프롬프트 응답 전용 DTO 정의
+//프롬프트에서 정의한 반환형 JSON과 동일화 해야 함
+public class ItemSelectResopnse
+{
+    public string reasoning;
+    public string selectedItemId;
+}
+
+public class ItemUseResponse
+{
+    public string reasoning;
+    public List<ItemAction> actions;
+}
+
+public class ItemAction
+{
+    public string itemId;
+    public string targetId;
+}
+
+public class TreeHtiResponse
+{
+    public string reasoning;
+    public int hitDamage;
+}
+
+public class NightUpgradeResponse
+{
+    public string reasoning;
+    public string upgradeId;
 }

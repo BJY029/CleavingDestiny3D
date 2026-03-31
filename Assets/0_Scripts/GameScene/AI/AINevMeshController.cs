@@ -4,8 +4,6 @@ using Photon.Pun;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using System;
-using Unity.AppUI.UI;
-using Unity.VisualScripting;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class AINevMeshController : AILogicModule
