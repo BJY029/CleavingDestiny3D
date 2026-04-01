@@ -107,7 +107,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		slots[removaldx] = (0, null);
 		if (player != null)
 			photonView.RPC(nameof(RPC_RefreshItemInv), player);
-		//AI ÇÃ·¹ÀÌ¾îÀÇ »èÁ¦ ¿äÃ»ÀÎ °æ¿ì
+		//AI ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		else if (GameManager.Instance.isSoloPlay)
 			RefreshAIItemInv();
 
@@ -157,17 +157,12 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
 
-		int currentGold = PhotonPropertyHelper.GetPlayerProp<int>(actor, PlayerPropKeys.Gold);
-		if (currentGold < price) return;
-
+		// í´ë¼ì´ì–¸íŠ¸ê°€ ì´ë¯¸ ê°€ê²©ì„ ì§€ë¶ˆí•˜ê³  í˜¸ì¶œí–ˆë‹¤ê³  ê°€ì •í•˜ê³ , ì¸ë²¤í† ë¦¬ì— ì•„ì´í…œë§Œ ì¶”ê°€í•©ë‹ˆë‹¤.
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actor);
 
 		if (Master_AddItemToInventory(actor, itemId))
 		{
-			// ê³¨ë“œ ì°¨ê°
-			var goldProp = new ExitGames.Client.Photon.Hashtable { { PlayerPropKeys.Gold, currentGold - price } };
-			player.SetCustomProperties(goldProp);
-			Debug.Log($"[InventoryAuthority] Actor {actor} bought {itemId} for {price}G");
+			Debug.Log($"[InventoryAuthority] Actor {actor} bought {itemId} for {price}G (Gold deducted by client)");
 		}
 		else
 		{
@@ -450,7 +445,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		WI.RefreshInv();
 	}
 
-	//AI ÇÃ·¹ÀÌ¾î ÀÎº¥Åä¸® °»½Å ÇÔ¼ö
+	//AI ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Îºï¿½ï¿½ä¸® ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 	public void RefreshAIItemInv()
 	{
 		GameObject AIInv = PlayerStatus.Instance.GetAIInventory();
