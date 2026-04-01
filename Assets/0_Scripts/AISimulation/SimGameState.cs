@@ -13,8 +13,8 @@ public class SimGameState
     public int p1MinHitDmg, p2MinHitDmg;
     public int p1Energy, p2Energy;
     public int p1MaxEnergy, p2MaxEnergy;
-    public float p1VillHP, p1VillBarrier;
-    public float p2VillHP, p2VillBarrier;
+    public float p1VillHP, p1VillBarrier, p1VillBarConRate;
+    public float p2VillHP, p2VillBarrier, p2VillBarConRate;
     public bool p1HasDebuff, p2HasDebuff;
     public float treeHP;
     public float treeToxicDmg;
@@ -29,6 +29,7 @@ public class SimGameState
         this.p1MinHitDmg = this.p2MinHitDmg = playerSetting.minAtkPow;
         this.p1VillHP = this.p2VillHP = playerSetting.villageHP;
         this.p1VillBarrier = this.p2VillBarrier = playerSetting.villageBarrier;
+        this.p1VillBarConRate = this.p2VillBarConRate = playerSetting.barrierConversionRate;
         this.treeHP = roomSetting.treeHP;
         this.treeToxicDmg = roomSetting.treeAtkPow;
         this.turn = roomSetting.initialTurnIndex;
@@ -99,4 +100,45 @@ public class SimGameState
         return invList;
     }
 
+    public void TryAddItemToInventory(int playerNum, string itemId)
+    {
+        if (playerNum == 1)
+        {
+            if (p1Inventory.Count < 8)
+                p1Inventory.Add(itemId);
+        }
+        else
+        {
+            if (p2Inventory.Count < 8)
+                p2Inventory.Add(itemId);
+        }
+        Debug.LogWarning($"P{playerNum}'s Inventory Is Full");
+    }
+
+    public void TryDeleteItemFromInventroy(int playerNum, string itemId)
+    {
+        bool isRemoved;
+        if (playerNum == 1)
+            isRemoved = p1Inventory.Remove(itemId);
+        else
+            isRemoved = p2Inventory.Remove(itemId);
+        if (!isRemoved) Debug.LogWarning($"Faild to delete {itemId} item from P{playerNum}'s Inventory");
+    }
+
+    public void ApplyTreeDamage(int playerNum, float hitDamage)
+    {
+        //아이템 효과가 적용된 데미지 입히기
+        //그에 맞는 마을 방어벽 설정
+
+        //임시로 구현된 코드로 수정 필요
+        this.treeHP -= hitDamage;
+        if (playerNum == 1)
+        {
+            p1VillBarrier += hitDamage * p1VillBarConRate;
+        }
+        else
+        {
+            p2VillBarrier += hitDamage * p2VillBarConRate;
+        }
+    }
 }

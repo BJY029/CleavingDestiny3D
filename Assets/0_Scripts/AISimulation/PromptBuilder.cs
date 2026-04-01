@@ -69,6 +69,7 @@ public class PromptBuilder : MonoBehaviour
 
         sb.AppendLine("[Action]");
         sb.AppendLine("너는 지금 3개의 아이템 중 하나를 인벤토리에 넣어야 하며, 네 현재 체력과 기력을 고려해서 가장 가성비 좋은 아이템 1개를 선택한다.");
+        sb.AppendLine("인벤토리 용량은 8이며, 만약 인벤토리가 꽉 찬 경우 빈 문자열을 반환한다.");
         sb.AppendLine();
 
         sb.AppendLine("[output format]");
@@ -101,7 +102,7 @@ public class PromptBuilder : MonoBehaviour
         sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. 부가 설명 금지.");
         sb.AppendLine("{");
         sb.AppendLine("  \"reasoning\": \"이유\",");
-        sb.AppendLine("  \"actions\": [ { \"actionType\": \"UseItem\", \"itemId\": \"\", \"targetId\": \"\" } ]");
+        sb.AppendLine("  \"actions\": [ {\"itemId\": \"아이템ID\", \"itemCost\": \"아이템 기력량\",\"itemRarity\": \"아이템 희귀도\",} ]");
         sb.AppendLine("}");
 
         return sb.ToString();
