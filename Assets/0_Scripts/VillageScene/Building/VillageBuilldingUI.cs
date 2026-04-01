@@ -91,7 +91,7 @@ namespace Village.Building
             RefreshStatusUI();
         }
 
-        protected void RefreshStatusUI()
+        public virtual void RefreshStatusUI()
         {
             int nextUpgradeCost = VillageStat.GetLevelUpgradedCost(currentBuildingType);
             int currentGold = VillageSystem.VillageLogic.GetMyGold();

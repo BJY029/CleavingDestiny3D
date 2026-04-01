@@ -51,12 +51,20 @@ namespace Village.Building
         void OnEnable()
         {
             OfferAuthority.Instance.OnShopRerollReceived += OnRandonShopItemReceived;
+            VillageSystem.VillageLogic.OnGoldChanged += OnGoldChanged;
+        }
+
+        private void OnGoldChanged(int gold)
+        {
+            RefreshStatusUI(); // 골드가 변경될 때마다 상점 UI 상태 갱신
         }
 
         void OnDisable()
         {
             if (OfferAuthority.Instance != null)
                 OfferAuthority.Instance.OnShopRerollReceived -= OnRandonShopItemReceived;
+            if (VillageSystem.VillageLogic != null)
+                VillageSystem.VillageLogic.OnGoldChanged -= OnGoldChanged;
         }
 
         void OnRandonShopItemReceived(int shopNonce, string[] itemIds)
@@ -86,7 +94,7 @@ namespace Village.Building
                 }
             }
 
-            RefreshShopStatusUI();
+            RefreshStatusUI();
         }
 
         public override void SetBuildingUI(VillageType buildingType)
@@ -99,7 +107,7 @@ namespace Village.Building
                 RequestNewItems();
             }
 
-            RefreshShopStatusUI();
+            RefreshStatusUI();
         }
 
         public void OnClickReloadButton()
@@ -109,8 +117,7 @@ namespace Village.Building
             int reloadCost = VillageStat.VillageBalance.GetShopReloadCost(reloadCount);
             if (VillageSystem.VillageLogic.GetMyGold() < reloadCost)
             {
-                RefreshStatusUI(); // 현재 골드 텍스트 갱신
-                RefreshShopStatusUI();
+                RefreshStatusUI();
                 return;
             }
 
@@ -121,7 +128,6 @@ namespace Village.Building
 
             // 공용 UI(골드 텍스트)와 상점 UI 즉시 갱신
             RefreshStatusUI();
-            RefreshShopStatusUI();
         }
 
         private void RequestNewItems()
@@ -136,16 +142,16 @@ namespace Village.Building
             foreach (var item in shopItems)
             {
                 if (item == null) continue;
-                var cg = item.GetComponent<CanvasGroup>();
-                if (cg == null) cg = item.gameObject.AddComponent<CanvasGroup>();
-                cg.alpha = 0.5f;
+                item.canvasGroup.alpha = 0.5f;
             }
 
             ShopItemSelect(null); // 리롤 시 선택 해제
         }
 
-        private void RefreshShopStatusUI()
+        public override void RefreshStatusUI()
         {
+            base.RefreshStatusUI();
+
             int currentLevel = VillageStat.GetVillageLevel(currentBuildingType) + 1; // 레벨은 0부터 시작하므로 +1
 
             float rareChance = VillageStat.VillageBalance.ShopRareChanceBase + (currentLevel * VillageStat.VillageBalance.ShopRareChanceMultiplier);
@@ -215,7 +221,7 @@ namespace Village.Building
             // 인벤토리가 가득 찼다면 구매를 막습니다.
             if (IsMyInventoryFull())
             {
-                RefreshShopStatusUI();
+                RefreshStatusUI();
                 return;
             }
 
@@ -226,12 +232,15 @@ namespace Village.Building
             int price = selectedItem.Price;
             string itemId = selectedItem.ItemData.itemId;
 
-            // 3. 클라이언트 환경에서 골드가 충분한지 미리 확인합니다.
+            // 3. 골드가 충분한지 확인합니다. 부족하다면 UI를 갱신하여 구매 불가 상태를 반영합니다.
             if (VillageSystem.VillageLogic.GetMyGold() < price)
             {
-                RefreshShopStatusUI(); // UI 갱신 (버튼 비활성화 등)
+                RefreshStatusUI(); // UI 갱신 (버튼 비활성화 등)
                 return;
             }
+
+            // 골드 제거
+            VillageSystem.VillageLogic.AddGold(-price);
 
             // 4. [서버 요청] 인벤토리 권한을 관리하는 Singleton 인스턴스에 구매를 요청합니다.
             // 이 요청은 RPC를 통해 MasterClient에서 최종 검증 및 처리가 이루어집니다.
@@ -244,8 +253,9 @@ namespace Village.Building
                 );
 
                 // 5. [UI 처리] 구매 요청을 보낸 후 즉시 아이템 선택을 해제하여 중복 클릭을 방지합니다.
+                shopItems[selectedItemIndex].SetShopItem(null); // 선택된 아이템 UI 초기화
                 ShopItemSelect(null);
-                RefreshShopStatusUI();
+                RefreshStatusUI();
             }
             else
             {
@@ -271,7 +281,7 @@ namespace Village.Building
                 shopItems[i].SetSelected(isSelectedItem);
                 if (isSelectedItem) selectedItemIndex = i;
             }
-            RefreshShopStatusUI();
+            RefreshStatusUI();
         }
     }
 }

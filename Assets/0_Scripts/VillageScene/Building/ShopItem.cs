@@ -23,6 +23,13 @@ namespace Village.Building
         public void SetShopItem(ItemSO item)
         {
             currentItem = item;
+            if (item == null)
+            {
+                itemIcon.sprite = null; // 아이템이 없는 경우 아이콘 초기화
+                itemGoldText.SetText(string.Empty); // 가격 텍스트 초기화
+                return;
+            }
+
             itemIcon.sprite = item.Icon; // 아이템 아이콘 설정
 
             // 등급별 가격 설정
