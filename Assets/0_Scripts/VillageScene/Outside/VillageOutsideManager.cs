@@ -79,8 +79,7 @@ namespace Village.Outside
             if (readyChecker == null) return;
 
             // 현재 방의 플레이어 수만큼 슬롯 생성
-            Player[] players = PhotonNetwork.PlayerList;
-            readyChecker.Initialize(players.Length);
+            readyChecker.Initialize(PlayerManager.Instance.TotalPlayerCount);
 
             UpdateReadyChecker();
         }
@@ -102,6 +101,12 @@ namespace Village.Outside
                 }
 
                 readyChecker.SetPlayerReady(i, isPlayerReady);
+            }
+
+            // 남은 칸 수는 AI로 간주하여 항상 준비된 상태로 표시 (빈 슬롯이 있을 경우)
+            for (int i = players.Length; i < readyChecker.PlayerCount; i++)
+            {
+                readyChecker.SetPlayerReady(i, true);
             }
         }
 
@@ -227,7 +232,7 @@ namespace Village.Outside
         {
             isReady = !isReady;
             readyButtonText.TextID = isReady ? readyText : notReadyText;
-            villageSceneManager.SetLocalPlayerReady(isReady);
+            villageSceneManager.SetPlayerReady(PhotonNetwork.LocalPlayer.ActorNumber, isReady);
         }
     }
 }

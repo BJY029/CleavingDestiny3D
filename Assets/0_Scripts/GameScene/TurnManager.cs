@@ -53,24 +53,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		TryOpenOfferFromRoomState();
 	}
 
-	private void Update()
-	{
-		// if (Keyboard.current == null) return;
-
-		// //만약 'F'키가 눌린 경우
-		// if (Keyboard.current.fKey.wasPressedThisFrame)
-		// {
-		// 	//'F'키 이벤트 실행
-		// 	//관련 이벤트는 PlayerController.cs에서 처리(HandleInteractFKey())
-		// 	OnInteractFKeyDown?.Invoke();
-		// }
-
-		// // K키가 눌리고 마스터 클라이언트이며 아직 마을 페이즈가 아닌 경우 강제 시작
-		// if (Keyboard.current.kKey.wasPressedThisFrame && IsInitializer() && !isUpgradePhase)
-		// {
-		// 	StartVillageUpgradePhase();
-		// }
-	}
 
 	public void SetVillageSceneManager(VillageSceneManager vsm)
 	{
@@ -404,7 +386,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	// 	_villageDamageProcessDone = actionId;
 	// }
 
-	//���� ���׷��̵� ����� �����Ѵ�.
+	// 마을 업그레이드 페이즈 시작
 	public void StartVillageUpgradePhase()
 	{
 		//제일 낮은 순서번호의 플레이어만 초기화 수행
