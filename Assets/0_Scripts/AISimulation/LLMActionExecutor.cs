@@ -2,7 +2,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System;
 
-public class LLMActionExecutor : MonoBehaviour
+public class LLMActionExecutor
 {
     public void ExecutePhaseAction(string llmJson, ActionPhase phase, SimGameState state, int playerNum)
     {

@@ -12,7 +12,7 @@ public enum ActionPhase
     NightUpgrade = 3,
 };
 
-public class PromptBuilder : MonoBehaviour
+public class PromptBuilder
 {
     //기본 프롬프트(규칙 설명 및 기본 지식 설정)
     public string BuildDynamicSystemPrompt(SimGameState state, int myPlayerNum, ActionPhase phase)
@@ -89,6 +89,7 @@ public class PromptBuilder : MonoBehaviour
         sb.AppendLine("[situation]");
         sb.AppendLine("-현재 내가 보유한 아이템은 다음과 같다.");
         sb.AppendLine(GetMyInventoryPrompt(state, myPlayerNum));
+        Debug.Log("success");
         sb.AppendLine($"-현재 사용할 수 있는 최대 기력량은 {(myPlayerNum == 1 ? state.p1MaxEnergy : state.p2MaxEnergy)}이고, 권장 사용 기력량은 {CalcEnergyBudget(state, myPlayerNum)} 이다.");
         sb.AppendLine();
 
@@ -102,7 +103,8 @@ public class PromptBuilder : MonoBehaviour
         sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. 부가 설명 금지.");
         sb.AppendLine("{");
         sb.AppendLine("  \"reasoning\": \"이유\",");
-        sb.AppendLine("  \"actions\": [ {\"itemId\": \"아이템ID\", \"itemCost\": \"아이템 기력량\",\"itemRarity\": \"아이템 희귀도\",} ]");
+        sb.AppendLine("  \"actions\": [ { \"itemId\": \"아이템ID\", \"targetId\": \"제물 바치기 등 타겟이 필요할 경우 타겟 아이템ID\" } ]");
+        // 아무 템도 안 쓸 경우 빈 배열 [] 반환
         sb.AppendLine("}");
 
         return sb.ToString();
@@ -124,7 +126,7 @@ public class PromptBuilder : MonoBehaviour
         sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. 부가 설명 금지.");
         sb.AppendLine("{");
         sb.AppendLine(" \"reasoning\": \"이유\",");
-        sb.AppendLine(" \"hitDamage\": \"\"");
+        sb.AppendLine(" \"hitDamage\": 500");
         sb.AppendLine("}");
         return sb.ToString();
     }
@@ -137,7 +139,7 @@ public class PromptBuilder : MonoBehaviour
     public string GetMyItemOfferPrompt(SimGameState state, int myPlayerNum)
     {
         StringBuilder sb = new StringBuilder();
-        List<string> offer = Pick3(state.turn, myPlayerNum, state.roomSeed, ItemDB.Instance.GetItemsList());
+        List<string> offer = Pick3(state.turn, myPlayerNum, state.roomSeed, ItemDB.Instance.GetItemsList(), state.roomSetting, state.playerSetting);
         sb.AppendLine(string.Join("|", offer));
         return sb.ToString();
     }
@@ -171,7 +173,7 @@ public class PromptBuilder : MonoBehaviour
     //현재 기력 기준 기력 에산 계산
     public int CalcEnergyBudget(SimGameState state, int myPlayerNum)
     {
-        int maxWave = GameManager.Instance.roomDefaultSetting.maxWave;
+        int maxWave = state.roomSetting.maxWave;
         int curWave = state.wave;
         int energy = myPlayerNum == 1 ? state.p1Energy : state.p2Energy;
 
@@ -181,11 +183,8 @@ public class PromptBuilder : MonoBehaviour
     }
 
     //OFFER 함수
-    public List<string> Pick3(int turnIndex, int actor, int roomSeed, List<ItemSO> items)
+    public List<string> Pick3(int turnIndex, int actor, int roomSeed, List<ItemSO> items, RoomSetting roomSetting, PlayerSetting playerSetting)
     {
-        var roomSetting = GameManager.Instance.roomDefaultSetting;
-        var playerSetting = GameManager.Instance.playerDefaultSetting;
-
         int playerActNum = actor;
         //결정론적 난수 생성
         //turnIndex와 actor가 같으면 재현 가능한 난수 생성기

@@ -8,7 +8,7 @@ using Newtonsoft.Json.Converters;
 public class LLMRequest
 {
     //사용 모델명: Gemma3:12b
-    public string model = "gemma:12b";
+    public string model = "gemma3:12b";
     public List<Message> messages = new List<Message>();
     public ResponseFormat response_format = new ResponseFormat { type = "json_object" };
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public class SimGameState
 {
+    public PlayerSetting playerSetting;
+    public RoomSetting roomSetting;
     public int roomSeed;
 
     public int turn;
@@ -24,6 +26,8 @@ public class SimGameState
 
     public SimGameState(PlayerSetting playerSetting, RoomSetting roomSetting)
     {
+        this.playerSetting = playerSetting;
+        this.roomSetting = roomSetting;
         this.p1Energy = this.p1MaxEnergy = this.p2Energy = this.p2MaxEnergy = playerSetting.initialEnergy;
         this.p1MaxHitDmg = this.p2MaxEnergy = playerSetting.maxAtkPow;
         this.p1MinHitDmg = this.p2MinHitDmg = playerSetting.minAtkPow;
@@ -37,6 +41,7 @@ public class SimGameState
         this.day = roomSetting.startDay;
         this.roomSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
     }
+
 
     public LLMGameStateDTO GetStateForPlayer(int myPlayerNum)
     {
@@ -107,12 +112,13 @@ public class SimGameState
             if (p1Inventory.Count < 8)
                 p1Inventory.Add(itemId);
         }
-        else
+        else if (playerNum == 2)
         {
             if (p2Inventory.Count < 8)
                 p2Inventory.Add(itemId);
         }
-        Debug.LogWarning($"P{playerNum}'s Inventory Is Full");
+        else
+            Debug.LogWarning($"P{playerNum}'s Inventory Is Full");
     }
 
     public void TryDeleteItemFromInventroy(int playerNum, string itemId)
