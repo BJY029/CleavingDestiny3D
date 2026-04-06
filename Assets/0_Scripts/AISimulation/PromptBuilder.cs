@@ -73,7 +73,7 @@ public class PromptBuilder
         sb.AppendLine();
 
         sb.AppendLine("[output format]");
-        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. 부가 설명 금지.");
+        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. reasoning은 최대한 간단하게. 부가 설명 금지.");
         sb.AppendLine("{");
         sb.AppendLine("  \"reasoning\": \"이유\",");
         sb.AppendLine("  \"selectedItemId\": \"\"");
@@ -89,7 +89,6 @@ public class PromptBuilder
         sb.AppendLine("[situation]");
         sb.AppendLine("-현재 내가 보유한 아이템은 다음과 같다.");
         sb.AppendLine(GetMyInventoryPrompt(state, myPlayerNum));
-        Debug.Log("success");
         sb.AppendLine($"-현재 사용할 수 있는 최대 기력량은 {(myPlayerNum == 1 ? state.p1MaxEnergy : state.p2MaxEnergy)}이고, 권장 사용 기력량은 {CalcEnergyBudget(state, myPlayerNum)} 이다.");
         sb.AppendLine();
 
@@ -100,7 +99,7 @@ public class PromptBuilder
         sb.AppendLine();
 
         sb.AppendLine("[output format]");
-        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. 부가 설명 금지.");
+        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. reasoning은 최대한 간단하게. 부가 설명 금지.");
         sb.AppendLine("{");
         sb.AppendLine("  \"reasoning\": \"이유\",");
         sb.AppendLine("  \"actions\": [ { \"itemId\": \"아이템ID\", \"targetId\": \"제물 바치기 등 타겟이 필요할 경우 타겟 아이템ID\" } ]");
@@ -123,7 +122,7 @@ public class PromptBuilder
         sb.AppendLine();
 
         sb.AppendLine("[output format]");
-        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. 부가 설명 금지.");
+        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. reasoning은 최대한 간단하게. 부가 설명 금지.");
         sb.AppendLine("{");
         sb.AppendLine(" \"reasoning\": \"이유\",");
         sb.AppendLine(" \"hitDamage\": 500");
@@ -132,15 +131,16 @@ public class PromptBuilder
     }
 
 
-
-
-
     //아이템 OFFER 정보 프롬프트
     public string GetMyItemOfferPrompt(SimGameState state, int myPlayerNum)
     {
         StringBuilder sb = new StringBuilder();
         List<string> offer = Pick3(state.turn, myPlayerNum, state.roomSeed, ItemDB.Instance.GetItemsList(), state.roomSetting, state.playerSetting);
-        sb.AppendLine(string.Join("|", offer));
+        foreach (string i in offer)
+        {
+            ItemSO item = ItemDB.Instance.Get(i);
+            sb.AppendLine(i + $": {item.itemId} ({item.displayName_ID}, Cost: {item.itemCost}):{LocalizationManager.Instance.GetText(CSV_Type.Item, item.itemDesc_ID)}");
+        }
         return sb.ToString();
     }
 

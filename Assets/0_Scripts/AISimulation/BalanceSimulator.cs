@@ -1,5 +1,7 @@
+using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
@@ -19,6 +21,7 @@ public class BalanceSimulator : MonoBehaviour
     public Button myButton;
 
     private int gameCount = 1;
+    private int winner;
 
     private void Start()
     {
@@ -31,11 +34,11 @@ public class BalanceSimulator : MonoBehaviour
 
     private async UniTask RunMassiveSimulation()
     {
+        CancellationToken cancellToken = this.GetCancellationTokenOnDestroy();
+
         for (int cnt = 1; cnt <= gameCount; cnt++)
         {
             SimGameState state = new SimGameState(playerSetting, roomSetting);
-            bool isGameOver = false;
-            int winner = 0;
             int turnCount = 0;
 
             while (!IsGameOver(state) && turnCount < 50)
@@ -47,9 +50,8 @@ public class BalanceSimulator : MonoBehaviour
                     {
                         turnCount++;
                         state.turn++;
-                        Debug.Log($"P{j} turn processing");
-                        await RunPlayerTurn(state, j);
-                        Debug.Log($"P{j} turn processing End");
+                        Debug.Log($"Day : {state.day}, Wave : {state.wave}, Turn : {state.turn}");
+                        await RunPlayerTurn(state, j, cancellToken);
 
                         if (IsGameOver(state)) break;
                     }
@@ -58,42 +60,96 @@ public class BalanceSimulator : MonoBehaviour
                     if (IsGameOver(state)) break;
                 }
                 state.wave = 0;
-                //밤 페이즈
+                //임시 효과로 단순히 각 마을에 나무 독성 데미지를 적용한다.
+                //추후 업그레이드 관련 로직도 구현해야 한다.
+                state.ApplyToxicToVillage();
                 state.day++;
             }
 
-            LogToCSV(cnt, 1, turnCount, state);
-            Debug.Log($"[시뮬레이션] {cnt}판 완료. 승자: P{1}");
+            LogToCSV(cnt, winner, turnCount, state);
+            Debug.Log($"[시뮬레이션] {cnt}판 완료. 승자: P{winner}");
         }
     }
 
     private bool IsGameOver(SimGameState state)
     {
-        if (state.treeHP <= 0f || state.p1VillHP <= 0f || state.p2VillHP <= 0f) return true;
+        if (state.treeHP <= 0f)
+        {
+            if (state.turn == 1) winner = 2;
+            else winner = 1;
+            return true;
+        }
+
+        if (state.p1VillHP <= 0f || state.p2VillHP <= 0f)
+        {
+            if (state.p1VillHP <= 0f && state.p2VillHP <= 0f)
+                winner = -1;//draw
+            else if (state.p1VillHP <= 0f) winner = 2;
+            else winner = 1;
+            return true;
+        }
+
         return false;
     }
 
-    private async UniTask RunPlayerTurn(SimGameState state, int playerNum)
+
+    private async UniTask RunPlayerTurn(SimGameState state, int playerNum, CancellationToken token)
     {
-        // --- 1. 아이템 선택 페이즈 ---
-        string selectPrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.ItemSelect);
-        Debug.Log(selectPrompt);
-        // (API 호출 시 유저의 상태 정보 JSON을 함께 넘겨준다고 가정)
-        string selectJsonAns = await apiClient.AskNextMove(selectPrompt, GetStateJson(state, playerNum));
-        Debug.Log("success to receive result");
-        executor.ExecutePhaseAction(selectJsonAns, ActionPhase.ItemSelect, state, playerNum);
+        try
+        {
+            // --- 1. 아이템 선택 페이즈 ---
+            string selectPrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.ItemSelect);
+            Debug.Log(selectPrompt);
+            // (API 호출 시 유저의 상태 정보 JSON을 함께 넘겨준다고 가정)
+            string selectJsonAns = await apiClient.AskNextMove(selectPrompt, GetStateJson(state, playerNum), token);
+            executor.ExecutePhaseAction(selectJsonAns, ActionPhase.ItemSelect, state, playerNum);
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.Log("[Abort Simulation] Unity Editor Has Been Suspended");
+            return;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[P{playerNum} Item Selection Error] {e.Message}");
+        }
 
-        // --- 2. 아이템 사용 페이즈 ---
-        string usePrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.ItemUse);
-        string useJsonAns = await apiClient.AskNextMove(usePrompt, GetStateJson(state, playerNum));
-        Debug.Log("success to receive result");
-        executor.ExecutePhaseAction(useJsonAns, ActionPhase.ItemUse, state, playerNum);
+        try
+        {
+            // --- 2. 아이템 사용 페이즈 ---
+            string usePrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.ItemUse);
+            Debug.Log(usePrompt);
+            string useJsonAns = await apiClient.AskNextMove(usePrompt, GetStateJson(state, playerNum), token);
+            executor.ExecutePhaseAction(useJsonAns, ActionPhase.ItemUse, state, playerNum);
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.Log("[Abort Simulation] Unity Editor Has Been Suspended");
+            return;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[P{playerNum} Item Use Error] {e.Message}");
+        }
 
-        // --- 3. 나무 타격 페이즈 ---
-        string hitPrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.TreeAttack);
-        string hitJsonAns = await apiClient.AskNextMove(hitPrompt, GetStateJson(state, playerNum));
-        Debug.Log("success to receive result");
-        executor.ExecutePhaseAction(hitJsonAns, ActionPhase.TreeAttack, state, playerNum);
+        try
+        {
+            // --- 3. 나무 타격 페이즈 ---
+            string hitPrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.TreeAttack);
+            Debug.Log(hitPrompt);
+            string hitJsonAns = await apiClient.AskNextMove(hitPrompt, GetStateJson(state, playerNum), token);
+            executor.ExecutePhaseAction(hitJsonAns, ActionPhase.TreeAttack, state, playerNum);
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.Log("[Abort Simulation] Unity Editor Has Been Suspended");
+            return;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[P{playerNum} Tree Damage Calc Error] {e.Message}");
+        }
+
     }
 
     public string GetStateJson(SimGameState state, int playerNum)

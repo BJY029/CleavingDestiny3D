@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class SimGameState
 {
@@ -110,12 +111,18 @@ public class SimGameState
         if (playerNum == 1)
         {
             if (p1Inventory.Count < 8)
+            {
                 p1Inventory.Add(itemId);
+                PrintPlayerInventory(p1Inventory);
+            }
         }
         else if (playerNum == 2)
         {
             if (p2Inventory.Count < 8)
+            {
                 p2Inventory.Add(itemId);
+                PrintPlayerInventory(p2Inventory);
+            }
         }
         else
             Debug.LogWarning($"P{playerNum}'s Inventory Is Full");
@@ -125,9 +132,15 @@ public class SimGameState
     {
         bool isRemoved;
         if (playerNum == 1)
+        {
             isRemoved = p1Inventory.Remove(itemId);
+            PrintPlayerInventory(p1Inventory);
+        }
         else
+        {
             isRemoved = p2Inventory.Remove(itemId);
+            PrintPlayerInventory(p2Inventory);
+        }
         if (!isRemoved) Debug.LogWarning($"Faild to delete {itemId} item from P{playerNum}'s Inventory");
     }
 
@@ -138,13 +151,42 @@ public class SimGameState
 
         //임시로 구현된 코드로 수정 필요
         this.treeHP -= hitDamage;
+        Debug.Log($"Hit Damage : {hitDamage}, Tree HP : {this.treeHP}");
         if (playerNum == 1)
         {
             p1VillBarrier += hitDamage * p1VillBarConRate;
+            Debug.Log($"p{playerNum} Village Barrier : {p1VillBarrier}");
         }
         else
         {
             p2VillBarrier += hitDamage * p2VillBarConRate;
+            Debug.Log($"p{playerNum} Village Barrier : {p1VillBarrier}");
         }
+    }
+
+    public void ApplyToxicToVillage()
+    {
+        this.p1VillHP = this.p1VillHP + this.p1VillBarrier - this.treeToxicDmg;
+        this.p2VillHP = this.p2VillHP + this.p2VillBarrier - this.treeToxicDmg;
+        this.treeToxicDmg = Mathf.Round(this.roomSetting.treeAtkPow * Mathf.Pow(1.8f, this.day));
+
+        Debug.Log($"p1 Village HP : {this.p1VillHP}, p2 Village HP : {this.p2VillHP}, next tree toxic dmg : {this.treeToxicDmg}");
+        InitPlayerStat();
+    }
+
+    public void InitPlayerStat()
+    {
+        this.p1VillBarrier = this.p2VillBarrier = playerSetting.villageBarrier;
+        this.p1VillBarConRate = this.p2VillBarConRate = playerSetting.barrierConversionRate;
+    }
+
+    public void PrintPlayerInventory(List<string> Inv)
+    {
+        string s = "";
+        foreach (string i in Inv)
+        {
+            s += i + " ";
+        }
+        Debug.Log("player inv : " + s);
     }
 }

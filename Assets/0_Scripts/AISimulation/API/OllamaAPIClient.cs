@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -10,8 +11,9 @@ public class OllamaAPIClient
 {
     private readonly string apiURL = "http://localhost:11434/v1/chat/completions";
 
-    public async UniTask<string> AskNextMove(string systemPrompt, string gameStateJson)
+    public async UniTask<string> AskNextMove(string systemPrompt, string gameStateJson, CancellationToken token)
     {
+
         LLMRequest request = new LLMRequest();
         request.messages.Add(new Message { role = "system", content = systemPrompt });
         request.messages.Add(new Message { role = "user", content = gameStateJson });
@@ -25,7 +27,7 @@ public class OllamaAPIClient
             www.downloadHandler = new DownloadHandlerBuffer();
             www.SetRequestHeader("Content-Type", "application/json");
 
-            await www.SendWebRequest();
+            await www.SendWebRequest().WithCancellation(token);
 
             if (www.result == UnityWebRequest.Result.Success)
             {
@@ -39,5 +41,6 @@ public class OllamaAPIClient
                 return null;
             }
         }
+
     }
 }
