@@ -8,10 +8,13 @@ public class SimGameState
     public RoomSetting roomSetting;
     public int roomSeed;
 
+    public int curTurnPlayerNum;
+
     public int turn;
     public int wave;
     public int day;
 
+    public float p1TotalHitDmg, p2TotalHitDmg;
     public int p1MaxHitDmg, p2MaxHitDmg;
     public int p1MinHitDmg, p2MinHitDmg;
     public int p1Energy, p2Energy;
@@ -22,14 +25,18 @@ public class SimGameState
     public float treeHP;
     public float treeToxicDmg;
 
+    public int p1LockCnt, p2LockCnt;
+    public int p1LockpickCnt, p2LockpickCnt;
     public List<string> p1Inventory = new List<string>();
     public List<string> p2Inventory = new List<string>();
 
+    //생성자
     public SimGameState(PlayerSetting playerSetting, RoomSetting roomSetting)
     {
         this.playerSetting = playerSetting;
         this.roomSetting = roomSetting;
         this.p1Energy = this.p1MaxEnergy = this.p2Energy = this.p2MaxEnergy = playerSetting.initialEnergy;
+        this.p1TotalHitDmg = this.p2TotalHitDmg = 0f;
         this.p1MaxHitDmg = this.p2MaxEnergy = playerSetting.maxAtkPow;
         this.p1MinHitDmg = this.p2MinHitDmg = playerSetting.minAtkPow;
         this.p1VillHP = this.p2VillHP = playerSetting.villageHP;
@@ -37,13 +44,16 @@ public class SimGameState
         this.p1VillBarConRate = this.p2VillBarConRate = playerSetting.barrierConversionRate;
         this.treeHP = roomSetting.treeHP;
         this.treeToxicDmg = roomSetting.treeAtkPow;
-        this.turn = roomSetting.initialTurnIndex;
+        this.turn = 0;
         this.wave = roomSetting.initialWave;
         this.day = roomSetting.startDay;
+
+        this.p1LockCnt = this.p2LockCnt = 1;
+        this.p1LockpickCnt = this.p2LockpickCnt = 0;
         this.roomSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
     }
 
-
+    //플레이어 상태 DTO로 반환
     public LLMGameStateDTO GetStateForPlayer(int myPlayerNum)
     {
         LLMGameStateDTO dto = new LLMGameStateDTO();
@@ -69,6 +79,7 @@ public class SimGameState
         return dto;
     }
 
+    //플레이어 정보를 담은 DTO 구성
     private PlayerStatusDTO CreatePlayerDTO(int maxTreeHitDmg, int minTreeHitDmg, float hp, float barrier, int maxEnergy, int energy, bool Debuff)
     {
         return new PlayerStatusDTO
@@ -85,6 +96,7 @@ public class SimGameState
         };
     }
 
+    //플레이어 인벤토리 DTO 구성
     private List<ItemInfoDTO> CreateInventoryDTO(List<string> inventoryIds)
     {
         List<ItemInfoDTO> invList = new List<ItemInfoDTO>();
@@ -106,6 +118,7 @@ public class SimGameState
         return invList;
     }
 
+    //플레이어 인벤토리에 아이템 추가
     public void TryAddItemToInventory(int playerNum, string itemId)
     {
         if (playerNum == 1)
@@ -128,6 +141,7 @@ public class SimGameState
             Debug.LogWarning($"P{playerNum}'s Inventory Is Full");
     }
 
+    //플레이어 인벤토리에서 아이템 삭제
     public void TryDeleteItemFromInventroy(int playerNum, string itemId)
     {
         bool isRemoved;
@@ -154,11 +168,13 @@ public class SimGameState
         Debug.Log($"Hit Damage : {hitDamage}, Tree HP : {this.treeHP}");
         if (playerNum == 1)
         {
+            p1TotalHitDmg += hitDamage;
             p1VillBarrier += hitDamage * p1VillBarConRate;
             Debug.Log($"p{playerNum} Village Barrier : {p1VillBarrier}");
         }
         else
         {
+            p2TotalHitDmg += hitDamage;
             p2VillBarrier += hitDamage * p2VillBarConRate;
             Debug.Log($"p{playerNum} Village Barrier : {p1VillBarrier}");
         }
@@ -178,6 +194,7 @@ public class SimGameState
     {
         this.p1VillBarrier = this.p2VillBarrier = playerSetting.villageBarrier;
         this.p1VillBarConRate = this.p2VillBarConRate = playerSetting.barrierConversionRate;
+        this.p1TotalHitDmg = this.p2TotalHitDmg = 0f;
     }
 
     public void PrintPlayerInventory(List<string> Inv)
@@ -189,4 +206,84 @@ public class SimGameState
         }
         Debug.Log("player inv : " + s);
     }
+
+
+    public float GetTreeHP()
+    {
+        return this.treeHP;
+    }
+
+    public void SetTreeHP(float newHP)
+    {
+        this.treeHP = newHP;
+    }
+
+    public float GetPlayerVillageHP(int playerNum)
+    {
+        return playerNum == 1 ? this.p1VillHP : this.p2VillHP;
+    }
+
+    public void SetPlayerVIllageHP(int playerNum, float newHP)
+    {
+        if (playerNum == 1) p1VillHP = newHP;
+        else p2VillHP = newHP;
+    }
+
+    public float GetPlayerVillageShield(int playerNum)
+    {
+        return playerNum == 1 ? this.p1VillBarrier : this.p2VillBarrier;
+    }
+
+    public void SetPlayerVIllageShield(int playerNum, float newValue)
+    {
+        if (playerNum == 1) p1VillBarrier = newValue;
+        else p2VillBarrier = newValue;
+    }
+
+    public float GetBarrierConversionRate(int playerNum)
+    {
+        return playerNum == 1 ? this.p1VillBarConRate : this.p2VillBarConRate;
+    }
+
+    public void SetBarrierConversionRate(int playerNum, float newValue)
+    {
+        if (playerNum == 1) p1VillBarConRate = newValue;
+        else p2VillBarConRate = newValue;
+    }
+
+    public int GetPlayerEng(int playerNum)
+    {
+        return playerNum == 1 ? this.p1Energy : this.p2Energy;
+    }
+
+    public void SetPlayerEng(int playerNum, int newValue)
+    {
+        if (playerNum == 1) p1Energy = newValue;
+        else p2Energy = newValue;
+    }
+
+    public int GetPlayerLockpickCount(int playerNum)
+    {
+        return playerNum == 1 ? this.p1LockpickCnt : this.p2LockpickCnt;
+    }
+
+    public void AddPlayerLockPickCount(int playerNum)
+    {
+        if (playerNum == 1) p1LockpickCnt++;
+        else p2LockpickCnt++;
+    }
+
+    public void RemovePlayerLockPickCount(int playerNum)
+    {
+        if (playerNum == 1) p1LockpickCnt = Mathf.Max(p1LockpickCnt - 1, 0);
+        else p2LockpickCnt = Mathf.Max(p2LockpickCnt - 1, 0);
+    }
+
+    public void AddPlayerLockCount(int playerNum)
+    {
+        if (playerNum == 1) p1LockCnt++;
+        else p2LockCnt++;
+    }
+
+
 }

@@ -48,12 +48,14 @@ public class BalanceSimulator : MonoBehaviour
                 {
                     for (int j = 1; j <= 2; j++)
                     {
-                        turnCount++;
-                        state.turn++;
+                        state.curTurnPlayerNum = j;
                         Debug.Log($"Day : {state.day}, Wave : {state.wave}, Turn : {state.turn}");
+
                         await RunPlayerTurn(state, j, cancellToken);
 
                         if (IsGameOver(state)) break;
+                        turnCount++;
+                        state.turn++;
                     }
                     state.turn = 0;
                     state.wave++;
