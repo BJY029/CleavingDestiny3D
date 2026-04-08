@@ -12,16 +12,16 @@ public class GameEventBus
 	}
 
 	//이벤트 발행
-	public void publish(GameEvent e, EffectContext ctx)
+	public void publish(GameEvent e, EffectContext ctx, SimGameState state = null)
 	{
 		//priority 순으로 상태 이상 정렬
-		foreach(var st in _statusSystem.ALL.OrderBy(s => s.spec.priority))
+		foreach (var st in _statusSystem.ALL.OrderBy(s => s.spec.priority))
 		{
 			//해당 이벤트 발생 시점이 이벤트의 발생 시점에 반응하는지 체크
 			if ((st.spec.triggers & e.type) == 0) continue;
-			
+
 			//상태 이상 동작 실행
-			StatusBehaviours.Execute(st, e, ctx);
+			StatusBehaviours.Execute(st, e, ctx, state);
 		}
 	}
 }

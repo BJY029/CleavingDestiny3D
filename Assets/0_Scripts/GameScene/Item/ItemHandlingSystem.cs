@@ -779,7 +779,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					return;
 				}
 				val += ctx.GetTreeHP();
-				ctx.SetTreeHP_MasterOnly(val);
+				ctx.SetTreeHP(val);
 
 				ctx.Log?.Invoke($"[ItemProcessImm] TreeHP Changed to {val}");
 				break;

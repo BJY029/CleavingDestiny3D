@@ -32,6 +32,8 @@ public class LLMActionExecutor
                             //아이템 효과 실제 적용
                             //아이템 인벤토리에서 삭제
                             state.TryDeleteItemFromInventroy(playerNum, act.itemId);
+                            ItemSO item = ItemDB.Instance.Get(act.itemId);
+                            ItemHandlingInSim.Instance.AddItemStatusInstance(playerNum, item, state);
                         }
                     }
                     break;
@@ -39,7 +41,8 @@ public class LLMActionExecutor
                     var hitData = JsonConvert.DeserializeObject<TreeHitResponse>(cleanJson);
                     Debug.Log($"[P{playerNum} 타격 이유] {hitData.reasoning}");
 
-                    state.ApplyTreeDamage(playerNum, hitData.hitDamage);
+                    ItemHandlingInSim.Instance.ProcessItemEffect(playerNum, hitData.hitDamage, true, state);
+                    //state.ApplyTreeDamage(playerNum, hitData.hitDamage);
                     break;
                 case ActionPhase.NightUpgrade:
                 default:
@@ -48,7 +51,7 @@ public class LLMActionExecutor
         }
         catch (Exception e)
         {
-            Debug.LogError($"[LLM JSON 파싱 에러] Phase : {phase} / ERROR : {e.Message}\nRaw Json: {llmJson}");
+            Debug.LogError($"[LLM JSON 파싱/실행 에러] Phase : {phase} \nERROR : {e.Message} \nStackTrace : {e.StackTrace} \nRaw Json: {llmJson}");
         }
     }
 
@@ -58,7 +61,7 @@ public class LLMActionExecutor
         string cleaned = raw.Trim();
         if (cleaned.StartsWith("```json")) cleaned = cleaned.Substring(7);
         if (cleaned.StartsWith("```")) cleaned = cleaned.Substring(3);
-        if (cleaned.EndsWith("```")) cleaned.Substring(0, cleaned.Length - 3);
+        if (cleaned.EndsWith("```")) cleaned = cleaned.Substring(0, cleaned.Length - 3);
         return cleaned.Trim();
     }
 }

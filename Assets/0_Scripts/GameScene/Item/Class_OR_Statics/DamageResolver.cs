@@ -15,7 +15,7 @@ public class DamageResolver
         _status = status;
     }
 
-    public void Resolve(DamagePacket dmg, EffectContext ctx)
+    public void Resolve(DamagePacket dmg, EffectContext ctx, SimGameState state = null)
     {
         //공격 직전 트리거 발행
         _bus.publish(new GameEvent
@@ -23,7 +23,7 @@ public class DamageResolver
             type = TriggerMask.OnBeforeAttack,
             actorNum = dmg.attackerNum,
             payload = dmg
-        }, ctx);
+        }, ctx, state);
 
         //데미지 계산
         //덮어쓰는 데미지가 있으면, 해당 데미지 사용, 아니면 기본 데미지 사용
@@ -37,9 +37,13 @@ public class DamageResolver
             type = TriggerMask.OnDamageConvert,
             actorNum = dmg.attackerNum,
             payload = dmg
-        }, ctx);
+        }, ctx, state);
 
-        float baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum);
+        float baseRate;
+        if (state == null)
+            baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum);
+        else
+            baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum, state);
         float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate + dmg.convertRateDelta;
         rate = Mathf.Clamp01(rate);
 
@@ -53,7 +57,7 @@ public class DamageResolver
             type = TriggerMask.OnAfterAttack,
             actorNum = dmg.attackerNum,
             payload = dmg
-        }, ctx);
+        }, ctx, state);
     }
 
     public (float dmgMultiRate, float dmgOverrideDmg, float BarrierConvRate) ResolveRatio(DamagePacket dmg, EffectContext ctx)

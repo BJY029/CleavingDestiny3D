@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ItemHandlingInSim : MonoBehaviour
 {
+    public static ItemHandlingInSim Instance;
     private StatusSystem _statusSystem;
     private GameEventBus _gameEvenetBus;
     private DamageResolver _damageResolver;
@@ -14,6 +16,9 @@ public class ItemHandlingInSim : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+
         _statusSystem = new StatusSystem();
         _gameEvenetBus = new GameEventBus(_statusSystem);
         _damageResolver = new DamageResolver(_gameEvenetBus, _statusSystem);
@@ -110,13 +115,16 @@ public class ItemHandlingInSim : MonoBehaviour
 
     public int HasLockPick(int actorNum, SimGameState state)
     {
-        int lockPickCnt = state.GetPlayerLockpickCount(actorNum);
+        var ctx = new EffectContext(_rng, Debug.Log);
+
+        int lockPickCnt = ctx.GetPlayerLockpickCount(actorNum, state);
         return lockPickCnt;
     }
 
     public void UseLockPick(int actorNum, SimGameState state)
     {
-        state.RemovePlayerLockPickCount(actorNum);
+        var ctx = new EffectContext(_rng, Debug.Log);
+        ctx.RemovePlayerLockPickCount(actorNum, state);
     }
 
     public bool HasDebuff(int actNum)
@@ -133,7 +141,7 @@ public class ItemHandlingInSim : MonoBehaviour
 
     //플레이어가 사용한 아이템을 StatusInstance 객체로 객체화 후, 해당 플레이어의 _statuisSystem 리스트에 삽입한다.
     //후에 턴 변화가 발생할 때, 플레이어의 stasusSystem 내의 아이템들이 적절한 타이밍에 실행된다.
-    public void AddItemStatusInstance(int actorNum, ItemSO item, int itemUID, SimGameState state)
+    public void AddItemStatusInstance(int actorNum, ItemSO item, SimGameState state)
     {
         if (item.oncePerTurn) AddUsedTurnItem(actorNum, item.itemId);
         if (item.oncePerDay) AddUsedDayItem(actorNum, item.itemId);
@@ -148,13 +156,15 @@ public class ItemHandlingInSim : MonoBehaviour
         //If Lockpick Item
         if (item.itemId == "4000")
         {
-            state.AddPlayerLockPickCount(actorNum);
+            var ctx = new EffectContext(_rng, Debug.Log);
+            ctx.AddPlayerLockPickCount(actorNum, state);
             Debug.Log($"[ItemLockPick] Player{actorNum}'s LockPick added");
             return;
         }
         if (item.itemId == "4001")
         {
-            state.AddPlayerLockCount(actorNum);
+            var ctx = new EffectContext(_rng, Debug.Log);
+            ctx.AddPlayerLockCount(actorNum, state);
             Debug.Log($"[ItemLockPick] Player{actorNum}'s Lock added");
             return;
         }
@@ -295,7 +305,7 @@ public class ItemHandlingInSim : MonoBehaviour
         };
 
         //최종 데미지 계산(아이템도 함께 반영하여 계산)
-        _damageResolver.Resolve(dmg, ctx);
+        _damageResolver.Resolve(dmg, ctx, state);
 
 
         //각 아이템의 남은 턴 수 계산, 남은 턴수가 모두 지나면 해당 아이템을 _statusSystem 리스트에서 삭제한다.
@@ -303,15 +313,16 @@ public class ItemHandlingInSim : MonoBehaviour
 
 
         //나무 데미지 업데이트
-        float hp = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeHP);
+        float hp = state.treeHP;
         hp -= dmg.finalDamage;
-        PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, hp);
+        state.treeHP = hp;
 
 
         //TODO: 게임 종료 검증
-        if (MatchResultManager.Instance.TryResolveResultByTreeHP())
+        if (state.treeHP <= 0f)
         {
             Debug.Log("Match End By Tree HP 0");
+            state.looserPlayerNum = state.curTurnPlayerNum;
             return;
         }
 
@@ -355,6 +366,7 @@ public class ItemHandlingInSim : MonoBehaviour
 
     private void ItemProcessImm(int actorNum, EffectSpec es, SimGameState state)
     {
+        var ctx = new EffectContext(_rng, Debug.Log);
         //ItemEffect 타입 기준 구분
         switch (es.effectType)
         {
@@ -366,8 +378,8 @@ public class ItemHandlingInSim : MonoBehaviour
                     Debug.LogError("Item Heal Value null Exception");
                     return;
                 }
-                val += state.GetTreeHP();
-                state.SetTreeHP(val);
+                val += ctx.GetTreeHP(state);
+                ctx.SetTreeHP(val, state);
 
                 Debug.Log($"[ItemProcessImm] TreeHP Changed to {val}");
                 break;
@@ -379,7 +391,7 @@ public class ItemHandlingInSim : MonoBehaviour
                     Debug.LogError("Item Village Heal Value null Exception");
                     return;
                 }
-                float cur = state.GetPlayerVillageHP(actorNum);
+                float cur = ctx.GetPlayerVillageHP(actorNum, state);
                 //아래 코드는 해당 아이템을 사용하면 게임을 바로 지게 되는 요인을 막기 위한 플레이어를 위한 장치
                 //도입 여부는 아직 모름
                 //if (delta < 0f && cur + delta <= 0f)
@@ -388,7 +400,7 @@ public class ItemHandlingInSim : MonoBehaviour
                 //	return;
                 //}
                 float next = delta + cur;
-                state.SetPlayerVIllageHP(actorNum, next);
+                ctx.SetPlayerVIllageHP(actorNum, next, state);
 
                 Debug.Log($"[ItemProcessImm] VillageHP Changed to {next}");
                 break;
@@ -400,9 +412,9 @@ public class ItemHandlingInSim : MonoBehaviour
                     Debug.LogError("Item Shield Value null Exception");
                     return;
                 }
-                shield += state.GetPlayerVillageShield(actorNum);
+                shield += ctx.GetPlayerVillageShield(actorNum, state);
 
-                state.SetPlayerVIllageShield(actorNum, shield);
+                ctx.SetPlayerVIllageShield(actorNum, shield, state);
 
                 Debug.Log($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {shield}");
                 break;
@@ -414,9 +426,9 @@ public class ItemHandlingInSim : MonoBehaviour
                     Debug.LogError("Item Shield Value null Exception");
                     return;
                 }
-                float nextShield = state.GetPlayerVillageShield(actorNum) * mult;
+                float nextShield = ctx.GetPlayerVillageShield(actorNum, state) * mult;
 
-                state.SetPlayerVIllageShield(actorNum, nextShield);
+                ctx.SetPlayerVIllageShield(actorNum, nextShield, state);
 
                 Debug.Log($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {nextShield}");
                 break;
@@ -429,9 +441,9 @@ public class ItemHandlingInSim : MonoBehaviour
                     return;
                 }
 
-                eng += state.GetPlayerEng(actorNum);
+                eng += ctx.GetPlayerEng(actorNum, state);
 
-                state.SetPlayerEng(actorNum, eng);
+                ctx.SetPlayerEng(actorNum, eng, state);
 
                 Debug.Log($"[ItemProcessImm] Player{actorNum}'s Energy Changed to {eng}");
                 break;
@@ -440,12 +452,12 @@ public class ItemHandlingInSim : MonoBehaviour
                 int targetActNum = (actorNum == 1 ? 2 : 1);
                 float VillageShieldPct = es.floatValue1;
 
-                float targetShieldValue = state.GetPlayerVillageShield(targetActNum);
-                float myShieldValue = state.GetPlayerVillageShield(actorNum);
+                float targetShieldValue = ctx.GetPlayerVillageShield(targetActNum, state);
+                float myShieldValue = ctx.GetPlayerVillageShield(actorNum, state);
                 float deltaValue = targetShieldValue * VillageShieldPct;
 
-                state.SetPlayerVIllageShield(actorNum, myShieldValue + deltaValue);
-                state.SetPlayerVIllageShield(targetActNum, Mathf.Max(0f, targetShieldValue - deltaValue));
+                ctx.SetPlayerVIllageShield(actorNum, myShieldValue + deltaValue, state);
+                ctx.SetPlayerVIllageShield(targetActNum, Mathf.Max(0f, targetShieldValue - deltaValue), state);
 
                 Debug.Log($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed from {myShieldValue} to {myShieldValue + deltaValue}");
                 Debug.Log($"[ItemProcessImm] Player{targetActNum}'s VillageShield Changed from {targetShieldValue} to {targetShieldValue - deltaValue}");

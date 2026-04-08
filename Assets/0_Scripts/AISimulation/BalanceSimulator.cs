@@ -113,7 +113,7 @@ public class BalanceSimulator : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError($"[P{playerNum} Item Selection Error] {e.Message}");
+            Debug.LogError($"[P{playerNum} Item Selection Error] ERROR : {e.Message} \nStackTrace : {e.StackTrace}");
         }
 
         try
@@ -131,7 +131,7 @@ public class BalanceSimulator : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError($"[P{playerNum} Item Use Error] {e.Message}");
+            Debug.LogError($"[P{playerNum} Item Use Error] ERROR : {e.Message} \nStackTrace : {e.StackTrace}");
         }
 
         try
@@ -149,7 +149,7 @@ public class BalanceSimulator : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError($"[P{playerNum} Tree Damage Calc Error] {e.Message}");
+            Debug.LogError($"[P{playerNum} Tree Damage Calc Error] ERROR : {e.Message} \nStackTrace : {e.StackTrace}");
         }
 
     }

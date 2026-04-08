@@ -8,6 +8,7 @@ public class SimGameState
     public RoomSetting roomSetting;
     public int roomSeed;
 
+    public int looserPlayerNum;
     public int curTurnPlayerNum;
 
     public int turn;
@@ -206,84 +207,5 @@ public class SimGameState
         }
         Debug.Log("player inv : " + s);
     }
-
-
-    public float GetTreeHP()
-    {
-        return this.treeHP;
-    }
-
-    public void SetTreeHP(float newHP)
-    {
-        this.treeHP = newHP;
-    }
-
-    public float GetPlayerVillageHP(int playerNum)
-    {
-        return playerNum == 1 ? this.p1VillHP : this.p2VillHP;
-    }
-
-    public void SetPlayerVIllageHP(int playerNum, float newHP)
-    {
-        if (playerNum == 1) p1VillHP = newHP;
-        else p2VillHP = newHP;
-    }
-
-    public float GetPlayerVillageShield(int playerNum)
-    {
-        return playerNum == 1 ? this.p1VillBarrier : this.p2VillBarrier;
-    }
-
-    public void SetPlayerVIllageShield(int playerNum, float newValue)
-    {
-        if (playerNum == 1) p1VillBarrier = newValue;
-        else p2VillBarrier = newValue;
-    }
-
-    public float GetBarrierConversionRate(int playerNum)
-    {
-        return playerNum == 1 ? this.p1VillBarConRate : this.p2VillBarConRate;
-    }
-
-    public void SetBarrierConversionRate(int playerNum, float newValue)
-    {
-        if (playerNum == 1) p1VillBarConRate = newValue;
-        else p2VillBarConRate = newValue;
-    }
-
-    public int GetPlayerEng(int playerNum)
-    {
-        return playerNum == 1 ? this.p1Energy : this.p2Energy;
-    }
-
-    public void SetPlayerEng(int playerNum, int newValue)
-    {
-        if (playerNum == 1) p1Energy = newValue;
-        else p2Energy = newValue;
-    }
-
-    public int GetPlayerLockpickCount(int playerNum)
-    {
-        return playerNum == 1 ? this.p1LockpickCnt : this.p2LockpickCnt;
-    }
-
-    public void AddPlayerLockPickCount(int playerNum)
-    {
-        if (playerNum == 1) p1LockpickCnt++;
-        else p2LockpickCnt++;
-    }
-
-    public void RemovePlayerLockPickCount(int playerNum)
-    {
-        if (playerNum == 1) p1LockpickCnt = Mathf.Max(p1LockpickCnt - 1, 0);
-        else p2LockpickCnt = Mathf.Max(p2LockpickCnt - 1, 0);
-    }
-
-    public void AddPlayerLockCount(int playerNum)
-    {
-        if (playerNum == 1) p1LockCnt++;
-        else p2LockCnt++;
-    }
-
 
 }
