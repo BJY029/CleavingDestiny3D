@@ -10,9 +10,7 @@ namespace Village
     {
         private IVillageStatProvider _statProvider;
 
-        // static Hashtable로 캐싱하여 매번 재사용
         private static readonly Hashtable _propCache = new Hashtable();
-        // Enum 길이를 static으로 캐싱하여 재사용
         private static readonly int _villageTypeCount = Enum.GetValues(typeof(VillageType)).Length;
 
         private int _cachedGold = 0;
@@ -23,31 +21,38 @@ namespace Village
         public void Initialize(IVillageStatProvider statProvider)
         {
             _statProvider = statProvider;
-
-            // 정적 인스턴스 재사용 시, 이전 씬에서 연결된 이벤트 리스너들을 정리해야 함 (Memory Leak 방지)
             OnGoldChanged = null;
 
-            // 씬이 새로 로드될 때 Photon에 저장된 기존 골드 정보를 가져옴
             if (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue(PlayerPropKeys.Gold, out object gold))
             {
                 _cachedGold = Convert.ToInt32(gold);
             }
             else
             {
-                _cachedGold = 0; // 데이터가 없으면 0으로 초기화
+                _cachedGold = 0;
             }
         }
 
-        public int GetMyGold() => _cachedGold;
+        public int GetMyGold(int actorNumber = -1)
+        {
+            if (actorNumber == -1) actorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
+
+            if (actorNumber == PhotonNetwork.LocalPlayer.ActorNumber)
+            {
+                return _cachedGold;
+            }
+            else
+            {
+                return PhotonPropertyHelper.GetPlayerProp(actorNumber, PlayerPropKeys.Gold, 0);
+            }
+        }
 
         public void AddGold(int amount)
         {
             _goldChangedBySelf = true;
             _cachedGold += amount;
 
-            _propCache.Clear();
-            _propCache[PlayerPropKeys.Gold] = _cachedGold;
-            PhotonNetwork.LocalPlayer.SetCustomProperties(_propCache);
+            PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.Gold, _cachedGold);
 
             OnGoldChanged?.Invoke(_cachedGold);
         }
@@ -65,50 +70,66 @@ namespace Village
             _goldChangedBySelf = false;
         }
 
-        public bool TryUpgradeLevel(VillageType facilityType)
+        public bool TryUpgradeLevel(VillageType facilityType, int actorNumber = -1)
         {
-            int currentGold = GetMyGold();
-            int currentLevel = _statProvider.GetVillageLevel(facilityType);
-            int cost = _statProvider.GetLevelUpgradedCost(facilityType, currentLevel);
+            // 업그레이드 시도: 골드 충분 여부 확인 후, 충분하면 골드 차감 및 레벨 업
+            // 보안을 위해 클라이언트는 자기 정보만 업그레이드 가능
+            // 호스트만 다른 플레이어의 업그레이드 시도 가능 (AI 제어용)
 
-            if (cost <= 0)
+            if (actorNumber == -1) actorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
+
+            if (actorNumber != PhotonNetwork.LocalPlayer.ActorNumber && !PhotonNetwork.IsMasterClient)
             {
+                Debug.LogWarning("다른 플레이어의 건물 업그레이드는 호스트만 시도할 수 있습니다.");
                 return false;
             }
 
+            int currentGold = GetMyGold(actorNumber);
+            int currentLevel = _statProvider.GetVillageLevel(facilityType, actorNumber);
+            int cost = _statProvider.GetLevelUpgradedCost(facilityType, currentLevel);
+
+            if (cost <= 0) return false;
+
             if (currentGold >= cost)
             {
-                ProcessUpgrade(facilityType, currentLevel, currentGold, cost);
+                ProcessUpgrade(facilityType, currentLevel, currentGold, cost, actorNumber);
                 return true;
             }
             return false;
         }
 
-        private void ProcessUpgrade(VillageType facilityType, int currentLevel, int currentGold, int cost)
+        private void ProcessUpgrade(VillageType facilityType, int currentLevel, int currentGold, int cost, int actorNumber)
         {
-            Player myPlayer = PhotonNetwork.LocalPlayer;
-            _cachedGold = currentGold - cost;
+            int newGold = currentGold - cost;
+            if (actorNumber == PhotonNetwork.LocalPlayer.ActorNumber)
+            {
+                _cachedGold = newGold;
+                _goldChangedBySelf = true;
+            }
 
             _propCache.Clear();
-            _propCache[PlayerPropKeys.Gold] = _cachedGold;
+            _propCache[PlayerPropKeys.Gold] = newGold;
 
-            // Photon 역직렬화 타입(int[]/object[]) 차이를 흡수하고, 원본 배열 오염을 막기 위해 복사본을 사용
-            int[] currentUpgrades = GetUpgradeLevelsSnapshot(myPlayer);
+            int[] currentUpgrades = GetUpgradeLevelsSnapshot(actorNumber);
             int nextLevel = currentLevel + 1;
             currentUpgrades[(int)facilityType] = nextLevel;
             _propCache[PlayerPropKeys.VillageUpgrades] = currentUpgrades;
 
-            // 건물 타입에 따른 플레이어 스탯 업데이트
             UpdatePlayerStatsByLevel(facilityType, nextLevel);
 
-            _goldChangedBySelf = true;
-            myPlayer.SetCustomProperties(_propCache);
-            OnGoldChanged?.Invoke(_cachedGold);
+            foreach (var key in _propCache.Keys)
+            {
+                PhotonPropertyHelper.SetPlayerProp(actorNumber, key.ToString(), _propCache[key]);
+            }
+
+            if (actorNumber == PhotonNetwork.LocalPlayer.ActorNumber)
+            {
+                OnGoldChanged?.Invoke(_cachedGold);
+            }
         }
 
         private void UpdatePlayerStatsByLevel(VillageType facilityType, int nextLevel)
         {
-            // _statProvider를 통해 계산된 최신 스탯을 _propCache에 추가
             switch (facilityType)
             {
                 case VillageType.Mine:
@@ -126,21 +147,15 @@ namespace Village
                     _propCache[PlayerPropKeys.MinAtkPow] = min;
                     _propCache[PlayerPropKeys.MaxAtkPow] = max;
                     break;
-                    // TODO: 대장간 등 추가 예정인 건물들에 대한 로직
             }
         }
 
-        private static int[] GetUpgradeLevelsSnapshot(Player player)
+        private static int[] GetUpgradeLevelsSnapshot(int actorNumber)
         {
             int[] levels = new int[_villageTypeCount];
 
-            if (player == null
-                || player.CustomProperties == null
-                || !player.CustomProperties.TryGetValue(PlayerPropKeys.VillageUpgrades, out object village)
-                || village == null)
-            {
-                return levels;
-            }
+            object village = PhotonPropertyHelper.GetPlayerProp<object>(actorNumber, PlayerPropKeys.VillageUpgrades);
+            if (village == null) return levels;
 
             if (village is int[] intList)
             {
