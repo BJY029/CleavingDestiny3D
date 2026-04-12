@@ -35,9 +35,13 @@ public class AIVillageUpgrader : AILogicModule
         None
     }
 
-    void SetDependency(IVillageManager villageManager, IVillageStatProvider statProvider)
+    bool hasAttemptedShop = false;
+    private string[] currentShopOffer = null;
+    private int lastShopOfferTurn = -1;
+
+    void SetDependency(IVillageManager manager, IVillageStatProvider statProvider)
     {
-        this.villageManager = villageManager;
+        this.villageManager = manager;
         this.statProvider = statProvider;
     }
 
@@ -49,6 +53,7 @@ public class AIVillageUpgrader : AILogicModule
         }
 
         SetDependency(VillageSystem.VillageLogic, VillageSystem.VillageStat);
+        hasAttemptedShop = false;
 
         Debug.Log($"[AI {brain.MyActorNum}] 마을 업그레이드 단계 진입");
 
@@ -68,6 +73,8 @@ public class AIVillageUpgrader : AILogicModule
             for (int i = 0; i <= (int)AIResult.BuyItem; i++)
             {
                 AIResult potentialResult = (AIResult)i;
+                if (potentialResult == AIResult.BuyItem && hasAttemptedShop) continue;
+
                 int currentScore = CalculateScore(potentialResult, context, curGold);
                 score[potentialResult] = currentScore;
 
@@ -83,8 +90,9 @@ public class AIVillageUpgrader : AILogicModule
 
             if (bestAction == AIResult.BuyItem)
             {
-                // TODO: 상점 아이템 구매 로직 연결 필요 (현재는 업그레이드 우선)
-                break;
+                bool bought = await ProcessShopBuy();
+                if (!bought) hasAttemptedShop = true; // 구매 실패 시 이번 페이즈는 포기
+                continue;
             }
 
             var buildingType = bestAction switch
@@ -111,6 +119,51 @@ public class AIVillageUpgrader : AILogicModule
         {
             villageSceneManager.SetPlayerReady(brain.MyActorNum, true);
         }
+    }
+
+    private async UniTask<bool> ProcessShopBuy()
+    {
+        if (OfferAuthority.Instance == null) return false;
+
+        int curTurn = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
+        if (currentShopOffer == null || lastShopOfferTurn != curTurn)
+        {
+            int shopLevel = statProvider.GetVillageLevel(VillageType.Shop, brain.MyActorNum) + 1;
+            // AI 브라우징 (nonce 0)
+            currentShopOffer = OfferAuthority.Instance.GetShopOffer(brain.MyActorNum, curTurn + 1, 0, shopLevel);
+            lastShopOfferTurn = curTurn;
+        }
+
+        bool boughtAny = false;
+        // 살 수 있는 아이템 하나 찾기
+        for (int i = 0; i < currentShopOffer.Length; i++)
+        {
+            string itemId = currentShopOffer[i];
+            if (string.IsNullOrEmpty(itemId) || itemId == "Error") continue;
+
+            ItemSO item = ItemDB.Instance.Get(itemId);
+            if (item == null) continue;
+
+            int price = VillageSystem.VillageStat.VillageBalance.GetItemPrice(item.itemClass);
+
+            if (villageManager.GetMyGold(brain.MyActorNum) >= price)
+            {
+                Debug.Log($"[AI {brain.MyActorNum}] Buying item: {itemId} for {price}G");
+
+                // 골드 차감 및 구매 요청
+                villageManager.AddGold(-price, brain.MyActorNum);
+                InventoryAuthority.Instance.RequestBuyShopItem(brain.MyActorNum, itemId, price);
+
+                // 목록에서 제거
+                currentShopOffer[i] = null;
+                boughtAny = true;
+
+                await UniTask.Delay(100); // 약간의 대기
+                break;
+            }
+        }
+
+        return boughtAny;
     }
 
     private int CalculateScore(AIResult potentialResult, AIContext context, int curGold)

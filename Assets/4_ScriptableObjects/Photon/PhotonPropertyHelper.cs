@@ -95,6 +95,29 @@ public class PhotonPropertyHelper
         }
     }
 
+    public static void SetPlayerProps(int actorNumber, Hashtable props)
+    {
+        Player player = PhotonNetwork.CurrentRoom.GetPlayer(actorNumber);
+
+        if (player != null)
+        {
+            player.SetCustomProperties(props);
+        }
+        else
+        {
+            if (PhotonNetwork.IsMasterClient && GameManager.Instance.isSoloPlay)
+            {
+                Hashtable aiProps = new Hashtable();
+                foreach (var entry in props)
+                {
+                    string aiKey = $"{entry.Key}_{actorNumber}";
+                    aiProps[aiKey] = entry.Value;
+                }
+                PhotonNetwork.CurrentRoom.SetCustomProperties(aiProps);
+            }
+        }
+    }
+
     // //�÷��̾��� CustomProperty�� Key�� ���� ���� �� ��������
     // public static T GetPlayerProp<T>(Player player, string key, T defaultValue = default)
     // {

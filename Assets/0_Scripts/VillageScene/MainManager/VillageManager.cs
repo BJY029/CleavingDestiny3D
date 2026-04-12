@@ -47,14 +47,25 @@ namespace Village
             }
         }
 
-        public void AddGold(int amount)
+        public void AddGold(int amount, int actorNumber = -1)
         {
-            _goldChangedBySelf = true;
-            _cachedGold += amount;
+            if (actorNumber == -1) actorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
 
-            PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.Gold, _cachedGold);
+            int currentGold = GetMyGold(actorNumber);
+            int newGold = currentGold + amount;
 
-            OnGoldChanged?.Invoke(_cachedGold);
+            if (actorNumber == PhotonNetwork.LocalPlayer.ActorNumber)
+            {
+                _goldChangedBySelf = true;
+                _cachedGold = newGold;
+            }
+
+            PhotonPropertyHelper.SetPlayerProp(actorNumber, PlayerPropKeys.Gold, newGold);
+
+            if (actorNumber == PhotonNetwork.LocalPlayer.ActorNumber)
+            {
+                OnGoldChanged?.Invoke(_cachedGold);
+            }
         }
 
         public void SyncFromPhoton(Player targetPlayer, Hashtable changedProps)
@@ -115,12 +126,13 @@ namespace Village
             currentUpgrades[(int)facilityType] = nextLevel;
             _propCache[PlayerPropKeys.VillageUpgrades] = currentUpgrades;
 
-            UpdatePlayerStatsByLevel(facilityType, nextLevel);
+            UpdatePlayerStatsByLevel(facilityType, nextLevel, _propCache);
 
-            foreach (var key in _propCache.Keys)
-            {
-                PhotonPropertyHelper.SetPlayerProp(actorNumber, key.ToString(), _propCache[key]);
-            }
+            // foreach (var key in _propCache.Keys)
+            // {
+            //     PhotonPropertyHelper.SetPlayerProp(actorNumber, key.ToString(), _propCache[key]);
+            // }
+            PhotonPropertyHelper.SetPlayerProps(actorNumber, _propCache);
 
             if (actorNumber == PhotonNetwork.LocalPlayer.ActorNumber)
             {
@@ -128,24 +140,24 @@ namespace Village
             }
         }
 
-        private void UpdatePlayerStatsByLevel(VillageType facilityType, int nextLevel)
+        private void UpdatePlayerStatsByLevel(VillageType facilityType, int nextLevel, Hashtable propcache)
         {
             switch (facilityType)
             {
                 case VillageType.Mine:
-                    _propCache[PlayerPropKeys.DayGoldIncome] = _statProvider.GetGoldIncomePerDay(nextLevel);
+                    propcache[PlayerPropKeys.DayGoldIncome] = _statProvider.GetGoldIncomePerDay(nextLevel);
                     break;
                 case VillageType.Farm:
-                    _propCache[PlayerPropKeys.MaxEnergy] = _statProvider.GetMaxEnergy(nextLevel);
-                    _propCache[PlayerPropKeys.EnergyIncome] = _statProvider.GetEnergyIncomePerDay(nextLevel);
+                    propcache[PlayerPropKeys.MaxEnergy] = _statProvider.GetMaxEnergy(nextLevel);
+                    propcache[PlayerPropKeys.EnergyIncome] = _statProvider.GetEnergyIncomePerDay(nextLevel);
                     break;
                 case VillageType.Barrier:
-                    _propCache[PlayerPropKeys.BarrierArmor] = _statProvider.GetBarrierArmor(nextLevel);
+                    propcache[PlayerPropKeys.BarrierArmor] = _statProvider.GetBarrierArmor(nextLevel);
                     break;
                 case VillageType.Forge:
                     var (min, max) = _statProvider.GetAxeRangeDamage(nextLevel);
-                    _propCache[PlayerPropKeys.MinAtkPow] = min;
-                    _propCache[PlayerPropKeys.MaxAtkPow] = max;
+                    propcache[PlayerPropKeys.MinAtkPow] = min;
+                    propcache[PlayerPropKeys.MaxAtkPow] = max;
                     break;
             }
         }

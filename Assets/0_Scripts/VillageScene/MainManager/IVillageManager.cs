@@ -24,10 +24,11 @@ namespace Village
         int GetMyGold(int actorNumber = -1);
 
         /// <summary>
-        /// 골드 획득 또는 차감 (Photon CustomProperties 동기화 포함)
+        /// 특정 액터 번호(AI 포함)의 골드 획득 또는 차감 (Photon CustomProperties 동기화 포함)
         /// </summary>
         /// <param name="amount">변경할 골드 양 (음수일 경우 차감)</param>
-        void AddGold(int amount);
+        /// <param name="actorNumber">대상 액터 번호 (기본값 -1은 로컬 플레이어)</param>
+        void AddGold(int amount, int actorNumber = -1);
 
         /// <summary>
         /// 특정 액터 번호(AI 포함)의 건물 업그레이드 시도.
