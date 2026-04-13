@@ -1,9 +1,14 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 
+public enum StatType { VillageHP, Energy, Barrier, TotalDmg, MultRate, BarConRate }
+public enum TreeType { TreeHP, TreeToxic }
 public class SimGameState
 {
+    public static event Action<int, StatType, float> OnStatChange;
+    public static event Action<TreeType, float> OnTreeChange;
+
     public PlayerSetting playerSetting;
     public RoomSetting roomSetting;
     public int roomSeed;
@@ -15,16 +20,185 @@ public class SimGameState
     public int wave;
     public int day;
 
-    public float p1TotalHitDmg, p2TotalHitDmg;
+    private float _p1TotalHitDmg;
+    public float p1TotalHitDmg
+    {
+        get => _p1TotalHitDmg;
+        set
+        {
+            if (Mathf.Approximately(_p1TotalHitDmg, value)) return;
+            _p1TotalHitDmg = value;
+            OnStatChange?.Invoke(1, StatType.TotalDmg, _p1TotalHitDmg);
+        }
+    }
+
+    private float _p1VillHP;
+    public float p1VillHP
+    {
+        get => _p1VillHP;
+        set
+        {
+            if (Mathf.Approximately(_p1VillHP, value)) return;
+            _p1VillHP = value;
+            OnStatChange?.Invoke(1, StatType.VillageHP, _p1VillHP);
+        }
+    }
+
+    private float _p1VillBarrier;
+    public float p1VillBarrier
+    {
+        get => _p1VillBarrier;
+        set
+        {
+            if (Mathf.Approximately(_p1VillBarrier, value)) return;
+            _p1VillBarrier = value;
+            OnStatChange?.Invoke(1, StatType.Barrier, _p1VillBarrier);
+        }
+    }
+
+    private float _p1VillBarConRate;
+    public float p1VillBarConRate
+    {
+        get => _p1VillBarConRate;
+        set
+        {
+            if (Mathf.Approximately(_p1VillBarConRate, value)) return;
+            _p1VillBarConRate = value;
+            OnStatChange?.Invoke(1, StatType.BarConRate, _p1VillBarConRate);
+        }
+    }
+
+    private float _p1DmgMultRate;
+    public float p1DmgMultRate
+    {
+        get => _p1DmgMultRate;
+        set
+        {
+            if (Mathf.Approximately(_p1DmgMultRate, value)) return;
+            _p1DmgMultRate = value;
+            OnStatChange?.Invoke(1, StatType.MultRate, _p1DmgMultRate);
+        }
+    }
+
+    private int _p1Energy;
+    public int p1Energy
+    {
+        get => _p1Energy;
+        set
+        {
+            if (_p1Energy == value) return;
+            _p1Energy = value;
+            OnStatChange?.Invoke(1, StatType.Energy, _p1Energy);
+        }
+    }
+
+    private float _p2TotalHitDmg;
+    public float p2TotalHitDmg
+    {
+        get => _p2TotalHitDmg;
+        set
+        {
+            if (Mathf.Approximately(_p2TotalHitDmg, value)) return;
+            _p2TotalHitDmg = value;
+            OnStatChange?.Invoke(2, StatType.TotalDmg, _p2TotalHitDmg);
+        }
+    }
+
+    private float _p2VillHP;
+    public float p2VillHP
+    {
+        get => _p2VillHP;
+        set
+        {
+            if (Mathf.Approximately(_p2VillHP, value)) return;
+            _p2VillHP = value;
+            OnStatChange?.Invoke(2, StatType.VillageHP, _p2VillHP);
+        }
+    }
+
+    private float _p2VillBarrier;
+    public float p2VillBarrier
+    {
+        get => _p2VillBarrier;
+        set
+        {
+            if (Mathf.Approximately(_p2VillBarrier, value)) return;
+            _p2VillBarrier = value;
+            OnStatChange?.Invoke(2, StatType.Barrier, _p2VillBarrier);
+        }
+    }
+
+    private float _p2VillBarrConRate;
+    public float p2VillBarConRate
+    {
+        get => _p2VillBarrConRate;
+        set
+        {
+            if (Mathf.Approximately(_p2VillBarrConRate, value)) return;
+            _p2VillBarrConRate = value;
+            OnStatChange?.Invoke(2, StatType.BarConRate, _p2VillBarrConRate);
+        }
+    }
+
+    private float _p2DmgMultRate;
+    public float p2DmgMultRate
+    {
+        get => _p2DmgMultRate;
+        set
+        {
+            if (Mathf.Approximately(_p2DmgMultRate, value)) return;
+            _p2DmgMultRate = value;
+            OnStatChange?.Invoke(1, StatType.MultRate, _p2DmgMultRate);
+        }
+    }
+
+    private int _p2Energy;
+    public int p2Energy
+    {
+        get => _p2Energy;
+        set
+        {
+            if (_p2Energy == value) return;
+            _p2Energy = value;
+            OnStatChange?.Invoke(2, StatType.Energy, _p2Energy);
+        }
+    }
+
+
+    private float _treeHP;
+    public float treeHP
+    {
+        get => _treeHP;
+        set
+        {
+            if (Mathf.Approximately(_treeHP, value)) return;
+            _treeHP = value;
+            OnTreeChange?.Invoke(TreeType.TreeHP, _treeHP);
+        }
+    }
+
+    private float _treeToxicDmg;
+    public float treeToxicDmg
+    {
+        get => _treeToxicDmg;
+        set
+        {
+            if (Mathf.Approximately(_treeToxicDmg, value)) return;
+            _treeToxicDmg = value;
+            OnTreeChange?.Invoke(TreeType.TreeHP, _treeToxicDmg);
+        }
+    }
+
+
+
+
+    public int p1MaxEnergy, p2MaxEnergy;
+
     public int p1MaxHitDmg, p2MaxHitDmg;
     public int p1MinHitDmg, p2MinHitDmg;
-    public int p1Energy, p2Energy;
-    public int p1MaxEnergy, p2MaxEnergy;
-    public float p1VillHP, p1VillBarrier, p1VillBarConRate;
-    public float p2VillHP, p2VillBarrier, p2VillBarConRate;
+
     public bool p1HasDebuff, p2HasDebuff;
-    public float treeHP;
-    public float treeToxicDmg;
+
 
     public int p1LockCnt, p2LockCnt;
     public int p1LockpickCnt, p2LockpickCnt;
@@ -43,6 +217,7 @@ public class SimGameState
         this.p1VillHP = this.p2VillHP = playerSetting.villageHP;
         this.p1VillBarrier = this.p2VillBarrier = playerSetting.villageBarrier;
         this.p1VillBarConRate = this.p2VillBarConRate = playerSetting.barrierConversionRate;
+        this.p1DmgMultRate = this.p2DmgMultRate = 1f;
         this.treeHP = roomSetting.treeHP;
         this.treeToxicDmg = roomSetting.treeAtkPow;
         this.turn = 0;
@@ -189,6 +364,18 @@ public class SimGameState
 
         Debug.Log($"p1 Village HP : {this.p1VillHP}, p2 Village HP : {this.p2VillHP}, next tree toxic dmg : {this.treeToxicDmg}");
         InitPlayerStat();
+    }
+
+    public void SetPlayerDmgMultRate(int playerNum, float rate)
+    {
+        if (playerNum == 1) p1DmgMultRate = rate;
+        else p2DmgMultRate = rate;
+    }
+
+    public void SetPlayerBarConRate(int playerNum, float rate)
+    {
+        if (playerNum == 1) p1VillBarConRate = rate;
+        else p2VillBarConRate = rate;
     }
 
     public void InitPlayerStat()

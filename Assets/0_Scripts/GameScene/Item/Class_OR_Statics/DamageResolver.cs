@@ -30,6 +30,7 @@ public class DamageResolver
         int calcDmg = (dmg.overrideDamage >= 0) ? dmg.overrideDamage : dmg.baseDamage;
         //배수 적용
         calcDmg = Mathf.RoundToInt(calcDmg * dmg.multiplier);
+        if (state != null) state.SetPlayerDmgMultRate(dmg.attackerNum, dmg.multiplier);
 
         //공격력->방어력 전환 단계 트리거 발행
         _bus.publish(new GameEvent
@@ -46,6 +47,7 @@ public class DamageResolver
             baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum, state);
         float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate + dmg.convertRateDelta;
         rate = Mathf.Clamp01(rate);
+        if (state != null) state.SetPlayerBarConRate(dmg.attackerNum, rate);
 
         //최종 데미지 확정
         dmg.finalDamage = calcDmg;
