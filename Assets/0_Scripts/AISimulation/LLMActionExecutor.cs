@@ -31,9 +31,19 @@ public class LLMActionExecutor
                         {
                             //아이템 효과 실제 적용
                             //아이템 인벤토리에서 삭제
-                            state.TryDeleteItemFromInventroy(playerNum, act.itemId);
                             ItemSO item = ItemDB.Instance.Get(act.itemId);
+                            int playerEng = (playerNum == 1) ? state.p1Energy : state.p2Energy;
+                            if (item.itemCost > playerEng)
+                            {
+                                Debug.LogError($"[Item Using Error]Not Enough Energy : p{playerNum}'s Energy={playerEng} < itemCost={item.itemCost}");
+                                continue;
+                            }
                             ItemHandlingInSim.Instance.AddItemStatusInstance(playerNum, item, state);
+
+                            if (playerNum == 1) state.p1Energy -= item.itemCost;
+                            else state.p2Energy -= item.itemCost;
+
+                            state.TryDeleteItemFromInventroy(playerNum, act.itemId);
                         }
                     }
                     break;

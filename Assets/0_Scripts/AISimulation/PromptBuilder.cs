@@ -149,6 +149,7 @@ public class PromptBuilder
     {
         //내 인벤토리 가져오기
         List<string> myInv = (myPlayerNum == 1) ? state.p1Inventory : state.p2Inventory;
+        if (myInv == null) myInv = new List<string>();
         //중복 아이템 설명은 한 번만 들어가도록 HashSet 설정
         HashSet<string> uniqueItems = new HashSet<string>(myInv);
 
@@ -163,6 +164,12 @@ public class PromptBuilder
             foreach (string itemId in uniqueItems)
             {
                 ItemSO item = ItemDB.Instance.Get(itemId);
+
+                if (item == null)
+                {
+                    Debug.LogWarning($"[PromptBuilder] 인벤토리에 유효하지 않은 아이템 ID가 포함됨 : {itemId}");
+                }
+
                 sb.AppendLine($" -{item.itemId} ({item.displayName_ID}, Cost: {item.itemCost}):{LocalizationManager.Instance.GetText(CSV_Type.Item, item.itemDesc_ID)}");
             }
         }

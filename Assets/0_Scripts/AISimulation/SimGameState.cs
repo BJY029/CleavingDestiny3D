@@ -9,6 +9,9 @@ public class SimGameState
     public static event Action<int, StatType, float> OnStatChange;
     public static event Action<TreeType, float> OnTreeChange;
 
+    public static event Action<int, string> OnItemAdded;
+    public static event Action<int, string> OnItemRemoved;
+
     public PlayerSetting playerSetting;
     public RoomSetting roomSetting;
     public int roomSeed;
@@ -227,6 +230,8 @@ public class SimGameState
         this.p1LockCnt = this.p2LockCnt = 1;
         this.p1LockpickCnt = this.p2LockpickCnt = 0;
         this.roomSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+
+        AISimUIController.instance.InitStatUI(this);
     }
 
     //플레이어 상태 DTO로 반환
@@ -302,6 +307,7 @@ public class SimGameState
             if (p1Inventory.Count < 8)
             {
                 p1Inventory.Add(itemId);
+                OnItemAdded?.Invoke(playerNum, itemId);
                 PrintPlayerInventory(p1Inventory);
             }
         }
@@ -310,6 +316,7 @@ public class SimGameState
             if (p2Inventory.Count < 8)
             {
                 p2Inventory.Add(itemId);
+                OnItemAdded?.Invoke(playerNum, itemId);
                 PrintPlayerInventory(p2Inventory);
             }
         }
@@ -324,11 +331,13 @@ public class SimGameState
         if (playerNum == 1)
         {
             isRemoved = p1Inventory.Remove(itemId);
+            OnItemRemoved?.Invoke(playerNum, itemId);
             PrintPlayerInventory(p1Inventory);
         }
         else
         {
             isRemoved = p2Inventory.Remove(itemId);
+            OnItemRemoved?.Invoke(playerNum, itemId);
             PrintPlayerInventory(p2Inventory);
         }
         if (!isRemoved) Debug.LogWarning($"Faild to delete {itemId} item from P{playerNum}'s Inventory");
