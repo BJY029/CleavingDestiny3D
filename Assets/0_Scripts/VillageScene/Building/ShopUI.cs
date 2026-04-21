@@ -75,7 +75,7 @@ namespace Village.Building
             // 최신 응답인지 검증 (네트워크 순서 꼬임 방지)
             if (shopNonce < lastSentNonce) return;
 
-            Debug.Log($"ShopUI received random shop items for nonce {shopNonce}");
+            Logger.Log($"ShopUI received random shop items for nonce {shopNonce}", this);
 
             isWaitingForResult = false;
 
@@ -262,7 +262,7 @@ namespace Village.Building
             }
             else
             {
-                Debug.LogError("InventoryAuthority Instance is null! GameScene이 제대로 로드되었는지 확인하세요.");
+                Logger.LogError("InventoryAuthority Instance is null! GameScene이 제대로 로드되었는지 확인하세요.", this);
             }
         }
 

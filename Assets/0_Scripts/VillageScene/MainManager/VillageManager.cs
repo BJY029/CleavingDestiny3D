@@ -91,7 +91,7 @@ namespace Village
 
             if (actorNumber != PhotonNetwork.LocalPlayer.ActorNumber && !PhotonNetwork.IsMasterClient)
             {
-                Debug.LogWarning("다른 플레이어의 건물 업그레이드는 호스트만 시도할 수 있습니다.");
+                Logger.LogWarning("다른 플레이어의 건물 업그레이드는 호스트만 시도할 수 있습니다.");
                 return false;
             }
 

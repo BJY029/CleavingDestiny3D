@@ -17,7 +17,7 @@ namespace Village
                     _instance = FindFirstObjectByType<VillageStatManager>();
                     if (_instance == null)
                     {
-                        Debug.LogError("VillageStatManager 인스턴스를 찾을 수 없습니다!");
+                        Logger.LogError("VillageStatManager 인스턴스를 찾을 수 없습니다!");
                     }
                 }
                 return _instance;
