@@ -12,8 +12,8 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 {
 	public static OfferAuthority Instance;
 
-	// 상점 리롤 결과 수신 시 발생하는 이벤트 (nonce, 아이템ID배열)
-	public event Action<int, string[]> OnShopRerollReceived;
+	// 상점 리롤 결과 수신 시 발생하는 이벤트 (대상ActorNum, nonce, 아이템ID배열)
+	public event Action<int, int, string[]> OnShopRerollReceived;
 
 	private void Awake()
 	{
@@ -81,9 +81,18 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 	void RPC_RequestShopReroll(int turnActor, int turnIndex, int shopNonce, int shopLevel)
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
-		if (VillageSystem.VillageStat == null) return;
 
-		// VillageBalanceData 기반 모든 등급의 확률을 데이터로부터 계산
+		string[] resultOffer = GetShopOffer(turnActor, turnIndex, shopNonce, shopLevel);
+		SendShopRerollResult(turnActor, shopNonce, resultOffer);
+	}
+
+	/// <summary>
+	/// 상점 아이템 목록을 생성합니다. (MasterClient 전용)
+	/// </summary>
+	public string[] GetShopOffer(int turnActor, int turnIndex, int shopNonce, int shopLevel)
+	{
+		if (VillageSystem.VillageStat == null) return Array.Empty<string>();
+
 		var b = VillageSystem.VillageStat.VillageBalance;
 
 		float rareW = b.ShopRareChanceBase + (shopLevel - 1) * b.ShopRareChanceMultiplier;
@@ -104,32 +113,32 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 		List<string> resultOffer = new List<string>();
 		Pick(randSeed, items, in shopWeights, b.ShopItemCount, resultOffer);
 
-		SendShopRerollResult(turnActor, shopNonce, resultOffer);
+		return resultOffer.ToArray();
 	}
-	private void SendShopRerollResult(int turnActor, int shopNonce, List<string> offer)
+
+	private void SendShopRerollResult(int turnActor, int shopNonce, string[] offerArray)
 	{
-		string[] offerArray = offer.ToArray();
 		Player targetPlayer = PhotonNetwork.CurrentRoom.GetPlayer(turnActor);
 		if (targetPlayer != null)
 		{
-			photonView.RPC(nameof(RPC_ReceiveShopRerollResult), targetPlayer, shopNonce, offerArray);
+			photonView.RPC(nameof(RPC_ReceiveShopRerollResult), targetPlayer, turnActor, shopNonce, offerArray);
 		}
 	}
 
 	[PunRPC]
-	void RPC_ReceiveShopRerollResult(int shopNonce, string[] offerArray)
+	void RPC_ReceiveShopRerollResult(int turnActor, int shopNonce, string[] offerArray)
 	{
-		Debug.Log($"Received shop reroll result for nonce {shopNonce}: {string.Join(", ", offerArray)}");
+		Debug.Log($"Received shop reroll result for Actor {turnActor}, nonce {shopNonce}: {string.Join(", ", offerArray)}");
 
 		// 이벤트 호출 (구독자가 있을 경우에만 실행)
-		OnShopRerollReceived?.Invoke(shopNonce, offerArray);
+		OnShopRerollReceived?.Invoke(turnActor, shopNonce, offerArray);
 	}
 
 
 	//각 턴에 호출될 아이템 3개 뽑기 함수
 	public string MakeOfferForTurn(int turnActor, int turnIndex)
 	{
-		if (!PhotonNetwork.IsMasterClient) return "";
+		if (!PhotonNetwork.IsMasterClient) return string.Empty;
 
 		// 플레이어 인벤토리 확인
 		string playerInv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(turnActor));
@@ -142,7 +151,7 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 		List<ItemSO> items = ItemDB.Instance.GetItemsList();
 		int randSeed = GetItemRollSeed(turnActor, turnIndex);
 
-		RarityWeights playerWeights = new RarityWeights(
+		RarityWeights playerWeights = new(
 			PhotonPropertyHelper.GetPlayerProp<float>(turnActor, PlayerPropKeys.Item_CommonWeight),
 			PhotonPropertyHelper.GetPlayerProp<float>(turnActor, PlayerPropKeys.Item_HeroWeight),
 			PhotonPropertyHelper.GetPlayerProp<float>(turnActor, PlayerPropKeys.Item_RareWeight),
@@ -154,7 +163,7 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 		return string.Join("|", currentOffer);
 	}
 
-	// MasterClient만 수행 - 최적화된 Pick (in 키워드로 복사 비용 제거)
+	// MasterClient만 수행
 	public void Pick(int randomSeed, List<ItemSO> items, in RarityWeights weights, int count, List<string> itemCache)
 	{
 		itemCache.Clear();

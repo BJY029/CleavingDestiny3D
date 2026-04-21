@@ -47,6 +47,8 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	private Quaternion[] spawnInvRot;
 	public GameObject LocalPlayerObj { get; private set; }
 
+	public int TotalPlayerCount => players.Count;
+
 
 	private void Awake()
 	{

@@ -93,7 +93,7 @@ namespace Village.Building
 
         public virtual void RefreshStatusUI()
         {
-            int nextUpgradeCost = VillageStat.GetLevelUpgradedCost(currentBuildingType);
+            int nextUpgradeCost = VillageStat.GetLevelUpgradedCost(currentBuildingType, VillageStat.GetVillageLevel(currentBuildingType));
             int currentGold = VillageSystem.VillageLogic.GetMyGold();
 
             currentGoldText.SetText("{0}", currentGold);

@@ -11,9 +11,11 @@ namespace Village.Outside
         [SerializeField] Image readyImagePrefab;
         [SerializeField] RectTransform playerReadyContainer;
         Image[] playerReadyImages;
+        public int PlayerCount { get; private set; }
 
         public void Initialize(int playerCount)
         {
+            PlayerCount = playerCount;
             playerReadyImages = new Image[playerCount];
 
             for (int i = 0; i < playerCount; i++)

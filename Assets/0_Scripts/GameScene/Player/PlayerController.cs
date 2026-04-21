@@ -14,19 +14,19 @@ public interface ILookInteractable
 	void OnInteract(IPlayerAction pc);
 }
 
-//¹Ì´Ï°ÔÀÓ »óÈ£ÀÛ¿ë ÀÎÅÍÆäÀÌ½º
+//ë¯¸ë‹ˆê²Œì„ ìƒí˜¸ì‘ìš© ì¸í„°í˜ì´ìŠ¤
 public interface IMinigameInteractable
 {
 	void OnInteract(PlayerController pc);
 }
 
-//CharacterController ÄÄÆ÷³ÍÆ® °­Á¦ ÇÒ´ç
+//CharacterController ì»´í¬ë„ŒíŠ¸ ê°•ì œ í• ë‹¹
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 {
 	public bool IsAI = false;
 	public int PlayerActNum { get; set; }
-	//¿òÁ÷ÀÓ °ü·Ã ÆÄ¶ó¹ÌÅÍ
+	//ì›€ì§ì„ ê´€ë ¨ íŒŒë¼ë¯¸í„°
 	[Header("Move")]
 	public float walkSpeed = 3.5f;
 	public float sprintSpeed = 6.0f;
@@ -34,20 +34,20 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 	public float accelation = 12f;
 	public float deceleration = 12f;
 
-	//Á¡ÇÁ¿Í Áß·Â °ü·Ã ÆÄ¶ó¹ÌÅÍ
+	//ì í”„ì™€ ì¤‘ë ¥ ê´€ë ¨ íŒŒë¼ë¯¸í„°
 	[Header("Jump/Gravity")]
 	public float jumpHeight = 1.2f;
 	public float gravity = -20f;
-	public Transform groundCheck;      // ¹ß ¾Æ·¡ ºó ¿ÀºêÁ§Æ® ÃßÃµ
+	public Transform groundCheck;      // ë°œ ì•„ë˜ ë¹ˆ ì˜¤ë¸Œì íŠ¸ ì¶”ì²œ
 	public LayerMask groundLayers = ~0;
 
-	//Ä«¸Ş¶ó °ü·Ã ÆÄ¶ó¹ÌÅÍ
+	//ì¹´ë©”ë¼ ê´€ë ¨ íŒŒë¼ë¯¸í„°
 	[Header("Camera")]
-	public Transform pivotTransform;  // Main CameraÀÇ pivot
-	public GameObject _mainCamera;  //½ÇÁ¦ Ä«¸Ş¶ó
+	public Transform pivotTransform;  // Main Cameraì˜ pivot
+	public GameObject _mainCamera;  //ì‹¤ì œ ì¹´ë©”ë¼
 	public float cameraDistance = 3.0f;
 
-	//¾Ö´Ï¸ŞÀÌ¼Ç °ü·Ã ÆÄ¶ó¹ÌÅÍ
+	//ì• ë‹ˆë©”ì´ì…˜ ê´€ë ¨ íŒŒë¼ë¯¸í„°
 	[Header("Animator")]
 	private Animator animator;
 	private bool hasAnimator;
@@ -59,17 +59,17 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 	private int _animIDFreeFall;
 	private int _animIDMotionSpeed;
 
-	//°¨µµ
+	//ê°ë„
 	[SerializeField]
 	private float mouseSensitivity = 0.1f;
 
 	[Tooltip("How far in degrees can you move the camera up")]
-	public float TopClamp = 90.0f; //À§ÂÊ Ä«¸Ş¶ó È¸Àü Á¦ÇÑ
+	public float TopClamp = 90.0f; //ìœ„ìª½ ì¹´ë©”ë¼ íšŒì „ ì œí•œ
 
 	[Tooltip("How far in degrees can you move the camera down")]
-	public float BottomClamp = -90.0f;//¾Æ·¡ÂÊ Ä«¸Ş¶ó È¸Àü Á¦ÇÑ
+	public float BottomClamp = -90.0f;//ì•„ë˜ìª½ ì¹´ë©”ë¼ íšŒì „ ì œí•œ
 
-	//input system °ü·Ã ÆÄ¶ó¹ÌÅÍ
+	//input system ê´€ë ¨ íŒŒë¼ë¯¸í„°
 	private Vector2 moveInput;
 	private Vector2 lookInput;
 	private bool sprintPressed;
@@ -79,24 +79,24 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 	private PlayerInput playerInput;
 	private InputAction moveAction, lookAction, sprintAction, jumpAction;
 
-	//¿òÁ÷ÀÓ °ü·Ã ÄÚµå ³»ºÎ¿¡¼­ »ç¿ëÇÏ´Â ÆÄ¶ó¹ÌÅÍ
+	//ì›€ì§ì„ ê´€ë ¨ ì½”ë“œ ë‚´ë¶€ì—ì„œ ì‚¬ìš©í•˜ëŠ” íŒŒë¼ë¯¸í„°
 	private CharacterController characterController;
 	private float currentSpeed;
 	private Vector3 velocity;
-	//Á¡ÇÁ °ü·Ã ÄÚµå ³»ºÎ¿¡¼­ »ç¿ëÇÏ´Â  ÆÄ¶ó¹ÌÅÍ
+	//ì í”„ ê´€ë ¨ ì½”ë“œ ë‚´ë¶€ì—ì„œ ì‚¬ìš©í•˜ëŠ”  íŒŒë¼ë¯¸í„°
 	public bool isGrounded;
 	private float groundCheckRadius;
 
-	private const float _threshold = 0.01f; //¹Ì¼¼ ÀÔ·Â ¹«½Ã ±âÁØ°ª	
+	private const float _threshold = 0.01f; //ë¯¸ì„¸ ì…ë ¥ ë¬´ì‹œ ê¸°ì¤€ê°’	
 
-	//È¸Àü °ü·Ã ÆÄ¶ó¹ÌÅÍ
+	//íšŒì „ ê´€ë ¨ íŒŒë¼ë¯¸í„°
 	private float Yaw;
 	private float Pitch;
 
 	private Camera cam;
 	[Header("Raycast")]
 	[SerializeField] private float RayDistance;
-	//Ray¸¦ ºñÈ°¼ºÈ­ ÇÏ±â À§ÇÑ ·¹ÀÌ °Å¸® Á¶Àı±â(ºñÈ°¼ºÈ­½Ã 0À¸·Î ¼³Á¤µÇ¾î °öÇØÁü)
+	//Rayë¥¼ ë¹„í™œì„±í™” í•˜ê¸° ìœ„í•œ ë ˆì´ ê±°ë¦¬ ì¡°ì ˆê¸°(ë¹„í™œì„±í™”ì‹œ 0ìœ¼ë¡œ ì„¤ì •ë˜ì–´ ê³±í•´ì§)
 	public int RayMultiplyer;
 	[SerializeField] private LayerMask targetLayer;
 	private ILookInteractable currentInteractable;
@@ -108,13 +108,13 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 	public bool isLookingAtTree { get; set; }
 
 
-	//¸¶À» ¾÷±×·¹ÀÌµå ÁßÀÎÁö ¿©ºÎ¸¦ ÀúÀåÇÒ ÇÃ·¡±×
+	//ë§ˆì„ ì—…ê·¸ë ˆì´ë“œ ì¤‘ì¸ì§€ ì—¬ë¶€ë¥¼ ì €ì¥í•  í”Œë˜ê·¸
 	private bool UpgradePhase;
 	private bool WhileHittingMotion;
 	private float damageRatio;
 	private int damage;
 
-	//Æ¯Á¤ ÀÎº¥Åä¸®¿¡ µé¾î°¡±â À§ÇÑ Å°(°ª = ÀÎº¥Åä¸® ÁÖÀÎ ActorNum)
+	//íŠ¹ì • ì¸ë²¤í† ë¦¬ì— ë“¤ì–´ê°€ê¸° ìœ„í•œ í‚¤(ê°’ = ì¸ë²¤í† ë¦¬ ì£¼ì¸ ActorNum)
 	private int InvAdmissionTicket = -1;
 	public void SetInvAdmissionTicket(int Num)
 	{
@@ -127,16 +127,16 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
 	private void Awake()
 	{
-		//¾Ö´Ï¸ŞÀÌÅÍ ÇÒ´ç(ÇÒ´ç ½ÇÆĞ½Ã false·Î ¼³Á¤)
+		//ì• ë‹ˆë©”ì´í„° í• ë‹¹(í• ë‹¹ ì‹¤íŒ¨ì‹œ falseë¡œ ì„¤ì •)
 		hasAnimator = TryGetComponent(out animator);
 
-		//playerInput °¡Á®¿À±â
+		//playerInput ê°€ì ¸ì˜¤ê¸°
 		if (playerInput == null) playerInput = GetComponent<PlayerInput>();
 
-		//ÄÁÆ®·Ñ·¯ ¹Ş¾Æ¿À±â
+		//ì»¨íŠ¸ë¡¤ëŸ¬ ë°›ì•„ì˜¤ê¸°
 		characterController = GetComponent<CharacterController>();
 
-		//groundCheckRadius ¾ÈÀü Ã³¸®
+		//groundCheckRadius ì•ˆì „ ì²˜ë¦¬
 		groundCheckRadius = 0.2f;
 		if (groundCheck != null)
 		{
@@ -144,31 +144,31 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 			if (sc) groundCheckRadius = sc.radius;
 		}
 
-		//¸¸¾à ³» ÇÃ·¹ÀÌ¾î°¡ ¾Æ´Ï¶ó¸é
+		//ë§Œì•½ ë‚´ í”Œë ˆì´ì–´ê°€ ì•„ë‹ˆë¼ë©´
 		if (!photonView.IsMine || IsAI)
 		{
 			if (playerInput != null)
 			{
-				//Àß¸øµÈ Æä¾î¸µÀ» ÇØÁ¦ÇÏ°í
+				//ì˜ëª»ëœ í˜ì–´ë§ì„ í•´ì œí•˜ê³ 
 				playerInput.enabled = false;
 			}
-			//ÇØ´ç ÇÃ·¹ÀÌ¾îÀÇ Ä«¸Ş¶ó¸¦ ²ö´Ù.
-			if (_mainCamera != null) _mainCamera.SetActive(false); // ¿ø°İ Ä«¸Ş¶ó ²ô±â
-			enabled = true; // Update¿¡¼­ Á¶±â return ÇÒ °Å¶ó ½ºÅ©¸³Æ®´Â ÄÔ
+			//í•´ë‹¹ í”Œë ˆì´ì–´ì˜ ì¹´ë©”ë¼ë¥¼ ëˆë‹¤.
+			if (_mainCamera != null) _mainCamera.SetActive(false); // ì›ê²© ì¹´ë©”ë¼ ë„ê¸°
+			enabled = true; // Updateì—ì„œ ì¡°ê¸° return í•  ê±°ë¼ ìŠ¤í¬ë¦½íŠ¸ëŠ” ì¼¬
 			return;
 		}
 
 		cam = _mainCamera.GetComponent<Camera>();
-		//·ÎÄÃ ÀÎ½ºÅÏ½º, Áï ÀÚ±â ÀÚ½ÅÀÌ¶ó¸é ÀåÄ¡ Å»Ãë ¹æÁö
+		//ë¡œì»¬ ì¸ìŠ¤í„´ìŠ¤, ì¦‰ ìê¸° ìì‹ ì´ë¼ë©´ ì¥ì¹˜ íƒˆì·¨ ë°©ì§€
 		if (playerInput != null)
 		{
 			playerInput.neverAutoSwitchControlSchemes = true;
 		}
 
-		//¾Ö´Ï¸ŞÀÌ¼Ç Á¢±Ù ÆÄ¶ó¹ÌÅÍ¸¦ ÇØ½ÃÄÚµå·Î °ü¸®
+		//ì• ë‹ˆë©”ì´ì…˜ ì ‘ê·¼ íŒŒë¼ë¯¸í„°ë¥¼ í•´ì‹œì½”ë“œë¡œ ê´€ë¦¬
 		AssignAnimationIDs();
 
-		//·ÎÄÃ¿¡¼­¸¸ ¾×¼Ç ¹ÙÀÎµù
+		//ë¡œì»¬ì—ì„œë§Œ ì•¡ì…˜ ë°”ì¸ë”©
 		if (playerInput != null && playerInput.actions != null)
 		{
 			var actions = playerInput.actions;
@@ -186,7 +186,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
 
 
-	//ÇØ´ç Ä³¸¯ÅÍ°¡ È°¼ºÈ­ È¤Àº ºñÈ°¼ºÈ­ µÇ¸é ¿òÁ÷ÀÓÀ» Á¦ÇÑ
+	//í•´ë‹¹ ìºë¦­í„°ê°€ í™œì„±í™” í˜¹ì€ ë¹„í™œì„±í™” ë˜ë©´ ì›€ì§ì„ì„ ì œí•œ
 	private void OnEnable()
 	{
 		if (!photonView.IsMine || IsAI) return;
@@ -195,7 +195,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 		sprintAction?.Enable();
 		jumpAction?.Enable();
 
-		//F Å°°¡ ´­¸®´Â ÀÌº¥Æ®¿¡ ÇØ´ç ÇÔ¼ö »ğÀÔ
+		//F í‚¤ê°€ ëˆŒë¦¬ëŠ” ì´ë²¤íŠ¸ì— í•´ë‹¹ í•¨ìˆ˜ ì‚½ì…
 		KeyInteractManager.instance.OnInteractFKeyDown += HandleInteractFKey;
 		KeyInteractManager.instance.OnInteractSpaceKeyDown += HandleInteractSpaceKey;
 	}
@@ -226,11 +226,11 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 	{
 		currentSpeed = 0f;
 
-		// ¼öÆò ÀÌµ¿ ²÷±â
+		// ìˆ˜í‰ ì´ë™ ëŠê¸°
 		velocity.x = 0f;
 		velocity.z = 0f;
 
-		// ¹Ù´Ú¿¡ ºÙ¾îÀÖÀ¸¸é ¾Æ·¡·Î »ìÂ¦ ´­·¯ÁÖ´Â °ª À¯Áö(¿øÇÏ¸é 0À¸·Î ÇØµµ µÊ)
+		// ë°”ë‹¥ì— ë¶™ì–´ìˆìœ¼ë©´ ì•„ë˜ë¡œ ì‚´ì§ ëˆŒëŸ¬ì£¼ëŠ” ê°’ ìœ ì§€(ì›í•˜ë©´ 0ìœ¼ë¡œ í•´ë„ ë¨)
 		if (isGrounded) velocity.y = -2f;
 	}
 
@@ -240,7 +240,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
 		if (locked)
 		{
-			//ÀÔ·Â ¾×¼Ç ²¨¼­ ¡°´©¸£°í ÀÖ´ø Å°¡± ÀÌº¥Æ®°¡ ´õ ÀÌ»ó µé¾î¿ÀÁö ¾Ê°Ô
+			//ì…ë ¥ ì•¡ì…˜ êº¼ì„œ â€œëˆ„ë¥´ê³  ìˆë˜ í‚¤â€ ì´ë²¤íŠ¸ê°€ ë” ì´ìƒ ë“¤ì–´ì˜¤ì§€ ì•Šê²Œ
 			moveAction?.Disable();
 			lookAction?.Disable();
 			sprintAction?.Disable();
@@ -249,7 +249,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 			ResetInputState();
 			ResetMotionState();
 
-			// ¾Ö´Ï¸ŞÀÌ¼Çµµ Áï½Ã Á¤Áö ´À³¦ ÁÖ°í ½ÍÀ¸¸é(¼±ÅÃ)
+			// ì• ë‹ˆë©”ì´ì…˜ë„ ì¦‰ì‹œ ì •ì§€ ëŠë‚Œ ì£¼ê³  ì‹¶ìœ¼ë©´(ì„ íƒ)
 			if (hasAnimator)
 			{
 				animator.SetFloat(_animIDSpeedX, 0f);
@@ -263,11 +263,11 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 			sprintAction?.Enable();
 			jumpAction?.Enable();
 
-			ResetInputState(); // Àç°³ ½Ã¿¡µµ 0À¸·Î ½ÃÀÛ(Å° ´­¸²Àº ´ÙÀ½ ÇÁ·¹ÀÓ ReadInputÀ¸·Î ´Ù½Ã ÀâÈû)
+			ResetInputState(); // ì¬ê°œ ì‹œì—ë„ 0ìœ¼ë¡œ ì‹œì‘(í‚¤ ëˆŒë¦¼ì€ ë‹¤ìŒ í”„ë ˆì„ ReadInputìœ¼ë¡œ ë‹¤ì‹œ ì¡í˜)
 		}
 	}
 
-	//¾Ö´Ï¸ŞÀÌÅÍ ÆÄ¶ó¹ÌÅÍ¸¦ ÇØ½ÃÄÚµå·Î ÀúÀåÇØ¼­ °ü¸®ÇÑ´Ù.
+	//ì• ë‹ˆë©”ì´í„° íŒŒë¼ë¯¸í„°ë¥¼ í•´ì‹œì½”ë“œë¡œ ì €ì¥í•´ì„œ ê´€ë¦¬í•œë‹¤.
 	private void AssignAnimationIDs()
 	{
 		_animIDSpeedX = Animator.StringToHash("Speed_X");
@@ -278,28 +278,28 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 		_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
 	}
 
-	//¸¶À» ¾÷±×·¹ÀÌµå¿¡ µ¹ÀÔ½Ã ½ÇÇàµÉ ÇÔ¼ö
+	//ë§ˆì„ ì—…ê·¸ë ˆì´ë“œì— ëŒì…ì‹œ ì‹¤í–‰ë  í•¨ìˆ˜
 	public void VillageUpgradePhase()
 	{
-		//ÇÃ·¹ÀÌ¾î Ä«¸Ş¶ó¸¦ ²ô°í
+		//í”Œë ˆì´ì–´ ì¹´ë©”ë¼ë¥¼ ë„ê³ 
 		cam.enabled = false;
-		//¸ŞÀÎ Ä«¸Ş¶ó ÄÑ±â
+		//ë©”ì¸ ì¹´ë©”ë¼ ì¼œê¸°
 		CameraSwitchManager.Instance.GameCameraToggle(true);
 	}
 
-	//¸¶À» ¾÷±×·¹ÀÌµå°¡ ³¡³ª¸é ½ÇÇàµÉ ÇÔ¼ö
+	//ë§ˆì„ ì—…ê·¸ë ˆì´ë“œê°€ ëë‚˜ë©´ ì‹¤í–‰ë  í•¨ìˆ˜
 	public void VillageUpgradePhaseOut()
 	{
-		//¸ŞÀÎ Ä«¸Ş¶ó ²ô°í
+		//ë©”ì¸ ì¹´ë©”ë¼ ë„ê³ 
 		CameraSwitchManager.Instance.GameCameraToggle(false);
-		//ÇÃ·¹ÀÌ¾î Ä«¸Ş¶ó ÄÑ±â
+		//í”Œë ˆì´ì–´ ì¹´ë©”ë¼ ì¼œê¸°
 		cam.enabled = true;
 	}
 
-	//¿òÁ÷ÀÓ ¹× Á¡ÇÁ °ü·Ã ÄÚµå ½ÇÇà
+	//ì›€ì§ì„ ë° ì í”„ ê´€ë ¨ ì½”ë“œ ì‹¤í–‰
 	private void Update()
 	{
-		//³» photonView°¡ ¾Æ´Ï¸é ½ÇÇàÇÏÁö ¾Ê´Â´Ù.
+		//ë‚´ photonViewê°€ ì•„ë‹ˆë©´ ì‹¤í–‰í•˜ì§€ ì•ŠëŠ”ë‹¤.
 		if (!photonView.IsMine || IsAI)
 		{
 			return;
@@ -323,40 +323,40 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 			SetInputLocked(true);
 			return;
 		}
-		//¸¸¾à Æ¯Á¤ ¹Ì´Ï°ÔÀÓÀÌ ½ÇÇàµÇ¾ú´Ù¸é
+		//ë§Œì•½ íŠ¹ì • ë¯¸ë‹ˆê²Œì„ì´ ì‹¤í–‰ë˜ì—ˆë‹¤ë©´
 		if (LockpickController.instance.IsGameActive())
 		{
-			//¸¸¾à ÇöÀç ½ÇÇàÁßÀÎ ¹Ì´Ï°ÔÀÓÀÌ ¾ø´Ù¸é, ÇØ´ç ÀÎÅÍÆäÀÌ½º·Î ¼³Á¤
+			//ë§Œì•½ í˜„ì¬ ì‹¤í–‰ì¤‘ì¸ ë¯¸ë‹ˆê²Œì„ì´ ì—†ë‹¤ë©´, í•´ë‹¹ ì¸í„°í˜ì´ìŠ¤ë¡œ ì„¤ì •
 			if (currentMinigame == null) currentMinigame = LockpickController.instance;
-			//¿òÁ÷ÀÓ ¸·±â
+			//ì›€ì§ì„ ë§‰ê¸°
 			SetInputLocked(true);
 			return;
 		}
 
-		//º°´Ù¸¥ ¹Ì´Ï°ÔÀÓÀÌ ½ÇÇàÁßÀÌÁö ¾ÊÀ¸¸é, ÀÎÅÍÆäÀÌ½º¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+		//ë³„ë‹¤ë¥¸ ë¯¸ë‹ˆê²Œì„ì´ ì‹¤í–‰ì¤‘ì´ì§€ ì•Šìœ¼ë©´, ì¸í„°í˜ì´ìŠ¤ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
 		if (currentMinigame != null) currentMinigame = null;
-		//¸¸¾à ¸¶À» ¾÷±×·¹ÀÌµå ÆäÀÌÁî¿¡ µ¹ÀÔÇÑ °æ¿ì
+		//ë§Œì•½ ë§ˆì„ ì—…ê·¸ë ˆì´ë“œ í˜ì´ì¦ˆì— ëŒì…í•œ ê²½ìš°
 		if (TurnManager.Instance.isUpgradePhase)
 		{
-			//¾ÆÁ÷ °ü·Ã Ã³¸®¸¦ ÁøÇàÇÏÁö ¾ÊÀº °æ¿ì
+			//ì•„ì§ ê´€ë ¨ ì²˜ë¦¬ë¥¼ ì§„í–‰í•˜ì§€ ì•Šì€ ê²½ìš°
 			if (!UpgradePhase)
 			{
-				//Ã³¸® ÁøÇàÈÄ
+				//ì²˜ë¦¬ ì§„í–‰í›„
 				VillageUpgradePhase();
-				//¸¶À» ¾÷±×·¹ÀÌµå ÆäÀÌÁî¿¡ µ¹ÀÔÇßÀ½À» ¸í½Ã
+				//ë§ˆì„ ì—…ê·¸ë ˆì´ë“œ í˜ì´ì¦ˆì— ëŒì…í–ˆìŒì„ ëª…ì‹œ
 				UpgradePhase = true;
 			}
 			SetInputLocked(true);
 			return;
 		}
-		else //¸¶À» ¾÷±×·¹ÀÌµå ÆäÀÌÁî°¡ ¾Æ´Ñ °æ¿ì
+		else //ë§ˆì„ ì—…ê·¸ë ˆì´ë“œ í˜ì´ì¦ˆê°€ ì•„ë‹Œ ê²½ìš°
 		{
-			//±×·±µ¥ ¾ÆÁ÷ ¸¶À» ¾÷±×·¹ÀÌµå ÆäÀÌÁî·Î ¼³Á¤µÇ¾î ÀÖ´Â °æ¿ì
+			//ê·¸ëŸ°ë° ì•„ì§ ë§ˆì„ ì—…ê·¸ë ˆì´ë“œ í˜ì´ì¦ˆë¡œ ì„¤ì •ë˜ì–´ ìˆëŠ” ê²½ìš°
 			if (UpgradePhase)
 			{
-				//°ü·Ã Ã³¸® ÁøÇà ÈÄ
+				//ê´€ë ¨ ì²˜ë¦¬ ì§„í–‰ í›„
 				VillageUpgradePhaseOut();
-				//¸¶À» ¾÷±×·¹ÀÌµå ÆäÀÌÁî¿¡¼­ ºüÁ®³ª¿ÔÀ½À» ¸í½Ã
+				//ë§ˆì„ ì—…ê·¸ë ˆì´ë“œ í˜ì´ì¦ˆì—ì„œ ë¹ ì ¸ë‚˜ì™”ìŒì„ ëª…ì‹œ
 				UpgradePhase = false;
 			}
 		}
@@ -368,119 +368,119 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 		HandleMovement(Time.deltaTime);
 		HandleJumpAndGravity(Time.deltaTime);
 
-		//Ä«¸Ş¶ó Á¤¸é ¹æÇâÀ¸·Î Ray ¹ß»ç
+		//ì¹´ë©”ë¼ ì •ë©´ ë°©í–¥ìœ¼ë¡œ Ray ë°œì‚¬
 		Ray ray = new Ray(cam.transform.position, cam.transform.forward);
-		//µğ¹ö±×¿ë Ray ±×¸®±â
+		//ë””ë²„ê·¸ìš© Ray ê·¸ë¦¬ê¸°
 		Debug.DrawRay(ray.origin, ray.direction * RayDistance, Color.green);
-		//QueryTriggerInteraction.Collide : Trigger·Î ¼³Á¤µÈ Äİ¶óÀÌ´õ¿Íµµ Ãæµ¹À» °¨Áö
+		//QueryTriggerInteraction.Collide : Triggerë¡œ ì„¤ì •ëœ ì½œë¼ì´ë”ì™€ë„ ì¶©ëŒì„ ê°ì§€
 		if (Physics.Raycast(ray, out var hit, RayDistance, targetLayer, QueryTriggerInteraction.Collide))
 		{
-			//Ãæµ¹ÇÑ ¹°Ã¼ È¤Àº ±× ºÎ¸ğ¿¡°Ô¼­ ILookInteractable ÀÎÅÍÆäÀÌ½º Ã£±â
+			//ì¶©ëŒí•œ ë¬¼ì²´ í˜¹ì€ ê·¸ ë¶€ëª¨ì—ê²Œì„œ ILookInteractable ì¸í„°í˜ì´ìŠ¤ ì°¾ê¸°
 			var next = hit.transform.GetComponentInParent<ILookInteractable>();
 
-			//º¸°íÀÖ´ø ´ë»óÀÌ º¯°æ µÇ¾ú´ÂÁö È®ÀÎ
+			//ë³´ê³ ìˆë˜ ëŒ€ìƒì´ ë³€ê²½ ë˜ì—ˆëŠ”ì§€ í™•ì¸
 			if (!ReferenceEquals(next, currentInteractable))
 			{
-				//±âÁ¸¿¡ º¸°í ÀÖ´ø °ÍÀÌ ÀÖÀ¸¸é, ½Ã¼± ÇØÁ¦
+				//ê¸°ì¡´ì— ë³´ê³  ìˆë˜ ê²ƒì´ ìˆìœ¼ë©´, ì‹œì„  í•´ì œ
 				currentInteractable?.OnLookExit(this);
-				//ÇöÀç ´ë»óÀ» »õ·Î¿î °ÍÀ¸·Î ±³Ã¼
+				//í˜„ì¬ ëŒ€ìƒì„ ìƒˆë¡œìš´ ê²ƒìœ¼ë¡œ êµì²´
 				currentInteractable = next;
-				//»õ·Î¿î ´ë»ó¿¡°Ô ½Ã¼± ÁøÀÔ Ã³¸®
+				//ìƒˆë¡œìš´ ëŒ€ìƒì—ê²Œ ì‹œì„  ì§„ì… ì²˜ë¦¬
 				currentInteractable?.OnLookEnter(this);
 			}
 		}
-		else //Raycast ½ÇÆĞ ½Ã
+		else //Raycast ì‹¤íŒ¨ ì‹œ
 		{
-			//º¸°í ÀÖ´ø °ÍÀÌ ÀÖ¾ú´Ù¸é ÇØÁ¦
+			//ë³´ê³  ìˆë˜ ê²ƒì´ ìˆì—ˆë‹¤ë©´ í•´ì œ
 			if (currentInteractable != null)
 			{
 				currentInteractable.OnLookExit(this);
 				currentInteractable = null;
 			}
 		}
-		//ray°¡ target layer¸¦ °¨ÁöÇÏ¸é
+		//rayê°€ target layerë¥¼ ê°ì§€í•˜ë©´
 		//if (Physics.Raycast(ray, out RaycastHit hitInfo, RayDistance, targetLayer))
 		//{
-		//	//ÇØ´ç ·¹ÀÌ¾î¿¡ ÇØ´çµÇ´Â transform °´Ã¼ °¡Á®¿À±â
+		//	//í•´ë‹¹ ë ˆì´ì–´ì— í•´ë‹¹ë˜ëŠ” transform ê°ì²´ ê°€ì ¸ì˜¤ê¸°
 		//	Transform currentHit = hitInfo.transform;
 
-		//	//Ã³À½ °¨ÁöÇÏ´Â °´Ã¼ÀÎ °æ¿ì
+		//	//ì²˜ìŒ ê°ì§€í•˜ëŠ” ê°ì²´ì¸ ê²½ìš°
 		//	if(lastHitTarget != currentHit)
 		//	{
-		//		//Ã³¸® ÁøÇà
+		//		//ì²˜ë¦¬ ì§„í–‰
 		//		OnRayEnter(currentHit);
 		//	}
-		//	//ÇöÀç °¨ÁöÁßÀÎ °´Ã¼·Î ¼³Á¤
+		//	//í˜„ì¬ ê°ì§€ì¤‘ì¸ ê°ì²´ë¡œ ì„¤ì •
 		//	lastHitTarget = currentHit;
 
 		//}
-		//else//target layer¸¦ °¨ÁöÇÏÁö ¸øÇÑ °æ¿ì
+		//else//target layerë¥¼ ê°ì§€í•˜ì§€ ëª»í•œ ê²½ìš°
 		//{
-		//	//¸¸¾à °¨ÁöÁßÀÎ °´Ã¼°¡ ÀÖ¾ú´ø °æ¿ì(Áï, ¹æ±İ ½Ã¼±¿¡¼­ ÇØ´ç layer°¡ ¹ş¾î³­ °æ¿ì)
+		//	//ë§Œì•½ ê°ì§€ì¤‘ì¸ ê°ì²´ê°€ ìˆì—ˆë˜ ê²½ìš°(ì¦‰, ë°©ê¸ˆ ì‹œì„ ì—ì„œ í•´ë‹¹ layerê°€ ë²—ì–´ë‚œ ê²½ìš°)
 		//	if(lastHitTarget != null)
 		//	{
-		//		//°ü·Ã Ã³¸® ÁøÇà
+		//		//ê´€ë ¨ ì²˜ë¦¬ ì§„í–‰
 		//		OnRayExit(lastHitTarget);
-		//		//°¨Áö ÁßÀÎ °´Ã¼°¡ ¾ø´Ù°í ¼³Á¤
+		//		//ê°ì§€ ì¤‘ì¸ ê°ì²´ê°€ ì—†ë‹¤ê³  ì„¤ì •
 		//		lastHitTarget = null;
 		//	}
 		//}
 	}
 
-	//Ã³À½ ray·Î °¨ÁöÇßÀ» ¶§ ½ÇÇàµÉ ÇÔ¼ö
+	//ì²˜ìŒ rayë¡œ ê°ì§€í–ˆì„ ë•Œ ì‹¤í–‰ë  í•¨ìˆ˜
 	void OnRayEnter(Transform transform)
 	{
-		//ÇöÀç °¨ÁöÁßÀÎ ¿ÀºêÁ§Æ®ÀÇ ·¹ÀÌ¾î °¡Á®¿À±â
+		//í˜„ì¬ ê°ì§€ì¤‘ì¸ ì˜¤ë¸Œì íŠ¸ì˜ ë ˆì´ì–´ ê°€ì ¸ì˜¤ê¸°
 		LayerMask detectedLayer = transform.gameObject.layer;
 
-		//°¨ÁöÇÑ ¿ÀºêÁ§Æ®ÀÇ ·¹ÀÌ¾î°¡ TreeÀÎ °æ¿ì
+		//ê°ì§€í•œ ì˜¤ë¸Œì íŠ¸ì˜ ë ˆì´ì–´ê°€ Treeì¸ ê²½ìš°
 		if (detectedLayer == LayerMask.NameToLayer(CommonDefine.TREELAYER))
 		{
-			//Hit °ü·Ã ÅØ½ºÆ® Ç¥Ãâ
+			//Hit ê´€ë ¨ í…ìŠ¤íŠ¸ í‘œì¶œ
 			PlayerCanvasController.Instance.SetHitTextActive();
-			//ÇöÀç ³ª¹«¸¦ º¸°íÀÖ´Ù°í ÇÃ·¡±× ¼³Á¤
+			//í˜„ì¬ ë‚˜ë¬´ë¥¼ ë³´ê³ ìˆë‹¤ê³  í”Œë˜ê·¸ ì„¤ì •
 			isLookingAtTree = true;
 		}
 	}
 
-	//¹æ±İ ray¿¡¼­ ¹ş¾î³­ °æ¿ì
+	//ë°©ê¸ˆ rayì—ì„œ ë²—ì–´ë‚œ ê²½ìš°
 	void OnRayExit(Transform transform)
 	{
-		//±âÁ¸¿¡ °¨ÁöÁßÀÌ¿´´ø ¿ÀºêÁ§Æ®ÀÇ ·¹ÀÌ¾î °¡Á®¿À±â
+		//ê¸°ì¡´ì— ê°ì§€ì¤‘ì´ì˜€ë˜ ì˜¤ë¸Œì íŠ¸ì˜ ë ˆì´ì–´ ê°€ì ¸ì˜¤ê¸°
 		LayerMask outLayer = transform.gameObject.layer;
 
-		//¹æ±İ±îÁö °¨ÁöÁßÀÌ¿´´ø ·¹ÀÌ¾î°¡ ³ª¹«¿´À¸¸é
+		//ë°©ê¸ˆê¹Œì§€ ê°ì§€ì¤‘ì´ì˜€ë˜ ë ˆì´ì–´ê°€ ë‚˜ë¬´ì˜€ìœ¼ë©´
 		if (outLayer == LayerMask.NameToLayer(CommonDefine.TREELAYER))
 		{
-			//Hit °ü·Ã ÅØ½ºÆ®¸¦ ²ö´Ù.
+			//Hit ê´€ë ¨ í…ìŠ¤íŠ¸ë¥¼ ëˆë‹¤.
 			PlayerCanvasController.Instance.SetHitTextUnActive();
-			//³ª¹«¸¦ º¸°í ÀÖÁö ¾Ê´Ù°í ÇÃ·¡±× ¼³Á¤
+			//ë‚˜ë¬´ë¥¼ ë³´ê³  ìˆì§€ ì•Šë‹¤ê³  í”Œë˜ê·¸ ì„¤ì •
 			isLookingAtTree = false;
 		}
 	}
 
-	//FÅ°°¡ ´­·ÈÀ» ¶§ ½ÇÇàµÉ ÇÔ¼ö
+	//Fí‚¤ê°€ ëˆŒë ¸ì„ ë•Œ ì‹¤í–‰ë  í•¨ìˆ˜
 	private void HandleInteractFKey()
 	{
-		//³» °´Ã¼°¡ ¾Æ´Ï¸é return
+		//ë‚´ ê°ì²´ê°€ ì•„ë‹ˆë©´ return
 		if (!photonView.IsMine || IsAI) return;
-		//³» ÅÏÀÌ ¾Æ´Ï¸é return
+		//ë‚´ í„´ì´ ì•„ë‹ˆë©´ return
 		if (!GameHelper.IsMyTurn()) return;
-		//ÇöÀç Hit °ü·Ã UI°¡ È°¼ºÈ­µÇÁö ¾ÊÀº »óÅÂÀÎ °æ¿ì return
+		//í˜„ì¬ Hit ê´€ë ¨ UIê°€ í™œì„±í™”ë˜ì§€ ì•Šì€ ìƒíƒœì¸ ê²½ìš° return
 		//if (!PlayerCanvasController.Instance.selecting) return;
 
 		currentInteractable?.OnInteract(this);
 	}
 
-	//½ºÆäÀÌ½º ¹Ù°¡ ´­·ÈÀ» ¶§ ½ÇÇàµÉ ÇÔ¼ö
+	//ìŠ¤í˜ì´ìŠ¤ ë°”ê°€ ëˆŒë ¸ì„ ë•Œ ì‹¤í–‰ë  í•¨ìˆ˜
 	private void HandleInteractSpaceKey()
 	{
-		//³» °´Ã¼°¡ ¾Æ´Ï¸é return
+		//ë‚´ ê°ì²´ê°€ ì•„ë‹ˆë©´ return
 		if (!photonView.IsMine || IsAI) return;
-		//³» ÅÏÀÌ ¾Æ´Ï¸é return
+		//ë‚´ í„´ì´ ì•„ë‹ˆë©´ return
 		if (!GameHelper.IsMyTurn()) return;
 
-		//¹Ì´Ï °ÔÀÓ °ü·Ã ÀÎÅÍÆäÀÌ½º »óÈ£ÀÛ¿ë ¼öÇà
+		//ë¯¸ë‹ˆ ê²Œì„ ê´€ë ¨ ì¸í„°í˜ì´ìŠ¤ ìƒí˜¸ì‘ìš© ìˆ˜í–‰
 		currentMinigame?.OnInteract(this);
 	}
 
@@ -493,7 +493,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
 	public void TryHit(bool IsItRandom = false)
 	{
-		//¸¸¾à, »ç¿ëÀÚ ¼±ÅÃÀÌ ¾Æ´Ñ ÀÓÀÇÀÇ µ¥¹ÌÁöÀÎ °æ¿ì(ÅÏ ½Ã°£ ÃÊ°ú)
+		//ë§Œì•½, ì‚¬ìš©ì ì„ íƒì´ ì•„ë‹Œ ì„ì˜ì˜ ë°ë¯¸ì§€ì¸ ê²½ìš°(í„´ ì‹œê°„ ì´ˆê³¼)
 		if (IsItRandom)
 		{
 			damageRatio = Random.Range(0f, 100f);
@@ -501,45 +501,45 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 		else
 		{
 			if (!checkTreeInteractable()) return;
-			//Hit ¼ø°£ÀÇ °ÔÀÌÁö µ¥¹ÌÁö °ª ¹Ş±â
+			//Hit ìˆœê°„ì˜ ê²Œì´ì§€ ë°ë¯¸ì§€ ê°’ ë°›ê¸°
 			damageRatio = PlayerCanvasController.Instance.SelectNow();
-			//Å¸ÀÌ¸Ó ÁßÁö
+			//íƒ€ì´ë¨¸ ì¤‘ì§€
 			TimeManager.instance.AbortTurnTimer();
 		}
-		//Offer ÆĞ³Î Á¢±Ù ¸·±â
+		//Offer íŒ¨ë„ ì ‘ê·¼ ë§‰ê¸°
 		ItemOfferCanvasController.instance.Close();
 		int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow);
 		int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
 		damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
-		//Hit ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı 
+		//Hit ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ 
 		PlayHit();
 	}
 
-	//Hit ¾Ö´Ï¸ŞÀÌ¼ÇÀ» Àç»ıÇÏ´Â ÇÔ¼ö
+	//Hit ì• ë‹ˆë©”ì´ì…˜ì„ ì¬ìƒí•˜ëŠ” í•¨ìˆ˜
 	public void PlayHit()
 	{
-		//¸ğ¼Ç Àç»ı ÇÃ·¡±× È°¼ºÈ­
+		//ëª¨ì…˜ ì¬ìƒ í”Œë˜ê·¸ í™œì„±í™”
 		WhileHittingMotion = true;
-		//Hit °ü·Ã UI ºñÈ°¼ºÈ­
+		//Hit ê´€ë ¨ UI ë¹„í™œì„±í™”
 		PlayerCanvasController.Instance.SetHitTextUnActive();
-		//ÀÓÀÇÀÇ Hit ¸ğ¼Ç Àç»ı ÈÄ ÇØ´ç ¸ğ¼Ç index ¹Ş¾Æ¿À±â
+		//ì„ì˜ì˜ Hit ëª¨ì…˜ ì¬ìƒ í›„ í•´ë‹¹ ëª¨ì…˜ index ë°›ì•„ì˜¤ê¸°
 		int idx = gameObject.GetComponent<PlayerAnimationController>().PlayHit();
-		//¹Ş¾Æ¿Â Hit ¸ğ¼Ç index·Î ÀüÃ¼ ÇÃ·¹ÀÌ¾î¿¡°Ô RPC·Î ÇØ´ç ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı(µ¿±âÈ­)
+		//ë°›ì•„ì˜¨ Hit ëª¨ì…˜ indexë¡œ ì „ì²´ í”Œë ˆì´ì–´ì—ê²Œ RPCë¡œ í•´ë‹¹ ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ(ë™ê¸°í™”)
 		photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, idx);
 	}
 
-	//HIT ¾Ö´Ï¸ŞÀÌ¼Ç µ¿±âÈ­¿ë RPC ÇÔ¼ö
+	//HIT ì• ë‹ˆë©”ì´ì…˜ ë™ê¸°í™”ìš© RPC í•¨ìˆ˜
 	[PunRPC]
 	private void RPC_PlayHit(int idx)
 	{
 		gameObject.GetComponent<PlayerAnimationController>().PlayHit(idx);
 	}
 
-	//HIT ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ Á¾·áµÈ ÈÄ behaviour¿¡ µî·ÏµÈ NotifyOnAnimExit·Î È£ÃâµÇ´Â ÇÔ¼ö
-	//IAnimNotify ÀÎÅÍÆäÀÌ½º »ó¼ÓÀ¸·Î ÀÎÇØ ´ÙÀ½ ÇÔ¼ö ±¸Çö
+	//HIT ì• ë‹ˆë©”ì´ì…˜ì´ ì¢…ë£Œëœ í›„ behaviourì— ë“±ë¡ëœ NotifyOnAnimExitë¡œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+	//IAnimNotify ì¸í„°í˜ì´ìŠ¤ ìƒì†ìœ¼ë¡œ ì¸í•´ ë‹¤ìŒ í•¨ìˆ˜ êµ¬í˜„
 	public void OnAnimStateExit(int stateKey)
 	{
-		//stateKey°¡ 1ÀÌ¸é, Áï Hit °ü·Ã ¸ğ¼ÇÀÌ¸é
+		//stateKeyê°€ 1ì´ë©´, ì¦‰ Hit ê´€ë ¨ ëª¨ì…˜ì´ë©´
 		if (stateKey == 1)
 		{
 			if (!photonView.IsMine || IsAI) return;
@@ -549,7 +549,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 				Debug.LogError("damage error");
 				return;
 			}
-			//Hit ÇÑ ¼ø°£ÀÇ µ¥¹ÌÁö °ªÀ» ÀÎÀÚ·Î ÇØ¼­ ÅÏ ÀüÈ¯ ÇÔ¼ö È£Ãâ
+			//Hit í•œ ìˆœê°„ì˜ ë°ë¯¸ì§€ ê°’ì„ ì¸ìë¡œ í•´ì„œ í„´ ì „í™˜ í•¨ìˆ˜ í˜¸ì¶œ
 			TurnManager.Instance.RequestChangeTurn(damage, this);
 			damage = -1;
 			WhileHittingMotion = false;
@@ -557,7 +557,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 		}
 	}
 
-	//È¸Àü °ü·Ã ÄÚµå ½ÇÇà
+	//íšŒì „ ê´€ë ¨ ì½”ë“œ ì‹¤í–‰
 	private void LateUpdate()
 	{
 		if (!photonView.IsMine || IsAI)
@@ -566,7 +566,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 		}
 		if (inputLocked)
 		{
-			lookInput = Vector2.zero; // ¾ÈÀü»§
+			lookInput = Vector2.zero; // ì•ˆì „ë¹µ
 			return;
 		}
 
@@ -574,7 +574,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 		CameraRotation();
 	}
 
-	//»ç¿ëÀÚ ÀÔ·ÂÀ» input system¿¡¼­ ¹Ş¾Æ¿Â´Ù.
+	//ì‚¬ìš©ì ì…ë ¥ì„ input systemì—ì„œ ë°›ì•„ì˜¨ë‹¤.
 	private void ReadInput()
 	{
 		moveInput = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
@@ -584,94 +584,94 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 	}
 
 
-	//¹Ù´Ú Ã¼Å© ÇÔ¼ö
+	//ë°”ë‹¥ ì²´í¬ í•¨ìˆ˜
 	private void GroundCheck()
 	{
-		//±âº»°ª °è»ê :
-		//controller.height * 0.5f (contorller ³ôÀÌ Àı¹İ(Áï, Ä¸½¶ Áß½É¿¡¼­ ¹Ù´Ú±îÁö °Å¸®)
-		//controller.skinWidth (ChararcterControllerÀÇ ¹°¸® Ãæµ¹ º¸Á¤°ªÀ¸·Î, ¿©À¯¸¦ µÖ¼­ °ãÄ¡Áö ¾Ê°Ô ÇÏ´Â °ª)
-		//µÎ °ªÀ» »©´Â ÀÌ´º´Â, skinWidth ¸¸Å­ ¹Ù´ÚÀ» Áö³ªÃÄ¾ß ½ÇÁ¦ ¶¥¿¡ ´ê¾Ò´Ù°í ÆÇ´ÜÇÏ±â ¶§¹®,
-		//Ãß°¡·Î +0.05f·Î »ìÂ¦ ´õ ³»·Á¼­ ¹Ù´Ú¿¡ ¾ÈÁ¤ÀûÀ¸·Î ºÙÀÌ´Â ¿¬»ê
+		//ê¸°ë³¸ê°’ ê³„ì‚° :
+		//controller.height * 0.5f (contorller ë†’ì´ ì ˆë°˜(ì¦‰, ìº¡ìŠ ì¤‘ì‹¬ì—ì„œ ë°”ë‹¥ê¹Œì§€ ê±°ë¦¬)
+		//controller.skinWidth (ChararcterControllerì˜ ë¬¼ë¦¬ ì¶©ëŒ ë³´ì •ê°’ìœ¼ë¡œ, ì—¬ìœ ë¥¼ ë‘¬ì„œ ê²¹ì¹˜ì§€ ì•Šê²Œ í•˜ëŠ” ê°’)
+		//ë‘ ê°’ì„ ë¹¼ëŠ” ì´ë‰´ëŠ”, skinWidth ë§Œí¼ ë°”ë‹¥ì„ ì§€ë‚˜ì³ì•¼ ì‹¤ì œ ë•…ì— ë‹¿ì•˜ë‹¤ê³  íŒë‹¨í•˜ê¸° ë•Œë¬¸,
+		//ì¶”ê°€ë¡œ +0.05fë¡œ ì‚´ì§ ë” ë‚´ë ¤ì„œ ë°”ë‹¥ì— ì•ˆì •ì ìœ¼ë¡œ ë¶™ì´ëŠ” ì—°ì‚°
 		Vector3 checkPos = groundCheck != null ? groundCheck.position :
 			(transform.position + Vector3.down * (characterController.height * 0.5f - characterController.skinWidth + 0.05f));
 
 		isGrounded = Physics.CheckSphere(checkPos, groundCheckRadius, groundLayers, QueryTriggerInteraction.Ignore);
 
-		//¶¥¿¡ ºÙ¾îÀÖ´Â °æ¿ì, ¾à°£ ¾Æ·¡·Î ´©¸£´Â Èû Àû¿ë
+		//ë•…ì— ë¶™ì–´ìˆëŠ” ê²½ìš°, ì•½ê°„ ì•„ë˜ë¡œ ëˆ„ë¥´ëŠ” í˜ ì ìš©
 		if (isGrounded && velocity.y < 0f)
 			velocity.y = -2f;
 
-		//Á¡ÇÁ »óÅÂ¿©ºÎ¿¡ µû¶ó °ü·Ã ¾Ö´Ï¸ŞÀÌ¼ÇÀ» ½ÇÇàÇÑ´Ù.
+		//ì í”„ ìƒíƒœì—¬ë¶€ì— ë”°ë¼ ê´€ë ¨ ì• ë‹ˆë©”ì´ì…˜ì„ ì‹¤í–‰í•œë‹¤.
 		if (hasAnimator)
 		{
 			animator.SetBool(_animIDGrounded, isGrounded);
 		}
 	}
 
-	//ÀÌµ¿ °ü·Ã ÇÔ¼ö Ã³¸®
+	//ì´ë™ ê´€ë ¨ í•¨ìˆ˜ ì²˜ë¦¬
 	private void HandleMovement(float dt)
 	{
-		// Ä«¸Ş¶ó ±âÁØ ÀÌµ¿ º¤ÅÍ
+		// ì¹´ë©”ë¼ ê¸°ì¤€ ì´ë™ ë²¡í„°
 		Vector3 camForward = pivotTransform.forward;
 		Vector3 camRight = pivotTransform.right;
-		//yÃà °ªÀ» 0À¸·Î ÇÏ¿© ¼öÁ÷ ÀÌµ¿ »èÁ¦
+		//yì¶• ê°’ì„ 0ìœ¼ë¡œ í•˜ì—¬ ìˆ˜ì§ ì´ë™ ì‚­ì œ
 		camForward.y = 0f; camRight.y = 0f;
-		//°¢ º¤ÅÍ Å©±â Á¤±ÔÈ­
+		//ê° ë²¡í„° í¬ê¸° ì •ê·œí™”
 		camForward.Normalize(); camRight.Normalize();
 
-		//ÀÔ·ÂµÈ ¹æÇâ ±¸ÇÏ±â
+		//ì…ë ¥ëœ ë°©í–¥ êµ¬í•˜ê¸°
 		Vector3 inputDir = new Vector3(moveInput.x, 0f, moveInput.y);
-		//ÀÔ·ÂµÈ ¹æÇâÀ» Åä´ë·Î ½ÇÁ¦ ÀÌµ¿ ¹æÇâ ±¸ÇÏ±â
+		//ì…ë ¥ëœ ë°©í–¥ì„ í† ëŒ€ë¡œ ì‹¤ì œ ì´ë™ ë°©í–¥ êµ¬í•˜ê¸°
 		Vector3 moveDir = (camRight * inputDir.x + camForward * inputDir.z);
-		//¸ñÇ¥ ¼Óµµ °è»ê
+		//ëª©í‘œ ì†ë„ ê³„ì‚°
 		float targetSpeed = (sprintPressed ? sprintSpeed : walkSpeed) * Mathf.Clamp01(inputDir.magnitude);
 
-		// °¡°¨¼Ó
+		// ê°€ê°ì†
 		if (targetSpeed > currentSpeed)
 			currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, accelation * dt);
 		else
 			currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, deceleration * dt);
 
-		// ÃÖÁ¾ ÀÌµ¿ (y´Â HandleJumpAndGravity¿¡¼­ ³ÖÀ½)
+		// ìµœì¢… ì´ë™ (yëŠ” HandleJumpAndGravityì—ì„œ ë„£ìŒ)
 		Vector3 final = moveDir.normalized * currentSpeed;
 		final.y = velocity.y;
-		//¿òÁ÷ÀÓ Àû¿ë
+		//ì›€ì§ì„ ì ìš©
 		characterController.Move(final * dt);
 
-		//¾Ö´Ï¸ŞÀÌÅÍ°¡ ÀÖ´Ù¸é
+		//ì• ë‹ˆë©”ì´í„°ê°€ ìˆë‹¤ë©´
 		if (hasAnimator)
 		{
-			//¿òÁ÷ÀÓ ¹æÇâ °è»ê
+			//ì›€ì§ì„ ë°©í–¥ ê³„ì‚°
 			float mag = moveDir.magnitude;
-			//¿òÁ÷ÀÓ ÃÖ´ë ¼Óµµ Á¤ÀÇ
+			//ì›€ì§ì„ ìµœëŒ€ ì†ë„ ì •ì˜
 			float maxMoveSpeed = sprintSpeed;
-			//ÇöÀç ¿òÁ÷ÀÓ ¼Óµµ¸¦ 0~1 ¹üÀ§·Î º¯È¯(´Ş¸®±â½Ã 1)
+			//í˜„ì¬ ì›€ì§ì„ ì†ë„ë¥¼ 0~1 ë²”ìœ„ë¡œ ë³€í™˜(ë‹¬ë¦¬ê¸°ì‹œ 1)
 			float speed01 = (maxMoveSpeed > 0f) ? Mathf.Clamp01(currentSpeed / maxMoveSpeed) : 0f;
-			//¸¸¾à ÇöÀç Á¤Áö »óÅÂ¶ó¸é
+			//ë§Œì•½ í˜„ì¬ ì •ì§€ ìƒíƒœë¼ë©´
 			if (mag < 0.001f || speed01 < 0.001f)
 			{
 				animator.SetFloat(_animIDSpeedX, 0f, 0.1f, dt);
 				animator.SetFloat(_animIDSpeedZ, 0f, 0.1f, dt);
 			}
-			else//¿òÁ÷ÀÌ´Â »óÅÂÀÌ¸é
+			else//ì›€ì§ì´ëŠ” ìƒíƒœì´ë©´
 			{
-				//ProjectOnPlane(n, v)´Â ¹ı¼±ÀÌ nÀÎ Æò¸é¿¡ Á¤»ç¿µÇÏ´Â ÇÔ¼ö
-				//µû¶ó¼­ ¾Æ·¡ ÇÔ¼ö´Â ¹ı¼±ÀÌ Vector3.up(Áï, yÃà)ÀÎ ¼öÆò¸é XZ Æò¸é¿¡ Á¤»ç¿µ ÇÏ°Ô µÈ´Ù.
-				//ÀÌ¸¦ ÅëÇØ ¼öÁ÷ ¼ººĞÀ» Á¦°ÅÇÏ¿© ¼öÆò¸é¿¡ Åõ¿µÇÑ º¤ÅÍ¸¦ ¾òÀ» ¼ö ÀÖ°Ô µÈ´Ù.
+				//ProjectOnPlane(n, v)ëŠ” ë²•ì„ ì´ nì¸ í‰ë©´ì— ì •ì‚¬ì˜í•˜ëŠ” í•¨ìˆ˜
+				//ë”°ë¼ì„œ ì•„ë˜ í•¨ìˆ˜ëŠ” ë²•ì„ ì´ Vector3.up(ì¦‰, yì¶•)ì¸ ìˆ˜í‰ë©´ XZ í‰ë©´ì— ì •ì‚¬ì˜ í•˜ê²Œ ëœë‹¤.
+				//ì´ë¥¼ í†µí•´ ìˆ˜ì§ ì„±ë¶„ì„ ì œê±°í•˜ì—¬ ìˆ˜í‰ë©´ì— íˆ¬ì˜í•œ ë²¡í„°ë¥¼ ì–»ì„ ìˆ˜ ìˆê²Œ ëœë‹¤.
 				Vector3 fwd = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
 				Vector3 right = Vector3.ProjectOnPlane(transform.right, Vector3.up).normalized;
-				//¹æÇâ º¤ÅÍ
+				//ë°©í–¥ ë²¡í„°
 				Vector3 dir = moveDir / mag;
 
-				//Vector3.Dot(x, y)´Â, x¿Í y »çÀÌ °¢µµÀÇ ÄÚ»çÀÎ °ªÀ» ¹İÈ¯ÇÑ´Ù. µû¶ó¼­ ¹üÀ§´Â -1~1ÀÌ µÈ´Ù.
-				//ÇöÀç ¹æÇâ°ú ÁÂ¿ì ¹æÇâÀÇ °¢µµ¸¦ ÄÚ»çÀÎ °ªÀ¸·Î ¹Ş¾Æ¼­ ¼Óµµ °ªÀ» °öÇØ ÃÖÁ¾ ¿òÁ÷ÀÓ °ªÀ» °è»êÇÑ´Ù.
-				//1 : ¿ìÃø, 0 : Á¤¸é, -1 : ÁÂÃø
+				//Vector3.Dot(x, y)ëŠ”, xì™€ y ì‚¬ì´ ê°ë„ì˜ ì½”ì‚¬ì¸ ê°’ì„ ë°˜í™˜í•œë‹¤. ë”°ë¼ì„œ ë²”ìœ„ëŠ” -1~1ì´ ëœë‹¤.
+				//í˜„ì¬ ë°©í–¥ê³¼ ì¢Œìš° ë°©í–¥ì˜ ê°ë„ë¥¼ ì½”ì‚¬ì¸ ê°’ìœ¼ë¡œ ë°›ì•„ì„œ ì†ë„ ê°’ì„ ê³±í•´ ìµœì¢… ì›€ì§ì„ ê°’ì„ ê³„ì‚°í•œë‹¤.
+				//1 : ìš°ì¸¡, 0 : ì •ë©´, -1 : ì¢Œì¸¡
 				float moveX = Vector3.Dot(dir, right) * speed01;
-				//ÇöÀç ¹æÇâ°ú ¾ÕµÚ ¹æÇâÀÇ °¢µµ¸¦ ÄÚ»çÀÎ °ªÀ¸·Î ¹Ş¾Æ¼­ ¼Óµµ °ªÀ» °öÆĞ ÃÖÁ¾ ¿òÁ÷ÀÓ °ªÀ» °è»êÇÑ´Ù.
-				//1 : ¿ÏÀü Á¤¸é. 0 : Á÷°¢, -1 : µÚ
+				//í˜„ì¬ ë°©í–¥ê³¼ ì•ë’¤ ë°©í–¥ì˜ ê°ë„ë¥¼ ì½”ì‚¬ì¸ ê°’ìœ¼ë¡œ ë°›ì•„ì„œ ì†ë„ ê°’ì„ ê³±íŒ¨ ìµœì¢… ì›€ì§ì„ ê°’ì„ ê³„ì‚°í•œë‹¤.
+				//1 : ì™„ì „ ì •ë©´. 0 : ì§ê°, -1 : ë’¤
 				float moveZ = Vector3.Dot(dir, fwd) * speed01;
 
-				//°¢ ¿òÁ÷ÀÓ °ªÀ» ¾Ö´Ï¸ŞÀÌÅÍ¿¡ Àû¿ëÇÑ´Ù.
+				//ê° ì›€ì§ì„ ê°’ì„ ì• ë‹ˆë©”ì´í„°ì— ì ìš©í•œë‹¤.
 				animator.SetFloat(_animIDSpeedX, moveX, 0.1f, dt);
 				animator.SetFloat(_animIDSpeedZ, moveZ, 0.1f, dt);
 			}
@@ -679,50 +679,50 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 	}
 
 
-	//Ä«¸Ş¶ó È¸ÀüÀ» ´ã´çÇÏ´Â ÇÔ¼ö
-	//¸¶¿ì½º È¤Àº Á¶ÀÌ½ºÆ½ÀÇ ÀÔ·ÂÀ» ¹Ş¾Æ Ä«¸Ş¶óÀÇ pitch¿Í Ä³¸¯ÅÍÀÇ Yaw ¹æÇâ Á¶Á¤
-	//CameraRoot¸¦ ·ÎÄÃ È¸Àü ½ÃÅ°°í, ÇÃ·¹ÀÌ¾îÀÇ ÀüÃ¼ È¸ÀüÀº YÃà ±âÁØÀ¸·Î Á¶Á¤
+	//ì¹´ë©”ë¼ íšŒì „ì„ ë‹´ë‹¹í•˜ëŠ” í•¨ìˆ˜
+	//ë§ˆìš°ìŠ¤ í˜¹ì€ ì¡°ì´ìŠ¤í‹±ì˜ ì…ë ¥ì„ ë°›ì•„ ì¹´ë©”ë¼ì˜ pitchì™€ ìºë¦­í„°ì˜ Yaw ë°©í–¥ ì¡°ì •
+	//CameraRootë¥¼ ë¡œì»¬ íšŒì „ ì‹œí‚¤ê³ , í”Œë ˆì´ì–´ì˜ ì „ì²´ íšŒì „ì€ Yì¶• ê¸°ì¤€ìœ¼ë¡œ ì¡°ì •
 	private void CameraRotation()
 	{
-		//¸¸¾à ÀÔ·Âº¤ÅÍÀÇ Å©±â°¡ threshold º¸´Ù ÀÛÀ¸¸é(Áï Ä«¸Ş¶ó¸¦ °ÅÀÇ ¿òÁ÷ÀÌÁö ¾Ê¾ÒÀ» °æ¿ì)
-		//È¤Àº LockCameraPositionÀÌ trueÀÎ °æ¿ì
-		//Ä«¸Ş¶ó È¸ÀüÀ» ÇÏÁö ¾Ê´Â´Ù.
+		//ë§Œì•½ ì…ë ¥ë²¡í„°ì˜ í¬ê¸°ê°€ threshold ë³´ë‹¤ ì‘ìœ¼ë©´(ì¦‰ ì¹´ë©”ë¼ë¥¼ ê±°ì˜ ì›€ì§ì´ì§€ ì•Šì•˜ì„ ê²½ìš°)
+		//í˜¹ì€ LockCameraPositionì´ trueì¸ ê²½ìš°
+		//ì¹´ë©”ë¼ íšŒì „ì„ í•˜ì§€ ì•ŠëŠ”ë‹¤.
 		if (lookInput.sqrMagnitude < _threshold)
 			return;
 
-		//ÁÂ¿ì È¸Àü °ª(°¨µµ Àû¿ë)
+		//ì¢Œìš° íšŒì „ ê°’(ê°ë„ ì ìš©)
 		Yaw += lookInput.x * mouseSensitivity;
-		//»óÇÏ È¸Àü °ª(°¨µµ Àû¿ë)
+		//ìƒí•˜ íšŒì „ ê°’(ê°ë„ ì ìš©)
 		Pitch -= lookInput.y * mouseSensitivity;
 
-		//ÁÂ¿ì È¸Àü °ªÀ» 0~360 ¹üÀ§¸¸ °®µµ·Î Á¦ÇÑ(Áï, 361->1µµ)
+		//ì¢Œìš° íšŒì „ ê°’ì„ 0~360 ë²”ìœ„ë§Œ ê°–ë„ë¡œ ì œí•œ(ì¦‰, 361->1ë„)
 		Yaw = Mathf.Repeat(Yaw, 360f);
-		//»óÇÏ È¸Àü °¢µµ¸¦ À§¾Æ·¡·Î Á¦ÇÑ
+		//ìƒí•˜ íšŒì „ ê°ë„ë¥¼ ìœ„ì•„ë˜ë¡œ ì œí•œ
 		Pitch = Mathf.Clamp(Pitch, BottomClamp, TopClamp);
 
-		//ÇÃ·¹ÀÌ¾î ¿ÀºêÁ§Æ® ÀÚÃ¼¸¦ YÃà È¸Àü½ÃÄÑ¼­ ¹æÇâÀ» ÀüÈ¯
+		//í”Œë ˆì´ì–´ ì˜¤ë¸Œì íŠ¸ ìì²´ë¥¼ Yì¶• íšŒì „ì‹œì¼œì„œ ë°©í–¥ì„ ì „í™˜
 		transform.rotation = Quaternion.Euler(0.0f, Yaw, 0.0f);
-		//Ä«¸Ş¶ó pivot(CameraRoot)ÀÇ XÃà È¸ÀüÀ» Àû¿ëÇÏ¿© »óÇÏ ½Ã¾ß È¸Àü
+		//ì¹´ë©”ë¼ pivot(CameraRoot)ì˜ Xì¶• íšŒì „ì„ ì ìš©í•˜ì—¬ ìƒí•˜ ì‹œì•¼ íšŒì „
 		pivotTransform.transform.localRotation = Quaternion.Euler(Pitch, 0.0f, 0.0f);
-		//¸ŞÀÎ Ä«¸Ş¶ó´Â ºÎ¸ğ ¿ÀºêÁ§Æ®ÀÎ pivot ¿ÀºêÁ§Æ®¸¦ ±âÁØÀ¸·Î Ç×»ó cameraDistanc¸¸Å­ ¶³¾îÁø °Å¸® À¯Áö
+		//ë©”ì¸ ì¹´ë©”ë¼ëŠ” ë¶€ëª¨ ì˜¤ë¸Œì íŠ¸ì¸ pivot ì˜¤ë¸Œì íŠ¸ë¥¼ ê¸°ì¤€ìœ¼ë¡œ í•­ìƒ cameraDistancë§Œí¼ ë–¨ì–´ì§„ ê±°ë¦¬ ìœ ì§€
 		_mainCamera.transform.localPosition = new Vector3(0, 0, -cameraDistance);
 	}
 
-	//Á¡ÇÁ¿Í Áß·Â °è»ê ÇÔ¼ö
+	//ì í”„ì™€ ì¤‘ë ¥ ê³„ì‚° í•¨ìˆ˜
 	private void HandleJumpAndGravity(float dt)
 	{
-		//¶¥¿¡ ÀÖ´Â »óÅÂ¿¡¼­ Á¡ÇÁÅ°°¡ ´­¸° °æ¿ì
+		//ë•…ì— ìˆëŠ” ìƒíƒœì—ì„œ ì í”„í‚¤ê°€ ëˆŒë¦° ê²½ìš°
 		if (isGrounded && jumpPressed)
 		{
-			//¼öÁ÷ ¼Óµµ °è»ê
+			//ìˆ˜ì§ ì†ë„ ê³„ì‚°
 			velocity.y = Mathf.Sqrt(jumpHeight * gravity * -2f);
 		}
 
-		//Áß·Â »ó½Ã Àû¿ë
+		//ì¤‘ë ¥ ìƒì‹œ ì ìš©
 		velocity.y += gravity * dt;
 	}
 
-	//¶¥¿¡ ´ê¾Ò´ÂÁö¿©ºÎ¸¦ Ã¼Å©ÇÏ´Â Äİ¶óÀÌ´õ Ã¼Å©¿ë ÇÔ¼ö
+	//ë•…ì— ë‹¿ì•˜ëŠ”ì§€ì—¬ë¶€ë¥¼ ì²´í¬í•˜ëŠ” ì½œë¼ì´ë” ì²´í¬ìš© í•¨ìˆ˜
 	private void OnDrawGizmosSelected()
 	{
 		if (groundCheck != null)

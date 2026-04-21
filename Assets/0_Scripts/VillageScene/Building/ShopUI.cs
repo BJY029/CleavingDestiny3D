@@ -67,8 +67,11 @@ namespace Village.Building
                 VillageSystem.VillageLogic.OnGoldChanged -= OnGoldChanged;
         }
 
-        void OnRandonShopItemReceived(int shopNonce, string[] itemIds)
+        void OnRandonShopItemReceived(int targetActor, int shopNonce, string[] itemIds)
         {
+            // 내 ActorNumber에 대한 응답인지 확인
+            if (targetActor != PhotonNetwork.LocalPlayer.ActorNumber) return;
+
             // 최신 응답인지 검증 (네트워크 순서 꼬임 방지)
             if (shopNonce < lastSentNonce) return;
 

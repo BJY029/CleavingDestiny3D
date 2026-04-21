@@ -72,11 +72,13 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
         // 모든 플레이어가 준비되었는지 확인
         foreach (Player p in PhotonNetwork.PlayerList)
         {
-            if (!p.CustomProperties.TryGetValue(PlayerPropKeys.PlayerVillageReady, out object isReadyObj) || !(bool)isReadyObj)
+            if (!p.CustomProperties.TryGetValue(PlayerPropKeys.PlayerVillageReady, out object isReadyObj) || isReadyObj is not bool isReady || !isReady)
             {
                 return;
             }
         }
+
+        // AI는 항상 준비된 상태로 간주하므로, 모든 플레이어가 준비되었다면 페이즈를 조기 종료
 
         Debug.Log("All players are ready in Village. Ending phase early.");
         EndPhaseLogic();
@@ -85,9 +87,9 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     /// <summary>
     /// UI 버튼에서 호출: 내 준비 상태를 변경
     /// </summary>
-    public void SetLocalPlayerReady(bool isReady)
+    public void SetPlayerReady(int actorNumber, bool isReady)
     {
-        PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.PlayerVillageReady, isReady);
+        PhotonPropertyHelper.SetPlayerProp(actorNumber, PlayerPropKeys.PlayerVillageReady, isReady);
     }
 
     public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
@@ -111,7 +113,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     public void StartVillagePhase()
     {
         _isPhaseActive = true;
-        SetLocalPlayerReady(false);
+        SetPlayerReady(PhotonNetwork.LocalPlayer.ActorNumber, false);
 
         // UniTask의 Fire-and-Forget
         LoadVillageSceneAsync().Forget();
