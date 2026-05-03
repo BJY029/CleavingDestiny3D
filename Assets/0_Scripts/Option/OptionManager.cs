@@ -1,5 +1,6 @@
 using System.IO;
 using Option.Element;
+using Potan.CoreUtils;
 using UnityEngine;
 
 namespace Option
@@ -61,7 +62,7 @@ namespace Option
             string json = JsonUtility.ToJson(settingData);
             string path = Application.persistentDataPath + "/setting.json";
             await File.WriteAllTextAsync(path, json);
-            Logger.Log($"Settings saved to: {path}", this);
+            DevLog.Log($"Settings saved to: {path}", this);
         }
 
         void LoadSetting()
@@ -78,7 +79,7 @@ namespace Option
                 isInitialized = false;
                 settingData = new SettingData(); // 기본 설정으로 초기화
 
-                Logger.Log("No existing settings found. Initialized with default settings.", this);
+                DevLog.Log("No existing settings found. Initialized with default settings.", this);
             }
         }
     }

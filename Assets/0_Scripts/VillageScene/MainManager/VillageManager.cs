@@ -3,6 +3,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
 using System;
+using Potan.CoreUtils;
 
 namespace Village
 {
@@ -91,7 +92,7 @@ namespace Village
 
             if (actorNumber != PhotonNetwork.LocalPlayer.ActorNumber && !PhotonNetwork.IsMasterClient)
             {
-                Logger.LogWarning("다른 플레이어의 건물 업그레이드는 호스트만 시도할 수 있습니다.");
+                DevLog.LogWarning("다른 플레이어의 건물 업그레이드는 호스트만 시도할 수 있습니다.");
                 return false;
             }
 

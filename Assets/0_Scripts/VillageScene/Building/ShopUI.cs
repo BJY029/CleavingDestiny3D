@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Photon.Pun;
+using Potan.CoreUtils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -75,7 +76,7 @@ namespace Village.Building
             // 최신 응답인지 검증 (네트워크 순서 꼬임 방지)
             if (shopNonce < lastSentNonce) return;
 
-            Logger.Log($"ShopUI received random shop items for nonce {shopNonce}", this);
+            DevLog.Log($"ShopUI received random shop items for nonce {shopNonce}", this);
 
             isWaitingForResult = false;
 
@@ -262,7 +263,7 @@ namespace Village.Building
             }
             else
             {
-                Logger.LogError("InventoryAuthority Instance is null! GameScene이 제대로 로드되었는지 확인하세요.", this);
+                DevLog.LogError("InventoryAuthority Instance is null! GameScene이 제대로 로드되었는지 확인하세요.", this);
             }
         }
 

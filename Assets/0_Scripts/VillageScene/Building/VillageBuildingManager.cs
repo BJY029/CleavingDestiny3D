@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Potan.CoreUtils;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -30,7 +31,7 @@ namespace Village.Building
 
         private async void OnBuildingClicked(VillageBuilding building)
         {
-            Logger.Log("BuildingManager received click from: " + building.buildingType, this);
+            DevLog.Log("BuildingManager received click from: " + building.buildingType, this);
 
             // 해당 건물의 UI 프리팹이 이미 생성된 적 있는지 확인
             if (!_uiInstanceCache.TryGetValue(building.villageBuilldingUIPrefab, out currentBuildingUI))
