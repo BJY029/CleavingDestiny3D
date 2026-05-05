@@ -6,6 +6,7 @@ public enum StatType { VillageHP, Energy, Barrier, TotalDmg, MultRate, BarConRat
 public enum TreeType { TreeHP, TreeToxic }
 public class SimGameState
 {
+    public SimVillageState simVillageState;
     public static event Action<int, StatType, float> OnStatChange;
     public static event Action<TreeType, float> OnTreeChange;
 
@@ -195,12 +196,6 @@ public class SimGameState
 
 
 
-
-    public int p1MaxEnergy, p2MaxEnergy;
-
-    public int p1MaxHitDmg, p2MaxHitDmg;
-    public int p1MinHitDmg, p2MinHitDmg;
-
     public bool p1HasDebuff, p2HasDebuff;
 
 
@@ -210,14 +205,12 @@ public class SimGameState
     public List<string> p2Inventory = new List<string>();
 
     //생성자
-    public SimGameState(PlayerSetting playerSetting, RoomSetting roomSetting)
+    public SimGameState(PlayerSetting playerSetting, RoomSetting roomSetting, VillageBalanceData villageBalanceData, VillageLevelData[] villageLevelDatas)
     {
         this.playerSetting = playerSetting;
         this.roomSetting = roomSetting;
-        this.p1Energy = this.p1MaxEnergy = this.p2Energy = this.p2MaxEnergy = playerSetting.initialEnergy;
+        this.p1Energy = this.p2Energy = playerSetting.initialEnergy;
         this.p1TotalHitDmg = this.p2TotalHitDmg = 0f;
-        this.p1MaxHitDmg = this.p2MaxHitDmg = playerSetting.maxAtkPow;
-        this.p1MinHitDmg = this.p2MinHitDmg = playerSetting.minAtkPow;
         this.p1VillHP = this.p2VillHP = playerSetting.villageHP;
         this.p1VillBarrier = this.p2VillBarrier = playerSetting.villageBarrier;
         this.p1VillBarConRate = this.p2VillBarConRate = playerSetting.barrierConversionRate;
@@ -234,6 +227,7 @@ public class SimGameState
 
         this.totalTurnCount = 0;
 
+        this.simVillageState = new SimVillageState(villageBalanceData, villageLevelDatas);
         AISimUIController.instance.InitStatUI(this);
     }
 
@@ -248,15 +242,15 @@ public class SimGameState
 
         if (myPlayerNum == 1)
         {
-            dto.myStatus = CreatePlayerDTO(p1MaxHitDmg, p1MinHitDmg, p1VillHP, p1VillBarrier, p1MaxEnergy, p1Energy, p1HasDebuff);
-            dto.oppStatus = CreatePlayerDTO(p2MaxHitDmg, p2MinHitDmg, p2VillHP, p2VillBarrier, p2MaxEnergy, p2Energy, p2HasDebuff);
+            dto.myStatus = CreatePlayerDTO(simVillageState.p1MaxHitDmg, simVillageState.p1MinHitDmg, p1VillHP, p1VillBarrier, simVillageState.p1MaxEnergy, p1Energy, p1HasDebuff);
+            dto.oppStatus = CreatePlayerDTO(simVillageState.p2MaxHitDmg, simVillageState.p2MinHitDmg, p2VillHP, p2VillBarrier, simVillageState.p2MaxEnergy, p2Energy, p2HasDebuff);
             dto.myInventory = CreateInventoryDTO(p1Inventory);
             dto.oppInventory = CreateInventoryDTO(p2Inventory);
         }
         else
         {
-            dto.myStatus = CreatePlayerDTO(p2MaxHitDmg, p2MinHitDmg, p2VillHP, p2VillBarrier, p2MaxEnergy, p2Energy, p2HasDebuff);
-            dto.oppStatus = CreatePlayerDTO(p1MaxHitDmg, p1MinHitDmg, p1VillHP, p1VillBarrier, p1MaxEnergy, p1Energy, p1HasDebuff);
+            dto.myStatus = CreatePlayerDTO(simVillageState.p2MaxHitDmg, simVillageState.p2MinHitDmg, p2VillHP, p2VillBarrier, simVillageState.p2MaxEnergy, p2Energy, p2HasDebuff);
+            dto.oppStatus = CreatePlayerDTO(simVillageState.p1MaxHitDmg, simVillageState.p1MinHitDmg, p1VillHP, p1VillBarrier, simVillageState.p1MaxEnergy, p1Energy, p1HasDebuff);
             dto.myInventory = CreateInventoryDTO(p2Inventory);
             dto.oppInventory = CreateInventoryDTO(p1Inventory);
         }
@@ -275,8 +269,6 @@ public class SimGameState
             maxEnergy = maxEnergy,
             energy = energy,
             hasDebuff = Debuff
-
-
         };
     }
 

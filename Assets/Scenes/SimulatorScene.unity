@@ -304,6 +304,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BalanceSimulator
   playerSetting: {fileID: 11400000, guid: 0ab68fb3dcfba894bbce6a7513b5a994, type: 2}
   roomSetting: {fileID: 11400000, guid: a435e1ecc7289e04ca99639220cc8e4b, type: 2}
+  villageBalanceData: {fileID: 11400000, guid: 77ff587a3a5559b42abab5798fa9c8fc, type: 2}
+  villageLevelDatas:
+  - {fileID: 11400000, guid: a9b5fcf42de0e484d81895df0414fb8c, type: 2}
+  - {fileID: 11400000, guid: 0303cc6420fb2da4fada496eeb6cef6f, type: 2}
+  - {fileID: 11400000, guid: 1943d3e3f82db184d804cd8a558191e7, type: 2}
+  - {fileID: 11400000, guid: 094625fc00e4bbc4ab7d542b83ccb004, type: 2}
+  - {fileID: 11400000, guid: 3ac625af5d748b0429fed79917bcc949, type: 2}
   myButton: {fileID: 393808755}
 --- !u!1 &83977895
 GameObject:

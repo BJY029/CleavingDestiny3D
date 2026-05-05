@@ -176,7 +176,7 @@ public class PromptBuilder
         sb.AppendLine();
 
         sb.AppendLine("[Action]");
-        sb.AppendLine($"오늘 밤 들어올 독성 데미지와 나무의 남은 체력을 고려해서 {(myPlayerNum == 1 ? state.p1MinHitDmg : state.p2MinHitDmg)}~{(myPlayerNum == 1 ? state.p1MaxHitDmg : state.p2MaxHitDmg)} 사이의 타격 데미지를 정확한 숫자로 결정해.");
+        sb.AppendLine($"오늘 밤 들어올 독성 데미지와 나무의 남은 체력을 고려해서 {(myPlayerNum == 1 ? state.simVillageState.p1MinHitDmg : state.simVillageState.p2MinHitDmg)}~{(myPlayerNum == 1 ? state.simVillageState.p1MaxHitDmg : state.simVillageState.p2MaxHitDmg)} 사이의 타격 데미지를 정확한 숫자로 결정해.");
         sb.AppendLine();
 
         sb.AppendLine("[output format]");

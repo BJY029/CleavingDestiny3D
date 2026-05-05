@@ -12,6 +12,8 @@ public class BalanceSimulator : MonoBehaviour
 {
     public PlayerSetting playerSetting;
     public RoomSetting roomSetting;
+    public VillageBalanceData villageBalanceData;
+    public VillageLevelData[] villageLevelDatas;
 
     private OllamaAPIClient apiClient = new OllamaAPIClient();
     private PromptBuilder promptBulider = new PromptBuilder();
@@ -38,7 +40,7 @@ public class BalanceSimulator : MonoBehaviour
 
         for (int cnt = 1; cnt <= gameCount; cnt++)
         {
-            SimGameState state = new SimGameState(playerSetting, roomSetting);
+            SimGameState state = new SimGameState(playerSetting, roomSetting, villageBalanceData, villageLevelDatas);
             int turnCount = 0;
 
             while (!IsGameOver(state) && turnCount < 50)
