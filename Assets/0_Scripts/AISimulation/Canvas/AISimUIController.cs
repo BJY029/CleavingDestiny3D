@@ -148,7 +148,7 @@ public class AISimUIController : MonoBehaviour
                 if (info.ItemId.text.Trim() == itemId)
                 {
                     info.PlayItemUsed();
-                    p1Infos.Remove(info);
+                    p2Infos.Remove(info);
                     return;
                 }
             }

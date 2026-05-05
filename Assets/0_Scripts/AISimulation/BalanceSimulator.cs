@@ -55,6 +55,7 @@ public class BalanceSimulator : MonoBehaviour
 
                         if (IsGameOver(state)) break;
                         turnCount++;
+                        state.totalTurnCount = turnCount;
                         state.turn++;
                     }
                     state.turn = 0;
@@ -101,7 +102,7 @@ public class BalanceSimulator : MonoBehaviour
         {
             // --- 1. 아이템 선택 페이즈 ---
             string selectPrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.ItemSelect);
-            Debug.Log(selectPrompt);
+            Debug.Log($"<color=green>[ItemSelectPhase]\n{selectPrompt}</color>");
             // (API 호출 시 유저의 상태 정보 JSON을 함께 넘겨준다고 가정)
             string selectJsonAns = await apiClient.AskNextMove(selectPrompt, GetStateJson(state, playerNum), token);
             executor.ExecutePhaseAction(selectJsonAns, ActionPhase.ItemSelect, state, playerNum);
@@ -120,7 +121,7 @@ public class BalanceSimulator : MonoBehaviour
         {
             // --- 2. 아이템 사용 페이즈 ---
             string usePrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.ItemUse);
-            Debug.Log(usePrompt);
+            Debug.Log($"<color=yellow>[ItemUsePhase]\n{usePrompt}</color>");
             string useJsonAns = await apiClient.AskNextMove(usePrompt, GetStateJson(state, playerNum), token);
             executor.ExecutePhaseAction(useJsonAns, ActionPhase.ItemUse, state, playerNum);
         }
@@ -138,7 +139,7 @@ public class BalanceSimulator : MonoBehaviour
         {
             // --- 3. 나무 타격 페이즈 ---
             string hitPrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.TreeAttack);
-            Debug.Log(hitPrompt);
+            Debug.Log($"<color=orange>[HitTreePhase]\n{hitPrompt}</color>");
             string hitJsonAns = await apiClient.AskNextMove(hitPrompt, GetStateJson(state, playerNum), token);
             executor.ExecutePhaseAction(hitJsonAns, ActionPhase.TreeAttack, state, playerNum);
         }

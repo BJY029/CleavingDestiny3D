@@ -12,6 +12,15 @@ public enum ActionPhase
     NightUpgrade = 3,
 };
 
+public enum AIState
+{
+    Aggressive,
+    Balanced,
+    Cunning,
+    Defensive,
+    Default,
+}
+
 public class PromptBuilder
 {
     //기본 프롬프트(규칙 설명 및 기본 지식 설정)
@@ -28,11 +37,18 @@ public class PromptBuilder
         sb.AppendLine("- 아이템은 각각 희귀도가 존재하며, Common-Hero-Rare-Legendary 순으로 등급이 높아진다. 등급이 높을수록 강하고, 등작 확률이 적다.");
         sb.AppendLine();
 
+        sb.AppendLine("[Init State]");
+        sb.AppendLine("나무 최대 체력 : 30000");
+        sb.AppendLine("마을 최대 체력 : 5000");
+        sb.AppendLine();
+
+
         sb.AppendLine("[System]");
         sb.AppendLine("너는 턴제 생존 게임의 완벽한 AI 플레이어야.");
+        sb.AppendLine($"{GetPromptBasedOnState(state, myPlayerNum)}");
         sb.AppendLine("목표1: 상대방이 나무의 체력을 0 이하로 만드는 최종 타격을 하도록 유도한다.");
         sb.AppendLine("목표2: 내 마을의 체력을 나무 독성 데미지로부터 방어한다.");
-        sb.AppendLine();
+
 
         string actionContext = "";
         switch (phase)
@@ -55,25 +71,66 @@ public class PromptBuilder
         return sb.ToString();
     }
 
+    public string GetPromptBasedOnState(SimGameState state, int myPlayerNum)
+    {
+        float curVillHp = myPlayerNum == 1 ? state.p1VillHP : state.p2VillHP;
+        float curTreeHp = state.treeHP;
+
+        // 각 체력의 비율을 계산 (0.0 ~ 1.0)
+        float villRatio = curVillHp / state.playerSetting.villageHP;
+        float treeRatio = curTreeHp / state.roomSetting.treeHP;
+
+        // 나무 체력에 좀 더 무게를 둔 가중치 평균
+        float weightAvg = (villRatio * 0.4f) + (treeRatio * 0.6f);
+
+        AIState curState = weightAvg switch
+        {
+            > 0.7f => AIState.Aggressive,
+            > 0.45f => AIState.Balanced,
+            > 0.25f => AIState.Defensive,
+            _ => AIState.Cunning
+        };
+
+        return curState switch
+        {
+            AIState.Aggressive =>
+                "너는 저돌적이고 자신감 넘치는 AI 플레이어다. 나무와 마을 체력이 넉넉하니 공격적으로 행동해라. **큰 데미지** 를 입혀 방어력을 확보하는 것이 우선이다.",
+
+            AIState.Balanced =>
+                "너는 냉정하고 계산적인 AI 플레이어다. 상대 상태를 분석하여 **공격과 방어의 균형** 을 맞춰라. 효율적인 기력 관리가 핵심이다.",
+
+            AIState.Defensive =>
+                "너는 절박한 생존자다. 나무 공격보다 **마을 복구와 방어** 가 1순위다. 버티기 모드로 전환하여 생존 시간을 벌어라.",
+
+            AIState.Cunning =>
+                "너는 영악한 전략가다. 나무는 곧 터질 폭탄이다. **최종 타격(막타)** 을 절대 치지 않도록 계산하고, 상대가 치도록 유도해라.",
+
+            _ => "너는 턴제 생존 게임의 플레이어다."
+        };
+    }
+
     //아이템 선택 시 사용될 프롬프트
     public string GetItemSelectPrompt(SimGameState state, int myPlayerNum)
     {
         StringBuilder sb = new StringBuilder();
 
+        int curEng = myPlayerNum == 1 ? state.p1Energy : state.p2Energy;
         sb.AppendLine("[situation]");
         sb.AppendLine("-다음과 같이 주어진 3 개의 아이템 중 아이템 1개를 선택해야 함");
-        sb.AppendLine(GetMyItemOfferPrompt(state, myPlayerNum));
+        sb.AppendLine(GetMyItemOfferPrompt(state));
         sb.AppendLine("-현재 내가 보유한 아이템은 다음과 같다.");
         sb.AppendLine(GetMyInventoryPrompt(state, myPlayerNum));
+        sb.AppendLine($"-현재 나의 사용 가능한 기력량은 {curEng}이다.");
         sb.AppendLine();
 
         sb.AppendLine("[Action]");
-        sb.AppendLine("너는 지금 3개의 아이템 중 하나를 인벤토리에 넣어야 하며, 네 현재 체력과 기력을 고려해서 가장 가성비 좋은 아이템 1개를 선택한다.");
+        sb.AppendLine("너는 지금 3개의 아이템 중 하나를 인벤토리에 넣어야 하며, 네 현재 마을 체력과 기력을 고려해서 가장 가성비 좋은 아이템 1개를 선택한다.");
         sb.AppendLine("인벤토리 용량은 8이며, 만약 인벤토리가 꽉 찬 경우 빈 문자열을 반환한다.");
         sb.AppendLine();
 
         sb.AppendLine("[output format]");
         sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. reasoning은 최대한 간단하게. 부가 설명 금지.");
+        sb.AppendLine("아이템을 선택하거나 사용할 때 selectedItemId 와 itemId 필드에는 반드시 숫자로 된 itemId (예: 4000)를 입력해야함");
         sb.AppendLine("{");
         sb.AppendLine("  \"reasoning\": \"이유\",");
         sb.AppendLine("  \"selectedItemId\": \"\"");
@@ -89,12 +146,13 @@ public class PromptBuilder
         sb.AppendLine("[situation]");
         sb.AppendLine("-현재 내가 보유한 아이템은 다음과 같다.");
         sb.AppendLine(GetMyInventoryPrompt(state, myPlayerNum));
-        sb.AppendLine($"-현재 사용할 수 있는 최대 기력량은 {(myPlayerNum == 1 ? state.p1MaxEnergy : state.p2MaxEnergy)}이고, 권장 사용 기력량은 {CalcEnergyBudget(state, myPlayerNum)} 이다.");
+        sb.AppendLine($"-현재 사용할 수 있는 최대 기력량은 {(myPlayerNum == 1 ? state.p1Energy : state.p2Energy)}이고, 권장 사용 기력량은 {CalcEnergyBudget(state, myPlayerNum)} 이다.");
+        sb.AppendLine("-현재 보유한 기력량 보다 아이템 사용 기력량이 큰 경우, 해당 아이템은 사용할 수 없다.");
         sb.AppendLine();
 
         sb.AppendLine("[Action]");
         sb.AppendLine("네 인벤토리에 있는 아이템을 나무 체력, 너의 마을 체력, 기력 상황등을 골라서 적절하게 사용한다.");
-        sb.AppendLine("만약 지금 상황에서 기력을 아끼는 것이 더 유리하다고 판단되면, 아무 아이템도 사용하지 않는다.");
+        sb.AppendLine("만약 지금 상황에서 기력을 아끼는 것이 더 유리하거나 굳이 사용할 이유가 없다고 판단되면, 아무 아이템도 사용하지 않는다.");
         sb.AppendLine("아무 아이템도 사용하지 않을 경우 빈 배열로 반환한다.");
         sb.AppendLine();
 
@@ -132,10 +190,10 @@ public class PromptBuilder
 
 
     //아이템 OFFER 정보 프롬프트
-    public string GetMyItemOfferPrompt(SimGameState state, int myPlayerNum)
+    public string GetMyItemOfferPrompt(SimGameState state)
     {
         StringBuilder sb = new StringBuilder();
-        List<string> offer = Pick3(state.turn, myPlayerNum, state.roomSeed, ItemDB.Instance.GetItemsList(), state.roomSetting, state.playerSetting);
+        List<string> offer = Pick3(state.turn, state.totalTurnCount, state.roomSeed, ItemDB.Instance.GetItemsList(), state.roomSetting, state.playerSetting);
         foreach (string i in offer)
         {
             ItemSO item = ItemDB.Instance.Get(i);
@@ -170,7 +228,7 @@ public class PromptBuilder
                     Debug.LogWarning($"[PromptBuilder] 인벤토리에 유효하지 않은 아이템 ID가 포함됨 : {itemId}");
                 }
 
-                sb.AppendLine($" -{item.itemId} ({item.displayName_ID}, Cost: {item.itemCost}):{LocalizationManager.Instance.GetText(CSV_Type.Item, item.itemDesc_ID)}");
+                sb.AppendLine($" -{item.itemId} ({item.displayName_ID}, 기력: {item.itemCost}):{LocalizationManager.Instance.GetText(CSV_Type.Item, item.itemDesc_ID)}");
             }
         }
 

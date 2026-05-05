@@ -10,6 +10,9 @@ public class ItemInfo : MonoBehaviour
     public TMP_Text ItemDesc;
     public TMP_Text ItemCost;
 
+    [HideInInspector]
+    public int UID;
+
     private Animator animator;
 
     void Start()

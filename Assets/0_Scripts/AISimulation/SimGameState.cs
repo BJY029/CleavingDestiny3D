@@ -23,6 +23,7 @@ public class SimGameState
     public int wave;
     public int day;
 
+    public int totalTurnCount;
     private float _p1TotalHitDmg;
     public float p1TotalHitDmg
     {
@@ -131,15 +132,15 @@ public class SimGameState
         }
     }
 
-    private float _p2VillBarrConRate;
+    private float _p2VillBarConRate;
     public float p2VillBarConRate
     {
-        get => _p2VillBarrConRate;
+        get => _p2VillBarConRate;
         set
         {
-            if (Mathf.Approximately(_p2VillBarrConRate, value)) return;
-            _p2VillBarrConRate = value;
-            OnStatChange?.Invoke(2, StatType.BarConRate, _p2VillBarrConRate);
+            if (Mathf.Approximately(_p2VillBarConRate, value)) return;
+            _p2VillBarConRate = value;
+            OnStatChange?.Invoke(2, StatType.BarConRate, _p2VillBarConRate);
         }
     }
 
@@ -151,7 +152,7 @@ public class SimGameState
         {
             if (Mathf.Approximately(_p2DmgMultRate, value)) return;
             _p2DmgMultRate = value;
-            OnStatChange?.Invoke(1, StatType.MultRate, _p2DmgMultRate);
+            OnStatChange?.Invoke(2, StatType.MultRate, _p2DmgMultRate);
         }
     }
 
@@ -188,7 +189,7 @@ public class SimGameState
         {
             if (Mathf.Approximately(_treeToxicDmg, value)) return;
             _treeToxicDmg = value;
-            OnTreeChange?.Invoke(TreeType.TreeHP, _treeToxicDmg);
+            OnTreeChange?.Invoke(TreeType.TreeToxic, _treeToxicDmg);
         }
     }
 
@@ -215,7 +216,7 @@ public class SimGameState
         this.roomSetting = roomSetting;
         this.p1Energy = this.p1MaxEnergy = this.p2Energy = this.p2MaxEnergy = playerSetting.initialEnergy;
         this.p1TotalHitDmg = this.p2TotalHitDmg = 0f;
-        this.p1MaxHitDmg = this.p2MaxEnergy = playerSetting.maxAtkPow;
+        this.p1MaxHitDmg = this.p2MaxHitDmg = playerSetting.maxAtkPow;
         this.p1MinHitDmg = this.p2MinHitDmg = playerSetting.minAtkPow;
         this.p1VillHP = this.p2VillHP = playerSetting.villageHP;
         this.p1VillBarrier = this.p2VillBarrier = playerSetting.villageBarrier;
@@ -230,6 +231,8 @@ public class SimGameState
         this.p1LockCnt = this.p2LockCnt = 1;
         this.p1LockpickCnt = this.p2LockpickCnt = 0;
         this.roomSeed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+
+        this.totalTurnCount = 0;
 
         AISimUIController.instance.InitStatUI(this);
     }
@@ -325,7 +328,7 @@ public class SimGameState
     }
 
     //플레이어 인벤토리에서 아이템 삭제
-    public void TryDeleteItemFromInventroy(int playerNum, string itemId)
+    public void TryDeleteItemFromInventory(int playerNum, string itemId)
     {
         bool isRemoved;
         if (playerNum == 1)
@@ -361,14 +364,18 @@ public class SimGameState
         {
             p2TotalHitDmg += hitDamage;
             p2VillBarrier += hitDamage * p2VillBarConRate;
-            Debug.Log($"p{playerNum} Village Barrier : {p1VillBarrier}");
+            Debug.Log($"p{playerNum} Village Barrier : {p2VillBarrier}");
         }
     }
 
     public void ApplyToxicToVillage()
     {
-        this.p1VillHP = this.p1VillHP + this.p1VillBarrier - this.treeToxicDmg;
-        this.p2VillHP = this.p2VillHP + this.p2VillBarrier - this.treeToxicDmg;
+        float p1AcutalDamage = Mathf.Max(0, this.treeToxicDmg - this.p1VillBarrier);
+        this.p1VillHP -= p1AcutalDamage;
+
+        float p2AcutalDamage = Mathf.Max(0, this.treeToxicDmg - this.p2VillBarrier);
+        this.p2VillHP -= p2AcutalDamage;
+
         this.treeToxicDmg = Mathf.Round(this.roomSetting.treeAtkPow * Mathf.Pow(1.8f, this.day));
 
         Debug.Log($"p1 Village HP : {this.p1VillHP}, p2 Village HP : {this.p2VillHP}, next tree toxic dmg : {this.treeToxicDmg}");
@@ -392,6 +399,8 @@ public class SimGameState
         this.p1VillBarrier = this.p2VillBarrier = playerSetting.villageBarrier;
         this.p1VillBarConRate = this.p2VillBarConRate = playerSetting.barrierConversionRate;
         this.p1TotalHitDmg = this.p2TotalHitDmg = 0f;
+        this.p1Energy = this.p2Energy = playerSetting.maxEnergy;
+        this.p1DmgMultRate = this.p2DmgMultRate = 1f;
     }
 
     public void PrintPlayerInventory(List<string> Inv)

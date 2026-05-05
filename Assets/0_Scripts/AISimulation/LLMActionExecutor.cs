@@ -14,7 +14,7 @@ public class LLMActionExecutor
             {
                 case ActionPhase.ItemSelect:
                     var selectData = JsonConvert.DeserializeObject<ItemSelectResopnse>(cleanJson);
-                    Debug.Log($"[P{playerNum} 선택 이유] {selectData.reasoning}");
+                    Debug.Log($"[P{playerNum} 선택 이유] {selectData.selectedItemId}:{selectData.reasoning}");
 
                     if (!string.IsNullOrEmpty(selectData.selectedItemId))
                     {
@@ -23,6 +23,10 @@ public class LLMActionExecutor
                     break;
                 case ActionPhase.ItemUse:
                     var useData = JsonConvert.DeserializeObject<ItemUseResponse>(cleanJson);
+                    foreach (var itemInfo in useData.actions)
+                    {
+                        Debug.Log($"[P{playerNum} 아이템 사용] {itemInfo.itemId}");
+                    }
                     Debug.Log($"[P{playerNum} 사용 이유] {useData.reasoning}");
 
                     if (useData.actions != null && useData.actions.Count > 0)
@@ -43,13 +47,13 @@ public class LLMActionExecutor
                             if (playerNum == 1) state.p1Energy -= item.itemCost;
                             else state.p2Energy -= item.itemCost;
 
-                            state.TryDeleteItemFromInventroy(playerNum, act.itemId);
+                            state.TryDeleteItemFromInventory(playerNum, act.itemId);
                         }
                     }
                     break;
                 case ActionPhase.TreeAttack:
                     var hitData = JsonConvert.DeserializeObject<TreeHitResponse>(cleanJson);
-                    Debug.Log($"[P{playerNum} 타격 이유] {hitData.reasoning}");
+                    Debug.Log($"[P{playerNum} 타격 데미지/이유] {hitData.hitDamage}/{hitData.reasoning}");
 
                     ItemHandlingInSim.Instance.ProcessItemEffect(playerNum, hitData.hitDamage, true, state);
                     //state.ApplyTreeDamage(playerNum, hitData.hitDamage);
