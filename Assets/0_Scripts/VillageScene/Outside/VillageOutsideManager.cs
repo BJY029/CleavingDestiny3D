@@ -41,16 +41,15 @@ namespace Village.Outside
 
         void Start()
         {
-            // 메인 카메라에서 브레인 가져오기 (비용절감을 위해 캐싱)
+            // 메인 카메라에서 브레인 가져오기
             brain = CinemachineBrain.GetActiveBrain(0);
-
-            compassBuilding.OnVillageClicked += (__) => _ = GotoOutside();
-            villageBuilding.OnVillageClicked += (__) => _ = ReturnToVillage();
 
             outsideUI.SetActive(false);
             villageSceneManager = FindFirstObjectByType<VillageSceneManager>();
 
-            // VillageSceneManager 이벤트 구독 및 ReadyChecker 초기화
+            compassBuilding.OnVillageClicked += CompassBuildingClicked;
+            villageBuilding.OnVillageClicked += VillageBuildingClicked;
+
             if (villageSceneManager != null)
             {
                 villageSceneManager.OnPlayerReadyListUpdated += UpdateReadyChecker;
@@ -64,9 +63,16 @@ namespace Village.Outside
             outsideCam.gameObject.SetActive(false);
         }
 
-        // 소멸 시 이벤트 구독 해제 (중복 호출 방지)
+        void CompassBuildingClicked(VillageBuilding building) => _ = GotoOutside();
+        void VillageBuildingClicked(VillageBuilding building) => _ = ReturnToVillage();
+
+
+        // 이벤트 구독 해제
         private void OnDestroy()
         {
+            compassBuilding.OnVillageClicked -= CompassBuildingClicked;
+            villageBuilding.OnVillageClicked -= VillageBuildingClicked;
+
             if (villageSceneManager != null)
             {
                 villageSceneManager.OnPlayerReadyListUpdated -= UpdateReadyChecker;
@@ -79,8 +85,7 @@ namespace Village.Outside
             if (readyChecker == null) return;
 
             // 현재 방의 플레이어 수만큼 슬롯 생성
-            Player[] players = PhotonNetwork.PlayerList;
-            readyChecker.Initialize(players.Length);
+            readyChecker.Initialize(PlayerManager.Instance.TotalPlayerCount);
 
             UpdateReadyChecker();
         }
@@ -102,6 +107,12 @@ namespace Village.Outside
                 }
 
                 readyChecker.SetPlayerReady(i, isPlayerReady);
+            }
+
+            // 남은 칸 수는 AI로 간주하여 항상 준비된 상태로 표시 (빈 슬롯이 있을 경우)
+            for (int i = players.Length; i < readyChecker.PlayerCount; i++)
+            {
+                readyChecker.SetPlayerReady(i, true);
             }
         }
 
@@ -227,7 +238,7 @@ namespace Village.Outside
         {
             isReady = !isReady;
             readyButtonText.TextID = isReady ? readyText : notReadyText;
-            villageSceneManager.SetLocalPlayerReady(isReady);
+            villageSceneManager.SetPlayerReady(PhotonNetwork.LocalPlayer.ActorNumber, isReady);
         }
     }
 }

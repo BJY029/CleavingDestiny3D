@@ -9,31 +9,31 @@ namespace Village.Building
 
     public class VillageBuilldingUI : MonoBehaviour
     {
-        [SerializeField] private CanvasGroup canvasGroup;
+        [SerializeField] protected CanvasGroup canvasGroup;
 
         [Header("Building Info Texts")]
-        [SerializeField] private TextMeshProUGUI titleText;
+        [SerializeField] protected TextMeshProUGUI titleText;
 
-        [SerializeField] private TextMeshProUGUI descriptionText;
+        [SerializeField] protected TextMeshProUGUI descriptionText;
 
         [SerializeField] BuildingEffect[] buildingEffectList;
 
         [Header("Economy Texts")]
-        [SerializeField] private TextMeshProUGUI currentGoldText;
-        [SerializeField] private TextMeshProUGUI upgradeCostText;
+        [SerializeField] protected TextMeshProUGUI currentGoldText;
+        [SerializeField] protected TextMeshProUGUI upgradeCostText;
 
         [Header("Buttons")]
-        [SerializeField] private Button upgradeButton;
-        [SerializeField] private Button exitButton;
+        [SerializeField] protected Button upgradeButton;
+        [SerializeField] protected Button exitButton;
 
-        private VillageType currentBuildingType;
+        protected VillageType currentBuildingType;
 
-        IVillageStatProvider VillageStat => VillageSystem.VillageStat;
+        protected IVillageStatProvider VillageStat => VillageSystem.VillageStat;
 
 
         public Action OnExitButtonClicked;
 
-        void Start()
+        protected virtual void Awake()
         {
             canvasGroup.alpha = 0f;
             canvasGroup.interactable = false;
@@ -44,17 +44,13 @@ namespace Village.Building
             upgradeButton.onClick.AddListener(OnUpgradeButton);
         }
 
-        public void SetBuildingUI(VillageType buildingType)
+        public virtual void SetBuildingUI(VillageType buildingType)
         {
             currentBuildingType = buildingType;
 
             // 레벨 가져오기
             int currentLevel = VillageStat.GetVillageLevel(currentBuildingType);
             Debug.Log($"Setting UI for {currentBuildingType}, Level: {currentLevel}");
-
-            // 현재 레벨 기준 다음 업그레이드 비용 가져오기
-            int nextUpgradeCost = VillageStat.GetLevelUpgradedCost(currentBuildingType);
-            int currentGold = VillageSystem.VillageLogic.GetMyGold();
 
             // Localization 키 생성
             string titleKey = $"{currentBuildingType}_Title";
@@ -91,16 +87,30 @@ namespace Village.Building
                 }
             }
 
-            currentGoldText.SetText("{0}", currentGold);
+            // 골드/업그레이드 비용/버튼 상태 갱신
+            RefreshStatusUI();
+        }
 
-            // 업그레이드 버튼 설정
+        public virtual void RefreshStatusUI()
+        {
+            int nextUpgradeCost = VillageStat.GetLevelUpgradedCost(currentBuildingType, VillageStat.GetVillageLevel(currentBuildingType));
+            int currentGold = VillageSystem.VillageLogic.GetMyGold();
+
+            currentGoldText.SetText("{0}", currentGold);
             UpdateUpgradeButton(nextUpgradeCost, currentGold);
         }
 
         private void UpdateUpgradeButton(int nextUpgradeCost, int currentGold)
         {
-            bool canUpgrade = nextUpgradeCost > 0 && currentGold >= nextUpgradeCost;
-            LocalizedString upgradeCostStr = new LocalizedString(CSV_Type.Village, canUpgrade ? "Upgrade_Cost" : "Upgrade_Cost_Not_Enough");
+            if (nextUpgradeCost <= 0)
+            {
+                upgradeCostText.SetText(new LocalizedString(CSV_Type.Village, "Upgrade_Max_Level"));
+                upgradeButton.interactable = false;
+                return;
+            }
+
+            bool canUpgrade = currentGold >= nextUpgradeCost;
+            var upgradeCostStr = new LocalizedString(CSV_Type.Village, canUpgrade ? "Upgrade_Cost" : "Upgrade_Cost_Not_Enough");
             upgradeCostText.SetText(upgradeCostStr, nextUpgradeCost);
 
             // 업그레이드 버튼 활성화 여부 설정

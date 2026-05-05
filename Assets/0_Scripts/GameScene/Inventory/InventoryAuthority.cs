@@ -1,4 +1,4 @@
-using Photon.Pun;
+ï»¿using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
 using System.Linq;
@@ -20,10 +20,15 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		Instance = this;
 	}
 
-	//3°³ Áß ÇÏ³ª¸¦ ¼±ÅÃÇÑ °æ¿ì È£Ãâ µÉ ÇÔ¼ö
+	//3ê°œ ì¤‘ í•˜ë‚˜ë¥¼ ì„ íƒí•œ ê²½ìš° í˜¸ì¶œ ë  í•¨ìˆ˜
 	public void RequestTakeOffer(string itemId)
 	{
 		photonView.RPC(nameof(RPC_TakeOffer), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber, itemId);
+	}
+
+	public void RequestBuyShopItem(int actor, string itemId, int price)
+	{
+		photonView.RPC(nameof(RPC_BuyShopItem), RpcTarget.MasterClient, actor, itemId, price);
 	}
 
 	public void RequestUseItem(int slotIdx, int ActNum, WorldInventorySlot wi)
@@ -38,10 +43,48 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_SteelItem), RpcTarget.MasterClient, FromActor, ToActor, SelectedSlotIdx);
 	}
 
-	//UID ±â¹İÀ¸·Î ¾ÆÀÌÅÛÀ» »èÁ¦ÇÏ´Â ÇÔ¼ö
+	//UID ê¸°ë°˜ìœ¼ë¡œ ì•„ì´í…œì„ ì‚­ì œí•˜ëŠ” í•¨ìˆ˜
 	public void DeleteItemByUID(int ActNum, int UID)
 	{
 		photonView.RPC(nameof(RPC_DeleteItem), RpcTarget.MasterClient, ActNum, UID);
+	}
+
+	// [MasterClient ì „ìš©] ì•„ì´í…œì„ ì¸ë²¤í† ë¦¬ì— ì¶”ê°€í•˜ëŠ” ê³µí†µ ë¡œì§
+	// ìƒì  êµ¬ë§¤, í„´ ì œì•ˆ ìˆ˜ë½ ë“± ëª¨ë“  'ì•„ì´í…œ íšë“' ìƒí™©ì—ì„œ ì¬ì‚¬ìš©ë©ë‹ˆë‹¤.
+	private bool Master_AddItemToInventory(int actor, string itemId, ExitGames.Client.Photon.Hashtable extraProps = null)
+	{
+		// 1. í•´ë‹¹ í”Œë ˆì´ì–´ì˜ ì¸ë²¤í† ë¦¬ ìš©ëŸ‰ê³¼ í˜„ì¬ ë°ì´í„°ë¥¼ RoomPropertiesì—ì„œ ê°€ì ¸ì˜µë‹ˆë‹¤.
+		int cap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(actor));
+		string invSlotsStr = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(actor));
+
+		// 2. ë¬¸ìì—´ í˜•ì‹ì˜ ë°ì´í„°ë¥¼ (UniqueId, ItemId) ë°°ì—´ë¡œ ë³µì›(Decode)í•©ë‹ˆë‹¤.
+		var slots = ItemInfoSerializer.Decode(invSlotsStr, cap);
+
+		// 3. ì¸ë²¤í† ë¦¬ê°€ ê°€ë“ ì°¼ëŠ”ì§€ ê²€ì‚¬í•©ë‹ˆë‹¤.
+		if (ItemInfoSerializer.isFullInventory(slots)) return false;
+
+		// 4. ì•„ì´í…œì— ë¶€ì—¬í•  ê³ ìœ  ì‹ë³„ì(Next UID)ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+		int nextUid = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.NEXT_UID);
+
+		// 5. ì²« ë²ˆì§¸ ë¹ˆ ìŠ¬ë¡¯ì— ì•„ì´í…œì„ ì‚½ì…í•©ë‹ˆë‹¤.
+		if (!ItemInfoSerializer.TryAddFirstEmpty(slots, (nextUid, itemId))) return false;
+
+		// 6. ì—…ë°ì´íŠ¸í•  RoomProperties í•´ì‹œí…Œì´ë¸” êµ¬ì„±
+		var ht = new ExitGames.Client.Photon.Hashtable
+		{
+			{ ItemPropKeys.INV(actor), ItemInfoSerializer.Encode(slots) }, // ê°±ì‹ ëœ ì¸ë²¤í† ë¦¬ ë¬¸ìì—´
+			{ ItemPropKeys.NEXT_UID, nextUid + 1 }                         // ë‹¤ìŒ ì•„ì´í…œì„ ìœ„í•œ UID ì¦ê°€
+		};
+
+		// 7. ì¶”ê°€ë¡œ ì—…ë°ì´íŠ¸í•  í”„ë¡œí¼í‹°(ì˜ˆ: Offer ë¹„ìš°ê¸°)ê°€ ìˆë‹¤ë©´ ë³‘í•©í•©ë‹ˆë‹¤.
+		if (extraProps != null)
+		{
+			foreach (var key in extraProps.Keys) ht[key] = extraProps[key];
+		}
+
+		// 8. ì„œë²„(Photon Room)ì— í”„ë¡œí¼í‹° ì„¤ì •ì„ ìš”ì²­í•˜ì—¬ ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ì— ë™ê¸°í™”í•©ë‹ˆë‹¤.
+		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
+		return true;
 	}
 
 	[PunRPC]
@@ -49,33 +92,33 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
 
-		//¿äÃ»ÀÚ INV Á¤º¸ °¡Á®¿À±â
+		//ìš”ì²­ì INV ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 		string Inv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(actor));
 		int InvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(actor));
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actor);
 
-		//¿äÃ»ÀÚ INV Á¤º¸ °ËÁõ
+		//ìš”ì²­ì INV ì •ë³´ ê²€ì¦
 		var slots = ItemInfoSerializer.Decode(Inv, InvCap);
 
-		//uniqueId ±â¹İÀ¸·Î ½½·Ô IDX °ª ¹Ş¾Æ¿À±â
+		//uniqueId ê¸°ë°˜ìœ¼ë¡œ ìŠ¬ë¡¯ IDX ê°’ ë°›ì•„ì˜¤ê¸°
 		int removaldx = ItemInfoSerializer.TryFindIndexByUniqueId(slots, UID);
 
-		//»ç¿ëÇÑ ¾ÆÀÌÅÛ ÀÎº¥Åä¸®¿¡¼­ Á¦°Å
+		//ì‚¬ìš©í•œ ì•„ì´í…œ ì¸ë²¤í† ë¦¬ì—ì„œ ì œê±°
 		slots[removaldx] = (0, null);
 		if (player != null)
 			photonView.RPC(nameof(RPC_RefreshItemInv), player);
-		//AI ÇÃ·¹ÀÌ¾îÀÇ »èÁ¦ ¿äÃ»ÀÎ °æ¿ì
+		//AI ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		else if (GameManager.Instance.isSoloPlay)
 			RefreshAIItemInv();
 
-		//¾ÆÀÌÅÛ »ç¿ë UI ¶ç¿ì±â
+		//ì•„ì´í…œ ì‚¬ìš© UI ë„ìš°ê¸°
 		//PlayerCanvasController.Instance.PopUpItemNotify(item.itemId, player);
 
-		//½½·Ô Info Á¤º¸ ¾÷µ¥ÀÌÆ®
+		//ìŠ¬ë¡¯ Info ì •ë³´ ì—…ë°ì´íŠ¸
 		string updatedItemSlots = ItemInfoSerializer.Encode(slots);
 
 		string InvKey = ItemPropKeys.INV(actor);
-		//»õ·Ó°Ô ¾÷µ¥ÀÌÆ®ÇÒ ÇÁ·ÎÆÛÆ¼
+		//ìƒˆë¡­ê²Œ ì—…ë°ì´íŠ¸í•  í”„ë¡œí¼í‹°
 		var newProps = new ExitGames.Client.Photon.Hashtable
 		{
 			{InvKey, updatedItemSlots }
@@ -89,64 +132,52 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		if (!PhotonNetwork.IsMasterClient) return;
 		if (info.Sender == null || info.Sender.ActorNumber != actor) return;
 
-		//ÅÏ °ËÁõ
+		//í„´ ê²€ì¦
 		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
 		if (turnActor != actor) return;
 
-		//offer °ËÁõ
+		//offer ê²€ì¦
 		string offer = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.OFFER(actor));
 		if (string.IsNullOrEmpty(offer) || !Contains(offer, itemId)) return;
 
-		//ÀÎº¥Åä¸® Å©±â ¹Ş¾Æ¿À±â
-		int cap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(actor));
-
-		//Á÷·ÄÈ­µÈ ÀÎº¥Åä¸® Á¤º¸ ¿ªÁ÷·ÄÈ­ÇØ¼­ °¡Á®¿À±â
-		string invSlots = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(actor));
-		var slots = ItemInfoSerializer.Decode(invSlots, cap);
-
-		//´ÙÀ½ ¾ÆÀÌÅÛ °íÀ¯ ¾ÆÀÌµğ °¡Á®¿À±â
-		int nextUid = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.NEXT_UID);
-		//ÇÃ·¹ÀÌ¾î ¾ÆÀÌÅÛ ÀÎº¥Åä¸® Ã¹ Ä­¿¡ ÇØ´ç ¾ÆÀÌÅÛ »ğÀÔ ½ÃµµÇÏ±â
-		if (!ItemInfoSerializer.TryAddFirstEmpty(slots, (nextUid, itemId)))
+		// ì•„ì´í…œ ì¶”ê°€ ì‹œë„ ë° Offer ë¹„ìš°ê¸°
+		var extra = new ExitGames.Client.Photon.Hashtable { { ItemPropKeys.OFFER(actor), "" } };
+		if (!Master_AddItemToInventory(actor, itemId, extra))
 		{
-			//½ÇÆĞ½Ã
-			Debug.LogError("Item Insertion ERROR");
+			Debug.LogError("Item Insertion ERROR (Inventory Full?)");
+			photonView.RPC(nameof(RPC_ShowWarning), info.Sender, UI_CSV.UI_Warning_FullInv);
 			return;
 		}
 
-		//»ğÀÔ °á°ú, º¯°æ °á°ú ÇÁ·ÎÆÛÆ¼·Î ÇÑ¹ø¿¡ ¾÷µ¥ÀÌÆ®
-		var ht = new ExitGames.Client.Photon.Hashtable
+		Debug.Log($"Player{actor} took offer: {itemId}");
+	}
+
+	[PunRPC]
+	void RPC_BuyShopItem(int actor, string itemId, int price, PhotonMessageInfo info)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		// í´ë¼ì´ì–¸íŠ¸ê°€ ì´ë¯¸ ê°€ê²©ì„ ì§€ë¶ˆí•˜ê³  í˜¸ì¶œí–ˆë‹¤ê³  ê°€ì •í•˜ê³ , ì¸ë²¤í† ë¦¬ì— ì•„ì´í…œë§Œ ì¶”ê°€í•©ë‹ˆë‹¤.
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actor);
+
+		if (Master_AddItemToInventory(actor, itemId))
 		{
-			{ItemPropKeys.INV(actor),ItemInfoSerializer.Encode(slots)},
-			{ItemPropKeys.NEXT_UID, nextUid + 1},
-			{ItemPropKeys.OFFER(actor), "" },
-
-		};
-		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
-
-
-		string inv = "";
-		foreach (var x in slots)
-		{
-			if (x.itemID == null)
-			{
-				inv += " _ ";
-			}
-			else
-			{
-				inv += $" {x.itemID} ";
-			}
+			Debug.Log($"[InventoryAuthority] Actor {actor} bought {itemId} for {price}G (Gold deducted by client)");
 		}
-		Debug.Log($"Player{actor}'s inventory : {inv}");
+		else
+		{
+			// ì•„ì´í…œ ì¶”ê°€ ì‹¤íŒ¨ (ì¸ë²¤í† ë¦¬ ê°€ë“ ì°¸)
+			Debug.LogError("[InventoryAuthority] Item Insertion ERROR (Inventory Full?)");
+		}
 	}
 
 	[PunRPC]
 	void RPC_UseItem(int requestActor, int slotIdx, PhotonMessageInfo info)
 	{
-		//Master °ËÁõ
+		//Master ê²€ì¦
 		if (!PhotonNetwork.IsMasterClient) return;
 
-		//Turn °ËÁõ
+		//Turn ê²€ì¦
 		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
 		if (turnActor != requestActor)
 		{
@@ -157,11 +188,11 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			}
 		}
 
-		//¿äÃ»ÀÚ INV Á¤º¸ °¡Á®¿À±â
+		//ìš”ì²­ì INV ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 		string Inv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(turnActor));
 		int InvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(turnActor));
 
-		//¿äÃ»ÀÚ INV Á¤º¸ °ËÁõ
+		//ìš”ì²­ì INV ì •ë³´ ê²€ì¦
 		var slots = ItemInfoSerializer.Decode(Inv, InvCap);
 		int itemCnt = 0;
 		for (int i = 0; i < slots.Length; i++)
@@ -180,13 +211,13 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			return;
 		}
 
-		//½½·Ô Idx °ËÁõ
+		//ìŠ¬ë¡¯ Idx ê²€ì¦
 		string itemId = slots[slotIdx].itemID;
 		int uniqueId = slots[slotIdx].uniqueId;
 
-		//uniqueId ±â¹İÀ¸·Î ½½·Ô IDX °ª ¹Ş¾Æ¿À±â
+		//uniqueId ê¸°ë°˜ìœ¼ë¡œ ìŠ¬ë¡¯ IDX ê°’ ë°›ì•„ì˜¤ê¸°
 		int removaldx = ItemInfoSerializer.TryFindIndexByUniqueId(slots, uniqueId);
-		//IDX ´Ù¸£¸é ¿¡·¯
+		//IDX ë‹¤ë¥´ë©´ ì—ëŸ¬
 		if (removaldx != slotIdx)
 		{
 			Debug.Log("SlotIdx Error");
@@ -199,7 +230,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(requestActor);
 
 
-		//Èñ»ı ¾ÆÀÌÅÛÀÌ¸é¼­, ¾ÆÀÌÅÛ °¹¼ö°¡ 1°³ ÀÌÇÏÀÎ °æ¿ì
+		//í¬ìƒ ì•„ì´í…œì´ë©´ì„œ, ì•„ì´í…œ ê°¯ìˆ˜ê°€ 1ê°œ ì´í•˜ì¸ ê²½ìš°
 		if (itemCnt <= 1 && item.itemId == "2002")
 		{
 			if (player != null)
@@ -227,11 +258,11 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			return;
 		}
 
-		//±â·Â·® ¾÷µ¥ÀÌÆ®
+		//ê¸°ë ¥ëŸ‰ ì—…ë°ì´íŠ¸
 		PhotonPropertyHelper.SetPlayerProp(requestActor, PlayerPropKeys.Energy, playerEng - item.itemCost);
 
 
-		//»ç¿ëÇÑ ¾ÆÀÌÅÛ ÀÎº¥Åä¸®¿¡¼­ Á¦°Å
+		//ì‚¬ìš©í•œ ì•„ì´í…œ ì¸ë²¤í† ë¦¬ì—ì„œ ì œê±°
 		slots[slotIdx] = (0, null);
 		if (player != null)
 			photonView.RPC(nameof(RPC_SetItemSlotUI), player, true);
@@ -241,27 +272,27 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			wis = null;
 		}
 
-		//¾ÆÀÌÅÛ »ç¿ë UI ¶ç¿ì±â
+		//ì•„ì´í…œ ì‚¬ìš© UI ë„ìš°ê¸°
 		PlayerCanvasController.Instance.PopUpItemNotify(item.itemId, player);
 
-		//½½·Ô Info Á¤º¸ ¾÷µ¥ÀÌÆ®
+		//ìŠ¬ë¡¯ Info ì •ë³´ ì—…ë°ì´íŠ¸
 		string updatedItemSlots = ItemInfoSerializer.Encode(slots);
 
 		string InvKey = ItemPropKeys.INV(requestActor);
-		//»õ·Ó°Ô ¾÷µ¥ÀÌÆ®ÇÒ ÇÁ·ÎÆÛÆ¼
+		//ìƒˆë¡­ê²Œ ì—…ë°ì´íŠ¸í•  í”„ë¡œí¼í‹°
 		var newProps = new ExitGames.Client.Photon.Hashtable
 		{
 			{InvKey, updatedItemSlots }
 		};
 
-		//°ËÁõ ÇÁ·ÎÆÛÆ¼
+		//ê²€ì¦ í”„ë¡œí¼í‹°
 		var expected = new ExitGames.Client.Photon.Hashtable
 		{
 			{InvKey,  Inv},
 			{RoomPropKeys.CurrentTurnActor, turnActor },
 		};
 
-		//ÇöÀç expected ÇÁ·ÎÆÛÆ¼ÀÎ °æ¿ì¿¡¸¸ newProps·Î ¾÷µ¥ÀÌÆ®
+		//í˜„ì¬ expected í”„ë¡œí¼í‹°ì¸ ê²½ìš°ì—ë§Œ newPropsë¡œ ì—…ë°ì´íŠ¸
 		PhotonNetwork.CurrentRoom.SetCustomProperties(newProps, expected);
 		string inv = "";
 		foreach (var x in slots)
@@ -277,26 +308,26 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		}
 		Debug.Log($"Player{turnActor}'s inventory : {inv}");
 
-		//TODO: ¾ÆÀÌÅÛ È¿°ú Àû¿ë
-		//MasterClient°¡ È¿°ú¸¦ È®Á¤ÇÏ°í Room ÇÁ·ÎÆÛÆ¼ ¾÷µ¥ÀÌÆ®
+		//TODO: ì•„ì´í…œ íš¨ê³¼ ì ìš©
+		//MasterClientê°€ íš¨ê³¼ë¥¼ í™•ì •í•˜ê³  Room í”„ë¡œí¼í‹° ì—…ë°ì´íŠ¸
 		ItemHandlingSystem.instance.AddItemStatusInstance(turnActor, item, uniqueId);
 	}
 
 	[PunRPC]
 	public void RPC_SteelItem(int FromActor, int ToActor, int SelectedSlotIdx, PhotonMessageInfo info)
 	{
-		//Master °ËÁõ
+		//Master ê²€ì¦
 		if (!PhotonNetwork.IsMasterClient) return;
 
-		//ÀÎº¥Åä¸® ÁÖÀÎ INV Á¤º¸ °¡Á®¿À±â
+		//ì¸ë²¤í† ë¦¬ ì£¼ì¸ INV ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 		string FromInv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(FromActor));
 		int FromInvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(FromActor));
-		//ÈÉÄ¡´Â Actor Inv Á¤º¸ °¡Á®¿À±â
+		//í›”ì¹˜ëŠ” Actor Inv ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 		string ToInv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(ToActor));
 		int ToInvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(ToActor));
 
 
-		//ÀÎº¥Åä¸® ÁÖÀÎ INV Á¤º¸ °ËÁõ
+		//ì¸ë²¤í† ë¦¬ ì£¼ì¸ INV ì •ë³´ ê²€ì¦
 		var slots = ItemInfoSerializer.Decode(FromInv, FromInvCap);
 		if (slots == null || slots.Length != FromInvCap)
 		{
@@ -309,37 +340,37 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			return;
 		}
 
-		//ÀÎº¥Åä¸® ÁÖÀÎ ½½·Ô Idx °ËÁõ
+		//ì¸ë²¤í† ë¦¬ ì£¼ì¸ ìŠ¬ë¡¯ Idx ê²€ì¦
 		string itemId = slots[SelectedSlotIdx].itemID;
 		int uniqueId = slots[SelectedSlotIdx].uniqueId;
 
-		//uniqueId ±â¹İÀ¸·Î ½½·Ô IDX °ª ¹Ş¾Æ¿À±â
+		//uniqueId ê¸°ë°˜ìœ¼ë¡œ ìŠ¬ë¡¯ IDX ê°’ ë°›ì•„ì˜¤ê¸°
 		int removaldx = ItemInfoSerializer.TryFindIndexByUniqueId(slots, uniqueId);
-		//IDX ´Ù¸£¸é ¿¡·¯
+		//IDX ë‹¤ë¥´ë©´ ì—ëŸ¬
 		if (removaldx != SelectedSlotIdx)
 		{
 			Debug.Log("SlotIdx Error");
 			return;
 		}
 
-		//ÈÉÄ¡´Â ¾ÆÀÌÅÛ °¡Á®¿À±â
+		//í›”ì¹˜ëŠ” ì•„ì´í…œ ê°€ì ¸ì˜¤ê¸°
 		ItemSO item = ItemDB.Instance.Get(itemId);
-		//ÀÎº¥Åä¸® ÁÖÀÎ Player °´Ã¼
+		//ì¸ë²¤í† ë¦¬ ì£¼ì¸ Player ê°ì²´
 		Player FromPlayer = PhotonNetwork.CurrentRoom.GetPlayer(FromActor);
 		Player ToPlayer = PhotonNetwork.CurrentRoom.GetPlayer(ToActor);
 
-		//»©¾Ñ±ä ¾ÆÀÌÅÛ ÀÎº¥Åä¸®¿¡¼­ Á¦°Å
+		//ë¹¼ì•—ê¸´ ì•„ì´í…œ ì¸ë²¤í† ë¦¬ì—ì„œ ì œê±°
 		slots[SelectedSlotIdx] = (0, null);
 		photonView.RPC(nameof(RPC_SetItemSlotUI), FromPlayer, true);
 
-		//¾ÆÀÌÅÛ »©¾Ñ±è UI ¶ç¿ì±â
+		//ì•„ì´í…œ ë¹¼ì•—ê¹€ UI ë„ìš°ê¸°
 		PlayerCanvasController.Instance.PopUpItemStolenNotify(item.itemId, FromPlayer, ToPlayer);
 
-		//ÀÎº¥Åä¸® ÁÖÀÎ ½½·Ô Info Á¤º¸ ¾÷µ¥ÀÌÆ®
+		//ì¸ë²¤í† ë¦¬ ì£¼ì¸ ìŠ¬ë¡¯ Info ì •ë³´ ì—…ë°ì´íŠ¸
 		string updatedItemSlots = ItemInfoSerializer.Encode(slots);
 
 		string InvKey = ItemPropKeys.INV(FromActor);
-		//»õ·Ó°Ô ¾÷µ¥ÀÌÆ®ÇÒ ÇÁ·ÎÆÛÆ¼
+		//ìƒˆë¡­ê²Œ ì—…ë°ì´íŠ¸í•  í”„ë¡œí¼í‹°
 		var newProps = new ExitGames.Client.Photon.Hashtable
 		{
 			{InvKey, updatedItemSlots }
@@ -348,18 +379,18 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 
 
-		//ÈÉÄ¡´Â ActorÀÇ ÀÎº¥Åä¸® Á¤º¸ ¿ªÁ÷·ÄÈ­ÇØ¼­ °¡Á®¿À±â
+		//í›”ì¹˜ëŠ” Actorì˜ ì¸ë²¤í† ë¦¬ ì •ë³´ ì—­ì§ë ¬í™”í•´ì„œ ê°€ì ¸ì˜¤ê¸°
 		var TargetSlots = ItemInfoSerializer.Decode(ToInv, ToInvCap);
 
-		//ÈÉÄ¡´Â ÇÃ·¹ÀÌ¾î ¾ÆÀÌÅÛ ÀÎº¥Åä¸® Ã¹ Ä­¿¡ ÇØ´ç ¾ÆÀÌÅÛ »ğÀÔ ½ÃµµÇÏ±â
+		//í›”ì¹˜ëŠ” í”Œë ˆì´ì–´ ì•„ì´í…œ ì¸ë²¤í† ë¦¬ ì²« ì¹¸ì— í•´ë‹¹ ì•„ì´í…œ ì‚½ì… ì‹œë„í•˜ê¸°
 		if (!ItemInfoSerializer.TryAddFirstEmpty(TargetSlots, (uniqueId, itemId)))
 		{
-			//½ÇÆĞ½Ã
+			//ì‹¤íŒ¨ì‹œ
 			Debug.LogError("Item Insertion ERROR");
 			return;
 		}
 
-		//»ğÀÔ °á°ú, º¯°æ °á°ú ÇÁ·ÎÆÛÆ¼·Î ÇÑ¹ø¿¡ ¾÷µ¥ÀÌÆ®
+		//ì‚½ì… ê²°ê³¼, ë³€ê²½ ê²°ê³¼ í”„ë¡œí¼í‹°ë¡œ í•œë²ˆì— ì—…ë°ì´íŠ¸
 		var ht = new ExitGames.Client.Photon.Hashtable
 		{
 			{ItemPropKeys.INV(ToActor),ItemInfoSerializer.Encode(TargetSlots)},
@@ -414,7 +445,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		WI.RefreshInv();
 	}
 
-	//AI ÇÃ·¹ÀÌ¾î ÀÎº¥Åä¸® °»½Å ÇÔ¼ö
+	//AI ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Îºï¿½ï¿½ä¸® ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 	public void RefreshAIItemInv()
 	{
 		GameObject AIInv = PlayerStatus.Instance.GetAIInventory();
@@ -428,7 +459,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		PlayerCanvasController.Instance.SetWarningTextActive(textId);
 	}
 
-	//¼±ÅÃµÈ ¾ÆÀÌÅÛÀÌ ½ÇÁ¦ Á¦¾ÈµÈ ¾ÆÀÌÅÛ ¸ñ·Ï¿¡ ÀÖ´ÂÁö È®ÀÎ
+	//ì„ íƒëœ ì•„ì´í…œì´ ì‹¤ì œ ì œì•ˆëœ ì•„ì´í…œ ëª©ë¡ì— ìˆëŠ”ì§€ í™•ì¸
 	bool Contains(string offer, string id)
 	{
 		var p = offer.Split('|');

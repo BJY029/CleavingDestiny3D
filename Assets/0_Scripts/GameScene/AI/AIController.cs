@@ -92,8 +92,44 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         AssignAnimationIDs();
     }
 
-    //움직임에 따른 애니메이션 업데이트
     private void Update()
+    {
+        if (TurnManager.Instance.isUpgradePhase)
+        {
+            //아직 관련 처리를 진행하지 않은 경우
+            if (!UpgradePhase)
+            {
+                if (turnCts != null)
+                {
+                    turnCts.Cancel();
+                    turnCts.Dispose();
+                    turnCts = null;
+                }
+
+                VillageUpgradePhase();
+                //마을 업그레이드 페이즈에 돌입했음을 명시
+                UpgradePhase = true;
+            }
+            return;
+        }
+        else //마을 업그레이드 페이즈가 아닌 경우
+        {
+            //그런데 아직 마을 업그레이드 페이즈로 설정되어 있는 경우
+            if (UpgradePhase)
+            {
+                //관련 처리 진행 후
+                VillageUpgradePhaseOut();
+                //마을 업그레이드 페이즈에서 빠져나왔음을 명시
+                UpgradePhase = false;
+            }
+        }
+
+        UpdateAnimation();
+
+    }
+
+    // 움직임에 따른 애니메이션 업데이트
+    private void UpdateAnimation()
     {
         //NevMeshAgent의 속도 값 받아오기
         Vector3 velocity = aiBrain.aINevMeshController.agent.velocity;
@@ -115,7 +151,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
             //방향 구하기(벡터 방향)
             Vector3 dir = velocity.normalized;
 
-            //ㅎ현재 전방 및 우측 방향을 수평면에 정사영
+            //현재 전방 및 우측 방향을 수평면에 정사영
             Vector3 fwd = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
             Vector3 right = Vector3.ProjectOnPlane(transform.right, Vector3.up).normalized;
 
@@ -204,8 +240,6 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         }
     }
 
-
-
     //제한 시간이 끝났을 때 AI 플레이어를 강제로 텔레포트 시키는 함수
     public void ForceStopAndTeleportToHit()
     {
@@ -230,15 +264,16 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         ResetAnimation();
     }
 
-    //구현 예정
+    // 마을 페이즈 진입
     public void VillageUpgradePhase()
     {
-        throw new System.NotImplementedException();
+        aiBrain.VillageUpgrader.EnterVillage().Forget();
     }
-    //구현 예정
+
+    // 마을 페이즈 종료
     public void VillageUpgradePhaseOut()
     {
-        throw new System.NotImplementedException();
+        aiBrain.VillageUpgrader.ExitVillage();
     }
 
     //턴 변경(나무 때리기) 처리 함수

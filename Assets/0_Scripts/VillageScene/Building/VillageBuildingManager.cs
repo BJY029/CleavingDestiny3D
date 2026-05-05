@@ -31,6 +31,11 @@ namespace Village.Building
         private async void OnBuildingClicked(VillageBuilding building)
         {
             Debug.Log("BuildingManager received click from: " + building.buildingType);
+            if (currentBuildingUI != null)
+            {
+                Debug.Log("A building UI is already open. Ignoring click.");
+                return;
+            }
 
             // 해당 건물의 UI 프리팹이 이미 생성된 적 있는지 확인
             if (!_uiInstanceCache.TryGetValue(building.villageBuilldingUIPrefab, out currentBuildingUI))
@@ -70,7 +75,7 @@ namespace Village.Building
             cinemachineCamera.gameObject.SetActive(false);
 
             await fadeCanvas.FadeOutAsync(1f);
-
+            currentBuildingUI = null;
         }
     }
 }

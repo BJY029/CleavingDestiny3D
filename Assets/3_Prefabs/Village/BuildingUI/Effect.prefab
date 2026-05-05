@@ -265,6 +265,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingEffect
   currentEffectSprite: {fileID: -1530785673, guid: 11375abfa3ea2f64d953c30fbe320b88, type: 3}
   enabledCircleSprite: {fileID: 21300000, guid: b668bca4cc41a88479ef8a0fb3351ceb, type: 3}
+  originalEffectSprite: {fileID: 1415192665, guid: 2b495fb12b73448438ceaa052d0c0967, type: 3}
+  originalCircleSprite: {fileID: 21300000, guid: 0e4f6e7d926d38140be245a70e1b4a96, type: 3}
   effectImage: {fileID: 8157981724499611465}
   circleImage: {fileID: 479744326587875602}
   disablePanel: {fileID: 3797354800009644434}

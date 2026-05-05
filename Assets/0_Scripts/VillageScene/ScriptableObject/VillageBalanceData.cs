@@ -72,4 +72,68 @@ public class VillageBalanceData : ScriptableObject
     public float BarrierArmorMultiplier => barrierArmorMultiplier;
 
 
+    [Header("Shop")]
+    [SerializeField]
+    private int shopItemCount = 3;
+    public int ShopItemCount => shopItemCount;
+
+    [Header("Shop Rarity - Rare")]
+    [SerializeField]
+    private float shopRareChanceBase = 0.05f; // 레벨 1 기본 확률
+    public float ShopRareChanceBase => shopRareChanceBase;
+
+    [SerializeField]
+    private float shopRareChanceMultiplier = 0.05f; // 레벨당 증가량
+    public float ShopRareChanceMultiplier => shopRareChanceMultiplier;
+
+    [Header("Shop Rarity - Hero")]
+    [SerializeField]
+    private int shopHeroMinLevel = 3; // 등장 최소 레벨
+    public int ShopHeroMinLevel => shopHeroMinLevel;
+
+    [SerializeField]
+    private float shopHeroChanceBase = 0.02f; // 최소 레벨 달성 시 기본 확률
+    public float ShopHeroChanceBase => shopHeroChanceBase;
+
+    [SerializeField]
+    private float shopHeroChanceMultiplier = 0.03f; // 최소 레벨 이후 레벨당 증가량
+    public float ShopHeroChanceMultiplier => shopHeroChanceMultiplier;
+
+    [Header("Shop Rarity - Legendary")]
+    [SerializeField]
+    private int shopLegendaryMinLevel = 5; // 등장 최소 레벨
+    public int ShopLegendaryMinLevel => shopLegendaryMinLevel;
+
+    [SerializeField]
+    private float shopLegendaryChanceBase = 0.01f; // 최소 레벨 달성 시 기본 확률
+    public float ShopLegendaryChanceBase => shopLegendaryChanceBase;
+
+    [SerializeField]
+    private float shopLegendaryChanceMultiplier = 0.01f; // 최소 레벨 이후 레벨당 증가량
+    public float ShopLegendaryChanceMultiplier => shopLegendaryChanceMultiplier;
+
+    [SerializeField]
+    private int shopReloadCost = 50;
+
+    [SerializeField]
+    private int shopReloadCostIncrement = 20;
+    public int GetShopReloadCost(int reloadCount)
+    {
+        return shopReloadCost + (reloadCount * shopReloadCostIncrement);
+    }
+
+    [Header("Shop Item Prices")]
+    [SerializeField] private int priceCommon = 100;
+    [SerializeField] private int priceHero = 300;
+    [SerializeField] private int priceRare = 600;
+    [SerializeField] private int priceLegendary = 1200;
+
+    public int GetItemPrice(ItemClass itemClass) => itemClass switch
+    {
+        ItemClass.Common => priceCommon,
+        ItemClass.Hero => priceHero,
+        ItemClass.Rare => priceRare,
+        ItemClass.Legendary => priceLegendary,
+        _ => priceCommon
+    };
 }

@@ -18,23 +18,23 @@ namespace Village
         void Initialize(IVillageStatProvider statProvider);
 
         /// <summary>
-        /// 현재 로컬 플레이어의 보유 골드량 반환
+        /// 특정 액터 번호(AI 포함)의 보유 골드량 반환.
+        /// actorNumber가 -1(기본값)이면 로컬 플레이어의 정보를 가져옵니다.
         /// </summary>
-        /// <returns>현재 골드</returns>
-        int GetMyGold();
+        int GetMyGold(int actorNumber = -1);
 
         /// <summary>
-        /// 골드 획득 또는 차감 (Photon CustomProperties 동기화 포함)
+        /// 특정 액터 번호(AI 포함)의 골드 획득 또는 차감 (Photon CustomProperties 동기화 포함)
         /// </summary>
         /// <param name="amount">변경할 골드 양 (음수일 경우 차감)</param>
-        void AddGold(int amount);
+        /// <param name="actorNumber">대상 액터 번호 (기본값 -1은 로컬 플레이어)</param>
+        void AddGold(int amount, int actorNumber = -1);
 
         /// <summary>
-        /// 특정 건물 업그레이드 시도 (비용 확인 -> 골드 차감 -> 레벨 상승 -> 스탯 갱신)
+        /// 특정 액터 번호(AI 포함)의 건물 업그레이드 시도.
+        /// actorNumber가 -1(기본값)이면 로컬 플레이어의 정보를 가져옵니다.
         /// </summary>
-        /// <param name="facilityType">건물 유형</param>
-        /// <returns>업그레이드 성공 여부</returns>
-        bool TryUpgradeLevel(VillageType facilityType);
+        bool TryUpgradeLevel(VillageType facilityType, int actorNumber = -1);
 
         /// <summary>
         /// Photon 네트워크로부터 변경된 플레이어 속성(골드 등)을 로컬 로직에 동기화

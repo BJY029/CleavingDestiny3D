@@ -12,7 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d86005d444f4bd42ad1353428af9350, type: 3}
   m_Name: VillageBalanceData
   m_EditorClassIdentifier: Assembly-CSharp::VillageBalanceData
+  maxLevel: 5
+  upgradeCostBase: 100
+  upgradeCostMultiplier: 2
+  goldIncomeBase: 50
   energyIncomeBase: 5
   energyIncomeMultiplier: 3.2
-  enemyMaxBase: 10
-  enemyMaxMultiplier: 5
+  energyMaxBase: 10
+  energyMaxMultiplier: 5
+  axeDamageBase: 1000
+  axeDamageLevelMultiplier: 100
+  axeDamageMinMultiplier: 0.5
+  axeDamageMaxMultiplier: 1.5
+  barrierArmorBase: 100
+  barrierArmorMultiplier: 2
+  shopItemCount: 3
+  shopRareChanceBase: 0.05
+  shopRareChanceMultiplier: 0.05
+  shopHeroMinLevel: 3
+  shopHeroChanceBase: 0.02
+  shopHeroChanceMultiplier: 0.03
+  shopLegendaryMinLevel: 4
+  shopLegendaryChanceBase: 0.01
+  shopLegendaryChanceMultiplier: 0.01
+  shopReloadCost: 50
+  shopReloadCostIncrement: 20
+  priceCommon: 100
+  priceHero: 300
+  priceRare: 600
+  priceLegendary: 1200
