@@ -30,6 +30,8 @@ public class LLMGameStateDTO
     public PlayerStatusDTO oppStatus;
     public List<ItemInfoDTO> myInventory;
     public List<ItemInfoDTO> oppInventory;
+
+    public PlayerVStateDTO myVStatus;
 }
 
 //플레이어 상태 정의 DTO
@@ -56,6 +58,22 @@ public class ItemInfoDTO
 
     [JsonConverter(typeof(StringEnumConverter))]
     public ItemType type;
+}
+
+[System.Serializable]
+public class PlayerVStateDTO
+{
+    public int curGold;
+    public List<VillageState> villageInfos;
+}
+
+[System.Serializable]
+public class VillageState
+{
+    public int curLevel;
+    public string curEffect;
+    public string nextEffect;
+    public int upgradeGold;
 }
 
 //

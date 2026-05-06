@@ -246,6 +246,7 @@ public class SimGameState
             dto.oppStatus = CreatePlayerDTO(simVillageState.p2MaxHitDmg, simVillageState.p2MinHitDmg, p2VillHP, p2VillBarrier, simVillageState.p2MaxEnergy, p2Energy, p2HasDebuff);
             dto.myInventory = CreateInventoryDTO(p1Inventory);
             dto.oppInventory = CreateInventoryDTO(p2Inventory);
+            //dto.myVStatus = CreatePlayerVDTO(simVillageState.p1VillGold, simVillageState.P1VillageObjInfos);
         }
         else
         {
@@ -253,6 +254,7 @@ public class SimGameState
             dto.oppStatus = CreatePlayerDTO(simVillageState.p1MaxHitDmg, simVillageState.p1MinHitDmg, p1VillHP, p1VillBarrier, simVillageState.p1MaxEnergy, p1Energy, p1HasDebuff);
             dto.myInventory = CreateInventoryDTO(p2Inventory);
             dto.oppInventory = CreateInventoryDTO(p1Inventory);
+            // dto.myVStatus = CreatePlayerVDTO(simVillageState.p2VillGold, simVillageState.P2VillageObjInfos);
         }
         return dto;
     }
@@ -293,6 +295,12 @@ public class SimGameState
         }
         return invList;
     }
+
+    // private PlayerVStateDTO CreatePlayerVDTO(int curGold, List<VillageObjInfo> villObjInfos)
+    // {
+    //     //return new
+    // }
+
 
     //플레이어 인벤토리에 아이템 추가
     public void TryAddItemToInventory(int playerNum, string itemId)
