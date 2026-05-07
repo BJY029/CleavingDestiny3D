@@ -97,6 +97,7 @@ public class LLMAction
 //AI 프롬프트 응답 전용 DTO 정의
 //프롬프트에서 정의한 반환형 JSON과 동일화 해야 함
 //아이템 선택 결정 후 오는 JSON 반환
+//실제 테스트시 reasoning 제거하기
 public class ItemSelectResopnse
 {
     public string reasoning;
@@ -129,5 +130,5 @@ public class TreeHitResponse
 public class NightUpgradeResponse
 {
     public string reasoning;
-    public string upgradeId;
+    public string upgradeVillageType;
 }

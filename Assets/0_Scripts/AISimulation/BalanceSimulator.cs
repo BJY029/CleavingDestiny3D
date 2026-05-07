@@ -65,9 +65,25 @@ public class BalanceSimulator : MonoBehaviour
                     if (IsGameOver(state)) break;
                 }
                 state.wave = 0;
-                //임시 효과로 단순히 각 마을에 나무 독성 데미지를 적용한다.
-                //추후 업그레이드 관련 로직도 구현해야 한다.
                 state.ApplyToxicToVillage();
+
+                //레벨에 따른 골드 지급
+                AISimVUIController.instance.ActiveVillageUI();
+                state.simVillageState.UpdateGoldWhenStartVillPhase();
+                for (int i = 1; i <= 2; i++)
+                {
+                    int SafetyCount = 0;
+                    while (SafetyCount < 10)
+                    {
+                        if (IsGameOver(state)) break;
+
+                        bool keepUpgrade = await RunUpgradePhase(state, i, cancellToken);
+                        if (keepUpgrade) break;
+
+                        SafetyCount++;
+                    }
+                }
+                AISimVUIController.instance.UnActiveVillageUI();
                 state.day++;
             }
 
@@ -154,7 +170,26 @@ public class BalanceSimulator : MonoBehaviour
         {
             Debug.LogError($"[P{playerNum} Tree Damage Calc Error] ERROR : {e.Message} \nStackTrace : {e.StackTrace}");
         }
-
+    }
+    private async UniTask<bool> RunUpgradePhase(SimGameState state, int playerNum, CancellationToken token)
+    {
+        try
+        {
+            string upgradePrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.NightUpgrade);
+            Debug.Log($"<color=cyan>[HitTreePhase]\n{upgradePrompt}</color>");
+            string upgradeJsonAns = await apiClient.AskNextMove(upgradePrompt, GetStateJson(state, playerNum), token);
+            return executor.ExecuteNightPhaseAction(upgradeJsonAns, state, playerNum);
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.Log("[Abort Simulation] Unity Editor Has Been Suspended");
+            return false;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[P{playerNum} Upgrade Vill Error] ERROR : {e.Message} \nStackTrace : {e.StackTrace}");
+            return false;
+        }
     }
 
     public string GetStateJson(SimGameState state, int playerNum)

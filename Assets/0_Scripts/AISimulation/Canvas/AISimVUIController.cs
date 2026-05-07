@@ -5,6 +5,17 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 
 [Serializable]
+public class DebugInfo
+{
+    public TMP_Text GoldIncome;
+    public TMP_Text DefaultShild;
+    public TMP_Text MaxEng;
+    public TMP_Text DayEng;
+    public TMP_Text MaxPow;
+    public TMP_Text MinPow;
+}
+
+[Serializable]
 public class ComponentUIInfo
 {
     public VillageType villageType;
@@ -18,6 +29,7 @@ public class ComponentUIInfo
 public class VillageUIInfo
 {
     public TMP_Text CurGold;
+    public DebugInfo infos;
     public List<ComponentUIInfo> VillageComponents;
 }
 
@@ -38,11 +50,23 @@ public class AISimVUIController : MonoBehaviour
     private void OnEnable()
     {
         SimVillageState.OnVillageObjChanged += HandleVillageObjChanged;
+        SimVillageState.OnVStatChange += HandleVillageValueChanged;
     }
 
     private void OnDisable()
     {
         SimVillageState.OnVillageObjChanged -= HandleVillageObjChanged;
+        SimVillageState.OnVStatChange -= HandleVillageValueChanged;
+    }
+
+    public void ActiveVillageUI()
+    {
+        VillagePanel.transform.localScale = Vector3.one;
+    }
+
+    public void UnActiveVillageUI()
+    {
+        VillagePanel.transform.localScale = Vector3.zero;
     }
 
     private void HandleVillageObjChanged(int playerNum, VillageObjInfo changedInfo)
@@ -69,6 +93,33 @@ public class AISimVUIController : MonoBehaviour
         else
         {
             Debug.LogWarning($"[{changedInfo._levelData.VillageType}] 타입의 UI 컴포넌트를 찾을 수 없습니다.");
+        }
+    }
+
+    private void HandleVillageValueChanged(int playerNum, VStateType type, int value)
+    {
+        DebugInfo debugInfo = playerNum == 1 ? p1VUIInfo.infos : p1VUIInfo.infos;
+
+        switch (type)
+        {
+            case VStateType.VIncomeGold:
+                debugInfo.GoldIncome.text = value.ToString();
+                break;
+            case VStateType.VBarrier:
+                debugInfo.DefaultShild.text = value.ToString();
+                break;
+            case VStateType.MaxEnergy:
+                debugInfo.MaxEng.text = value.ToString();
+                break;
+            case VStateType.DayEnergy:
+                debugInfo.DayEng.text = value.ToString();
+                break;
+            case VStateType.MaxHitDamage:
+                debugInfo.MaxPow.text = value.ToString();
+                break;
+            case VStateType.MinHitDamage:
+                debugInfo.MinPow.text = value.ToString();
+                break;
         }
     }
 }

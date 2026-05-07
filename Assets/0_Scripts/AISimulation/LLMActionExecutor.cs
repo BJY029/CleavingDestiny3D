@@ -58,7 +58,6 @@ public class LLMActionExecutor
                     ItemHandlingInSim.Instance.ProcessItemEffect(playerNum, hitData.hitDamage, true, state);
                     //state.ApplyTreeDamage(playerNum, hitData.hitDamage);
                     break;
-                case ActionPhase.NightUpgrade:
                 default:
                     break;
             }
@@ -66,6 +65,36 @@ public class LLMActionExecutor
         catch (Exception e)
         {
             Debug.LogError($"[LLM JSON 파싱/실행 에러] Phase : {phase} \nERROR : {e.Message} \nStackTrace : {e.StackTrace} \nRaw Json: {llmJson}");
+        }
+    }
+
+    public bool ExecuteNightPhaseAction(string llmJson, SimGameState state, int playerNum)
+    {
+        string cleanJson = CleanUpJson(llmJson);
+        try
+        {
+            var VillData = JsonConvert.DeserializeObject<NightUpgradeResponse>(cleanJson);
+            Debug.Log($"[P{playerNum} 마을 업그레이드 요소/이유] {VillData.upgradeVillageType}/{VillData.reasoning}");
+
+            if (!string.IsNullOrEmpty(VillData.upgradeVillageType))
+            {
+                if (System.Enum.TryParse(VillData.upgradeVillageType, out VillageType type))
+                {
+                    state.simVillageState.UpgradeVillageObject(playerNum, type);
+                    return true;
+                }
+                else { Debug.LogError("Faild to Parse Enum Type"); return false; }
+            }
+            else
+            {
+                Debug.LogError("Village Upgrade Data is NULL");
+                return false;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[LLM JSON 파싱/실행 에러] Phase : {ActionPhase.NightUpgrade.ToString()} \nERROR : {e.Message} \nStackTrace : {e.StackTrace} \nRaw Json: {llmJson}");
+            return false;
         }
     }
 

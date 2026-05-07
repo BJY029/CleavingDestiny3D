@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using ExitGames.Client.Photon.StructWrapping;
 using UnityEngine;
 
 public enum VStateType
 {
-    MaxEnergy, DayEnergy, HitDamage, VBarrier, VGold
+    MaxEnergy, DayEnergy, MaxHitDamage, MinHitDamage, VBarrier, VGold, VIncomeGold
 }
 
 public class VDesc
@@ -88,7 +87,7 @@ public class SimVillageState
     public List<VillageObjInfo> P2VillageObjInfos;
     private VillageBalanceData _villageBalanceData;
 
-    public static event Action<int, VStateType, float> OnVStatChange;
+    public static event Action<int, VStateType, int> OnVStatChange;
     public static event Action<int, VillageObjInfo> OnVillageObjChanged;
 
     private int _p1MaxEnergy;
@@ -147,7 +146,7 @@ public class SimVillageState
         {
             if (value == _p1MaxHitDmg) return;
             _p1MaxHitDmg = value;
-            OnVStatChange?.Invoke(1, VStateType.HitDamage, _p1MaxHitDmg);
+            OnVStatChange?.Invoke(1, VStateType.MaxHitDamage, _p1MaxHitDmg);
         }
     }
 
@@ -159,7 +158,7 @@ public class SimVillageState
         {
             if (value == _p2MaxHitDmg) return;
             _p2MaxHitDmg = value;
-            OnVStatChange?.Invoke(2, VStateType.HitDamage, _p2MaxHitDmg);
+            OnVStatChange?.Invoke(2, VStateType.MaxHitDamage, _p2MaxHitDmg);
         }
     }
 
@@ -171,7 +170,7 @@ public class SimVillageState
         {
             if (value == _p1MinHitDmg) return;
             _p1MinHitDmg = value;
-            OnVStatChange?.Invoke(1, VStateType.HitDamage, _p1MinHitDmg);
+            OnVStatChange?.Invoke(1, VStateType.MinHitDamage, _p1MinHitDmg);
         }
     }
 
@@ -183,7 +182,7 @@ public class SimVillageState
         {
             if (value == _p2MinHitDmg) return;
             _p2MinHitDmg = value;
-            OnVStatChange?.Invoke(2, VStateType.HitDamage, _p2MinHitDmg);
+            OnVStatChange?.Invoke(2, VStateType.MinHitDamage, _p2MinHitDmg);
         }
     }
 
@@ -235,6 +234,30 @@ public class SimVillageState
         }
     }
 
+    private int _p1IncomeVillGold;
+    public int p1IncomeVillGold
+    {
+        get => _p1IncomeVillGold;
+        set
+        {
+            if (value == _p1IncomeVillGold) return;
+            _p1IncomeVillGold = value;
+            OnVStatChange?.Invoke(1, VStateType.VIncomeGold, _p1IncomeVillGold);
+        }
+    }
+
+    private int _p2IncomeVillGold;
+    public int p2IncomeVillGold
+    {
+        get => _p2IncomeVillGold;
+        set
+        {
+            if (value == _p2IncomeVillGold) return;
+            _p2IncomeVillGold = value;
+            OnVStatChange?.Invoke(2, VStateType.VIncomeGold, _p2IncomeVillGold);
+        }
+    }
+
     public SimVillageState(VillageBalanceData balanceData, VillageLevelData[] levelDatas)
     {
         _villageBalanceData = balanceData;
@@ -270,11 +293,83 @@ public class SimVillageState
 
         if (targetObj != null)
         {
+            if (targetObj._levelData.TryGetUpgradeCost(targetObj.currentLevel, out int upgradeGold))
+            {
+                int VillGold = playerNum == 1 ? p1VillGold : p2VillGold;
+                if (VillGold >= upgradeGold)
+                {
+                    if (playerNum == 1) p1VillGold = Mathf.Max(0, p1VillGold - upgradeGold);
+                    else p2VillGold = Mathf.Max(0, p2VillGold - upgradeGold);
+                }
+                else
+                {
+                    Debug.LogError($"Not Enough Money to Upgrade, VillGold : {VillGold}/UpgradeGold : {upgradeGold}");
+                    return;
+                }
+            }
+            else
+            {
+                Debug.LogError("Can't get Upgrade Gold Value");
+                return;
+            }
             // 1. 레벨 증가 (이때 VillageObjInfo 내부에서 설명 텍스트가 자동 갱신됨)
             targetObj.currentLevel += 1;
 
-            // 2. UI 갱신을 위해 콜백 이벤트 발생
+            // 2. 업그레이드 반영
+            UpgradeValueByType(playerNum, targetObj);
+
+            // 3. UI 갱신을 위해 콜백 이벤트 발생
             OnVillageObjChanged?.Invoke(playerNum, targetObj);
+        }
+    }
+
+    public void UpdateGoldWhenStartVillPhase()
+    {
+        p1VillGold += p1IncomeVillGold;
+        p2VillGold += p2IncomeVillGold;
+    }
+
+    private void UpgradeValueByType(int playerNum, VillageObjInfo target)
+    {
+        switch (target._levelData.VillageType)
+        {
+            case (VillageType.Mine):
+                int VillGold = GetGoldIncomePerDay(target.currentLevel);
+                if (playerNum == 1) p1IncomeVillGold = VillGold;
+                else p2IncomeVillGold = VillGold;
+                break;
+            case (VillageType.Forge):
+                var AtkDmgs = GetAxeRangeDamage(target.currentLevel);
+                if (playerNum == 1)
+                {
+                    p1MinHitDmg = AtkDmgs.min;
+                    p1MaxHitDmg = AtkDmgs.max;
+                }
+                else
+                {
+                    p2MinHitDmg = AtkDmgs.min;
+                    p2MaxHitDmg = AtkDmgs.max;
+                }
+                break;
+            case (VillageType.Farm):
+                int MaxEng = GetMaxEnergy(target.currentLevel);
+                int IncomeEng = GetEnergyIncomePerDay(target.currentLevel);
+                if (playerNum == 1)
+                {
+                    p1MaxEnergy = MaxEng;
+                    p1DayEnergy = IncomeEng;
+                }
+                else
+                {
+                    p2MaxEnergy = MaxEng;
+                    p2DayEnergy = IncomeEng;
+                }
+                break;
+            case (VillageType.Barrier):
+                int Bar = GetBarrierArmor(target.currentLevel);
+                if (playerNum == 1) p1BasicVillageBarrier = Bar;
+                else p2BasicVillageBarrier = Bar;
+                break;
         }
     }
 

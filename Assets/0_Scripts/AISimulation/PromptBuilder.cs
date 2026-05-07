@@ -63,6 +63,8 @@ public class PromptBuilder
                 actionContext = GetTreeHitPrompt(state, myPlayerNum);
                 break;
             case ActionPhase.NightUpgrade:
+                actionContext = GetNightShopPrompt(state, myPlayerNum);
+                break;
             default:
                 break;
         }
@@ -188,6 +190,34 @@ public class PromptBuilder
         return sb.ToString();
     }
 
+    public string GetNightShopPrompt(SimGameState state, int myPlayerNum)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        int playerGold = (myPlayerNum == 1 ? state.simVillageState.p1VillGold : state.simVillageState.p2VillGold);
+        sb.AppendLine("[situation]");
+        sb.AppendLine("-밤 페이즈가 되었고, 보유한 골드로 내 마을의 각 요소를 업그레이드 한다.");
+        sb.AppendLine($"-현재 보유한 골드량은 {playerGold}이다.");
+        sb.AppendLine();
+        sb.AppendLine("-업그레이드 요소 정보는 다음과 같다.");
+        sb.AppendLine(GetVillageInfoPrompt(state, myPlayerNum));
+        sb.AppendLine();
+
+        sb.AppendLine("[Action]");
+        sb.AppendLine("보유한 골드 한도 내에서 지금 당장 가장 업그레이드하고 싶은 딱 1개의 요소 이름(Mine, Forge, Farm, Barrier)을 선택한다..");
+        sb.AppendLine("골드가 부족하거나, 더 이상 살 것이 없어서 상점을 나가고 싶다면 빈 문자열(\"\")을 반환한다.");
+        sb.AppendLine($"현재 보유한 골드량({playerGold})을 넘어서는 업그레이드는 불가하다는 것을 명심한다.");
+        sb.AppendLine();
+
+        sb.AppendLine("[output format]");
+        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. reasoning은 최대한 간단하게. 부가 설명 금지.");
+        sb.AppendLine("{");
+        sb.AppendLine(" \"reasoning\": \"이유\",");
+        sb.AppendLine(" \"upgradeVillageType\": Mine||Forge||Farm||Barrier");
+        sb.AppendLine("}");
+
+        return sb.ToString();
+    }
 
     //아이템 OFFER 정보 프롬프트
     public string GetMyItemOfferPrompt(SimGameState state)
@@ -230,6 +260,31 @@ public class PromptBuilder
 
                 sb.AppendLine($" -{item.itemId} ({item.displayName_ID}, 기력: {item.itemCost}):{LocalizationManager.Instance.GetText(CSV_Type.Item, item.itemDesc_ID)}");
             }
+        }
+
+        return sb.ToString();
+    }
+
+    public string GetVillageInfoPrompt(SimGameState state, int playerNum)
+    {
+        StringBuilder sb = new StringBuilder();
+        List<VillageObjInfo> villageObjs = new List<VillageObjInfo>();
+        if (playerNum == 1) villageObjs = state.simVillageState.P1VillageObjInfos;
+        else villageObjs = state.simVillageState.P2VillageObjInfos;
+
+        foreach (var objs in villageObjs)
+        {
+            sb.AppendLine($"업그레이드 요소 이름 : {objs._levelData.VillageType.ToString()}");
+            if (objs.currentLevel > 5)
+            {
+                sb.AppendLine("이미 최대 레벨이므로 업그레이드가 더 이상 불가하다.");
+                sb.AppendLine();
+                continue;
+            }
+            sb.AppendLine($"현재 레벨 : LV.{objs.currentLevel}, {objs.curLevelDesc}");
+            sb.AppendLine($"다음 레벨 : LV.{objs.currentLevel + 1}, {objs.nextLevelDesc}");
+            sb.AppendLine($"업그레이드에 필요한 금액 : {objs.upgradeGold} Gold");
+            sb.AppendLine();
         }
 
         return sb.ToString();
