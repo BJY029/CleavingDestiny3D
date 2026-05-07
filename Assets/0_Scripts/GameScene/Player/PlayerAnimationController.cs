@@ -2,37 +2,37 @@ using UnityEngine;
 
 public class PlayerAnimationController : MonoBehaviour
 {
-    [SerializeField] private Animator animator; //ÇÃ·¹ÀÌ¾î ¾Ö´Ï¸ÞÀÌÅÍ
-    [SerializeField] private int hitAnimCount = 4;//hit ¸ð¼Ç °³¼ö
-    [SerializeField] private bool avoidRepeat = true; //±âÁ¸ ÇÇ°Ý µ¿ÀÛ ¹Ýº¹ Àç»ý ¿©ºÎ
-    //[SerializeField] private bool forceRestartEvenIfHitting = false; //Å° Áßº¹ ÀÔ·Â ¹ÞÀ»°ÇÁö ¿©ºÎ
+    [SerializeField] private Animator animator; // í”Œë ˆì´ì–´ ì• ë‹ˆë©”ì´í„°
+    [SerializeField] private int hitAnimCount = 4; // hit ëª¨ì…˜ ê°œìˆ˜
+    [SerializeField] private bool avoidRepeat = true; // ë™ì¼í•œ ëª¨ì…˜ ì—°ì† ìž¬ìƒ ë°©ì§€
+    //[SerializeField] private bool forceRestartEvenIfHitting = false; // íƒ€ê²© ì¤‘ë³µ ìž…ë ¥ì‹œ ê°•ì œ ìž¬ì‹œìž‘
 
-    //±âÁ¸ ÇÇ°Ý Áßº¹ Àç»ý ¹æÁö¿ë
+    // ì´ì „ ëª¨ì…˜ ì¤‘ë³µ ìž¬ìƒ ë°©ì§€ìš© ë³€ìˆ˜
     private int lastIndex = -1;
 
-    //¾Ö´Ï¸ÞÀÌ¼Ç ÀÌ¸§ ÇØ½ÃÈ­
+    // ì• ë‹ˆë©”ì´ì…˜ íŒŒë¼ë¯¸í„° í•´ì‹œí™”
     private static readonly int HashHit = Animator.StringToHash("Hit");
     private static readonly int HashHitIndex = Animator.StringToHash("HitIndex");
 
     private string GetHitStateName(int idx) => $"Hit{idx}";
 
-    //Hit ¾Ö´Ï¸ÞÀÌ¼Ç Àç»ý ÇÔ¼ö
-    //º°µµÀÇ index °ªÀ» ¹ÞÀ» °æ¿ì, ÇØ´ç ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â ¾Ö´Ï¸ÞÀÌ¼Ç Àç»ý(»ó´ë¹æ ¾Ö´Ï¸ÞÀÌ¼Ç µ¿±âÈ­¿ë)
-    //¾Æ´Ï¸é ·£´ýÀ¸·Î Á¤ÇØ¼­ ¾Ö´Ï¸ÞÀÌ¼Ç Àç»ý(ÀÚ±â ÀÚ½Å Àç»ý¿ë)
+    // Hit ì• ë‹ˆë©”ì´ì…˜ ìž¬ìƒ í•¨ìˆ˜
+    // ì „ë‹¬ëœ index ê°’ì´ ìžˆëŠ” ê²½ìš°, í•´ë‹¹ ì¸ë±ìŠ¤ì— í•´ë‹¹í•˜ëŠ” ì• ë‹ˆë©”ì´ì…˜ ìž¬ìƒ (ë‹¤ë¥¸ í”Œë ˆì´ì–´ì™€ ë™ê¸°í™”ìš©)
+    // ì•„ë‹ˆë©´ ëžœë¤ìœ¼ë¡œ ì„ íƒí•´ì„œ ì• ë‹ˆë©”ì´ì…˜ ìž¬ìƒ (ìžê¸° ìžì‹  ìž¬ìƒìš©)
     public int PlayHit(int index = -1)
     {
-        //¿À·ù
+        // ì˜ˆì™¸ ì²˜ë¦¬
         if (hitAnimCount <= 0) return -999;
 
         int idx;
 
-        //ÀÓÀÇÀÇ index °ªÀ» ¹ÞÁö ¾ÊÀº °æ¿ì
+        // ì „ë‹¬ëœ index ê°’ì´ ì—†ì„ ê²½ìš° (ëžœë¤ ìž¬ìƒ)
         if (index == -1)
         {
-            //·£´ýÀ¸·Î Á¤ÇØ¼­ Àç»ý
+            // ëžœë¤ìœ¼ë¡œ ì„ íƒí•´ì„œ ìž¬ìƒ
             idx = Random.Range(0, hitAnimCount);
 
-            //¸¸¾à ±âÁ¸¿¡ Àç»ýÇÑ ¾Ö´Ï¸ÞÀÌ¼ÇÀÌ Àç»ýµÇ±æ ¿øÄ¡ ¾ÊÀ¸¸é
+            // ì´ì „ ëª¨ì…˜ê³¼ ë™ì¼í•œ ì• ë‹ˆë©”ì´ì…˜ì´ ì„ íƒë˜ì§€ ì•Šë„ë¡ ì²˜ë¦¬
             if (avoidRepeat)
             {
                 while (idx == lastIndex)
@@ -41,11 +41,13 @@ public class PlayerAnimationController : MonoBehaviour
                 }
             }
         }
-        //ÀÓÀÇÀÇ index °ª ¹ÞÀº °æ¿ì 
+        // ì „ë‹¬ëœ index ê°’ì´ ìžˆì„ ê²½ìš°
         else idx = index;
+
+
         lastIndex = idx;
 
-        //¾Ö´Ï¸ÞÀÌ¼Ç Àç»ý
+        // ì• ë‹ˆë©”ì´ì…˜ ìž¬ìƒ
         animator.SetInteger(HashHitIndex, idx);
         animator.ResetTrigger(HashHit);
         animator.SetTrigger(HashHit);
