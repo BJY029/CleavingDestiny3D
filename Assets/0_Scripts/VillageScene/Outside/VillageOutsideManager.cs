@@ -41,16 +41,15 @@ namespace Village.Outside
 
         void Start()
         {
-            // 메인 카메라에서 브레인 가져오기 (비용절감을 위해 캐싱)
+            // 메인 카메라에서 브레인 가져오기
             brain = CinemachineBrain.GetActiveBrain(0);
-
-            compassBuilding.OnVillageClicked += (__) => _ = GotoOutside();
-            villageBuilding.OnVillageClicked += (__) => _ = ReturnToVillage();
 
             outsideUI.SetActive(false);
             villageSceneManager = FindFirstObjectByType<VillageSceneManager>();
 
-            // VillageSceneManager 이벤트 구독 및 ReadyChecker 초기화
+            compassBuilding.OnVillageClicked += CompassBuildingClicked;
+            villageBuilding.OnVillageClicked += VillageBuildingClicked;
+
             if (villageSceneManager != null)
             {
                 villageSceneManager.OnPlayerReadyListUpdated += UpdateReadyChecker;
@@ -64,9 +63,16 @@ namespace Village.Outside
             outsideCam.gameObject.SetActive(false);
         }
 
-        // 소멸 시 이벤트 구독 해제 (중복 호출 방지)
+        void CompassBuildingClicked(VillageBuilding building) => _ = GotoOutside();
+        void VillageBuildingClicked(VillageBuilding building) => _ = ReturnToVillage();
+
+
+        // 이벤트 구독 해제
         private void OnDestroy()
         {
+            compassBuilding.OnVillageClicked -= CompassBuildingClicked;
+            villageBuilding.OnVillageClicked -= VillageBuildingClicked;
+
             if (villageSceneManager != null)
             {
                 villageSceneManager.OnPlayerReadyListUpdated -= UpdateReadyChecker;
