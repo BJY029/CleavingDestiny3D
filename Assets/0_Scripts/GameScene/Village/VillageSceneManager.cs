@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
+using Potan.CoreUtils;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -80,7 +81,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
 
         // AI는 항상 준비된 상태로 간주하므로, 모든 플레이어가 준비되었다면 페이즈를 조기 종료
 
-        Debug.Log("All players are ready in Village. Ending phase early.");
+        DevLog.Log("All players are ready in Village. Ending phase early.", this);
         EndPhaseLogic();
     }
 

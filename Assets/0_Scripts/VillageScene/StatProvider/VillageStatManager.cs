@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
+using Potan.CoreUtils;
 using UnityEngine;
 
 namespace Village
@@ -17,7 +18,7 @@ namespace Village
                     _instance = FindFirstObjectByType<VillageStatManager>();
                     if (_instance == null)
                     {
-                        Debug.LogError("VillageStatManager 인스턴스를 찾을 수 없습니다!");
+                        DevLog.LogError("VillageStatManager 인스턴스를 찾을 수 없습니다!");
                     }
                 }
                 return _instance;

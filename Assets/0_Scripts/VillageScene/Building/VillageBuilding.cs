@@ -17,7 +17,6 @@ namespace Village.Building
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            // Debug.Log(buildingType.ToString() + " clicked!");
             OnVillageClicked?.Invoke(this);
         }
 

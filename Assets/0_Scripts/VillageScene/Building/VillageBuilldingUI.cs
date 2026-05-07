@@ -1,4 +1,5 @@
 using System;
+using Potan.CoreUtils;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
@@ -50,7 +51,7 @@ namespace Village.Building
 
             // 레벨 가져오기
             int currentLevel = VillageStat.GetVillageLevel(currentBuildingType);
-            Debug.Log($"Setting UI for {currentBuildingType}, Level: {currentLevel}");
+            DevLog.Log($"Setting UI for {currentBuildingType}, Level: {currentLevel}", this);
 
             // Localization 키 생성
             string titleKey = $"{currentBuildingType}_Title";
