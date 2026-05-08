@@ -41,54 +41,68 @@ public class BalanceSimulator : MonoBehaviour
         for (int cnt = 1; cnt <= gameCount; cnt++)
         {
             SimGameState state = new SimGameState(playerSetting, roomSetting, villageBalanceData, villageLevelDatas);
-            int turnCount = 0;
+            state.simVillageState.OnVillageObjChanged += AISimVUIController.instance.HandleVillageObjChanged;
+            state.simVillageState.OnVStatChange += AISimVUIController.instance.HandleVillageValueChanged;
+            state.simVillageState.ForceUpdateAllUI();
 
-            while (!IsGameOver(state) && turnCount < 50)
+            try
             {
-                turnCount++;
-                for (int i = 0; i < 3; i++)
+                int turnCount = 0;
+
+                while (!IsGameOver(state) && turnCount < 50)
                 {
-                    for (int j = 1; j <= 2; j++)
+                    for (int i = 0; i < 3; i++)
                     {
-                        state.curTurnPlayerNum = j;
-                        Debug.Log($"Day : {state.day}, Wave : {state.wave}, Turn : {state.turn}");
+                        for (int j = 1; j <= 2; j++)
+                        {
+                            state.curTurnPlayerNum = j;
+                            Debug.Log($"Day : {state.day}, Wave : {state.wave}, Turn : {state.turn}");
 
-                        await RunPlayerTurn(state, j, cancellToken);
+                            await RunPlayerTurn(state, j, cancellToken);
 
+                            if (IsGameOver(state)) break;
+                            turnCount++;
+                            state.totalTurnCount = turnCount;
+                            state.turn++;
+                            state.InitTurnStat(j);
+                        }
+                        state.turn = 0;
+                        state.wave++;
                         if (IsGameOver(state)) break;
-                        turnCount++;
-                        state.totalTurnCount = turnCount;
-                        state.turn++;
                     }
-                    state.turn = 0;
-                    state.wave++;
-                    if (IsGameOver(state)) break;
-                }
-                state.wave = 0;
-                state.ApplyToxicToVillage();
+                    state.wave = 0;
+                    state.ApplyToxicToVillage();
 
-                //레벨에 따른 골드 지급
-                AISimVUIController.instance.ActiveVillageUI();
-                state.simVillageState.UpdateGoldWhenStartVillPhase();
-                for (int i = 1; i <= 2; i++)
-                {
-                    int SafetyCount = 0;
-                    while (SafetyCount < 10)
+                    //레벨에 따른 골드 지급
+                    AISimVUIController.instance.ActiveVillageUI();
+                    state.simVillageState.UpdateGoldWhenStartVillPhase();
+                    for (int i = 1; i <= 2; i++)
                     {
-                        if (IsGameOver(state)) break;
+                        int SafetyCount = 0;
+                        while (SafetyCount < 10)
+                        {
+                            if (IsGameOver(state)) break;
 
-                        bool keepUpgrade = await RunUpgradePhase(state, i, cancellToken);
-                        if (keepUpgrade) break;
+                            bool keepUpgrade = await RunUpgradePhase(state, i, cancellToken);
+                            if (!keepUpgrade) break;
 
-                        SafetyCount++;
+                            SafetyCount++;
+                        }
                     }
+                    AISimVUIController.instance.UnActiveVillageUI();
+                    //업그레이드 반영
+                    state.InitPlayerStat();
+                    state.day++;
                 }
-                AISimVUIController.instance.UnActiveVillageUI();
-                state.day++;
+
+                LogToCSV(cnt, winner, turnCount, state);
+                Debug.Log($"[시뮬레이션] {cnt}판 완료. 승자: P{winner}");
             }
-
-            LogToCSV(cnt, winner, turnCount, state);
-            Debug.Log($"[시뮬레이션] {cnt}판 완료. 승자: P{winner}");
+            finally
+            {
+                state.simVillageState.OnVillageObjChanged -= AISimVUIController.instance.HandleVillageObjChanged;
+                state.simVillageState.OnVStatChange -= AISimVUIController.instance.HandleVillageValueChanged;
+            }
         }
     }
 
@@ -135,23 +149,27 @@ public class BalanceSimulator : MonoBehaviour
             Debug.LogError($"[P{playerNum} Item Selection Error] ERROR : {e.Message} \nStackTrace : {e.StackTrace}");
         }
 
-        try
+        if (promptBulider.isPossibleToUseItem(state, playerNum))
         {
-            // --- 2. 아이템 사용 페이즈 ---
-            string usePrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.ItemUse);
-            Debug.Log($"<color=yellow>[ItemUsePhase]\n{usePrompt}</color>");
-            string useJsonAns = await apiClient.AskNextMove(usePrompt, GetStateJson(state, playerNum), token);
-            executor.ExecutePhaseAction(useJsonAns, ActionPhase.ItemUse, state, playerNum);
+            try
+            {
+                // --- 2. 아이템 사용 페이즈 ---
+                string usePrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.ItemUse);
+                Debug.Log($"<color=yellow>[ItemUsePhase]\n{usePrompt}</color>");
+                string useJsonAns = await apiClient.AskNextMove(usePrompt, GetStateJson(state, playerNum), token);
+                executor.ExecutePhaseAction(useJsonAns, ActionPhase.ItemUse, state, playerNum);
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.Log("[Abort Simulation] Unity Editor Has Been Suspended");
+                return;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[P{playerNum} Item Use Error] ERROR : {e.Message} \nStackTrace : {e.StackTrace}");
+            }
         }
-        catch (OperationCanceledException)
-        {
-            Debug.Log("[Abort Simulation] Unity Editor Has Been Suspended");
-            return;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"[P{playerNum} Item Use Error] ERROR : {e.Message} \nStackTrace : {e.StackTrace}");
-        }
+        else Debug.Log($"<color=yellow>[ItemUsePhase]사용 가능한 아이템이 없어서 실행하지 않습니다.</color>");
 
         try
         {

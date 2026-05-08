@@ -209,14 +209,24 @@ public class SimGameState
     {
         this.playerSetting = playerSetting;
         this.roomSetting = roomSetting;
-        this.p1Energy = this.p2Energy = playerSetting.initialEnergy;
+
+        //simVillageState를 가장 먼저 생성해야 그 안의 스탯을 빼옴
+        this.simVillageState = new SimVillageState(villageBalanceData, villageLevelDatas);
+
+        //2. 초기 기력과 방어력을 업그레이드 관리 객체(simVillageState)에서 가져옴
+        this.p1Energy = simVillageState.p1DayEnergy;
+        this.p2Energy = simVillageState.p1DayEnergy;
+
+        this.p1VillBarrier = simVillageState.p1BasicVillageBarrier;
+        this.p2VillBarrier = simVillageState.p2BasicVillageBarrier;
+
         this.p1TotalHitDmg = this.p2TotalHitDmg = 0f;
         this.p1VillHP = this.p2VillHP = playerSetting.villageHP;
-        this.p1VillBarrier = this.p2VillBarrier = playerSetting.villageBarrier;
         this.p1VillBarConRate = this.p2VillBarConRate = playerSetting.barrierConversionRate;
         this.p1DmgMultRate = this.p2DmgMultRate = 1f;
         this.treeHP = roomSetting.treeHP;
         this.treeToxicDmg = roomSetting.treeAtkPow;
+
         this.turn = 0;
         this.wave = roomSetting.initialWave;
         this.day = roomSetting.startDay;
@@ -227,7 +237,6 @@ public class SimGameState
 
         this.totalTurnCount = 0;
 
-        this.simVillageState = new SimVillageState(villageBalanceData, villageLevelDatas);
         AISimUIController.instance.InitStatUI(this);
     }
 
@@ -379,7 +388,6 @@ public class SimGameState
         this.treeToxicDmg = Mathf.Round(this.roomSetting.treeAtkPow * Mathf.Pow(1.8f, this.day));
 
         Debug.Log($"p1 Village HP : {this.p1VillHP}, p2 Village HP : {this.p2VillHP}, next tree toxic dmg : {this.treeToxicDmg}");
-        InitPlayerStat();
     }
 
     public void SetPlayerDmgMultRate(int playerNum, float rate)
@@ -394,12 +402,33 @@ public class SimGameState
         else p2VillBarConRate = rate;
     }
 
+    public void InitTurnStat(int playerNum)
+    {
+        if (playerNum == 1)
+        {
+            this.p1VillBarConRate = playerSetting.barrierConversionRate;
+            this.p1DmgMultRate = 1f;
+        }
+        else
+        {
+            this.p2VillBarConRate = playerSetting.barrierConversionRate;
+            this.p2DmgMultRate = 1f;
+        }
+    }
+
     public void InitPlayerStat()
     {
-        this.p1VillBarrier = this.p2VillBarrier = playerSetting.villageBarrier;
+        //방벽 리셋: playerSetting이 아닌 업그레이드된 마을 방어력 적용
+        this.p1VillBarrier = simVillageState.p1BasicVillageBarrier;
+        this.p2VillBarrier = simVillageState.p2BasicVillageBarrier;
+
+        //기력 회복: (현재 기력 + 일일 기력 회복량)을 더하되, 최대 기력(MaxEnergy)을 넘지 못하게 제한
+        this.p1Energy = Mathf.Min(simVillageState.p1DayEnergy, simVillageState.p1MaxEnergy);
+        this.p2Energy = Mathf.Min(simVillageState.p2DayEnergy, simVillageState.p2MaxEnergy);
+
+        // 기타 배율 및 누적치 초기화 (기존과 동일)
         this.p1VillBarConRate = this.p2VillBarConRate = playerSetting.barrierConversionRate;
         this.p1TotalHitDmg = this.p2TotalHitDmg = 0f;
-        this.p1Energy = this.p2Energy = playerSetting.maxEnergy;
         this.p1DmgMultRate = this.p2DmgMultRate = 1f;
     }
 

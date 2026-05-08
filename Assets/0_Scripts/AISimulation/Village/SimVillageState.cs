@@ -44,8 +44,8 @@ public class VillageObjInfo
     {
         this._levelData = data;
         this._balanceData = balanceData;
-        this.currentLevel = level;
-        if (data.TryGetUpgradeCost(level - 0, out int goldV)) this.upgradeGold = goldV;
+        this.currentLevel = level + 1;
+        if (data.TryGetUpgradeCost(level, out int goldV)) this.upgradeGold = goldV;
         this.curLevelDesc = GetVillDesc(level, balanceData);
         this.nextLevelDesc = GetVillDesc(level + 1, balanceData);
     }
@@ -57,7 +57,8 @@ public class VillageObjInfo
         if (level > 5) return "Max Level";
         if (_levelData.VillageType == VillageType.Mine)
         {
-            int goldIncome = _levelData.EffectValues[level - 1];
+            int L = level + 1;
+            int goldIncome = balanceData.GoldIncomeBase * (L * L + L);
             return string.Format(vDesc.MineDesc, goldIncome);
         }
         else if (_levelData.VillageType == VillageType.Farm)
@@ -68,13 +69,13 @@ public class VillageObjInfo
         }
         else if (_levelData.VillageType == VillageType.Barrier)
         {
-            int barrierIncome = _levelData.EffectValues[level - 1];
+            int barrierIncome = Mathf.RoundToInt(balanceData.BarrierArmorBase * Mathf.Pow(balanceData.BarrierArmorMultiplier, level - 1));
             return string.Format(vDesc.BarrierDesc, barrierIncome);
         }
         else if (_levelData.VillageType == VillageType.Forge)
         {
-            int MaxDmg = Mathf.RoundToInt(balanceData.AxeDamageBase - ((level + 1) * balanceData.AxeDamageLevelMultiplier * balanceData.AxeDamageMinMultiplier));
-            int MinDmg = Mathf.RoundToInt(balanceData.AxeDamageBase + ((level + 1) * balanceData.AxeDamageLevelMultiplier * balanceData.AxeDamageMaxMultiplier));
+            int MaxDmg = Mathf.RoundToInt(balanceData.AxeDamageBase + ((level + 1) * balanceData.AxeDamageLevelMultiplier * balanceData.AxeDamageMinMultiplier));
+            int MinDmg = Mathf.RoundToInt(balanceData.AxeDamageBase - ((level + 1) * balanceData.AxeDamageLevelMultiplier * balanceData.AxeDamageMaxMultiplier));
             return string.Format(vDesc.ForgeDesc, MaxDmg, MinDmg);
         }
         return "error";
@@ -87,8 +88,8 @@ public class SimVillageState
     public List<VillageObjInfo> P2VillageObjInfos;
     private VillageBalanceData _villageBalanceData;
 
-    public static event Action<int, VStateType, int> OnVStatChange;
-    public static event Action<int, VillageObjInfo> OnVillageObjChanged;
+    public event Action<int, VStateType, int> OnVStatChange;
+    public event Action<int, VillageObjInfo> OnVillageObjChanged;
 
     private int _p1MaxEnergy;
     public int p1MaxEnergy
@@ -264,18 +265,21 @@ public class SimVillageState
         P1VillageObjInfos = new List<VillageObjInfo>();
         P2VillageObjInfos = new List<VillageObjInfo>();
 
-        p1MaxEnergy = p2MaxEnergy = p1DayEnergy = p2DayEnergy = (int)balanceData.EnergyIncomeBase;
+        p1MaxEnergy = p2MaxEnergy = (int)GetMaxEnergy(0);
+        p1DayEnergy = p2DayEnergy = (int)GetEnergyIncomePerDay(0);
 
-        p1MaxHitDmg = p2MaxHitDmg = (int)(balanceData.AxeDamageBase - balanceData.AxeDamageLevelMultiplier);
-        p1MinHitDmg = p2MinHitDmg = (int)(balanceData.AxeDamageBase + balanceData.AxeDamageLevelMultiplier);
+        var AxeRangeInit = GetAxeRangeDamage(0);
+        p1MaxHitDmg = p2MaxHitDmg = AxeRangeInit.max;
+        p1MinHitDmg = p2MinHitDmg = AxeRangeInit.min;
 
-        p1BasicVillageBarrier = p2BasicVillageBarrier = (int)balanceData.BarrierArmorBase;
-        p1VillGold = p2VillGold = (int)balanceData.GoldIncomeBase * 2;
+        p1BasicVillageBarrier = p2BasicVillageBarrier = GetBarrierArmor(0);
+        p1VillGold = p2VillGold = GetGoldIncomePerDay(0);
+        p1IncomeVillGold = p2IncomeVillGold = GetGoldIncomePerDay(0);
 
         for (int i = 0; i < levelDatas.Length; i++)
         {
-            VillageObjInfo p1Info = new VillageObjInfo(levelDatas[i], 1, balanceData);
-            VillageObjInfo p2Info = new VillageObjInfo(levelDatas[i], 1, balanceData);
+            VillageObjInfo p1Info = new VillageObjInfo(levelDatas[i], 0, balanceData);
+            VillageObjInfo p2Info = new VillageObjInfo(levelDatas[i], 0, balanceData);
             P1VillageObjInfos.Add(p1Info);
             P2VillageObjInfos.Add(p2Info);
             OnVillageObjChanged?.Invoke(1, p1Info);
@@ -293,7 +297,7 @@ public class SimVillageState
 
         if (targetObj != null)
         {
-            if (targetObj._levelData.TryGetUpgradeCost(targetObj.currentLevel, out int upgradeGold))
+            if (targetObj._levelData.TryGetUpgradeCost(targetObj.currentLevel - 1, out int upgradeGold))
             {
                 int VillGold = playerNum == 1 ? p1VillGold : p2VillGold;
                 if (VillGold >= upgradeGold)
@@ -371,6 +375,31 @@ public class SimVillageState
                 else p2BasicVillageBarrier = Bar;
                 break;
         }
+    }
+
+    public void ForceUpdateAllUI()
+    {
+        // 1. 플레이어 1 스탯 UI 갱신
+        OnVStatChange?.Invoke(1, VStateType.MaxEnergy, p1MaxEnergy);
+        OnVStatChange?.Invoke(1, VStateType.DayEnergy, p1DayEnergy);
+        OnVStatChange?.Invoke(1, VStateType.MaxHitDamage, p1MaxHitDmg);
+        OnVStatChange?.Invoke(1, VStateType.MinHitDamage, p1MinHitDmg);
+        OnVStatChange?.Invoke(1, VStateType.VBarrier, p1BasicVillageBarrier);
+        OnVStatChange?.Invoke(1, VStateType.VGold, p1VillGold);
+        OnVStatChange?.Invoke(1, VStateType.VIncomeGold, p1IncomeVillGold);
+
+        // 2. 플레이어 2 스탯 UI 갱신
+        OnVStatChange?.Invoke(2, VStateType.MaxEnergy, p2MaxEnergy);
+        OnVStatChange?.Invoke(2, VStateType.DayEnergy, p2DayEnergy);
+        OnVStatChange?.Invoke(2, VStateType.MaxHitDamage, p2MaxHitDmg);
+        OnVStatChange?.Invoke(2, VStateType.MinHitDamage, p2MinHitDmg);
+        OnVStatChange?.Invoke(2, VStateType.VBarrier, p2BasicVillageBarrier);
+        OnVStatChange?.Invoke(2, VStateType.VGold, p2VillGold);
+        OnVStatChange?.Invoke(2, VStateType.VIncomeGold, p2IncomeVillGold);
+
+        // 3. 업그레이드 건물 객체 UI 갱신
+        foreach (var info in P1VillageObjInfos) OnVillageObjChanged?.Invoke(1, info);
+        foreach (var info in P2VillageObjInfos) OnVillageObjChanged?.Invoke(2, info);
     }
 
     public int GetLevelUpgradedCost(VillageType facilityType, int currentLevel)

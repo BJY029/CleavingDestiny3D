@@ -3373,8 +3373,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AISimVUIController
   VillagePanel: {fileID: 1522491822}
   p1VUIInfo:
-    CurGold: {fileID: 1391953924}
     infos:
+      CurGold: {fileID: 1391953924}
       GoldIncome: {fileID: 1388711172}
       DefaultShild: {fileID: 1125281671}
       MaxEng: {fileID: 887230604}
@@ -3403,8 +3403,8 @@ MonoBehaviour:
       NextDesc: {fileID: 2008901545}
       UpgradeGold: {fileID: 1162835660}
   p2VUIInfo:
-    CurGold: {fileID: 1698774583}
     infos:
+      CurGold: {fileID: 1698774583}
       GoldIncome: {fileID: 619795574}
       DefaultShild: {fileID: 405424135}
       MaxEng: {fileID: 745916701}

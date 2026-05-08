@@ -7,6 +7,7 @@ using System.Collections.Generic;
 [Serializable]
 public class DebugInfo
 {
+    public TMP_Text CurGold;
     public TMP_Text GoldIncome;
     public TMP_Text DefaultShild;
     public TMP_Text MaxEng;
@@ -28,7 +29,6 @@ public class ComponentUIInfo
 [Serializable]
 public class VillageUIInfo
 {
-    public TMP_Text CurGold;
     public DebugInfo infos;
     public List<ComponentUIInfo> VillageComponents;
 }
@@ -47,18 +47,6 @@ public class AISimVUIController : MonoBehaviour
     public VillageUIInfo p1VUIInfo;
     public VillageUIInfo p2VUIInfo;
 
-    private void OnEnable()
-    {
-        SimVillageState.OnVillageObjChanged += HandleVillageObjChanged;
-        SimVillageState.OnVStatChange += HandleVillageValueChanged;
-    }
-
-    private void OnDisable()
-    {
-        SimVillageState.OnVillageObjChanged -= HandleVillageObjChanged;
-        SimVillageState.OnVStatChange -= HandleVillageValueChanged;
-    }
-
     public void ActiveVillageUI()
     {
         VillagePanel.transform.localScale = Vector3.one;
@@ -69,7 +57,7 @@ public class AISimVUIController : MonoBehaviour
         VillagePanel.transform.localScale = Vector3.zero;
     }
 
-    private void HandleVillageObjChanged(int playerNum, VillageObjInfo changedInfo)
+    public void HandleVillageObjChanged(int playerNum, VillageObjInfo changedInfo)
     {
         VillageUIInfo VUIInfo = playerNum == 1 ? p1VUIInfo : p2VUIInfo;
 
@@ -89,6 +77,8 @@ public class AISimVUIController : MonoBehaviour
 
             if (targetUI.UpgradeGold != null)
                 targetUI.UpgradeGold.text = changedInfo.upgradeGold.ToString();
+
+
         }
         else
         {
@@ -96,12 +86,15 @@ public class AISimVUIController : MonoBehaviour
         }
     }
 
-    private void HandleVillageValueChanged(int playerNum, VStateType type, int value)
+    public void HandleVillageValueChanged(int playerNum, VStateType type, int value)
     {
-        DebugInfo debugInfo = playerNum == 1 ? p1VUIInfo.infos : p1VUIInfo.infos;
+        DebugInfo debugInfo = playerNum == 1 ? p1VUIInfo.infos : p2VUIInfo.infos;
 
         switch (type)
         {
+            case VStateType.VGold:
+                debugInfo.CurGold.text = value.ToString();
+                break;
             case VStateType.VIncomeGold:
                 debugInfo.GoldIncome.text = value.ToString();
                 break;

@@ -34,7 +34,7 @@ public class PromptBuilder
         sb.AppendLine("- 낮 페이즈에 나무에게 데미지를 넣으면 상대방에게 턴이 넘어가고, 해당 데미지들이 모여 일부가 마을의 방어력이 된다.");
         sb.AppendLine("- 밤 페이즈에는 나무의 독성 데미지가 뿜어져 나오며, 마을이 피해를 입는다. 피해를 입은 후 마을의 각 요소를 업그레이드 하여 정비한다.");
         sb.AppendLine("- 기력은 하루에 한번 일정량 주어지며, 아이템을 사용하기 위해 기력을 소모한다.");
-        sb.AppendLine("- 아이템은 각각 희귀도가 존재하며, Common-Hero-Rare-Legendary 순으로 등급이 높아진다. 등급이 높을수록 강하고, 등작 확률이 적다.");
+        sb.AppendLine("- 아이템은 각각 희귀도가 존재하며, Common-Hero-Rare-Legendary 순으로 등급이 높아진다. 등급이 높을수록 강하고, 등장 확률이 적다.");
         sb.AppendLine();
 
         sb.AppendLine("[Init State]");
@@ -119,7 +119,7 @@ public class PromptBuilder
         int curEng = myPlayerNum == 1 ? state.p1Energy : state.p2Energy;
         sb.AppendLine("[situation]");
         sb.AppendLine("-다음과 같이 주어진 3 개의 아이템 중 아이템 1개를 선택해야 함");
-        sb.AppendLine(GetMyItemOfferPrompt(state));
+        sb.AppendLine(GetMyItemOfferPrompt(state, myPlayerNum));
         sb.AppendLine("-현재 내가 보유한 아이템은 다음과 같다.");
         sb.AppendLine(GetMyInventoryPrompt(state, myPlayerNum));
         sb.AppendLine($"-현재 나의 사용 가능한 기력량은 {curEng}이다.");
@@ -213,17 +213,18 @@ public class PromptBuilder
         sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. reasoning은 최대한 간단하게. 부가 설명 금지.");
         sb.AppendLine("{");
         sb.AppendLine(" \"reasoning\": \"이유\",");
-        sb.AppendLine(" \"upgradeVillageType\": Mine||Forge||Farm||Barrier");
+        sb.AppendLine(" \"upgradeVillageType\": \"\" ");
+        sb.Append(" // 값은 반드시 \"Mine\", \"Forge\", \"Farm\", \"Barrier\" 중 하나여야 함");
         sb.AppendLine("}");
 
         return sb.ToString();
     }
 
     //아이템 OFFER 정보 프롬프트
-    public string GetMyItemOfferPrompt(SimGameState state)
+    public string GetMyItemOfferPrompt(SimGameState state, int myPlayerNum)
     {
         StringBuilder sb = new StringBuilder();
-        List<string> offer = Pick3(state.turn, state.totalTurnCount, state.roomSeed, ItemDB.Instance.GetItemsList(), state.roomSetting, state.playerSetting);
+        List<string> offer = Pick3(state.totalTurnCount, myPlayerNum, state.roomSeed, ItemDB.Instance.GetItemsList(), state.roomSetting, state.playerSetting);
         foreach (string i in offer)
         {
             ItemSO item = ItemDB.Instance.Get(i);
@@ -256,6 +257,7 @@ public class PromptBuilder
                 if (item == null)
                 {
                     Debug.LogWarning($"[PromptBuilder] 인벤토리에 유효하지 않은 아이템 ID가 포함됨 : {itemId}");
+                    continue;
                 }
 
                 sb.AppendLine($" -{item.itemId} ({item.displayName_ID}, 기력: {item.itemCost}):{LocalizationManager.Instance.GetText(CSV_Type.Item, item.itemDesc_ID)}");
@@ -263,6 +265,30 @@ public class PromptBuilder
         }
 
         return sb.ToString();
+    }
+
+    public bool isPossibleToUseItem(SimGameState state, int myPlayerNum)
+    {
+        int myCurEng = myPlayerNum == 1 ? state.p1Energy : state.p2Energy;
+
+        List<string> myInv = (myPlayerNum == 1) ? state.p1Inventory : state.p2Inventory;
+        if (myInv == null) myInv = new List<string>();
+        HashSet<string> uniqueItems = new HashSet<string>(myInv);
+
+        if (uniqueItems.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (string itemId in uniqueItems)
+        {
+            ItemSO item = ItemDB.Instance.Get(itemId);
+
+            if (item == null) continue;
+
+            if (item.itemCost < myCurEng) return true;
+        }
+        return false;
     }
 
     public string GetVillageInfoPrompt(SimGameState state, int playerNum)
@@ -298,6 +324,7 @@ public class PromptBuilder
         int energy = myPlayerNum == 1 ? state.p1Energy : state.p2Energy;
 
         int remainTurns = maxWave - curWave;
+        if (remainTurns <= 0) remainTurns = 1;
 
         return Mathf.CeilToInt((float)energy / remainTurns);
     }
