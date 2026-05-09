@@ -1,12 +1,5 @@
 {
   "dependencies": {
-    "com.antigravity.ide": {
-      "version": "https://github.com/billythekidz/UnityAntigravityIDE.git",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "3520075082911bf236ade261e544078a3f9bed65"
-    },
     "com.cysharp.unitask": {
       "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
       "depth": 0,
@@ -34,7 +27,7 @@
       "dependencies": {}
     },
     "com.unity.addressables": {
-      "version": "2.9.0",
+      "version": "2.9.1",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -44,7 +37,7 @@
         "com.unity.modules.jsonserialize": "1.0.0",
         "com.unity.modules.imageconversion": "1.0.0",
         "com.unity.modules.unitywebrequest": "1.0.0",
-        "com.unity.scriptablebuildpipeline": "2.6.0",
+        "com.unity.scriptablebuildpipeline": "2.6.1",
         "com.unity.modules.unitywebrequestassetbundle": "1.0.0"
       },
       "url": "https://packages.unity.com"
@@ -225,7 +218,7 @@
       }
     },
     "com.unity.scriptablebuildpipeline": {
-      "version": "2.6.0",
+      "version": "2.6.1",
       "depth": 1,
       "source": "registry",
       "dependencies": {
