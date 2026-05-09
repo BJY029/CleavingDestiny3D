@@ -1610,7 +1610,6 @@ MonoBehaviour:
   rotationSmoothTime: 0.08
   accelation: 12
   deceleration: 12
-  jumpHeight: 1.2
   gravity: -20
   groundCheck: {fileID: 6436313049134097138}
   groundLayers:
@@ -1644,6 +1643,7 @@ MonoBehaviour:
   animator: {fileID: 2492846899768299628}
   hitAnimCount: 4
   avoidRepeat: 1
+  axeTransform: {fileID: 1264535402260973513}
 --- !u!114 &2716088925901640895
 MonoBehaviour:
   m_ObjectHideFlags: 0

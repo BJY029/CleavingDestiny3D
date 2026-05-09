@@ -179,7 +179,6 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		GameObject spawnPlayer = PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
 		PlayerController pc = spawnPlayer.GetComponent<PlayerController>();
 		pc.PlayerActNum = myActNum;
-		pc.IsAI = false;
 		LocalPlayerObj = spawnPlayer;
 
 		GameObject PlayersInv = PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[myActNum - 1], spawnInvRot[myActNum - 1]);
