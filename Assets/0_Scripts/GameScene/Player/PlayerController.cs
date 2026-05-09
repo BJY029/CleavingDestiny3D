@@ -30,9 +30,8 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     public float accelation = 12f;
     public float deceleration = 12f;
 
-    //점프와 중력 관련 파라미터
-    [Header("Jump/Gravity")]
-    public float jumpHeight = 1.2f;
+    //중력 관련 파라미터
+    [Header("Gravity")]
     public float gravity = -20f;
     public Transform groundCheck;      // 발 아래 빈 오브젝트 추천
     public LayerMask groundLayers = ~0;
@@ -50,9 +49,10 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private int _animIDSpeedX;
     private int _animIDSpeedZ;
     private int _animIDGrounded;
-    private int _animIDJump;
-    private int _animIDFreeFall;
     private int _animIDMotionSpeed;
+
+    [Header("First Person")]
+    public GameObject firstPersonObjects; //1인칭 시점 전용 오브젝트
 
     //감도
     [SerializeField]
@@ -68,17 +68,16 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private Vector2 moveInput;
     private Vector2 lookInput;
     private bool sprintPressed;
-    private bool jumpPressed;
 
     [SerializeField]
     private PlayerInput playerInput;
-    private InputAction moveAction, lookAction, sprintAction, jumpAction;
+    private InputAction moveAction, lookAction, sprintAction;
 
     //움직임 관련 코드 내부에서 사용하는 파라미터
     private CharacterController characterController;
     private float currentSpeed;
     private Vector3 velocity;
-    //점프 관련 코드 내부에서 사용하는  파라미터
+    //중력 관련 코드 내부에서 사용하는  파라미터
     public bool isGrounded;
     private float groundCheckRadius;
 
@@ -150,13 +149,19 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             //해당 플레이어의 카메라를 끈다.
             if (_mainCamera != null) _mainCamera.SetActive(false); // 원격 카메라 끄기
             enabled = true; // Update에서 조기 return 할 거라 스크립트는 켬
+
+            if (firstPersonObjects != null)
+            {
+                firstPersonObjects.SetActive(false); //1인칭 오브젝트 끄기
+            }
             return;
         }
 
         // 이후부터는 로컬 플레이어만 실행하는 코드
 
         // 본체만 숨기고 그림자는 남기도록 설정
-        SetShadowsOnlyRecursively(gameObject);
+        SetShadowsOnlyRecursively(gameObject, firstPersonObjects);
+        firstPersonObjects.SetActive(true); //1인칭 오브젝트 켜기
 
         cam = _mainCamera.GetComponent<Camera>();
         //로컬 인스턴스, 즉 자기 자신이라면 장치 탈취 방지
@@ -175,7 +180,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             moveAction = actions.FindAction("Move");
             lookAction = actions.FindAction("Look");
             sprintAction = actions.FindAction("Sprint");
-            jumpAction = actions.FindAction("Jump");
         }
 
         isLookingAtTree = false;
@@ -185,7 +189,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     }
 
     // 해당 오브젝트의 모든 자식 오브젝트들의 렌더러를 ShadowsOnly 모드로 변경하는 함수 (본인 포함)
-    private void SetShadowsOnlyRecursively(GameObject obj)
+    private void SetShadowsOnlyRecursively(GameObject obj, GameObject dismissObj = null)
     {
         if (obj == null) return;
 
@@ -197,7 +201,10 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         foreach (Transform child in obj.transform)
         {
             if (child == null) continue;
-            SetShadowsOnlyRecursively(child.gameObject);
+            if (child.gameObject != dismissObj)
+            {
+                SetShadowsOnlyRecursively(child.gameObject, dismissObj);
+            }
         }
     }
 
@@ -208,7 +215,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         moveAction?.Enable();
         lookAction?.Enable();
         sprintAction?.Enable();
-        jumpAction?.Enable();
 
         //F 키가 눌리는 이벤트에 해당 함수 삽입
         KeyInteractManager.instance.OnInteractFKeyDown += HandleInteractFKey;
@@ -221,7 +227,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         moveAction?.Disable();
         lookAction?.Disable();
         sprintAction?.Disable();
-        jumpAction?.Disable();
 
         KeyInteractManager.instance.OnInteractFKeyDown -= HandleInteractFKey;
         KeyInteractManager.instance.OnInteractSpaceKeyDown -= HandleInteractSpaceKey;
@@ -234,7 +239,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         moveInput = Vector2.zero;
         lookInput = Vector2.zero;
         sprintPressed = false;
-        jumpPressed = false;
     }
 
     private void ResetMotionState()
@@ -259,7 +263,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             moveAction?.Disable();
             lookAction?.Disable();
             sprintAction?.Disable();
-            jumpAction?.Disable();
 
             ResetInputState();
             ResetMotionState();
@@ -276,7 +279,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             moveAction?.Enable();
             lookAction?.Enable();
             sprintAction?.Enable();
-            jumpAction?.Enable();
 
             ResetInputState(); // 재개 시에도 0으로 시작(키 눌림은 다음 프레임 ReadInput으로 다시 잡힘)
         }
@@ -288,8 +290,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         _animIDSpeedX = Animator.StringToHash("Speed_X");
         _animIDSpeedZ = Animator.StringToHash("Speed_Z");
         _animIDGrounded = Animator.StringToHash("Grounded");
-        _animIDJump = Animator.StringToHash("Jump");
-        _animIDFreeFall = Animator.StringToHash("FreeFall");
         _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
     }
 
@@ -311,7 +311,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         cam.enabled = true;
     }
 
-    //움직임 및 점프 관련 코드 실행
+    //움직임 및 중력 관련 코드 실행
     private void Update()
     {
         //내 photonView가 아니면 실행하지 않는다.
@@ -381,7 +381,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         ReadInput();
         GroundCheck();
         HandleMovement(Time.deltaTime);
-        HandleJumpAndGravity(Time.deltaTime);
+        HandleGravity(Time.deltaTime);
 
         //카메라 정면 방향으로 Ray 발사
         Ray ray = new Ray(cam.transform.position, cam.transform.forward);
@@ -595,7 +595,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         moveInput = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
         lookInput = lookAction != null ? lookAction.ReadValue<Vector2>() : Vector2.zero;
         sprintPressed = sprintAction != null && sprintAction.IsPressed();
-        jumpPressed = jumpAction != null && jumpAction.WasPressedThisFrame();
     }
 
 
@@ -647,7 +646,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         else
             currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, deceleration * dt);
 
-        // 최종 이동 (y는 HandleJumpAndGravity에서 넣음)
+        // 최종 이동 (y는 HandleGravity에서 넣음)
         Vector3 final = moveDir.normalized * currentSpeed;
         final.y = velocity.y;
         //움직임 적용
@@ -721,16 +720,9 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         pivotTransform.transform.localRotation = Quaternion.Euler(Pitch, 0.0f, 0.0f);
     }
 
-    //점프와 중력 계산 함수
-    private void HandleJumpAndGravity(float dt)
+    //중력 계산 함수
+    private void HandleGravity(float dt)
     {
-        //땅에 있는 상태에서 점프키가 눌린 경우
-        if (isGrounded && jumpPressed)
-        {
-            //수직 속도 계산
-            velocity.y = Mathf.Sqrt(jumpHeight * gravity * -2f);
-        }
-
         //중력 상시 적용
         velocity.y += gravity * dt;
     }
