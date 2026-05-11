@@ -100,14 +100,14 @@ public class LLMAction
 //실제 테스트시 reasoning 제거하기
 public class ItemSelectResopnse
 {
-    public string reasoning;
+    //public string reasoning;
     public string selectedItemId;
 }
 
 //아이템 사용 결정 후 오는 Json 형식 반환
 public class ItemUseResponse
 {
-    public string reasoning;
+    //public string reasoning;
     public List<ItemAction> actions;
 }
 
@@ -122,13 +122,13 @@ public class ItemAction
 //나무 타격 데미지 결정 후 Json 형식 반환
 public class TreeHitResponse
 {
-    public string reasoning;
+    //public string reasoning;
     public int hitDamage;
 }
 
 //상점 업그레이드 부분
 public class NightUpgradeResponse
 {
-    public string reasoning;
+    //public string reasoning;
     public string upgradeVillageType;
 }

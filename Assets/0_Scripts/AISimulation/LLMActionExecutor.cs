@@ -1,5 +1,6 @@
 using UnityEngine;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System;
 
 public class LLMActionExecutor
@@ -14,11 +15,22 @@ public class LLMActionExecutor
             {
                 case ActionPhase.ItemSelect:
                     var selectData = JsonConvert.DeserializeObject<ItemSelectResopnse>(cleanJson);
-                    Debug.Log($"[P{playerNum} 선택 이유] {selectData.selectedItemId}:{selectData.reasoning}");
+                    //Debug.Log($"[P{playerNum} 선택 이유] {selectData.selectedItemId}:{selectData.reasoning}");
+                    PromptBuilder promptBuilder = new PromptBuilder();
+
+                    List<string> offer = promptBuilder.Pick3(state.totalTurnCount, playerNum, state.roomSeed, ItemDB.Instance.GetItemsList(), state.roomSetting, state.playerSetting);
+                    if (!offer.Contains(selectData.selectedItemId) && !string.IsNullOrEmpty(selectData.selectedItemId))
+                    {
+                        Debug.LogWarning($"[환각 방어] P{playerNum}가 오퍼에 없는 아이템({selectData.selectedItemId})을 선택했습니다. 강제로 첫 번째 오퍼를 지급합니다.");
+
+                        //패널티 혹은 기본값 적용: 그냥 오퍼에 나온 1번 아이템을 강제로 줘버립니다.
+                        selectData.selectedItemId = offer[0];
+                    }
 
                     if (!string.IsNullOrEmpty(selectData.selectedItemId))
                     {
                         state.TryAddItemToInventory(playerNum, selectData.selectedItemId);
+                        state.RecordItemSelection(playerNum, selectData.selectedItemId);
                     }
                     break;
                 case ActionPhase.ItemUse:
@@ -27,7 +39,7 @@ public class LLMActionExecutor
                     {
                         Debug.Log($"[P{playerNum} 아이템 사용] {itemInfo.itemId}");
                     }
-                    Debug.Log($"[P{playerNum} 사용 이유] {useData.reasoning}");
+                    //Debug.Log($"[P{playerNum} 사용 이유] {useData.reasoning}");
 
                     if (useData.actions != null && useData.actions.Count > 0)
                     {
@@ -48,12 +60,13 @@ public class LLMActionExecutor
                             else state.p2Energy -= item.itemCost;
 
                             state.TryDeleteItemFromInventory(playerNum, act.itemId);
+                            state.RecordItemUse(playerNum, act.itemId);
                         }
                     }
                     break;
                 case ActionPhase.TreeAttack:
                     var hitData = JsonConvert.DeserializeObject<TreeHitResponse>(cleanJson);
-                    Debug.Log($"[P{playerNum} 타격 데미지/이유] {hitData.hitDamage}/{hitData.reasoning}");
+                    //Debug.Log($"[P{playerNum} 타격 데미지/이유] {hitData.hitDamage}/{hitData.reasoning}");
 
                     ItemHandlingInSim.Instance.ProcessItemEffect(playerNum, hitData.hitDamage, true, state);
                     //state.ApplyTreeDamage(playerNum, hitData.hitDamage);
@@ -74,13 +87,13 @@ public class LLMActionExecutor
         try
         {
             var VillData = JsonConvert.DeserializeObject<NightUpgradeResponse>(cleanJson);
-            Debug.Log($"[P{playerNum} 마을 업그레이드 요소/이유] {VillData.upgradeVillageType}/{VillData.reasoning}");
+            //Debug.Log($"[P{playerNum} 마을 업그레이드 요소/이유] {VillData.upgradeVillageType}/{VillData.reasoning}");
 
             if (!string.IsNullOrEmpty(VillData.upgradeVillageType))
             {
                 if (System.Enum.TryParse(VillData.upgradeVillageType, out VillageType type))
                 {
-                    state.simVillageState.UpgradeVillageObject(playerNum, type);
+                    state.simVillageState.UpgradeVillageObject(playerNum, type, state);
                     return true;
                 }
                 else { Debug.LogError("Faild to Parse Enum Type"); return false; }

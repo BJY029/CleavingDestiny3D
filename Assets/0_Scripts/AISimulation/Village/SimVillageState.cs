@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum VStateType
@@ -287,7 +288,7 @@ public class SimVillageState
         }
     }
 
-    public void UpgradeVillageObject(int playerNum, VillageType facilityType)
+    public void UpgradeVillageObject(int playerNum, VillageType facilityType, SimGameState state)
     {
         // 대상 플레이어의 리스트 선택
         List<VillageObjInfo> targetList = playerNum == 1 ? P1VillageObjInfos : P2VillageObjInfos;
@@ -324,6 +325,8 @@ public class SimVillageState
 
             // 3. UI 갱신을 위해 콜백 이벤트 발생
             OnVillageObjChanged?.Invoke(playerNum, targetObj);
+            state.RecordUpgradeSelection(playerNum, targetObj._levelData.VillageType.ToString());
+
         }
     }
 

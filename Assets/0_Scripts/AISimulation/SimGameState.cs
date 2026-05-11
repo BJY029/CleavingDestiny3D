@@ -7,6 +7,29 @@ public enum TreeType { TreeHP, TreeToxic }
 public class SimGameState
 {
     public SimVillageState simVillageState;
+
+    public List<string> p1SelectedItems = new List<string>();
+    public List<string> p2SelectedItems = new List<string>();
+
+    public List<string> p1SelectedUpgrades = new List<string>();
+    public List<string> p2SelectedUpgrades = new List<string>();
+
+    public List<string> p1UsedItems = new List<string>();
+    public List<string> p2UsedItems = new List<string>();
+
+    public void RecordItemSelection(int playerNum, string itemId) =>
+        (playerNum == 1 ? p1SelectedItems : p2SelectedItems).Add(itemId);
+
+    public void RecordUpgradeSelection(int playerNum, string upgradeId) =>
+        (playerNum == 1 ? p1SelectedUpgrades : p2SelectedUpgrades).Add(upgradeId);
+
+    public void RecordItemUse(int playerNum, string itemId)
+    {
+        if (playerNum == 1) p1UsedItems.Add(itemId);
+        else p2UsedItems.Add(itemId);
+    }
+
+
     public static event Action<int, StatType, float> OnStatChange;
     public static event Action<TreeType, float> OnTreeChange;
 

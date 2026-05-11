@@ -118,9 +118,9 @@ public class PromptBuilder
 
         int curEng = myPlayerNum == 1 ? state.p1Energy : state.p2Energy;
         sb.AppendLine("[situation]");
-        sb.AppendLine("-다음과 같이 주어진 3 개의 아이템 중 아이템 1개를 선택해야 함");
+        sb.AppendLine("▼ [선택 가능한 상점 오퍼 (반드시 이 중에서만 1개 고를 것!)");
         sb.AppendLine(GetMyItemOfferPrompt(state, myPlayerNum));
-        sb.AppendLine("-현재 내가 보유한 아이템은 다음과 같다.");
+        sb.AppendLine("▼ [현재 내 인벤토리 (상황 판단 참고용이며, 여기서 고르면 절대 안 됨!)]");
         sb.AppendLine(GetMyInventoryPrompt(state, myPlayerNum));
         sb.AppendLine($"-현재 나의 사용 가능한 기력량은 {curEng}이다.");
         sb.AppendLine();
@@ -131,10 +131,11 @@ public class PromptBuilder
         sb.AppendLine();
 
         sb.AppendLine("[output format]");
-        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. reasoning은 최대한 간단하게. 부가 설명 금지.");
+        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해.");
+        //sb.AppendLine("reasoning은 최대한 간단하게. 부가 설명 금지.");
         sb.AppendLine("아이템을 선택하거나 사용할 때 selectedItemId 와 itemId 필드에는 반드시 숫자로 된 itemId (예: 4000)를 입력해야함");
         sb.AppendLine("{");
-        sb.AppendLine("  \"reasoning\": \"이유\",");
+        //sb.AppendLine("  \"reasoning\": \"이유\",");
         sb.AppendLine("  \"selectedItemId\": \"\"");
         sb.AppendLine("}");
         return sb.ToString();
@@ -159,9 +160,10 @@ public class PromptBuilder
         sb.AppendLine();
 
         sb.AppendLine("[output format]");
-        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. reasoning은 최대한 간단하게. 부가 설명 금지.");
+        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해.");
+        //sb.AppendLine("reasoning은 최대한 간단하게. 부가 설명 금지.");
         sb.AppendLine("{");
-        sb.AppendLine("  \"reasoning\": \"이유\",");
+        //sb.AppendLine("  \"reasoning\": \"이유\",");
         sb.AppendLine("  \"actions\": [ { \"itemId\": \"아이템ID\", \"targetId\": \"제물 바치기 등 타겟이 필요할 경우 타겟 아이템ID\" } ]");
         // 아무 템도 안 쓸 경우 빈 배열 [] 반환
         sb.AppendLine("}");
@@ -182,9 +184,10 @@ public class PromptBuilder
         sb.AppendLine();
 
         sb.AppendLine("[output format]");
-        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. reasoning은 최대한 간단하게. 부가 설명 금지.");
+        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해.");
+        //sb.AppendLine("reasoning은 최대한 간단하게. 부가 설명 금지.");
         sb.AppendLine("{");
-        sb.AppendLine(" \"reasoning\": \"이유\",");
+        //sb.AppendLine(" \"reasoning\": \"이유\",");
         sb.AppendLine(" \"hitDamage\": 500");
         sb.AppendLine("}");
         return sb.ToString();
@@ -210,9 +213,10 @@ public class PromptBuilder
         sb.AppendLine();
 
         sb.AppendLine("[output format]");
-        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해. reasoning은 최대한 간단하게. 부가 설명 금지.");
+        sb.AppendLine("반드시 아래 JSON 포맷으로만 응답해.");
+        //sb.AppendLine("reasoning은 최대한 간단하게. 부가 설명 금지.");
         sb.AppendLine("{");
-        sb.AppendLine(" \"reasoning\": \"이유\",");
+        //sb.AppendLine(" \"reasoning\": \"이유\",");
         sb.AppendLine(" \"upgradeVillageType\": \"\" ");
         sb.Append(" // 값은 반드시 \"Mine\", \"Forge\", \"Farm\", \"Barrier\" 중 하나여야 함");
         sb.AppendLine("}");
@@ -298,19 +302,26 @@ public class PromptBuilder
         if (playerNum == 1) villageObjs = state.simVillageState.P1VillageObjInfos;
         else villageObjs = state.simVillageState.P2VillageObjInfos;
 
+        int currentGold = (playerNum == 1) ? state.simVillageState.p1VillGold : state.simVillageState.p2VillGold;
+        int affordableCount = 0;
+
         foreach (var objs in villageObjs)
         {
             sb.AppendLine($"업그레이드 요소 이름 : {objs._levelData.VillageType.ToString()}");
-            if (objs.currentLevel > 5)
-            {
-                sb.AppendLine("이미 최대 레벨이므로 업그레이드가 더 이상 불가하다.");
-                sb.AppendLine();
-                continue;
-            }
+            if (objs.currentLevel > 5) continue;
+            if (currentGold < objs.upgradeGold) continue;
+
             sb.AppendLine($"현재 레벨 : LV.{objs.currentLevel}, {objs.curLevelDesc}");
             sb.AppendLine($"다음 레벨 : LV.{objs.currentLevel + 1}, {objs.nextLevelDesc}");
             sb.AppendLine($"업그레이드에 필요한 금액 : {objs.upgradeGold} Gold");
             sb.AppendLine();
+
+            affordableCount++;
+        }
+
+        if (affordableCount == 0)
+        {
+            sb.AppendLine("현재 보유한 골드로 업그레이드할 수 있는 요소가 없습니다.");
         }
 
         return sb.ToString();

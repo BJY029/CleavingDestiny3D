@@ -18,7 +18,6 @@ public class BalanceSimulator : MonoBehaviour
     private OllamaAPIClient apiClient = new OllamaAPIClient();
     private PromptBuilder promptBulider = new PromptBuilder();
     private LLMActionExecutor executor = new LLMActionExecutor();
-    private string csvPath;
 
     public Button myButton;
 
@@ -27,9 +26,6 @@ public class BalanceSimulator : MonoBehaviour
 
     private void Start()
     {
-        csvPath = Application.dataPath + "/BalanceResult.csv";
-        string header = "GameNum,Winner,TotalTurns,P1_RemainHP,P2_RemainHP,Tree_RemainHP,P1_UsedItems,P2_UsedItems\n";
-        File.WriteAllText(csvPath, header, Encoding.UTF8);
         myButton.onClick.AddListener(() => RunMassiveSimulation().Forget());
     }
 
@@ -38,8 +34,12 @@ public class BalanceSimulator : MonoBehaviour
     {
         CancellationToken cancellToken = this.GetCancellationTokenOnDestroy();
 
+        CSVLogger logger = new CSVLogger();
+        logger.InitLog();
+
         for (int cnt = 1; cnt <= gameCount; cnt++)
         {
+            winner = 0;
             SimGameState state = new SimGameState(playerSetting, roomSetting, villageBalanceData, villageLevelDatas);
             state.simVillageState.OnVillageObjChanged += AISimVUIController.instance.HandleVillageObjChanged;
             state.simVillageState.OnVStatChange += AISimVUIController.instance.HandleVillageValueChanged;
@@ -70,6 +70,7 @@ public class BalanceSimulator : MonoBehaviour
                         state.wave++;
                         if (IsGameOver(state)) break;
                     }
+                    if (IsGameOver(state)) break;
                     state.wave = 0;
                     state.ApplyToxicToVillage();
 
@@ -89,19 +90,29 @@ public class BalanceSimulator : MonoBehaviour
                             SafetyCount++;
                         }
                     }
+                    if (IsGameOver(state)) break;
                     AISimVUIController.instance.UnActiveVillageUI();
                     //업그레이드 반영
                     state.InitPlayerStat();
                     state.day++;
                 }
 
-                LogToCSV(cnt, winner, turnCount, state);
+                logger.LogGameResult(cnt, winner, turnCount, state);
                 Debug.Log($"[시뮬레이션] {cnt}판 완료. 승자: P{winner}");
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.LogWarning("[시뮬레이터] 사용자에 의해 강제 중단되었습니다. 지금까지의 데이터를 저장합니다.");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[시뮬레이터 에러] {e.Message}\n{e.StackTrace}");
             }
             finally
             {
                 state.simVillageState.OnVillageObjChanged -= AISimVUIController.instance.HandleVillageObjChanged;
                 state.simVillageState.OnVStatChange -= AISimVUIController.instance.HandleVillageValueChanged;
+                logger.CloseLog();
             }
         }
     }
@@ -217,31 +228,31 @@ public class BalanceSimulator : MonoBehaviour
         return jsonString;
     }
 
-    private void LogToCSV(int gameNum, int winner, int turns, SimGameState state)
-    {
-        // 1. 리스트에 담긴 아이템 ID들을 "2002|3002|1001" 형태로 묶어줌 
-        // (쉼표(',')를 쓰면 CSV 셀이 넘어가 버리므로 반드시 파이프('|') 기호 등을 써야 합니다)
-        string p1ItemsStr = string.Join("|", state.p1Inventory);
-        string p2ItemsStr = string.Join("|", state.p2Inventory);
+    // private void LogToCSV(int gameNum, int winner, int turns, SimGameState state)
+    // {
+    //     // 1. 리스트에 담긴 아이템 ID들을 "2002|3002|1001" 형태로 묶어줌 
+    //     // (쉼표(',')를 쓰면 CSV 셀이 넘어가 버리므로 반드시 파이프('|') 기호 등을 써야 합니다)
+    //     string p1ItemsStr = string.Join("|", state.p1Inventory);
+    //     string p2ItemsStr = string.Join("|", state.p2Inventory);
 
-        // 아무 아이템도 안 썼을 경우 보기 좋게 "None" 처리
-        if (string.IsNullOrEmpty(p1ItemsStr)) p1ItemsStr = "None";
-        if (string.IsNullOrEmpty(p2ItemsStr)) p2ItemsStr = "None";
+    //     // 아무 아이템도 안 썼을 경우 보기 좋게 "None" 처리
+    //     if (string.IsNullOrEmpty(p1ItemsStr)) p1ItemsStr = "None";
+    //     if (string.IsNullOrEmpty(p2ItemsStr)) p2ItemsStr = "None";
 
-        // 2. CSV에 기록할 한 줄(Row) 문자열 만들기
-        string rowData = string.Format("{0},Player{1},{2},{3},{4},{5},{6},{7}\n",
-            gameNum,               // 몇 번째 게임인지
-            winner,                // 승자 (1 or 2)
-            turns,                 // 총 소요 턴 수
-            state.p1VillHP,            // P1 남은 체력
-            state.p2VillHP,            // P2 남은 체력
-            state.treeHP,          // 남은 세계수 체력
-            p1ItemsStr,            // P1이 사용한 아이템들
-            p2ItemsStr             // P2가 사용한 아이템들
-        );
+    //     // 2. CSV에 기록할 한 줄(Row) 문자열 만들기
+    //     string rowData = string.Format("{0},Player{1},{2},{3},{4},{5},{6},{7}\n",
+    //         gameNum,               // 몇 번째 게임인지
+    //         winner,                // 승자 (1 or 2)
+    //         turns,                 // 총 소요 턴 수
+    //         state.p1VillHP,            // P1 남은 체력
+    //         state.p2VillHP,            // P2 남은 체력
+    //         state.treeHP,          // 남은 세계수 체력
+    //         p1ItemsStr,            // P1이 사용한 아이템들
+    //         p2ItemsStr             // P2가 사용한 아이템들
+    //     );
 
-        // 3. 파일의 맨 아랫줄에 덧붙여 쓰기 (Append)
-        // 매번 파일을 새로 쓰지 않고 덧붙이므로 메모리 관리와 속도 면에서 안전합니다.
-        File.AppendAllText(csvPath, rowData, Encoding.UTF8);
-    }
+    //     // 3. 파일의 맨 아랫줄에 덧붙여 쓰기 (Append)
+    //     // 매번 파일을 새로 쓰지 않고 덧붙이므로 메모리 관리와 속도 면에서 안전합니다.
+    //     File.AppendAllText(csvPath, rowData, Encoding.UTF8);
+    // }
 }
