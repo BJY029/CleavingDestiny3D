@@ -60,6 +60,22 @@ public class AISimUIController : MonoBehaviour
     public List<ItemInfo> p1Infos = new List<ItemInfo>();
     public List<ItemInfo> p2Infos = new List<ItemInfo>();
 
+    public void InitGameState()
+    {
+        foreach (Transform child in p1ItemInfoTarget.transform)
+        {
+            GameObject.Destroy(child.gameObject);
+        }
+
+        foreach (Transform child in p2ItemInfoTarget.transform)
+        {
+            GameObject.Destroy(child.gameObject);
+        }
+
+        p1Infos.Clear();
+        p2Infos.Clear();
+    }
+
     public void InitStatUI(SimGameState state)
     {
         p1UI.VillageHP.text = state.p1VillHP.ToString();

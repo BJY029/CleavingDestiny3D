@@ -21,7 +21,7 @@ public class BalanceSimulator : MonoBehaviour
 
     public Button myButton;
 
-    private int gameCount = 1;
+    private int gameCount = 3;
     private int winner;
 
     private void Start()
@@ -37,84 +37,95 @@ public class BalanceSimulator : MonoBehaviour
         CSVLogger logger = new CSVLogger();
         logger.InitLog();
 
-        for (int cnt = 1; cnt <= gameCount; cnt++)
+        try
         {
-            winner = 0;
-            SimGameState state = new SimGameState(playerSetting, roomSetting, villageBalanceData, villageLevelDatas);
-            state.simVillageState.OnVillageObjChanged += AISimVUIController.instance.HandleVillageObjChanged;
-            state.simVillageState.OnVStatChange += AISimVUIController.instance.HandleVillageValueChanged;
-            state.simVillageState.ForceUpdateAllUI();
-
-            try
+            for (int cnt = 1; cnt <= gameCount; cnt++)
             {
-                int turnCount = 0;
+                winner = 0;
+                SimGameState state = new SimGameState(playerSetting, roomSetting, villageBalanceData, villageLevelDatas);
+                state.simVillageState.OnVillageObjChanged += AISimVUIController.instance.HandleVillageObjChanged;
+                state.simVillageState.OnVStatChange += AISimVUIController.instance.HandleVillageValueChanged;
+                state.simVillageState.ForceUpdateAllUI();
 
-                while (!IsGameOver(state) && turnCount < 50)
+                AISimUIController.instance.InitGameState();
+                AISimVUIController.instance.UnActiveVillageUI();
+
+                try
                 {
-                    for (int i = 0; i < 3; i++)
+                    int turnCount = 0;
+
+                    while (!IsGameOver(state) && turnCount < 50)
                     {
-                        for (int j = 1; j <= 2; j++)
+                        for (int i = 0; i < 3; i++)
                         {
-                            state.curTurnPlayerNum = j;
-                            Debug.Log($"Day : {state.day}, Wave : {state.wave}, Turn : {state.turn}");
+                            for (int j = 1; j <= 2; j++)
+                            {
+                                state.curTurnPlayerNum = j;
+                                Debug.Log($"Day : {state.day}, Wave : {state.wave}, Turn : {state.turn}");
 
-                            await RunPlayerTurn(state, j, cancellToken);
+                                await RunPlayerTurn(state, j, cancellToken);
 
+                                if (IsGameOver(state)) break;
+                                turnCount++;
+                                state.totalTurnCount = turnCount;
+                                state.turn++;
+                                state.InitTurnStat(j);
+                            }
+                            state.turn = 0;
+                            state.wave++;
                             if (IsGameOver(state)) break;
-                            turnCount++;
-                            state.totalTurnCount = turnCount;
-                            state.turn++;
-                            state.InitTurnStat(j);
                         }
-                        state.turn = 0;
-                        state.wave++;
                         if (IsGameOver(state)) break;
-                    }
-                    if (IsGameOver(state)) break;
-                    state.wave = 0;
-                    state.ApplyToxicToVillage();
+                        state.wave = 0;
+                        state.ApplyToxicToVillage();
 
-                    //레벨에 따른 골드 지급
-                    AISimVUIController.instance.ActiveVillageUI();
-                    state.simVillageState.UpdateGoldWhenStartVillPhase();
-                    for (int i = 1; i <= 2; i++)
-                    {
-                        int SafetyCount = 0;
-                        while (SafetyCount < 10)
+                        //레벨에 따른 골드 지급
+                        AISimVUIController.instance.ActiveVillageUI();
+                        state.simVillageState.UpdateGoldWhenStartVillPhase();
+                        for (int i = 1; i <= 2; i++)
                         {
-                            if (IsGameOver(state)) break;
+                            int SafetyCount = 0;
+                            while (SafetyCount < 10)
+                            {
+                                if (IsGameOver(state)) break;
 
-                            bool keepUpgrade = await RunUpgradePhase(state, i, cancellToken);
-                            if (!keepUpgrade) break;
+                                bool keepUpgrade = await RunUpgradePhase(state, i, cancellToken);
+                                if (!keepUpgrade) break;
 
-                            SafetyCount++;
+                                SafetyCount++;
+                            }
                         }
+                        if (IsGameOver(state)) break;
+                        AISimVUIController.instance.UnActiveVillageUI();
+                        //업그레이드 반영
+                        state.InitPlayerStat();
+                        state.day++;
                     }
-                    if (IsGameOver(state)) break;
-                    AISimVUIController.instance.UnActiveVillageUI();
-                    //업그레이드 반영
-                    state.InitPlayerStat();
-                    state.day++;
-                }
 
-                logger.LogGameResult(cnt, winner, turnCount, state);
-                Debug.Log($"[시뮬레이션] {cnt}판 완료. 승자: P{winner}");
-            }
-            catch (OperationCanceledException)
-            {
-                Debug.LogWarning("[시뮬레이터] 사용자에 의해 강제 중단되었습니다. 지금까지의 데이터를 저장합니다.");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[시뮬레이터 에러] {e.Message}\n{e.StackTrace}");
-            }
-            finally
-            {
-                state.simVillageState.OnVillageObjChanged -= AISimVUIController.instance.HandleVillageObjChanged;
-                state.simVillageState.OnVStatChange -= AISimVUIController.instance.HandleVillageValueChanged;
-                logger.CloseLog();
+                    logger.LogGameResult(cnt, winner, turnCount, state);
+                    Debug.Log($"[시뮬레이션] {cnt}판 완료. 승자: P{winner}");
+                }
+                catch (OperationCanceledException)
+                {
+                    Debug.LogWarning("[시뮬레이터] 사용자에 의해 강제 중단되었습니다. 지금까지의 데이터를 저장합니다.");
+                    break;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"[시뮬레이터 에러] {e.Message}\n{e.StackTrace}");
+                }
+                finally
+                {
+                    state.simVillageState.OnVillageObjChanged -= AISimVUIController.instance.HandleVillageObjChanged;
+                    state.simVillageState.OnVStatChange -= AISimVUIController.instance.HandleVillageValueChanged;
+                }
             }
         }
+        finally
+        {
+            logger.CloseLog();
+        }
+
     }
 
     private bool IsGameOver(SimGameState state)
