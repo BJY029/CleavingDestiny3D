@@ -1667,6 +1667,11 @@ MonoBehaviour:
   firstPersonAnimator: {fileID: 0}
   hitAnimCount: 4
   avoidRepeat: 1
+  playerCamera: {fileID: 0}
+  shakeStrength: 0.5
+  shakeDuration: 0.4
+  shakeFrequency: 10
+  hitEffectObject: {fileID: 0}
 --- !u!114 &2716088925901640895
 MonoBehaviour:
   m_ObjectHideFlags: 0

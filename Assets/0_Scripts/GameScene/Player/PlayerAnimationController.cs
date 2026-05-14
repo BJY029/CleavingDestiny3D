@@ -4,12 +4,17 @@ using PrimeTween;
 
 public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 {
+    [Header("Animation Settings")]
     [SerializeField] private Animator animator; // 플레이어 애니메이터
     [SerializeField] Animator firstPersonAnimator; // 1인칭 도끼 애니메이터
     [SerializeField] private int hitAnimCount = 4; // hit 모션 개수
     [SerializeField] private bool avoidRepeat = true; // 동일한 모션 연속 재생 방지
 
-    private bool isSwinging = false;
+    [Header("Camera Shake Settings")]
+    [SerializeField] Camera playerCamera; // 플레이어 카메라
+    [SerializeField] private float shakeStrength = 0.5f;
+    [SerializeField] private float shakeDuration = 0.4f;
+    [SerializeField] private int shakeFrequency = 10;
 
     // 이전 모션 중복 재생 방지용 변수
     private int lastIndex = -1;
@@ -24,7 +29,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     private IAnimNotify animNotify;
     bool isAI = false;
 
-    Sequence currentSequence; // 현재 진행 중인 도끼 휘두르기 시퀀스
+    [SerializeField] ParticleSystem hitEffectObject;
 
     private void Awake()
     {
@@ -58,8 +63,6 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     // 타격 애니메이션 실행
     public void PlayHitAnimation()
     {
-        if (isSwinging) return;
-
         // 도끼 휘두르기
         if (!isAI && photonView.IsMine)
         {
@@ -100,5 +103,20 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     {
         // IAnimNotify에 종료 사실을 알림
         animNotify?.OnAnimStateExit(stateKey);
+    }
+
+    public void FirstPersonAxeHit()
+    {
+        // 1인칭 타격 이펙트 재생
+        if (hitEffectObject != null)
+        {
+            hitEffectObject.Play();
+        }
+
+        Tween.ShakeLocalPosition(playerCamera.transform,
+            strength: new Vector3(shakeStrength, shakeStrength, 0f),
+            duration: shakeDuration,
+            frequency: shakeFrequency);
+
     }
 }
