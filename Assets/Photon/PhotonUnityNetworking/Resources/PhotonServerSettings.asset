@@ -92,6 +92,7 @@ MonoBehaviour:
   - RPC_ReceiveShopRerollResult
   - RPC_RequestShopReroll
   - RPC_BuyShopItem
+  - RPC_PlayHitSound
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

@@ -256,6 +256,7 @@ MonoBehaviour:
   targetLayer:
     serializedVersion: 2
     m_Bits: 1408
+  properDistanceToTree: 2.5
 --- !u!114 &-7706094444651068393
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -276,6 +277,7 @@ MonoBehaviour:
   shakeStrength: 0.5
   shakeDuration: 0.3
   shakeFrequency: 10
+  aiHitSoundDelay: 0.4
   hitEffectObject: {fileID: 2219815739063727701}
 --- !u!114 &-1081810206017964554
 MonoBehaviour:

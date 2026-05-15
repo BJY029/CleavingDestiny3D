@@ -92,6 +92,9 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     public bool isLookingAtTree { get; set; }
 
+    // 도끼로 타격하기 좋은 위치
+    public float properDistanceToTree = 2.5f;
+
 
     //마을 업그레이드 중인지 여부를 저장할 플래그
     private bool UpgradePhase;
@@ -471,6 +474,11 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             damageRatio = PlayerCanvasController.Instance.SelectNow();
             //타이머 중지
             TimeManager.instance.AbortTurnTimer();
+
+            // 적절한 거리로 나무와의 위치 조정
+            Vector3 dirToTree = (TreeStatus.Instance.transform.position - transform.position).normalized;
+            Vector3 properPos = TreeStatus.Instance.transform.position - dirToTree * properDistanceToTree;
+            transform.position = properPos;
         }
         //Offer 패널 접근 막기
         ItemOfferCanvasController.instance.Close();

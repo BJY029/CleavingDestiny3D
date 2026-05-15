@@ -1,6 +1,7 @@
 using UnityEngine;
 using Photon.Pun;
 using PrimeTween;
+using Cysharp.Threading.Tasks;
 
 public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 {
@@ -16,6 +17,9 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     [SerializeField] private float shakeDuration = 0.4f;
     [SerializeField] private int shakeFrequency = 10;
 
+    [Header("AI Sound Settings")]
+    [SerializeField] private float aiHitSoundDelay = 0.4f; // AI 타격음 지연 시간 (초)
+
     // 이전 모션 중복 재생 방지용 변수
     private int lastIndex = -1;
 
@@ -29,6 +33,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     private IAnimNotify animNotify;
     bool isAI = false;
 
+    [Header("Hit Effect")]
     [SerializeField] ParticleSystem hitEffectObject;
 
     private void Awake()
@@ -83,6 +88,20 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         animator.SetInteger(HashHitIndex, idx);
         animator.ResetTrigger(HashHit);
         animator.SetTrigger(HashHit);
+
+        // AI인 경우, FBX 애니메이션 이벤트를 쓸 수 없으므로 지연 후 소리 재생
+        if (isAI)
+        {
+            PlayAIHitSoundAsync().Forget();
+        }
+    }
+
+    private async UniTaskVoid PlayAIHitSoundAsync()
+    {
+        // 지정된 시간만큼 대기 (애니메이션 휘두르는 시간에 맞춤)
+        await UniTask.Delay((int)(aiHitSoundDelay * 1000), cancellationToken: this.GetCancellationTokenOnDestroy());
+
+        PlayLocalHitSound();
     }
 
     private int GetRandomIndex()
@@ -107,7 +126,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
     public void FirstPersonAxeHit()
     {
-        // 1인칭 타격 이펙트 재생
+        // 1인칭 타격 이펙트 재생 (카메라 쉐이크 및 이펙트는 로컬에서만)
         if (hitEffectObject != null)
         {
             hitEffectObject.Play();
@@ -118,5 +137,24 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
             duration: shakeDuration,
             frequency: shakeFrequency);
 
+        // 플레이어인 경우에만 1인칭 애니메이션 이벤트에서 소리를 트리거함
+        if (!isAI && photonView.IsMine)
+        {
+            photonView.RPC(nameof(RPC_PlayHitSound), RpcTarget.All);
+        }
+    }
+
+    [PunRPC]
+    public void RPC_PlayHitSound()
+    {
+        PlayLocalHitSound();
+    }
+
+    private void PlayLocalHitSound()
+    {
+        if (TreeStatus.Instance != null && TreeStatus.Instance.treeAudioSource != null)
+        {
+            TreeStatus.Instance.treeAudioSource.Play();
+        }
     }
 }
