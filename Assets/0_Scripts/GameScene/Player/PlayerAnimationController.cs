@@ -1,55 +1,160 @@
 using UnityEngine;
+using Photon.Pun;
+using PrimeTween;
+using Cysharp.Threading.Tasks;
 
-public class PlayerAnimationController : MonoBehaviour
+public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 {
-    [SerializeField] private Animator animator; //ÇÃ·¹ÀÌ¾î ¾Ö´Ï¸ŞÀÌÅÍ
-    [SerializeField] private int hitAnimCount = 4;//hit ¸ğ¼Ç °³¼ö
-    [SerializeField] private bool avoidRepeat = true; //±âÁ¸ ÇÇ°İ µ¿ÀÛ ¹İº¹ Àç»ı ¿©ºÎ
-    //[SerializeField] private bool forceRestartEvenIfHitting = false; //Å° Áßº¹ ÀÔ·Â ¹ŞÀ»°ÇÁö ¿©ºÎ
+    [Header("Animation Settings")]
+    [SerializeField] private Animator animator; // í”Œë ˆì´ì–´ ì• ë‹ˆë©”ì´í„°
+    [SerializeField] Animator firstPersonAnimator; // 1ì¸ì¹­ ë„ë¼ ì• ë‹ˆë©”ì´í„°
+    [SerializeField] private int hitAnimCount = 4; // hit ëª¨ì…˜ ê°œìˆ˜
+    [SerializeField] private bool avoidRepeat = true; // ë™ì¼í•œ ëª¨ì…˜ ì—°ì† ì¬ìƒ ë°©ì§€
 
-    //±âÁ¸ ÇÇ°İ Áßº¹ Àç»ı ¹æÁö¿ë
+    [Header("Camera Shake Settings")]
+    [SerializeField] Camera playerCamera; // í”Œë ˆì´ì–´ ì¹´ë©”ë¼
+    [SerializeField] private float shakeStrength = 0.5f;
+    [SerializeField] private float shakeDuration = 0.4f;
+    [SerializeField] private int shakeFrequency = 10;
+
+    [Header("AI Sound Settings")]
+    [SerializeField] private float aiHitSoundDelay = 0.4f; // AI íƒ€ê²©ìŒ ì§€ì—° ì‹œê°„ (ì´ˆ)
+
+    // ì´ì „ ëª¨ì…˜ ì¤‘ë³µ ì¬ìƒ ë°©ì§€ìš© ë³€ìˆ˜
     private int lastIndex = -1;
 
-    //¾Ö´Ï¸ŞÀÌ¼Ç ÀÌ¸§ ÇØ½ÃÈ­
+    // ì• ë‹ˆë©”ì´ì…˜ íŒŒë¼ë¯¸í„° í•´ì‹œí™”
     private static readonly int HashHit = Animator.StringToHash("Hit");
     private static readonly int HashHitIndex = Animator.StringToHash("HitIndex");
+    private static readonly int HashSpeedX = Animator.StringToHash("Speed_X");
+    private static readonly int HashSpeedZ = Animator.StringToHash("Speed_Z");
+    private static readonly int HashIsRun = Animator.StringToHash("IsRun");
 
-    private string GetHitStateName(int idx) => $"Hit{idx}";
+    private IAnimNotify animNotify;
+    bool isAI = false;
 
-    //Hit ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı ÇÔ¼ö
-    //º°µµÀÇ index °ªÀ» ¹ŞÀ» °æ¿ì, ÇØ´ç ÀÎµ¦½º¿¡ ÇØ´çÇÏ´Â ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı(»ó´ë¹æ ¾Ö´Ï¸ŞÀÌ¼Ç µ¿±âÈ­¿ë)
-    //¾Æ´Ï¸é ·£´ıÀ¸·Î Á¤ÇØ¼­ ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı(ÀÚ±â ÀÚ½Å Àç»ı¿ë)
-    public int PlayHit(int index = -1)
+    [Header("Hit Effect")]
+    [SerializeField] ParticleSystem hitEffectObject;
+
+    private void Awake()
     {
-        //¿À·ù
-        if (hitAnimCount <= 0) return -999;
+        if (animator == null) animator = GetComponent<Animator>();
 
-        int idx;
-
-        //ÀÓÀÇÀÇ index °ªÀ» ¹ŞÁö ¾ÊÀº °æ¿ì
-        if (index == -1)
+        if (TryGetComponent(out PlayerController playerController))
         {
-            //·£´ıÀ¸·Î Á¤ÇØ¼­ Àç»ı
-            idx = Random.Range(0, hitAnimCount);
-
-            //¸¸¾à ±âÁ¸¿¡ Àç»ıÇÑ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ Àç»ıµÇ±æ ¿øÄ¡ ¾ÊÀ¸¸é
-            if (avoidRepeat)
-            {
-                while (idx == lastIndex)
-                {
-                    idx = Random.Range(0, hitAnimCount);
-                }
-            }
+            animNotify = playerController;
         }
-        //ÀÓÀÇÀÇ index °ª ¹ŞÀº °æ¿ì 
-        else idx = index;
-        lastIndex = idx;
+        else if (TryGetComponent(out AIController aiController))
+        {
+            animNotify = aiController;
+            isAI = true;
+        }
+    }
 
-        //¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı
+    // ì´ë™ ìƒíƒœ ì—…ë°ì´íŠ¸ (ì»¨íŠ¸ë¡¤ëŸ¬ì—ì„œ ë§¤ í”„ë ˆì„ í˜¸ì¶œ)
+    public void UpdateMoveVisuals(float moveX, float moveZ, float deltaTime)
+    {
+        if (animator == null) return;
+
+        animator.SetFloat(HashSpeedX, moveX, 0.1f, deltaTime);
+        animator.SetFloat(HashSpeedZ, moveZ, 0.1f, deltaTime);
+
+        if (!isAI && photonView.IsMine)
+        {
+            firstPersonAnimator.SetBool(HashIsRun, moveZ > 0.7f);
+        }
+    }
+
+    // íƒ€ê²© ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰
+    public void PlayHitAnimation()
+    {
+        // ë„ë¼ íœ˜ë‘ë¥´ê¸°
+        if (!isAI && photonView.IsMine)
+        {
+            firstPersonAnimator.SetTrigger(HashHit);
+        }
+
+        // ì „ì²´(íƒ€ì¸ í™”ë©´ í¬í•¨): ì• ë‹ˆë©”ì´í„° ë™ê¸°í™”
+        int idx = GetRandomIndex();
+        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, idx);
+    }
+
+    [PunRPC]
+    private void RPC_PlayHit(int idx)
+    {
+        if (animator == null) return;
+
+        lastIndex = idx;
         animator.SetInteger(HashHitIndex, idx);
         animator.ResetTrigger(HashHit);
         animator.SetTrigger(HashHit);
 
+        // AIì¸ ê²½ìš°, FBX ì• ë‹ˆë©”ì´ì…˜ ì´ë²¤íŠ¸ë¥¼ ì“¸ ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ì§€ì—° í›„ ì†Œë¦¬ ì¬ìƒ
+        if (isAI)
+        {
+            PlayAIHitSoundAsync().Forget();
+        }
+    }
+
+    private async UniTaskVoid PlayAIHitSoundAsync()
+    {
+        // ì§€ì •ëœ ì‹œê°„ë§Œí¼ ëŒ€ê¸° (ì• ë‹ˆë©”ì´ì…˜ íœ˜ë‘ë¥´ëŠ” ì‹œê°„ì— ë§ì¶¤)
+        await UniTask.Delay((int)(aiHitSoundDelay * 1000), cancellationToken: this.GetCancellationTokenOnDestroy());
+
+        PlayLocalHitSound();
+    }
+
+    private int GetRandomIndex()
+    {
+        int idx = Random.Range(0, hitAnimCount);
+        if (avoidRepeat && hitAnimCount > 1)
+        {
+            while (idx == lastIndex)
+            {
+                idx = Random.Range(0, hitAnimCount);
+            }
+        }
         return idx;
+    }
+
+    // ì• ë‹ˆë©”ì´ì…˜ ì´ë²¤íŠ¸ë¡œë¶€í„° í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
+    public void OnAnimStateExit(int stateKey)
+    {
+        // IAnimNotifyì— ì¢…ë£Œ ì‚¬ì‹¤ì„ ì•Œë¦¼
+        animNotify?.OnAnimStateExit(stateKey);
+    }
+
+    public void FirstPersonAxeHit()
+    {
+        // 1ì¸ì¹­ íƒ€ê²© ì´í™íŠ¸ ì¬ìƒ (ì¹´ë©”ë¼ ì‰ì´í¬ ë° ì´í™íŠ¸ëŠ” ë¡œì»¬ì—ì„œë§Œ)
+        if (hitEffectObject != null)
+        {
+            hitEffectObject.Play();
+        }
+
+        Tween.ShakeLocalPosition(playerCamera.transform,
+            strength: new Vector3(shakeStrength, shakeStrength, 0f),
+            duration: shakeDuration,
+            frequency: shakeFrequency);
+
+        // í”Œë ˆì´ì–´ì¸ ê²½ìš°ì—ë§Œ 1ì¸ì¹­ ì• ë‹ˆë©”ì´ì…˜ ì´ë²¤íŠ¸ì—ì„œ ì†Œë¦¬ë¥¼ íŠ¸ë¦¬ê±°í•¨
+        if (!isAI && photonView.IsMine)
+        {
+            photonView.RPC(nameof(RPC_PlayHitSound), RpcTarget.All);
+        }
+    }
+
+    [PunRPC]
+    public void RPC_PlayHitSound()
+    {
+        PlayLocalHitSound();
+    }
+
+    private void PlayLocalHitSound()
+    {
+        if (TreeStatus.Instance != null && TreeStatus.Instance.treeAudioSource != null)
+        {
+            TreeStatus.Instance.treeAudioSource.Play();
+        }
     }
 }
