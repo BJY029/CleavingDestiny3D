@@ -325,7 +325,7 @@ public class SimVillageState
 
             // 3. UI 갱신을 위해 콜백 이벤트 발생
             OnVillageObjChanged?.Invoke(playerNum, targetObj);
-            state.RecordUpgradeSelection(playerNum, targetObj._levelData.VillageType.ToString());
+            state.RecordUpgradeSelection(playerNum, targetObj._levelData.VillageType.ToString(), state.day);
 
         }
     }

@@ -21,7 +21,8 @@ public class BalanceSimulator : MonoBehaviour
 
     public Button myButton;
 
-    private int gameCount = 3;
+    [Header("Sim Count")]
+    public int gameCount = 10;
     private int winner;
 
     private void Start()
@@ -216,7 +217,7 @@ public class BalanceSimulator : MonoBehaviour
         try
         {
             string upgradePrompt = promptBulider.BuildDynamicSystemPrompt(state, playerNum, ActionPhase.NightUpgrade);
-            Debug.Log($"<color=cyan>[HitTreePhase]\n{upgradePrompt}</color>");
+            Debug.Log($"<color=cyan>[UpgradeVillagePhase]\n{upgradePrompt}</color>");
             string upgradeJsonAns = await apiClient.AskNextMove(upgradePrompt, GetStateJson(state, playerNum), token);
             return executor.ExecuteNightPhaseAction(upgradeJsonAns, state, playerNum);
         }

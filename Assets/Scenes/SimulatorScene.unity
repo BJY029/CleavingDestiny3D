@@ -589,6 +589,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1943d3e3f82db184d804cd8a558191e7, type: 2}
   - {fileID: 11400000, guid: 094625fc00e4bbc4ab7d542b83ccb004, type: 2}
   myButton: {fileID: 393808755}
+  gameCount: 3
 --- !u!1 &36514065
 GameObject:
   m_ObjectHideFlags: 0
@@ -14098,8 +14099,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7f133f7e2e3bf5f4c9fb55d6cd85068b, type: 2}
   - {fileID: 11400000, guid: e5aa80425976ee6499db24e7ac81e1b9, type: 2}
   - {fileID: 11400000, guid: 0fc74dcb8904b364bb16e9e7957609c0, type: 2}
-  - {fileID: 11400000, guid: b87b8ba60160e6a40bc29539e4bcfb5a, type: 2}
-  - {fileID: 11400000, guid: ea1e9843db73d664c907ecd1daf6cf6d, type: 2}
   - {fileID: 11400000, guid: 32a0ac771362dbf4c83423ceda724bee, type: 2}
   - {fileID: 11400000, guid: 3cb46e45e22708d4291cd8b76efbaeda, type: 2}
   - {fileID: 11400000, guid: ddef8b6828049464ea061d945a5c702e, type: 2}

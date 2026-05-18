@@ -20,8 +20,12 @@ public class SimGameState
     public void RecordItemSelection(int playerNum, string itemId) =>
         (playerNum == 1 ? p1SelectedItems : p2SelectedItems).Add(itemId);
 
-    public void RecordUpgradeSelection(int playerNum, string upgradeId) =>
-        (playerNum == 1 ? p1SelectedUpgrades : p2SelectedUpgrades).Add(upgradeId);
+    public void RecordUpgradeSelection(int playerNum, string upgradeId, int currentDay)
+    {
+        string logText = $"D{currentDay}_{upgradeId}";
+        if (playerNum == 1) p1SelectedUpgrades.Add(logText);
+        else p2SelectedUpgrades.Add(logText);
+    }
 
     public void RecordItemUse(int playerNum, string itemId)
     {
