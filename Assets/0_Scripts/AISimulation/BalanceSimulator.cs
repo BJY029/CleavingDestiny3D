@@ -133,7 +133,7 @@ public class BalanceSimulator : MonoBehaviour
     {
         if (state.treeHP <= 0f)
         {
-            if (state.turn == 1) winner = 2;
+            if (state.curTurnPlayerNum == 1) winner = 2;
             else winner = 1;
             return true;
         }
