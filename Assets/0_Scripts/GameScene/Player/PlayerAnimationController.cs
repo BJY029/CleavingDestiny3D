@@ -2,6 +2,8 @@ using UnityEngine;
 using Photon.Pun;
 using PrimeTween;
 using Cysharp.Threading.Tasks;
+using System;
+using Random = UnityEngine.Random;
 
 public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 {
@@ -20,6 +22,14 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     [Header("AI Sound Settings")]
     [SerializeField] private float aiHitSoundDelay = 0.4f; // AI 타격음 지연 시간 (초)
 
+    [Header("Tween Animation Parts")]
+    [SerializeField] Transform axeTransform; // 도끼 트랜스폼
+    [SerializeField] Transform itemTransform; // 아이템 트랜스폼
+    [SerializeField] MeshRenderer itemMeshRenderer; // 아이템 메시 렌더러
+
+    [Header("Item Use Animation Settings")]
+    [SerializeField] Pose itemUsePoint; // 아이템이 이동할 위치
+
     // 이전 모션 중복 재생 방지용 변수
     private int lastIndex = -1;
 
@@ -31,9 +41,11 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     private static readonly int HashIsRun = Animator.StringToHash("IsRun");
 
     private IAnimNotify animNotify;
-    bool isAI = false;
+    [SerializeField] bool isAI = false;
 
-    [Header("Hit Effect")]
+    MaterialPropertyBlock itemMpb;
+
+    [Header("Effect")]
     [SerializeField] ParticleSystem hitEffectObject;
 
     private void Awake()
@@ -48,6 +60,12 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         {
             animNotify = aiController;
             isAI = true;
+        }
+
+        if (itemTransform != null)
+        {
+            itemMpb = new MaterialPropertyBlock();
+            itemTransform.gameObject.SetActive(false); // 아이템 트랜스폼 초기 비활성화
         }
     }
 
@@ -156,5 +174,54 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         {
             TreeStatus.Instance.treeAudioSource.Play();
         }
+    }
+
+    public void UseItemAnimation(Transform itemSlotTransform, Texture itemTexture, Action onComplete)
+    {
+        itemMeshRenderer.GetPropertyBlock(itemMpb);
+
+        if (itemTexture != null)
+        {
+            // 아이템이 있을 때 텍스쳐 적용 + 색상을 "하얀색(불투명)"으로 변경
+            itemMpb.SetTexture("_BaseMap", itemTexture);
+            itemMpb.SetColor("_BaseColor", Color.white);
+        }
+        // 최종 적용
+        itemMeshRenderer.SetPropertyBlock(itemMpb);
+
+        // 이전 연출로 인해 0이 된 스케일을 원래 크기(1)로 초기화
+        itemTransform.localScale = Vector3.one;
+        itemTransform.gameObject.SetActive(true);
+
+        // 아이템 위치 세팅
+        itemTransform.SetPositionAndRotation(itemSlotTransform.position, itemSlotTransform.rotation);
+
+        Vector3 axeOriginalPos = axeTransform.localPosition;
+        // 애니메이션 시퀀스
+        Sequence seq = Sequence.Create()
+            // 화면 가운데로 날아가며 회전하기
+            .Group(Tween.LocalPosition(itemTransform, itemUsePoint.position, 0.5f, Ease.InOutQuad))
+            .Group(Tween.LocalRotation(itemTransform, itemUsePoint.rotation, 0.5f, Ease.InOutQuad))
+            .Group(Tween.LocalPosition(axeTransform, axeOriginalPos + new Vector3(0, -0.5f, 0), 0.5f, Ease.InOutQuad))
+
+            .ChainCallback(() =>
+            {
+                // TODO: 이펙트 추가
+            })
+            // 크기 강조 (1.5배)
+            .Chain(Tween.Scale(itemTransform, Vector3.one * 1.5f, 0.5f, Ease.OutBack))
+            .ChainCallback(() =>
+            {
+                // TODO: 이펙트 종료
+            })
+            // 다시 크기 감소하며 사라짐 (0배)
+            .Chain(Tween.Scale(itemTransform, Vector3.zero, 0.5f, Ease.InBack))
+            .OnComplete(() =>
+            {
+                // 아이템 비활성화 및 도끼 다시 보이게 설정
+                itemTransform.gameObject.SetActive(false);
+                axeTransform.localPosition = axeOriginalPos;
+                onComplete?.Invoke();
+            });
     }
 }

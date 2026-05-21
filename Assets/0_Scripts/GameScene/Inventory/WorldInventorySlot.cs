@@ -1,4 +1,4 @@
-using Photon.Pun;
+ï»¿using Photon.Pun;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -7,21 +7,21 @@ using TMPro;
 
 public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 {
-	//ÇØ´ç ÀÎº¥Åä¸® ½½·Ô ¼ÒÀ¯ÀÚ
+	//í•´ë‹¹ ì¸ë²¤í† ë¦¬ ìŠ¬ë¡¯ ì†Œìœ ì
 	private int ownerActor;
 
-	//½½·Ô ÀÎµ¦½º
+	//ìŠ¬ë¡¯ ì¸ë±ìŠ¤
 	public int slotIndex;
-	//ÇØ´ç ½½·Ô Mesh ·»´õ·¯
+	//í•´ë‹¹ ìŠ¬ë¡¯ Mesh ë Œë”ëŸ¬
 	private MeshRenderer quadRenderer;
 
-	//ÇØ´ç ½½·ÔÀÌ ÇöÀç °¡Áö°í ÀÖ´Â ¾ÆÀÌÅÛ Á¤º¸
+	//í•´ë‹¹ ìŠ¬ë¡¯ì´ í˜„ì¬ ê°€ì§€ê³  ìˆëŠ” ì•„ì´í…œ ì •ë³´
 	public ItemSO currentItem { get; private set; }
-	//ÇØ´ç ½½·ÔÀÇ ¸ÓÅ×¸®¾ó °ü·Ã Á¤º¸
+	//í•´ë‹¹ ìŠ¬ë¡¯ì˜ ë¨¸í…Œë¦¬ì–¼ ê´€ë ¨ ì •ë³´
 	private MaterialPropertyBlock mpb;
 
 
-	//½½·Ô ÅøÆÁ ¿ÀºêÁ§Æ®
+	//ìŠ¬ë¡¯ íˆ´íŒ ì˜¤ë¸Œì íŠ¸
 	[Header("ToolTipInfos")]
 	public GameObject ToolTipPanel;
 	public TextMeshProUGUI ItemNameText;
@@ -34,49 +34,49 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 
 	private void Awake()
 	{
-		//¸ÓÅ×¸®¾ó Á¤º¸ 
+		//ë¨¸í…Œë¦¬ì–¼ ì •ë³´ 
 		mpb = new MaterialPropertyBlock();
 		quadRenderer = GetComponent<MeshRenderer>();
 
 
 	}
 
-	//ÇöÀç ½½·ÔÀÌ ¾ÆÀÌÅÛÀ» °¡Áö°í ÀÖ´ÂÁö È®ÀÎ
+	//í˜„ì¬ ìŠ¬ë¡¯ì´ ì•„ì´í…œì„ ê°€ì§€ê³  ìˆëŠ”ì§€ í™•ì¸
 	public bool HasItem()
 	{
 		return currentItem != null;
 	}
 
-	//½½·ÔÀ» ¼³Á¤ÇÏ´Â ÇÔ¼ö
+	//ìŠ¬ë¡¯ì„ ì„¤ì •í•˜ëŠ” í•¨ìˆ˜
 	public void SetSlot(ItemSO item, int owner)
 	{
-		//½½·Ô º¸À¯ÀÚ ¼³Á¤
+		//ìŠ¬ë¡¯ ë³´ìœ ì ì„¤ì •
 		ownerActor = owner;
-		//½½·Ô¿¡ ³ÖÀ» ¾ÆÀÌÅÛ ¼³Á¤
+		//ìŠ¬ë¡¯ì— ë„£ì„ ì•„ì´í…œ ì„¤ì •
 		currentItem = item;
 
-		//¾ÆÀÌÅÛÀÌ ¾ø´Â °æ¿ì
+		//ì•„ì´í…œì´ ì—†ëŠ” ê²½ìš°
 		if (item == null)
 		{
-			// ¾ÆÀÌÅÛÀÌ nullÀÌ¸é Åõ¸í ÅØ½ºÃ³·Î º¯°æÇÏ°í Á¾·á
+			// ì•„ì´í…œì´ nullì´ë©´ íˆ¬ëª… í…ìŠ¤ì²˜ë¡œ ë³€ê²½í•˜ê³  ì¢…ë£Œ
 			SetIcon(nullTexture);
 			return;
 		}
 
-		// ¾ÆÀÌÅÛÀÌ ÀÖ´Ù¸é DB¿¡¼­ ÅØ½ºÃ³¸¦ °¡Á®¿Í ¼³Á¤
+		// ì•„ì´í…œì´ ìˆë‹¤ë©´ DBì—ì„œ í…ìŠ¤ì²˜ë¥¼ ê°€ì ¸ì™€ ì„¤ì •
 		if (ItemDB.Instance != null)
 		{
-			// MaterialÀ» °¡Á®¿Í¼­ ÅØ½ºÃ³ »©³»´Â ¹æ½Ä
+			// Materialì„ ê°€ì ¸ì™€ì„œ í…ìŠ¤ì²˜ ë¹¼ë‚´ëŠ” ë°©ì‹
 			Texture targetTex = ItemDB.Instance.GetMat(item.itemId).mainTexture;
-			//¾ÆÀÌÄÜ ¼³Á¤
+			//ì•„ì´ì½˜ ì„¤ì •
 			SetIcon(targetTex);
 		}
 
-		//ÅøÆÁ Á¤º¸ ÃÊ±âÈ­
+		//íˆ´íŒ ì •ë³´ ì´ˆê¸°í™”
 		InitItemInfos();
 	}
 
-	//ÅøÆÁ Á¤º¸ ÃÊ±âÈ­
+	//íˆ´íŒ ì •ë³´ ì´ˆê¸°í™”
 	private void InitItemInfos()
 	{
 		ItemNameText.text = LocalizationManager.Instance.GetText(CSV_Type.Item, currentItem.displayName_ID);
@@ -85,37 +85,37 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 		ItemDescText.text = LocalizationManager.Instance.GetText(CSV_Type.Item, currentItem.itemDesc_ID);
 	}
 
-	//¾ÆÀÌÄÜ ¼³Á¤
+	//ì•„ì´ì½˜ ì„¤ì •
 	public void SetIcon(Texture tex)
 	{
 		if (quadRenderer == null) return;
 
-		//±âÁ¸ ¼³Á¤ °¡Á®¿À±â
+		//ê¸°ì¡´ ì„¤ì • ê°€ì ¸ì˜¤ê¸°
 		quadRenderer.GetPropertyBlock(mpb);
 
 		if (tex != null)
 		{
-			// ¾ÆÀÌÅÛÀÌ ÀÖÀ» ¶§
-			// ÅØ½ºÃÄ Àû¿ë + »ö»óÀ» "ÇÏ¾á»ö(ºÒÅõ¸í)"À¸·Î º¯°æ
+			// ì•„ì´í…œì´ ìˆì„ ë•Œ
+			// í…ìŠ¤ì³ ì ìš© + ìƒ‰ìƒì„ "í•˜ì–€ìƒ‰(ë¶ˆíˆ¬ëª…)"ìœ¼ë¡œ ë³€ê²½
 			mpb.SetTexture("_BaseMap", tex);
 			mpb.SetColor("_BaseColor", Color.white);
 		}
 		else
 		{
-			// ¾ÆÀÌÅÛÀÌ ¾øÀ» ¶§:
-			// ÅØ½ºÃÄ Á¦°Å + »ö»óÀ» Åõ¸íÇÏ°Ô º¯°æ (¾È º¸ÀÌ°Ô)
-			mpb.SetTexture("_BaseMap", nullTexture); // È¤Àº null
+			// ì•„ì´í…œì´ ì—†ì„ ë•Œ:
+			// í…ìŠ¤ì³ ì œê±° + ìƒ‰ìƒì„ íˆ¬ëª…í•˜ê²Œ ë³€ê²½ (ì•ˆ ë³´ì´ê²Œ)
+			mpb.SetTexture("_BaseMap", nullTexture); // í˜¹ì€ null
 			mpb.SetColor("_BaseColor", new Color(1, 1, 1, 0)); // Alpha = 0
 		}
 
-		// ÃÖÁ¾ Àû¿ë
+		// ìµœì¢… ì ìš©
 		quadRenderer.SetPropertyBlock(mpb);
 	}
 
-	//½½·ÔÀÌ ³» °ÍÀÎÁö È®ÀÎ
+	//ìŠ¬ë¡¯ì´ ë‚´ ê²ƒì¸ì§€ í™•ì¸
 	public bool IsMine(int actNum) => actNum == ownerActor;
 
-	//Ray°¡ EnterÇÑ °æ¿ì
+	//Rayê°€ Enterí•œ ê²½ìš°
 	public void OnLookEnter(IPlayerAction pc)
 	{
 		PlayerController playerCtrl = pc as PlayerController;
@@ -139,7 +139,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 		//Highlight();
 	}
 
-	//Ray°¡ Exit ÇÑ °æ¿ì
+	//Rayê°€ Exit í•œ ê²½ìš°
 	public void OnLookExit(IPlayerAction pc)
 	{
 		//if (!IsMine) return;
@@ -147,7 +147,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 		//Highlight();
 	}
 
-	//Æ¯Á¤ ½½·ÔÀ¸·ÎºÎÅÍ »óÈ£ÀÛ¿ë ¹ßµ¿ ½Ã ÇØ´ç ½½·ÔÀÇ ¾ÆÀÌÅÛ »ç¿ë ·ÎÁ÷ È°¼ºÈ­
+	//íŠ¹ì • ìŠ¬ë¡¯ìœ¼ë¡œë¶€í„° ìƒí˜¸ì‘ìš© ë°œë™ ì‹œ í•´ë‹¹ ìŠ¬ë¡¯ì˜ ì•„ì´í…œ ì‚¬ìš© ë¡œì§ í™œì„±í™”
 	public void OnInteract(IPlayerAction pc)
 	{
 		PlayerController playerCtrl = pc as PlayerController;
@@ -166,15 +166,15 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 			Debug.LogWarning("Non Item in slot");
 			return;
 		}
-		//¾ÆÀÌÅÛ ÈÉÄ¡±âÀÎ °æ¿ì
+		//ì•„ì´í…œ í›”ì¹˜ê¸°ì¸ ê²½ìš°
 		if (!IsMine(ActNum))
 		{
 			Debug.Log("stealing item activated");
 			if (pc.GetInvAdmissionticket() != ownerActor) return;
 			int ToActorNum = ActNum;
-			//Å° Á¦°Å
+			//í‚¤ ì œê±°
 			pc.SetInvAdmissionTicket(-1);
-			//TODO: ¼±ÅÃµÈ ¾ÆÀÌÅÛ »óÈ£ÀÛ¿ëÇÑ ÇÃ·¹ÀÌ¾îÀÇ ÀÎº¥Åä¸®·Î ¿Å±â±â
+			//TODO: ì„ íƒëœ ì•„ì´í…œ ìƒí˜¸ì‘ìš©í•œ í”Œë ˆì´ì–´ì˜ ì¸ë²¤í† ë¦¬ë¡œ ì˜®ê¸°ê¸°
 			InventoryAuthority.Instance.RequestSteelItem(ownerActor, ToActorNum, slotIndex, this);
 			return;
 		}
@@ -182,6 +182,11 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 
 		ToolTipPanel.SetActive(false);
 		Debug.Log("Interacted!!");
+
+		if (playerCtrl != null)
+		{
+			playerCtrl.PlayUseItemAnimation(transform, ItemDB.Instance.GetMat(currentItem.itemId).mainTexture);
+		}
 		InventoryAuthority.Instance.RequestUseItem(slotIndex, ActNum, this);
 
 	}

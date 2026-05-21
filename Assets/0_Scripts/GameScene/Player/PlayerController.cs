@@ -98,7 +98,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     //마을 업그레이드 중인지 여부를 저장할 플래그
     private bool UpgradePhase;
-    private bool WhileHittingMotion;
+    private bool WhileAnimation;
     private float damageRatio;
     private int damage;
 
@@ -181,7 +181,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         isLookingAtTree = false;
         UpgradePhase = false;
-        WhileHittingMotion = false;
+        WhileAnimation = false;
         RayMultiplyer = 1;
     }
 
@@ -310,7 +310,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             return;
         }
 
-        if (WhileHittingMotion)
+        if (WhileAnimation)
         {
             SetInputLocked(true);
             return;
@@ -456,7 +456,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private bool checkTreeInteractable()
     {
         if (!isLookingAtTree) return false;
-        if (WhileHittingMotion) return false;
+        if (WhileAnimation) return false;
         return true;
     }
 
@@ -475,10 +475,12 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             //타이머 중지
             TimeManager.instance.AbortTurnTimer();
 
+            characterController.enabled = false;
             // 적절한 거리로 나무와의 위치 조정
             Vector3 dirToTree = (TreeStatus.Instance.transform.position - transform.position).normalized;
             Vector3 properPos = TreeStatus.Instance.transform.position - dirToTree * properDistanceToTree;
             transform.position = properPos;
+            characterController.enabled = true;
         }
         //Offer 패널 접근 막기
         ItemOfferCanvasController.instance.Close();
@@ -494,7 +496,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     {
         DevLog.Log($"<color=green>[HIT]</color> Player {PlayerActNum} TryHit with damageRatio: {damageRatio}, calculated damage: {damage}", this);
         //모션 재생 플래그 활성화
-        WhileHittingMotion = true;
+        WhileAnimation = true;
         //Hit 관련 UI 비활성화
         PlayerCanvasController.Instance.SetHitTextUnActive();
 
@@ -519,7 +521,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             //Hit 한 순간의 데미지 값을 인자로 해서 턴 전환 함수 호출
             TurnManager.Instance.RequestChangeTurn(damage, this);
             damage = -1;
-            WhileHittingMotion = false;
+            WhileAnimation = false;
         }
     }
 
@@ -657,5 +659,14 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         }
+    }
+
+    public void PlayUseItemAnimation(Transform itemSlotTransform, Texture itemTexture)
+    {
+        WhileAnimation = true;
+        animationController.UseItemAnimation(itemSlotTransform, itemTexture, () =>
+         {
+             WhileAnimation = false;
+         });
     }
 }

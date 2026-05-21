@@ -1672,6 +1672,13 @@ MonoBehaviour:
   shakeDuration: 0.4
   shakeFrequency: 10
   aiHitSoundDelay: 0.4
+  axeTransform: {fileID: 0}
+  itemTransform: {fileID: 0}
+  itemMeshRenderer: {fileID: 0}
+  itemUsePoint:
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 0}
+  isAI: 0
   hitEffectObject: {fileID: 0}
 --- !u!114 &2716088925901640895
 MonoBehaviour:
