@@ -6,6 +6,7 @@ using ExitGames.Client.Photon;
 using Unity.VisualScripting;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using Potan.CoreUtils;
 
 public class StickGameController : MonoBehaviourPunCallbacks
 {
@@ -212,6 +213,23 @@ public class StickGameController : MonoBehaviourPunCallbacks
         {
             Debug.Log($"turn order :  {i + 1} = player{turnOrder[i]}, length:{lengthOrder[i]}");
         }
+#if SOLO_PLAYER_FIRST
+        DevLog.Log("<color=green>SOLO_PLAYER_FIRST is defined. Forcing Player to be first.</color>");
+
+        // 플레이어가 첫번째가 되도록 강제 설정 (테스트용)
+        int playerActorNum = PhotonNetwork.LocalPlayer.ActorNumber;
+        int playerIndex = System.Array.IndexOf(turnOrder, playerActorNum);
+        if (playerIndex > 0)
+        {
+            // 플레이어가 있는 위치와 첫 번째 위치의 값을 교환
+            (turnOrder[playerIndex], turnOrder[0]) = (turnOrder[0], turnOrder[playerIndex]);
+
+            // 길이 순서도 동일하게 교환
+            (lengthOrder[playerIndex], lengthOrder[0]) = (lengthOrder[0], lengthOrder[playerIndex]);
+            DevLog.Log($"Turn order after forcing player first: {string.Join(", ", turnOrder)}");
+        }
+
+#endif
         // 룸 프로퍼티에 저장
         var newProps = new ExitGames.Client.Photon.Hashtable
         {

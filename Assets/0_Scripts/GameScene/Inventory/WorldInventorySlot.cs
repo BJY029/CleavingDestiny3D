@@ -185,7 +185,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 
 		if (playerCtrl != null)
 		{
-			playerCtrl.PlayUseItemAnimation(transform, ItemDB.Instance.GetMat(currentItem.itemId).mainTexture);
+			playerCtrl.PlayUseItemAnimation(transform, currentItem.itemClass, ItemDB.Instance.GetMat(currentItem.itemId).mainTexture);
 		}
 		InventoryAuthority.Instance.RequestUseItem(slotIndex, ActNum, this);
 

@@ -26,6 +26,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     [SerializeField] Transform axeTransform; // 도끼 트랜스폼
     [SerializeField] Transform itemTransform; // 아이템 트랜스폼
     [SerializeField] MeshRenderer itemMeshRenderer; // 아이템 메시 렌더러
+    int axeOriginalLayer;
 
     [Header("Item Use Animation Settings")]
     [SerializeField] Pose itemUsePoint; // 아이템이 이동할 위치
@@ -33,20 +34,21 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     // 이전 모션 중복 재생 방지용 변수
     private int lastIndex = -1;
 
-    // 애니메이션 파라미터 해시화
-    private static readonly int HashHit = Animator.StringToHash("Hit");
-    private static readonly int HashHitIndex = Animator.StringToHash("HitIndex");
-    private static readonly int HashSpeedX = Animator.StringToHash("Speed_X");
-    private static readonly int HashSpeedZ = Animator.StringToHash("Speed_Z");
-    private static readonly int HashIsRun = Animator.StringToHash("IsRun");
+    // 파라미터 해시화
+    public static readonly int HashHit = Animator.StringToHash("Hit");
+    public static readonly int HashHitIndex = Animator.StringToHash("HitIndex");
+    public static readonly int HashSpeedX = Animator.StringToHash("Speed_X");
+    public static readonly int HashSpeedZ = Animator.StringToHash("Speed_Z");
+    public static readonly int HashIsRun = Animator.StringToHash("IsRun");
+    int firstPersonLayer;
 
     private IAnimNotify animNotify;
     [SerializeField] bool isAI = false;
 
     MaterialPropertyBlock itemMpb;
 
-    [Header("Effect")]
-    [SerializeField] ParticleSystem hitEffectObject;
+    // [Header("Effect")]
+    // [SerializeField] ParticleSystem hitEffectObject;
 
     private void Awake()
     {
@@ -67,6 +69,9 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
             itemMpb = new MaterialPropertyBlock();
             itemTransform.gameObject.SetActive(false); // 아이템 트랜스폼 초기 비활성화
         }
+
+        firstPersonLayer = LayerMask.NameToLayer("FirstPersonItem"); // "FirstPerson" 레이어 인덱스 저장
+        axeOriginalLayer = axeTransform.gameObject.layer; // 도끼의 원래 레이어 저장
     }
 
     // 이동 상태 업데이트 (컨트롤러에서 매 프레임 호출)
@@ -89,7 +94,13 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         // 도끼 휘두르기
         if (!isAI && photonView.IsMine)
         {
+            axeTransform.gameObject.layer = firstPersonLayer; // 도끼를 1인칭 레이어로 변경하여 항상 보이도록 설정
             firstPersonAnimator.SetTrigger(HashHit);
+
+            Tween.Delay(2f).OnComplete(this, (ctrl) =>
+            {
+                ctrl.axeTransform.gameObject.layer = ctrl.axeOriginalLayer; // 도끼 레이어를 기본으로 되돌림
+            });
         }
 
         // 전체(타인 화면 포함): 애니메이터 동기화
@@ -145,9 +156,10 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     public void FirstPersonAxeHit()
     {
         // 1인칭 타격 이펙트 재생 (카메라 쉐이크 및 이펙트는 로컬에서만)
-        if (hitEffectObject != null)
+        if (photonView.IsMine)
         {
-            hitEffectObject.Play();
+            // hitEffectObject.Play();
+            VFXManager.Instance.PlayPredefinedEffect(VFXManager.VFXIndex.Hit_Tree, axeTransform.position);
         }
 
         Tween.ShakeLocalPosition(playerCamera.transform,
@@ -176,8 +188,11 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         }
     }
 
-    public void UseItemAnimation(Transform itemSlotTransform, Texture itemTexture, Action onComplete)
+    public void UseItemAnimation(Transform itemSlotTransform, ItemClass currentItemClass, Texture itemTexture, Action onComplete)
     {
+        float intensity = 2f; // 발광 강도
+        Color glowColor = Color.white * intensity;
+
         itemMeshRenderer.GetPropertyBlock(itemMpb);
 
         if (itemTexture != null)
@@ -199,28 +214,33 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         Vector3 axeOriginalPos = axeTransform.localPosition;
         // 애니메이션 시퀀스
         Sequence seq = Sequence.Create()
-            // 화면 가운데로 날아가며 회전하기
+            // 1. 화면 가운데로 날아가며 회전하기
             .Group(Tween.LocalPosition(itemTransform, itemUsePoint.position, 0.5f, Ease.InOutQuad))
             .Group(Tween.LocalRotation(itemTransform, itemUsePoint.rotation, 0.5f, Ease.InOutQuad))
+
+            // 도끼는 화면 아래로 스르륵 내려놓기
             .Group(Tween.LocalPosition(axeTransform, axeOriginalPos + new Vector3(0, -0.5f, 0), 0.5f, Ease.InOutQuad))
 
-            .ChainCallback(() =>
-            {
-                // TODO: 이펙트 추가
-            })
-            // 크기 강조 (1.5배)
+            // 2. 크기 강조 (1.5배로 커지며 등장)
             .Chain(Tween.Scale(itemTransform, Vector3.one * 1.5f, 0.5f, Ease.OutBack))
-            .ChainCallback(() =>
-            {
-                // TODO: 이펙트 종료
-            })
-            // 다시 크기 감소하며 사라짐 (0배)
+
+            // 3. 다시 크기 감소하며 사라짐 (기가 모이듯 쪼그라듦)
             .Chain(Tween.Scale(itemTransform, Vector3.zero, 0.5f, Ease.InBack))
+
+            // 4. 모든 애니메이션이 끝난(크기가 0이 된) 순간 실행
             .OnComplete(() =>
             {
-                // 아이템 비활성화 및 도끼 다시 보이게 설정
+                // 아이템이 완전히 사라지는 타이밍에 파티클 생성
+                VFXManager.Instance.PlayItemExplosion(itemTransform.position, currentItemClass);
+
+                // TODO: 사운드 재생
+
+                // 아이템 비활성화
                 itemTransform.gameObject.SetActive(false);
-                axeTransform.localPosition = axeOriginalPos;
+
+                // 도끼 원래 위치로 복귀
+                Tween.LocalPosition(axeTransform, axeOriginalPos, 0.3f, Ease.OutQuad);
+
                 onComplete?.Invoke();
             });
     }

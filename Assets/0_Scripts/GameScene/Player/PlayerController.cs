@@ -661,10 +661,10 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         }
     }
 
-    public void PlayUseItemAnimation(Transform itemSlotTransform, Texture itemTexture)
+    public void PlayUseItemAnimation(Transform itemSlotTransform, ItemClass currentItemClass, Texture itemTexture)
     {
         WhileAnimation = true;
-        animationController.UseItemAnimation(itemSlotTransform, itemTexture, () =>
+        animationController.UseItemAnimation(itemSlotTransform, currentItemClass, itemTexture, () =>
          {
              WhileAnimation = false;
          });

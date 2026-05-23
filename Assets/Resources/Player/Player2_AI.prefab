@@ -1675,6 +1675,7 @@ MonoBehaviour:
   axeTransform: {fileID: 0}
   itemTransform: {fileID: 0}
   itemMeshRenderer: {fileID: 0}
+  itemGlowRenderer: {fileID: 0}
   itemUsePoint:
     position: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0, w: 0}
