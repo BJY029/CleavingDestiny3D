@@ -9,7 +9,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 {
     [Header("Animation Settings")]
     [SerializeField] private Animator animator; // 플레이어 애니메이터
-    [SerializeField] Animator firstPersonAnimator; // 1인칭 도끼 애니메이터
+    [SerializeField] private FirstPersonTweenAnimator firstPersonTweenAnimator; // 1인칭 도끼/아이템 트윈 애니메이터
     [SerializeField] private int hitAnimCount = 4; // hit 모션 개수
     [SerializeField] private bool avoidRepeat = true; // 동일한 모션 연속 재생 방지
 
@@ -92,6 +92,11 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
             initialRotation = axeSwayTransform.localRotation; // 도끼의 초기 회전값 저장
             initialPosition = axeSwayTransform.localPosition; // 도끼의 초기 위치값 저장
         }
+
+        if (firstPersonTweenAnimator != null)
+        {
+            firstPersonTweenAnimator.Initialize(axeTransform, itemTransform, itemMeshRenderer, itemUsePoint, itemMpb);
+        }
     }
 
     // 이동 상태 업데이트 (컨트롤러에서 매 프레임 호출)
@@ -102,9 +107,21 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         animator.SetFloat(HashSpeedX, moveX, 0.1f, deltaTime);
         animator.SetFloat(HashSpeedZ, moveZ, 0.1f, deltaTime);
 
-        if (!isAI && photonView.IsMine)
+        if (!isAI && photonView.IsMine && firstPersonTweenAnimator != null)
         {
-            firstPersonAnimator.SetBool(HashIsRun, moveZ > 0.7f);
+            float speed = new Vector2(moveX, moveZ).magnitude;
+            if (speed < 0.1f)
+            {
+                firstPersonTweenAnimator.SetMovementState(FirstPersonTweenAnimator.MovementState.Idle);
+            }
+            else if (speed > 0.7f)
+            {
+                firstPersonTweenAnimator.SetMovementState(FirstPersonTweenAnimator.MovementState.Run);
+            }
+            else
+            {
+                firstPersonTweenAnimator.SetMovementState(FirstPersonTweenAnimator.MovementState.Walk);
+            }
         }
     }
 
@@ -136,12 +153,17 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         if (!isAI && photonView.IsMine)
         {
             axeTransform.gameObject.layer = firstPersonLayer; // 도끼를 1인칭 레이어로 변경하여 항상 보이도록 설정
-            firstPersonAnimator.SetTrigger(HashHit);
 
-            Tween.Delay(2f).OnComplete(this, (ctrl) =>
+            if (firstPersonTweenAnimator != null)
             {
-                ctrl.axeTransform.gameObject.layer = ctrl.axeOriginalLayer; // 도끼 레이어를 기본으로 되돌림
-            });
+                firstPersonTweenAnimator.PlayHitAnimation(
+                    onImpactEvent: FirstPersonAxeHit,
+                    onCompleteCallback: () =>
+                    {
+                        axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어를 기본으로 되돌림
+                    }
+                );
+            }
         }
 
         // 전체(타인 화면 포함): 애니메이터 동기화
@@ -231,59 +253,14 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
     public void UseItemAnimation(Transform itemSlotTransform, ItemClass currentItemClass, Texture itemTexture, Action onComplete)
     {
-        float intensity = 2f; // 발광 강도
-        Color glowColor = Color.white * intensity;
-
-        itemMeshRenderer.GetPropertyBlock(itemMpb);
-
-        if (itemTexture != null)
+        if (!isAI && photonView.IsMine && firstPersonTweenAnimator != null)
         {
-            // 아이템이 있을 때 텍스쳐 적용 + 색상을 "하얀색(불투명)"으로 변경
-            itemMpb.SetTexture("_BaseMap", itemTexture);
-            itemMpb.SetColor("_BaseColor", Color.white);
+            firstPersonTweenAnimator.PlayUseItemAnimation(itemSlotTransform, currentItemClass, itemTexture, onComplete);
         }
-        // 최종 적용
-        itemMeshRenderer.SetPropertyBlock(itemMpb);
-
-        // 이전 연출로 인해 0이 된 스케일을 원래 크기(1)로 초기화
-        itemTransform.localScale = Vector3.one;
-        itemTransform.gameObject.SetActive(true);
-
-        // 아이템 위치 세팅
-        itemTransform.SetPositionAndRotation(itemSlotTransform.position, itemSlotTransform.rotation);
-
-        Vector3 axeOriginalPos = axeTransform.localPosition;
-
-        // 애니메이션 시퀀스
-        Sequence seq = Sequence.Create()
-            // 1. 화면 가운데로 날아가며 회전하기
-            .Group(Tween.LocalPosition(itemTransform, itemUsePoint.position, 0.5f, Ease.InOutQuad))
-            .Group(Tween.LocalRotation(itemTransform, itemUsePoint.rotation, 0.5f, Ease.InOutQuad))
-
-            // 도끼는 화면 아래로 스르륵 내려놓기
-            .Group(Tween.LocalPosition(axeTransform, axeOriginalPos + new Vector3(0, -0.5f, 0), 0.5f, Ease.InOutQuad))
-
-            // 2. 크기 강조 (1.5배로 커지며 등장)
-            .Chain(Tween.Scale(itemTransform, Vector3.one * 1.5f, 0.5f, Ease.OutBack))
-
-            // 3. 다시 크기 감소하며 사라짐 (기가 모이듯 쪼그라듦)
-            .Chain(Tween.Scale(itemTransform, Vector3.zero, 0.5f, Ease.InBack))
-
-            // 4. 모든 애니메이션이 끝난(크기가 0이 된) 순간 실행
-            .OnComplete(() =>
-            {
-                // 아이템이 완전히 사라지는 타이밍에 파티클 생성
-                VFXManager.Instance.PlayItemExplosion(itemTransform.position, currentItemClass);
-
-                // TODO: 사운드 재생
-
-                // 아이템 비활성화
-                itemTransform.gameObject.SetActive(false);
-
-                // 도끼 원래 위치로 복귀
-                Tween.LocalPosition(axeTransform, axeOriginalPos, 0.3f, Ease.OutQuad);
-
-                onComplete?.Invoke();
-            });
+        else
+        {
+            // AI이거나 타인의 화면이면 즉시 콜백을 처리하여 동기화
+            onComplete?.Invoke();
+        }
     }
 }

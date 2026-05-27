@@ -43,6 +43,7 @@ GameObject:
   - component: {fileID: 6308807651308012138}
   - component: {fileID: 3684488403759308143}
   - component: {fileID: 2969676031400761219}
+  - component: {fileID: 6477085434952101423}
   m_Layer: 9
   m_Name: FirstPersonModels (1)
   m_TagString: Untagged
@@ -75,7 +76,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 135906159029363785}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 65ed8e317a21ea540ba07b4c64ce344b, type: 2}
   m_CullingMode: 0
@@ -96,7 +97,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 135906159029363785}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a620486e679383440974ca68e22dd126, type: 3}
   m_Name: 
@@ -116,6 +117,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &6477085434952101423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 135906159029363785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a26780ceb2842b4a853d4d9dc66dce0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FirstPersonTweenAnimator
 --- !u!1 &436243295134031549
 GameObject:
   m_ObjectHideFlags: 0
@@ -6733,7 +6746,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
   animator: {fileID: 2492846899768299628}
-  firstPersonAnimator: {fileID: 3684488403759308143}
+  firstPersonTweenAnimator: {fileID: 6477085434952101423}
   hitAnimCount: 4
   avoidRepeat: 1
   axeSwayTransform: {fileID: 2188473881873425950}
@@ -6754,7 +6767,6 @@ MonoBehaviour:
   itemUsePoint:
     position: {x: 0, y: 0, z: 2}
     rotation: {x: 0, y: 0, z: 0, w: 0}
-  itemFocus: 1.5
   isAI: 0
 --- !u!114 &2716088925901640895
 MonoBehaviour:

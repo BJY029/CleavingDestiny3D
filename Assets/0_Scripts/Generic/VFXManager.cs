@@ -32,6 +32,7 @@ public class VFXManager : MonoSceneSingleton<VFXManager>
         vfxObject.transform.SetParent(this.transform);
 
         cachedItemPS = vfxObject.AddComponent<ParticleSystem>();
+        cachedItemPS.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
         var main = cachedItemPS.main;
         main.duration = 1.0f;
