@@ -13,6 +13,17 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     [SerializeField] private int hitAnimCount = 4; // hit 모션 개수
     [SerializeField] private bool avoidRepeat = true; // 동일한 모션 연속 재생 방지
 
+    [Header("Axe Sway Settings")]
+    [SerializeField] private Transform axeSwayTransform; // 도끼 트랜스폼
+    [SerializeField] float rotSwayMultiplier = 1.0f;
+    [SerializeField] float rotMaxSway = 15f;
+    [SerializeField] float rotSmoothStep = 4f;
+    [SerializeField] float posSwayMultiplier = 0.005f;
+    [SerializeField] float posMaxSway = 0.05f; // 너무 많이 벗어나지 않게 제한
+    [SerializeField] float posSmoothStep = 6f;
+    private Quaternion initialRotation;
+    private Vector3 initialPosition;
+
     [Header("Camera Shake Settings")]
     [SerializeField] Camera playerCamera; // 플레이어 카메라
     [SerializeField] private float shakeStrength = 0.5f;
@@ -70,8 +81,17 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
             itemTransform.gameObject.SetActive(false); // 아이템 트랜스폼 초기 비활성화
         }
 
-        firstPersonLayer = LayerMask.NameToLayer("FirstPersonItem"); // "FirstPerson" 레이어 인덱스 저장
-        axeOriginalLayer = axeTransform.gameObject.layer; // 도끼의 원래 레이어 저장
+        if (axeTransform != null)
+        {
+            firstPersonLayer = LayerMask.NameToLayer("FirstPersonItem"); // "FirstPerson" 레이어 인덱스 저장
+            axeOriginalLayer = axeTransform.gameObject.layer; // 도끼의 원래 레이어 저장
+        }
+
+        if (axeSwayTransform != null)
+        {
+            initialRotation = axeSwayTransform.localRotation; // 도끼의 초기 회전값 저장
+            initialPosition = axeSwayTransform.localPosition; // 도끼의 초기 위치값 저장
+        }
     }
 
     // 이동 상태 업데이트 (컨트롤러에서 매 프레임 호출)
@@ -86,6 +106,27 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         {
             firstPersonAnimator.SetBool(HashIsRun, moveZ > 0.7f);
         }
+    }
+
+    public void UpdateCamera(Vector2 lookDelta)
+    {
+        if (isAI || !photonView.IsMine) return;
+
+        float mouseX_Rot = Mathf.Clamp(lookDelta.x * rotSwayMultiplier, -rotMaxSway, rotMaxSway);
+        float mouseY_Rot = Mathf.Clamp(lookDelta.y * rotSwayMultiplier, -rotMaxSway, rotMaxSway);
+
+        Quaternion targetRotation = Quaternion.Euler(mouseY_Rot, -mouseX_Rot, 0f) * initialRotation;
+
+        float currentRotSmooth = lookDelta.magnitude > 0.1f ? rotSmoothStep * 1.5f : rotSmoothStep;
+        axeSwayTransform.localRotation = Quaternion.Slerp(axeSwayTransform.localRotation, targetRotation, currentRotSmooth * Time.deltaTime);
+
+        // 마우스를 움직인 반대 방향(-lookDelta)으로 도끼의 목표 위치를 잡습니다.
+        float mouseX_Pos = Mathf.Clamp(lookDelta.x * posSwayMultiplier, -posMaxSway, posMaxSway);
+        float mouseY_Pos = Mathf.Clamp(lookDelta.y * posSwayMultiplier, -posMaxSway, posMaxSway);
+
+        Vector3 targetPosition = new Vector3(-mouseX_Pos, -mouseY_Pos, 0f) + initialPosition;
+
+        axeSwayTransform.localPosition = Vector3.Lerp(axeSwayTransform.localPosition, targetPosition, posSmoothStep * Time.deltaTime);
     }
 
     // 타격 애니메이션 실행
@@ -212,6 +253,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         itemTransform.SetPositionAndRotation(itemSlotTransform.position, itemSlotTransform.rotation);
 
         Vector3 axeOriginalPos = axeTransform.localPosition;
+
         // 애니메이션 시퀀스
         Sequence seq = Sequence.Create()
             // 1. 화면 가운데로 날아가며 회전하기

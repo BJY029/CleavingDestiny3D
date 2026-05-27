@@ -366,6 +366,11 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         HandleMovement(Time.deltaTime);
         HandleGravity(Time.deltaTime);
 
+        if (photonView.IsMine)
+        {
+            animationController?.UpdateCamera(lookInput);
+        }
+
         //카메라 정면 방향으로 Ray 발사
         Ray ray = new Ray(cam.transform.position, cam.transform.forward);
         //디버그용 Ray 그리기

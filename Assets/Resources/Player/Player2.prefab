@@ -6736,6 +6736,13 @@ MonoBehaviour:
   firstPersonAnimator: {fileID: 3684488403759308143}
   hitAnimCount: 4
   avoidRepeat: 1
+  axeSwayTransform: {fileID: 2188473881873425950}
+  rotSwayMultiplier: 1
+  rotMaxSway: 15
+  rotSmoothStep: 4
+  posSwayMultiplier: 0.005
+  posMaxSway: 0.05
+  posSmoothStep: 6
   playerCamera: {fileID: 9200860596887206777}
   shakeStrength: 0.5
   shakeDuration: 0.4
@@ -6745,10 +6752,10 @@ MonoBehaviour:
   itemTransform: {fileID: 7894642158263019879}
   itemMeshRenderer: {fileID: 7503984451932019438}
   itemUsePoint:
-    position: {x: 0, y: 0, z: 3}
+    position: {x: 0, y: 0, z: 2}
     rotation: {x: 0, y: 0, z: 0, w: 0}
+  itemFocus: 1.5
   isAI: 0
-  hitEffectObject: {fileID: 633665852841498212}
 --- !u!114 &2716088925901640895
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7084,6 +7091,38 @@ Transform:
   m_Children:
   - {fileID: 8989494860096679469}
   m_Father: {fileID: 1781954270998793300}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6130279422744798962
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2188473881873425950}
+  m_Layer: 9
+  m_Name: AxeSwayPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2188473881873425950
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6130279422744798962}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3822924852715557765}
+  m_Father: {fileID: 1348381286530497080}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6172067423928491867
 GameObject:
@@ -7478,13 +7517,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7503117019581465015}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.223, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.22299999, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6702432483706156679}
-  m_Father: {fileID: 1348381286530497080}
+  m_Father: {fileID: 2188473881873425950}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8231978200050790791
 MeshFilter:
@@ -7626,7 +7665,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 3822924852715557765}
+  - {fileID: 2188473881873425950}
   m_Father: {fileID: 6308807651308012138}
   m_LocalEulerAnglesHint: {x: 52.551, y: 30.614, z: 24.037}
 --- !u!1 &7690704870886974430
@@ -8044,7 +8083,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
