@@ -21,10 +21,9 @@ public class LLMActionExecutor
                     List<string> offer = promptBuilder.Pick3(state.totalTurnCount, playerNum, state.roomSeed, ItemDB.Instance.GetItemsList(), state.roomSetting, state.playerSetting);
                     if (!offer.Contains(selectData.selectedItemId) && !string.IsNullOrEmpty(selectData.selectedItemId))
                     {
-                        Debug.LogWarning($"[환각 방어] P{playerNum}가 오퍼에 없는 아이템({selectData.selectedItemId})을 선택했습니다. 강제로 첫 번째 오퍼를 지급합니다.");
+                        Debug.LogWarning($"[환각 방어] P{playerNum}가 오퍼에 없는 아이템({selectData.selectedItemId})을 선택함. 아이템 선택 하지 않음");
 
-                        //패널티 혹은 기본값 적용: 그냥 오퍼에 나온 1번 아이템을 강제로 줘버립니다.
-                        selectData.selectedItemId = offer[0];
+                        selectData.selectedItemId = null;
                     }
 
                     if (!string.IsNullOrEmpty(selectData.selectedItemId))
