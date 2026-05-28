@@ -93,9 +93,19 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
             initialPosition = axeSwayTransform.localPosition; // 도끼의 초기 위치값 저장
         }
 
+        Transform cameraAnimationPivot = null;
+        if (playerCamera != null)
+        {
+            cameraAnimationPivot = playerCamera.transform.parent;
+            if (cameraAnimationPivot != null && !cameraAnimationPivot.name.Contains("Pivot"))
+            {
+                cameraAnimationPivot = transform.Find("CameraHolder/CameraAnimationPivot");
+            }
+        }
+
         if (firstPersonTweenAnimator != null)
         {
-            firstPersonTweenAnimator.Initialize(axeTransform, itemTransform, itemMeshRenderer, itemUsePoint, itemMpb);
+            firstPersonTweenAnimator.Initialize(axeTransform, itemTransform, itemMeshRenderer, itemUsePoint, itemMpb, cameraAnimationPivot);
         }
     }
 

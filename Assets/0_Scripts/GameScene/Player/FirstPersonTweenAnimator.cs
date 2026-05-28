@@ -12,6 +12,7 @@ public class FirstPersonTweenAnimator : MonoBehaviour
     private MeshRenderer itemMeshRenderer;
     private Pose itemUsePoint;
     private MaterialPropertyBlock itemMpb;
+    private Transform cameraAnimationPivot; // 카메라 회전 연출용 피벗
 
     // 기본 위치/회전 상태 저장용
     private Vector3 axeDefaultPos;
@@ -25,16 +26,14 @@ public class FirstPersonTweenAnimator : MonoBehaviour
     private bool isPerformingAction = false;
     private bool isInitialized = false;
 
-    /// <summary>
-    /// PlayerAnimationController에서 에디터 상에 이미 등록된 변수들을 공유받아 초기화합니다.
-    /// </summary>
-    public void Initialize(Transform axe, Transform item, MeshRenderer itemMesh, Pose usePoint, MaterialPropertyBlock mpb)
+    public void Initialize(Transform axe, Transform item, MeshRenderer itemMesh, Pose usePoint, MaterialPropertyBlock mpb, Transform cameraPivot)
     {
         axeTransform = axe;
         itemTransform = item;
         itemMeshRenderer = itemMesh;
         itemUsePoint = usePoint;
         itemMpb = mpb;
+        cameraAnimationPivot = cameraPivot;
 
         if (axeTransform != null)
         {
@@ -63,7 +62,7 @@ public class FirstPersonTweenAnimator : MonoBehaviour
     }
 
     /// <summary>
-    /// 절차적 프리미엄 Weapon Bobbing 재생 (Idle, Walk, Run)
+    /// Weapon Bobbing 재생 (Idle, Walk, Run)
     /// </summary>
     private void PlayBobbing()
     {
@@ -71,8 +70,6 @@ public class FirstPersonTweenAnimator : MonoBehaviour
         if (bobbingSequence.isAlive) bobbingSequence.Stop();
         if (isPerformingAction) return;
 
-        // [끊김 해결] 상태 전환 시점에만 단 한 번 즉시 기본값으로 위치를 세팅하여 
-        // 무한 루프 내에서 불필요하게 콜백 스냅(Set)이 중복 호출되며 끊기는 현상을 방지합니다.
         axeTransform.SetLocalPositionAndRotation(axeDefaultPos, axeDefaultRot);
 
         bobbingSequence = Sequence.Create(-1);
@@ -83,17 +80,11 @@ public class FirstPersonTweenAnimator : MonoBehaviour
                 // ==========================================
                 // [Idle Bobbing - 숨쉬기 & 미세 좌우 흔들림]
                 // ==========================================
-                // [완벽한 대칭 사인 루프 완성]
-                // Y축 오실레이션이 0 -> +최대(1.2s) -> -최대(2.4s) -> 0(1.2s)으로 매끄럽게 흐르며 
-                // 무한 반복 시 시작점과 끝점이 완벽히 일치하여 끊김이 완전히 사라집니다.
                 bobbingSequence
-                    // 1. 들숨 연출 (+최대)
                     .Group(Tween.LocalPosition(axeTransform, axeDefaultPos + new Vector3(0.004f, 0.008f, 0f), 1.2f, Ease.InOutSine))
                     .Group(Tween.LocalRotation(axeTransform, axeDefaultRot * Quaternion.Euler(0.3f, 0.3f, 0.2f), 1.2f, Ease.InOutSine))
-                    // 2. 날숨 연출 (-최대)
                     .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos + new Vector3(-0.004f, -0.008f, 0f), 2.4f, Ease.InOutSine))
                     .Group(Tween.LocalRotation(axeTransform, axeDefaultRot * Quaternion.Euler(-0.3f, -0.3f, -0.2f), 2.4f, Ease.InOutSine))
-                    // 3. 기본 상태로 부드러운 복귀 (0)
                     .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos, 1.2f, Ease.InOutSine))
                     .Group(Tween.LocalRotation(axeTransform, axeDefaultRot, 1.2f, Ease.InOutSine));
                 break;
@@ -105,45 +96,29 @@ public class FirstPersonTweenAnimator : MonoBehaviour
                 float walkDuration = 0.38f;
 
                 bobbingSequence
-                    // 1. 첫 번째 걸음 (왼발)
                     .Group(Tween.LocalPosition(axeTransform, axeDefaultPos + new Vector3(-0.008f, -0.005f, 0.002f), walkDuration, Ease.InOutSine))
                     .Group(Tween.LocalRotation(axeTransform, axeDefaultRot * Quaternion.Euler(0.6f, -0.8f, -1f), walkDuration, Ease.InOutSine))
-                    
-                    // 중간 복원
                     .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos + new Vector3(-0.004f, 0.006f, 0f), walkDuration, Ease.InOutSine))
                     .Group(Tween.LocalRotation(axeTransform, axeDefaultRot * Quaternion.Euler(0.2f, -0.2f, 0f), walkDuration, Ease.InOutSine))
-
-                    // 2. 두 번째 걸음 (오른발)
                     .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos + new Vector3(0.008f, -0.005f, 0.002f), walkDuration, Ease.InOutSine))
                     .Group(Tween.LocalRotation(axeTransform, axeDefaultRot * Quaternion.Euler(0.6f, 0.8f, 1f), walkDuration, Ease.InOutSine))
-
-                    // 최종 복원 (시작점으로 완벽히 수렴)
                     .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos, walkDuration, Ease.InOutSine))
                     .Group(Tween.LocalRotation(axeTransform, axeDefaultRot, walkDuration, Ease.InOutSine));
                 break;
 
             case MovementState.Run:
                 // ==========================================
-                // [Run Bobbing - 고품질 무한대 루프 흔들림]
+                // [Run Bobbing - 달리기]
                 // ==========================================
-                // [달리기 연출 범위/반동 대폭 강화]
-                // Y축 및 X축 진폭을 약 1.6배 이상 키워 역동감과 무게감을 강화했습니다.
                 float runDuration = 0.25f;
 
                 bobbingSequence
-                    // 1. 첫 번째 걸음 (왼발 파워 디딤)
                     .Group(Tween.LocalPosition(axeTransform, axeDefaultPos + new Vector3(-0.025f, -0.016f, 0.01f), runDuration, Ease.InOutQuad))
                     .Group(Tween.LocalRotation(axeTransform, axeDefaultRot * Quaternion.Euler(2.0f, -2.5f, -4f), runDuration, Ease.InOutQuad))
-                    
-                    // 중간 반동 및 탄력 복원
                     .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos + new Vector3(-0.012f, 0.018f, 0f), runDuration, Ease.InOutQuad))
                     .Group(Tween.LocalRotation(axeTransform, axeDefaultRot * Quaternion.Euler(0.8f, -0.8f, 0f), runDuration, Ease.InOutQuad))
-                    
-                    // 2. 두 번째 걸음 (오른발 파워 디딤)
                     .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos + new Vector3(0.025f, -0.016f, 0.01f), runDuration, Ease.InOutQuad))
                     .Group(Tween.LocalRotation(axeTransform, axeDefaultRot * Quaternion.Euler(2.0f, 2.5f, 4f), runDuration, Ease.InOutQuad))
-                    
-                    // 최종 복원 (시작점으로 완벽히 수렴)
                     .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos, runDuration, Ease.InOutQuad))
                     .Group(Tween.LocalRotation(axeTransform, axeDefaultRot, runDuration, Ease.InOutQuad));
                 break;
@@ -151,7 +126,71 @@ public class FirstPersonTweenAnimator : MonoBehaviour
     }
 
     /// <summary>
-    /// [타격 애니메이션] 도끼를 강력하게 휘두르는 시퀀스 실행
+    /// [타격 1단계: 준비 페이즈] 도끼를 오른쪽 어깨 위로 깊게 치켜들며 가로 날로 조준 상태를 형성합니다.
+    /// </summary>
+    public void PlayReadyAnimation()
+    {
+        if (!isInitialized) return;
+        isPerformingAction = true;
+
+        if (bobbingSequence.isAlive) bobbingSequence.Stop();
+        if (actionSequence.isAlive) actionSequence.Stop();
+
+        Vector3 readyPos = new Vector3(0.65f, 0.95f, 0.35f);
+        Quaternion readyRot = Quaternion.Euler(-15f, 75f, -80f);
+        Quaternion camReadyRot = Quaternion.Euler(0f, 60f, 0f);
+
+        actionSequence = Sequence.Create()
+            .Group(Tween.LocalRotation(axeTransform, readyRot, 0.4f, Ease.OutQuad))
+            .Group(Tween.LocalPosition(axeTransform, readyPos, 0.4f, Ease.OutQuad))
+            .Group(Tween.LocalRotation(cameraAnimationPivot, camReadyRot, 0.4f, Ease.OutQuad));
+    }
+
+    /// <summary>
+    /// [타격 2&3단계: 타격 및 복귀 페이즈] 플레이어 몸체 정면(X = 0, Z = +0.7m)에 위치한 나무를 향해 날카롭게 수평 횡베기를 날립니다.
+    /// </summary>
+    public void PlayStrikeAnimation(Action onImpactEvent, Action onCompleteCallback)
+    {
+        if (!isInitialized) return;
+        isPerformingAction = true;
+
+        if (actionSequence.isAlive) actionSequence.Stop();
+
+        // Y좌표 1.0f로 상향 조절 및 회전 각도를 기획에 맞춘 절대각으로 대입
+        Vector3 strikePos = new Vector3(-0.1f, 1.0f, 0.7f);
+        Quaternion strikeRot = Quaternion.Euler(15.54f, -85.617f, -70.569f);
+
+        actionSequence = Sequence.Create()
+            // ----------------------------------------------------
+            // [2단계] 타격 페이즈 (Strike) - 정면 수평 횡베기 강타 (0.13초)
+            // ----------------------------------------------------
+            .Group(Tween.LocalPosition(axeTransform, strikePos, 0.13f, Ease.InQuad))
+            .Group(Tween.LocalRotation(axeTransform, strikeRot, 0.13f, Ease.InQuad))
+            .Group(Tween.LocalRotation(cameraAnimationPivot, Quaternion.identity, 0.13f, Ease.InQuad))
+
+            // 타격 시점 싱크 콜백 (이펙트, 화면 흔들림, 사운드 가동)
+            .Group(Sequence.Create()
+                .ChainDelay(0.10f)
+                .ChainCallback(() => onImpactEvent?.Invoke())
+            )
+
+            // ----------------------------------------------------
+            // [3단계] 복귀 페이즈 (Recovery) - 타격 후 딜레이 및 복구
+            // ----------------------------------------------------
+            .Chain(Tween.Delay(0.2f))
+            .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos, 0.5f, Ease.OutQuad))
+            .Group(Tween.LocalRotation(axeTransform, axeDefaultRot, 0.5f, Ease.OutQuad))
+            .Group(Tween.LocalRotation(cameraAnimationPivot, Quaternion.identity, 0.5f, Ease.OutQuad))
+            .OnComplete(() =>
+            {
+                isPerformingAction = false;
+                onCompleteCallback?.Invoke();
+                PlayBobbing();
+            });
+    }
+
+    /// <summary>
+    /// 1인칭 Hit 애니메이션 전체를 순차 재생합니다.
     /// </summary>
     public void PlayHitAnimation(Action onImpactEvent, Action onCompleteCallback)
     {
@@ -161,30 +200,14 @@ public class FirstPersonTweenAnimator : MonoBehaviour
         if (bobbingSequence.isAlive) bobbingSequence.Stop();
         if (actionSequence.isAlive) actionSequence.Stop();
 
-        float speedMultiplier = 0.4f;
+        PlayReadyAnimation();
 
-        actionSequence = Sequence.Create()
-            .Group(Tween.LocalRotation(axeTransform, axeDefaultRot * Quaternion.Euler(new Vector3(-55f, -55f, -85f)), 1.167f * speedMultiplier, Ease.OutQuad))
-            .Group(Tween.LocalPosition(axeTransform, axeDefaultPos + new Vector3(0f, 0.037f, 0f), 1.167f * speedMultiplier, Ease.OutQuad))
-            .Chain(Tween.LocalRotation(axeTransform, axeDefaultRot * Quaternion.Euler(new Vector3(-50f, -50f, -80f)), 0.333f * speedMultiplier, Ease.Linear))
-            .Group(Tween.LocalPosition(axeTransform, axeDefaultPos + new Vector3(0f, 0.034f, 0f), 0.333f * speedMultiplier, Ease.Linear))
-            .Chain(Tween.LocalPosition(axeTransform, new Vector3(0.192f, 1.004f, 0.588f), 0.283f * speedMultiplier, Ease.InQuad))
-            .Group(Tween.LocalRotation(axeTransform, Quaternion.Euler(new Vector3(-1.232f, -104.38f, -81.186f)), 0.283f * speedMultiplier, Ease.InQuad))
 
-            .Group(Sequence.Create()
-                .ChainDelay(0.2f * speedMultiplier)
-                .ChainCallback(() => onImpactEvent?.Invoke())
-            )
-
-            .Chain(Tween.Delay(0.484f * speedMultiplier))
-            .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos, 0.933f * speedMultiplier, Ease.OutQuad))
-            .Group(Tween.LocalRotation(axeTransform, axeDefaultRot, 0.933f * speedMultiplier, Ease.OutQuad))
-            .OnComplete(() =>
-            {
-                isPerformingAction = false;
-                onCompleteCallback?.Invoke();
-                PlayBobbing();
-            });
+        // TODO: 플레이어의 상호작용에 따라 2페이즈 진입 시점을 정하도록 수정
+        Sequence.Create()
+            .ChainDelay(0.4f) // 준비 동작 완수까지 대기
+            .ChainDelay(0.6f) // 준비 자세에서 타격까지의 지연 (풀타임)
+            .ChainCallback(() => PlayStrikeAnimation(onImpactEvent, onCompleteCallback));
     }
 
     /// <summary>
