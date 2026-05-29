@@ -70,7 +70,13 @@ public class FirstPersonTweenAnimator : MonoBehaviour
         if (bobbingSequence.isAlive) bobbingSequence.Stop();
         if (isPerformingAction) return;
 
-        axeTransform.SetLocalPositionAndRotation(axeDefaultPos, axeDefaultRot);
+        // axe의 위치가 이상한 곳에 있을 경우 기본 위치로 Tween
+        if (Vector3.Distance(axeTransform.localPosition, axeDefaultPos) > 0.01f || Quaternion.Angle(axeTransform.localRotation, axeDefaultRot) > 1f)
+        {
+            Tween.LocalPosition(axeTransform, axeDefaultPos, 0.1f, Ease.OutQuad);
+            Tween.LocalRotation(axeTransform, axeDefaultRot, 0.1f, Ease.OutQuad);
+        }
+        // axeTransform.SetLocalPositionAndRotation(axeDefaultPos, axeDefaultRot);
 
         bobbingSequence = Sequence.Create(-1);
 
@@ -202,8 +208,6 @@ public class FirstPersonTweenAnimator : MonoBehaviour
 
         PlayReadyAnimation();
 
-
-        // TODO: 플레이어의 상호작용에 따라 2페이즈 진입 시점을 정하도록 수정
         Sequence.Create()
             .ChainDelay(0.4f) // 준비 동작 완수까지 대기
             .ChainDelay(0.6f) // 준비 자세에서 타격까지의 지연 (풀타임)

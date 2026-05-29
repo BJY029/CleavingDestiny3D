@@ -156,13 +156,13 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         axeSwayTransform.localPosition = Vector3.Lerp(axeSwayTransform.localPosition, targetPosition, posSmoothStep * Time.deltaTime);
     }
 
-    // 타격 애니메이션 실행
+    // Hit 애니메이션 실행
     public void PlayHitAnimation()
     {
         // 도끼 휘두르기
         if (!isAI && photonView.IsMine)
         {
-            axeTransform.gameObject.layer = firstPersonLayer; // 도끼를 1인칭 레이어로 변경하여 항상 보이도록 설정
+            axeTransform.gameObject.layer = firstPersonLayer; // 도끼를 1인칭 레이어로 변경하여 잘 보이도록 설정
 
             if (firstPersonTweenAnimator != null)
             {
@@ -170,13 +170,49 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
                     onImpactEvent: FirstPersonAxeHit,
                     onCompleteCallback: () =>
                     {
-                        axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어를 기본으로 되돌림
+                        axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 기본으로 되돌림
                     }
                 );
             }
         }
 
-        // 전체(타인 화면 포함): 애니메이터 동기화
+        // 전체(타인 화면 포함): 애니메이션 트리거
+        int idx = GetRandomIndex();
+        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, idx);
+    }
+
+    // 1인칭 준비 자세 애니메이션 실행 (F Key Down 시점에 호출)
+    public void PlayReadyAnimation()
+    {
+        if (!isAI && photonView.IsMine)
+        {
+            axeTransform.gameObject.layer = firstPersonLayer;
+
+            if (firstPersonTweenAnimator != null)
+            {
+                firstPersonTweenAnimator.PlayReadyAnimation();
+            }
+        }
+    }
+
+    // 1인칭 타격 애니메이션 및 3인칭 동기화 RPC 작동 (F Key Up 시점에 호출)
+    public void PlayStrikeAnimation()
+    {
+        if (!isAI && photonView.IsMine)
+        {
+            if (firstPersonTweenAnimator != null)
+            {
+                firstPersonTweenAnimator.PlayStrikeAnimation(
+                    onImpactEvent: FirstPersonAxeHit,
+                    onCompleteCallback: () =>
+                    {
+                        axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 복원
+                    }
+                );
+            }
+        }
+
+        // 전체(타인 화면 포함): 애니메이션 트리거
         int idx = GetRandomIndex();
         photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, idx);
     }
