@@ -195,6 +195,19 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         }
     }
 
+    // 1인칭 준비 자세 애니메이션 취소 (취소 키 입력 시 호출)
+    public void CancelReadyAnimation()
+    {
+        if (!isAI && photonView.IsMine)
+        {
+            if (firstPersonTweenAnimator != null)
+            {
+                firstPersonTweenAnimator.CancelReadyAnimation();
+            }
+            axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 복원
+        }
+    }
+
     // 1인칭 타격 애니메이션 및 3인칭 동기화 RPC 작동 (F Key Up 시점에 호출)
     public void PlayStrikeAnimation()
     {

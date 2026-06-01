@@ -153,7 +153,7 @@ public class FirstPersonTweenAnimator : MonoBehaviour
     }
 
     /// <summary>
-    /// [타격 2&3단계: 타격 및 복귀 페이즈] 플레이어 몸체 정면(X = 0, Z = +0.7m)에 위치한 나무를 향해 날카롭게 수평 횡베기를 날립니다.
+    /// [타격 2&3단계: 타격 및 복귀 페이즈] 도끼를 뒤로 더 당긴 후 대기했다가 내리친 뒤 좀 더 대기하는 식으로 총 2.0초를 맞춥니다.
     /// </summary>
     public void PlayStrikeAnimation(Action onImpactEvent, Action onCompleteCallback)
     {
@@ -162,28 +162,49 @@ public class FirstPersonTweenAnimator : MonoBehaviour
 
         if (actionSequence.isAlive) actionSequence.Stop();
 
-        // Y좌표 1.0f로 상향 조절 및 회전 각도를 기획에 맞춘 절대각으로 대입
+        // 1단계(준비) 상태에서 2단계 시작 시 뒤로 더 당길 위치 및 회전 설정
+        Vector3 pullBackPos = new Vector3(0.8f, 1.0f, 0.2f);
+        Quaternion pullBackRot = Quaternion.Euler(-25f, 85f, -95f);
+        Quaternion camPullBackRot = Quaternion.Euler(0f, 70f, 0f);
+
+        // 최종 타격 위치 및 회전 설정
         Vector3 strikePos = new Vector3(-0.1f, 1.0f, 0.7f);
         Quaternion strikeRot = Quaternion.Euler(15.54f, -85.617f, -70.569f);
 
         actionSequence = Sequence.Create()
             // ----------------------------------------------------
-            // [2단계] 타격 페이즈 (Strike) - 정면 수평 횡베기 강타 (0.13초)
+            // [A] 추가 당기기 페이즈 - 도끼를 뒤로 더 힘껏 당김 (0.3초)
             // ----------------------------------------------------
-            .Group(Tween.LocalPosition(axeTransform, strikePos, 0.13f, Ease.InQuad))
-            .Group(Tween.LocalRotation(axeTransform, strikeRot, 0.13f, Ease.InQuad))
-            .Group(Tween.LocalRotation(cameraAnimationPivot, Quaternion.identity, 0.13f, Ease.InQuad))
+            .Group(Tween.LocalPosition(axeTransform, pullBackPos, 0.3f, Ease.OutQuad))
+            .Group(Tween.LocalRotation(axeTransform, pullBackRot, 0.3f, Ease.OutQuad))
+            .Group(Tween.LocalRotation(cameraAnimationPivot, camPullBackRot, 0.3f, Ease.OutQuad))
 
-            // 타격 시점 싱크 콜백 (이펙트, 화면 흔들림, 사운드 가동)
+            // ----------------------------------------------------
+            // [B] 힘 축적 대기 페이즈 - 당긴 상태에서 일시 정지/대기 (0.3초)
+            // ----------------------------------------------------
+            .Chain(Tween.Delay(0.3f))
+
+            // ----------------------------------------------------
+            // [C] 타격 페이즈 (Strike) - 정면 수평 횡베기 강타 (0.15초)
+            // ----------------------------------------------------
+            .Chain(Tween.LocalPosition(axeTransform, strikePos, 0.15f, Ease.InQuad))
+            .Group(Tween.LocalRotation(axeTransform, strikeRot, 0.15f, Ease.InQuad))
+            .Group(Tween.LocalRotation(cameraAnimationPivot, Quaternion.identity, 0.15f, Ease.InQuad))
+
+            // 타격 시점 싱크 콜백 (이펙트, 화면 흔들림, 사운드 가동 - 타격 동작 0.15초 중 0.12초 시점에 동작하도록 조정)
             .Group(Sequence.Create()
-                .ChainDelay(0.10f)
+                .ChainDelay(0.12f)
                 .ChainCallback(() => onImpactEvent?.Invoke())
             )
 
             // ----------------------------------------------------
-            // [3단계] 복귀 페이즈 (Recovery) - 타격 후 딜레이 및 복구
+            // [D] 타격 후 대기 페이즈 - 내리친 지점에서 힘의 흔적을 남기며 더 대기 (0.75초)
             // ----------------------------------------------------
-            .Chain(Tween.Delay(0.2f))
+            .Chain(Tween.Delay(0.75f))
+
+            // ----------------------------------------------------
+            // [E] 복귀 페이즈 (Recovery) - 타격 후 복구 및 기본 자세 복원 (0.5초)
+            // ----------------------------------------------------
             .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos, 0.5f, Ease.OutQuad))
             .Group(Tween.LocalRotation(axeTransform, axeDefaultRot, 0.5f, Ease.OutQuad))
             .Group(Tween.LocalRotation(cameraAnimationPivot, Quaternion.identity, 0.5f, Ease.OutQuad))
@@ -264,6 +285,27 @@ public class FirstPersonTweenAnimator : MonoBehaviour
                         onCompleteCallback?.Invoke();
                         PlayBobbing();
                     });
+            });
+    }
+
+    /// <summary>
+    /// [준비 자세 취소] 준비 동작 또는 대기 상태를 취소하고 도끼를 기본 위치로 부드럽게 되돌립니다.
+    /// </summary>
+    public void CancelReadyAnimation()
+    {
+        if (!isInitialized) return;
+        isPerformingAction = false;
+
+        if (bobbingSequence.isAlive) bobbingSequence.Stop();
+        if (actionSequence.isAlive) actionSequence.Stop();
+
+        actionSequence = Sequence.Create()
+            .Group(Tween.LocalPosition(axeTransform, axeDefaultPos, 0.25f, Ease.OutQuad))
+            .Group(Tween.LocalRotation(axeTransform, axeDefaultRot, 0.25f, Ease.OutQuad))
+            .Group(Tween.LocalRotation(cameraAnimationPivot, Quaternion.identity, 0.25f, Ease.OutQuad))
+            .OnComplete(() =>
+            {
+                PlayBobbing();
             });
     }
 

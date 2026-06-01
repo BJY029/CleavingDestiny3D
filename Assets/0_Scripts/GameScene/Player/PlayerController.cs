@@ -303,6 +303,15 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             return;
         }
 
+        // 나무 베기 준비 상태 중 F 이외의 키 입력 시 취소 처리
+        if (isPreparingTreeCut)
+        {
+            if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame && !Keyboard.current.fKey.wasPressedThisFrame)
+            {
+                CancelTreeCut();
+            }
+        }
+
         if (TimeManager.instance.ForceToHit)
         {
             SetInputLocked(true);
@@ -431,13 +440,17 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         }
     }
 
-    // F 키를 눌렀을 때 (Press Down) - 나무 베기 준비 상태 전환 및 에임 보정 스냅
+    // F 키를 눌렀을 때 (Press Down) - 나무 베기 준비 상태 전환 / 이미 준비 상태면 타격 실행
     private void HandleInteractFKeyDown()
     {
         if (!photonView.IsMine) return;
         if (!GameHelper.IsMyTurn()) return;
 
-        if (isLookingAtTree && !WhileAnimation)
+        if (isPreparingTreeCut)
+        {
+            TriggerTreeStrike();
+        }
+        else if (isLookingAtTree && !WhileAnimation)
         {
             isPreparingTreeCut = true;
             WhileAnimation = true; // 차징 중 움직임 잠금
@@ -462,28 +475,40 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         }
     }
 
-    // F 키를 뗐을 때 (Release Up) - 타격 대미지 판정 및 베기 애니메이션 작동
+    // F 키를 뗐을 때 (Release Up) - 토글형으로 변경으로 인해 아무 작업도 수행하지 않음
     private void HandleInteractFKeyUp()
     {
-        if (!photonView.IsMine) return;
-        if (!GameHelper.IsMyTurn()) return;
+        // 토글형 시스템(KeyDown으로 준비, 다시 KeyDown으로 타격)이므로 KeyUp 이벤트에서는 처리하지 않습니다.
+    }
 
-        if (isPreparingTreeCut)
-        {
-            isPreparingTreeCut = false;
+    // 타격 실행 처리 메서드 (2번째 F KeyDown 입력 시 호출)
+    private void TriggerTreeStrike()
+    {
+        isPreparingTreeCut = false;
 
-            damageRatio = PlayerCanvasController.Instance.SelectNow();
-            TimeManager.instance.AbortTurnTimer();
-            ItemOfferCanvasController.instance.Close();
+        damageRatio = PlayerCanvasController.Instance.SelectNow();
+        TimeManager.instance.AbortTurnTimer();
+        ItemOfferCanvasController.instance.Close();
 
-            int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow);
-            int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
-            damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
+        int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow);
+        int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
+        damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
 
-            DevLog.Log($"<color=green>[HIT - HoldRelease]</color> Player {PlayerActNum} KeyUp with damageRatio: {damageRatio}, calculated damage: {damage}", this);
+        DevLog.Log($"<color=green>[HIT - DoublePressStrike]</color> Player {PlayerActNum} KeyDown Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
 
-            animationController?.PlayStrikeAnimation();
-        }
+        animationController?.PlayStrikeAnimation();
+    }
+
+    // 나무 베기 준비 상태 취소 메서드
+    private void CancelTreeCut()
+    {
+        isPreparingTreeCut = false;
+        WhileAnimation = false;
+
+        PlayerCanvasController.Instance.CloseGauge();
+        PlayerCanvasController.Instance.SetHitTextActive(); // 나무 근처에 있으므로 텍스트 복구
+
+        animationController?.CancelReadyAnimation();
     }
 
     //스페이스 바가 눌렸을 때 실행될 함수
