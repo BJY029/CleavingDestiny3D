@@ -1,4 +1,4 @@
-using Photon.Pun;
+﻿using Photon.Pun;
 using Potan.CoreUtils;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -610,6 +610,8 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             TurnManager.Instance.RequestChangeTurn(damage, this);
             damage = -1;
             WhileAnimation = false;
+
+            PlayerCanvasController.Instance.CloseGauge();
         }
     }
 

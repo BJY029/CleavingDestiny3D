@@ -5,7 +5,8 @@ UI_Load_MatchSuccess,매칭 성공! 게임에 입장합니다.,Matching success!
 UI_Load_Loading,로딩 중,Loading Scene
 UI_BranchDesc_1,나뭇가지 하나를 고르세요,Pick a stick
 UI_BranchDesc_2,나뭇가지 길이에 따라 게임 진행 순서가 결정됩니다.,The player with the longest stick goes first
-UI_PlayerHIT,'F'를 꾹 눌러 나무 베기,Hold 'F' to Cut Tree
+UI_PlayerHIT,'F'를 눌러 나무 베기,Press 'F' to Cut Tree
+UI_PlayerHIT2,'F'를 눌러 나무 베기\n다른 키를 눌러 공격 취소,Press 'F' to Cut Tree\nPress other key to cancel attack
 UI_PlayerSpace,'Spacebar'로 상호작용,'Spacebar' to interact
 UI_PlayerNotHIT,내 차례가 아닙니다.,Not my Turn.
 UI_ItemNotify_Title,아이템이 사용되었습니다!,Item has been used!
