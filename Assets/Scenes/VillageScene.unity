@@ -2329,7 +2329,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.VillageBuilding
   buildingType: 4
   cameraFocusPoint: {fileID: 1980063388}
-  villageBuilldingUIPrefab: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
+  villageBuilldingUIPrefab: {fileID: 478455841805853409, guid: 10f259e24343f814582476f903fca66a, type: 3}
   isScaleOnPointer: 1
 --- !u!61 &970171184
 BoxCollider2D:
