@@ -1,4 +1,4 @@
-using Photon.Pun;
+﻿using Photon.Pun;
 using Potan.CoreUtils;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -62,9 +62,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private Vector2 lookInput;
     private bool sprintPressed;
 
-    [SerializeField]
-    private PlayerInput playerInput;
-    private InputAction moveAction, lookAction, sprintAction;
+    private bool isPreparingTreeCut = false; // 나무 베기 준비 상태
 
     //움직임 관련 코드 내부에서 사용하는 파라미터
     private CharacterController characterController;
@@ -98,7 +96,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     //마을 업그레이드 중인지 여부를 저장할 플래그
     private bool UpgradePhase;
-    private bool WhileHittingMotion;
+    private bool WhileAnimation;
     private float damageRatio;
     private int damage;
 
@@ -127,9 +125,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             DevLog.LogError($"PlayerController: CharacterController not found", this);
         }
 
-        //playerInput 가져오기
-        if (playerInput == null) playerInput = GetComponent<PlayerInput>();
-
         //groundCheckRadius 안전 처리
         groundCheckRadius = 0.2f;
         if (groundCheck != null)
@@ -141,14 +136,9 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         // 만약 내 플레이어가 아니라면
         if (!photonView.IsMine)
         {
-            if (playerInput != null)
-            {
-                //잘못된 페어링을 해제하고
-                playerInput.enabled = false;
-            }
             //해당 플레이어의 카메라를 끈다.
             if (_mainCamera != null) _mainCamera.SetActive(false); // 원격 카메라 끄기
-            enabled = true; // Update에서 조기 return 할 거라 스크립트는 켬
+            enabled = true; // Update에서 조기 return 될 거라 스크립트는 켬
 
             if (firstPersonObjects != null)
             {
@@ -164,24 +154,10 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         firstPersonObjects.SetActive(true); //1인칭 오브젝트 켜기
 
         cam = _mainCamera.GetComponent<Camera>();
-        //로컬 인스턴스, 즉 자기 자신이라면 장치 탈취 방지
-        if (playerInput != null)
-        {
-            playerInput.neverAutoSwitchControlSchemes = true;
-        }
-
-        //로컬에서만 액션 바인딩
-        if (playerInput != null && playerInput.actions != null)
-        {
-            var actions = playerInput.actions;
-            moveAction = actions.FindAction("Move");
-            lookAction = actions.FindAction("Look");
-            sprintAction = actions.FindAction("Sprint");
-        }
 
         isLookingAtTree = false;
         UpgradePhase = false;
-        WhileHittingMotion = false;
+        WhileAnimation = false;
         RayMultiplyer = 1;
     }
 
@@ -209,27 +185,51 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private void OnEnable()
     {
         if (!photonView.IsMine) return;
-        moveAction?.Enable();
-        lookAction?.Enable();
-        sprintAction?.Enable();
+        TrySubscribeEvents();
+    }
 
-        //F 키가 눌리는 이벤트에 해당 함수 삽입
-        KeyInteractManager.instance.OnInteractFKeyDown += HandleInteractFKey;
-        KeyInteractManager.instance.OnInteractSpaceKeyDown += HandleInteractSpaceKey;
+    private void Start()
+    {
+        if (!photonView.IsMine) return;
+        TrySubscribeEvents();
+    }
+
+    private void TrySubscribeEvents()
+    {
+        if (isSubscribed) return;
+        if (KeyInteractManager.Instance == null) return;
+
+        KeyInteractManager.Instance.OnInteractKeyDown += HandleInteractFKeyDown;
+        KeyInteractManager.Instance.OnInteractKeyUp += HandleInteractFKeyUp;
+        KeyInteractManager.Instance.OnInteractSpaceKeyDown += HandleInteractSpaceKey;
+
+        KeyInteractManager.Instance.OnMoveInput += HandleMoveInputEvent;
+        KeyInteractManager.Instance.OnMousePositionInput += HandleLookInputEvent;
+        KeyInteractManager.Instance.OnRunInput += HandleRunInputEvent;
+
+        isSubscribed = true;
     }
 
     private void OnDisable()
     {
         if (!photonView.IsMine) return;
-        moveAction?.Disable();
-        lookAction?.Disable();
-        sprintAction?.Disable();
 
-        KeyInteractManager.instance.OnInteractFKeyDown -= HandleInteractFKey;
-        KeyInteractManager.instance.OnInteractSpaceKeyDown -= HandleInteractSpaceKey;
+        if (isSubscribed && KeyInteractManager.Instance != null)
+        {
+            KeyInteractManager.Instance.OnInteractKeyDown -= HandleInteractFKeyDown;
+            KeyInteractManager.Instance.OnInteractKeyUp -= HandleInteractFKeyUp;
+            KeyInteractManager.Instance.OnInteractSpaceKeyDown -= HandleInteractSpaceKey;
+
+            KeyInteractManager.Instance.OnMoveInput -= HandleMoveInputEvent;
+            KeyInteractManager.Instance.OnMousePositionInput -= HandleLookInputEvent;
+            KeyInteractManager.Instance.OnRunInput -= HandleRunInputEvent;
+
+            isSubscribed = false;
+        }
     }
 
-    private bool inputLocked;
+    private bool inputLocked = true;
+    private bool isSubscribed = false;
 
     private void ResetInputState()
     {
@@ -252,14 +252,14 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     public void SetInputLocked(bool locked)
     {
+        if (inputLocked == locked) return; // 상태 변화가 없다면 바이패스 (비동기 입력 씹힘 방지)
+
         inputLocked = locked;
 
         if (locked)
         {
-            //입력 액션 꺼서 “누르고 있던 키” 이벤트가 더 이상 들어오지 않게
-            moveAction?.Disable();
-            lookAction?.Disable();
-            sprintAction?.Disable();
+            // 중앙 매니저를 통해 조작 입력 잠금
+            KeyInteractManager.Instance?.SetPlayerActionsEnabled(false);
 
             ResetInputState();
             ResetMotionState();
@@ -269,11 +269,10 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         }
         else
         {
-            moveAction?.Enable();
-            lookAction?.Enable();
-            sprintAction?.Enable();
+            // 중앙 매니저의 인풋 입력 재활성화
+            KeyInteractManager.Instance?.SetPlayerActionsEnabled(true);
 
-            ResetInputState(); // 재개 시에도 0으로 시작(키 눌림은 다음 프레임 ReadInput으로 다시 잡힘)
+            ResetInputState(); // 조개 풀릴 때 0으로 시작
         }
     }
 
@@ -304,13 +303,22 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             return;
         }
 
+        // 나무 베기 준비 상태 중 F 이외의 키 입력 시 취소 처리
+        if (isPreparingTreeCut)
+        {
+            if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame && !Keyboard.current.fKey.wasPressedThisFrame)
+            {
+                CancelTreeCut();
+            }
+        }
+
         if (TimeManager.instance.ForceToHit)
         {
             SetInputLocked(true);
             return;
         }
 
-        if (WhileHittingMotion)
+        if (WhileAnimation)
         {
             SetInputLocked(true);
             return;
@@ -365,6 +373,8 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         GroundCheck();
         HandleMovement(Time.deltaTime);
         HandleGravity(Time.deltaTime);
+
+        animationController?.UpdateCamera(lookInput);
 
         //카메라 정면 방향으로 Ray 발사
         Ray ray = new Ray(cam.transform.position, cam.transform.forward);
@@ -430,15 +440,75 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         }
     }
 
-    //F키가 눌렸을 때 실행될 함수
-    private void HandleInteractFKey()
+    // F 키를 눌렀을 때 (Press Down) - 나무 베기 준비 상태 전환 / 이미 준비 상태면 타격 실행
+    private void HandleInteractFKeyDown()
     {
-        //내 객체가 아니면 return
         if (!photonView.IsMine) return;
-        //내 턴이 아니면 return
         if (!GameHelper.IsMyTurn()) return;
 
-        currentInteractable?.OnInteract(this);
+        if (isPreparingTreeCut)
+        {
+            TriggerTreeStrike();
+        }
+        else if (isLookingAtTree && !WhileAnimation)
+        {
+            isPreparingTreeCut = true;
+            WhileAnimation = true; // 차징 중 움직임 잠금
+
+            characterController.enabled = false;
+            Vector3 dirToTree = (TreeStatus.Instance.transform.position - transform.position).normalized;
+            Vector3 properPos = TreeStatus.Instance.transform.position - dirToTree * properDistanceToTree;
+            transform.position = properPos;
+
+            dirToTree.y = 0f;
+            transform.rotation = Quaternion.LookRotation(dirToTree);
+            characterController.enabled = true;
+
+            PlayerCanvasController.Instance.SetHitTextUnActive();
+            PlayerCanvasController.Instance.OpenGauge();
+
+            animationController?.PlayReadyAnimation();
+        }
+        else
+        {
+            currentInteractable?.OnInteract(this);
+        }
+    }
+
+    // F 키를 뗐을 때 (Release Up) - 토글형으로 변경으로 인해 아무 작업도 수행하지 않음
+    private void HandleInteractFKeyUp()
+    {
+        // 토글형 시스템(KeyDown으로 준비, 다시 KeyDown으로 타격)이므로 KeyUp 이벤트에서는 처리하지 않습니다.
+    }
+
+    // 타격 실행 처리 메서드 (2번째 F KeyDown 입력 시 호출)
+    private void TriggerTreeStrike()
+    {
+        isPreparingTreeCut = false;
+
+        damageRatio = PlayerCanvasController.Instance.SelectNow();
+        TimeManager.instance.AbortTurnTimer();
+        ItemOfferCanvasController.instance.Close();
+
+        int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow);
+        int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
+        damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
+
+        DevLog.Log($"<color=green>[HIT - DoublePressStrike]</color> Player {PlayerActNum} KeyDown Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
+
+        animationController?.PlayStrikeAnimation();
+    }
+
+    // 나무 베기 준비 상태 취소 메서드
+    private void CancelTreeCut()
+    {
+        isPreparingTreeCut = false;
+        WhileAnimation = false;
+
+        PlayerCanvasController.Instance.CloseGauge();
+        PlayerCanvasController.Instance.SetHitTextActive(); // 나무 근처에 있으므로 텍스트 복구
+
+        animationController?.CancelReadyAnimation();
     }
 
     //스페이스 바가 눌렸을 때 실행될 함수
@@ -453,10 +523,28 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         currentMinigame?.OnInteract(this);
     }
 
+    private void HandleMoveInputEvent(Vector2 input)
+    {
+        if (inputLocked) return;
+        moveInput = input;
+    }
+
+    private void HandleLookInputEvent(Vector2 input)
+    {
+        if (inputLocked) return;
+        lookInput = input;
+    }
+
+    private void HandleRunInputEvent(bool isRunning)
+    {
+        if (inputLocked) return;
+        sprintPressed = isRunning;
+    }
+
     private bool checkTreeInteractable()
     {
         if (!isLookingAtTree) return false;
-        if (WhileHittingMotion) return false;
+        if (WhileAnimation) return false;
         return true;
     }
 
@@ -475,10 +563,12 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             //타이머 중지
             TimeManager.instance.AbortTurnTimer();
 
+            characterController.enabled = false;
             // 적절한 거리로 나무와의 위치 조정
             Vector3 dirToTree = (TreeStatus.Instance.transform.position - transform.position).normalized;
             Vector3 properPos = TreeStatus.Instance.transform.position - dirToTree * properDistanceToTree;
             transform.position = properPos;
+            characterController.enabled = true;
         }
         //Offer 패널 접근 막기
         ItemOfferCanvasController.instance.Close();
@@ -494,7 +584,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     {
         DevLog.Log($"<color=green>[HIT]</color> Player {PlayerActNum} TryHit with damageRatio: {damageRatio}, calculated damage: {damage}", this);
         //모션 재생 플래그 활성화
-        WhileHittingMotion = true;
+        WhileAnimation = true;
         //Hit 관련 UI 비활성화
         PlayerCanvasController.Instance.SetHitTextUnActive();
 
@@ -519,7 +609,9 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             //Hit 한 순간의 데미지 값을 인자로 해서 턴 전환 함수 호출
             TurnManager.Instance.RequestChangeTurn(damage, this);
             damage = -1;
-            WhileHittingMotion = false;
+            WhileAnimation = false;
+
+            PlayerCanvasController.Instance.CloseGauge();
         }
     }
 
@@ -540,12 +632,9 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         CameraRotation();
     }
 
-    //사용자 입력을 input system에서 받아온다.
+    //사용자의 입력은 KeyInteractManager의 이벤트를 통해 비동기로 처리되므로 폴링 루틴은 공백으로 둡니다.
     private void ReadInput()
     {
-        moveInput = moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
-        lookInput = lookAction != null ? lookAction.ReadValue<Vector2>() : Vector2.zero;
-        sprintPressed = sprintAction != null && sprintAction.IsPressed();
     }
 
 
@@ -657,5 +746,14 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         }
+    }
+
+    public void PlayUseItemAnimation(Transform itemSlotTransform, ItemClass currentItemClass, Texture itemTexture)
+    {
+        WhileAnimation = true;
+        animationController.UseItemAnimation(itemSlotTransform, currentItemClass, itemTexture, () =>
+         {
+             WhileAnimation = false;
+         });
     }
 }
