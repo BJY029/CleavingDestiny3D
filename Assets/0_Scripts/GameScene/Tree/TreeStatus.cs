@@ -17,6 +17,8 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 		Instance = this;
 	}
 
+	public AudioSource treeAudioSource;
+
 	//���� ���� ����
 	private float currentTreeHP;
 	private float currentTreeAtkPow;

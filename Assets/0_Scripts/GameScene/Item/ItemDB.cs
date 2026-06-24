@@ -1,15 +1,15 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class ItemDB : MonoBehaviour
 {
-	//½Ì±ÛÅÏ
+	//ì‹±ê¸€í„´
 	public static ItemDB Instance;
-	//½ºÅ©¸³ÅÍºí ¿ÀºêÁ§Æ® ¾ÆÀÌÅÛ ¸®½ºÆ®
+	//ìŠ¤í¬ë¦½í„°ë¸” ì˜¤ë¸Œì íŠ¸ ì•„ì´í…œ ë¦¬ìŠ¤íŠ¸
 	[SerializeField] List<ItemSO> items;
-	//¾ÆÀÌÅÛ DB
+	//ì•„ì´í…œ DB
 	Dictionary<string, ItemSO> map;
 	[SerializeField] Dictionary<string, Material> itemMat;
 
@@ -26,7 +26,7 @@ public class ItemDB : MonoBehaviour
 
 	private void Start()
 	{
-		//¾ÆÀÌÅÛ DB ÃÊ±âÈ­
+		//ì•„ì´í…œ DB ì´ˆê¸°í™”
 		map = new Dictionary<string, ItemSO>();
 		foreach (var it in items)
 		{
@@ -51,16 +51,16 @@ public class ItemDB : MonoBehaviour
 					itemMat.Add(mat.name, mat);
 				}
 			}
-			Debug.Log($"¸ÓÆ¼¸®¾ó ·Îµå ¿Ï·á! ÃÑ °³¼ö: {itemMat.Count}°³");
+			Debug.Log($"ë¨¸í‹°ë¦¬ì–¼ ë¡œë“œ ì™„ë£Œ! ì´ ê°œìˆ˜: {itemMat.Count}ê°œ");
 		}
 		else
 		{
-			Debug.LogError("¸ÓÆ¼¸®¾ó ·Îµå ½ÇÆĞ. 'ItemMaterial' ¶óº§ÀÌ Á¤È®È÷ ºÙ¾îÀÖ´ÂÁö È®ÀÎÇØÁÖ¼¼¿ä.");
+			Debug.LogError("ë¨¸í‹°ë¦¬ì–¼ ë¡œë“œ ì‹¤íŒ¨. 'ItemMaterial' ë¼ë²¨ì´ ì •í™•íˆ ë¶™ì–´ìˆëŠ”ì§€ í™•ì¸í•´ì£¼ì„¸ìš”.");
 		}
 	}
 
 
-	//¾ÆÀÌÅÛ °´Ã¼ ¾ò±â
+	//ì•„ì´í…œ ê°ì²´ ì–»ê¸°
 	public ItemSO Get(string id)
 	{
 		return (id != null && map.TryGetValue(id, out var it)) ? it : null;

@@ -9,7 +9,7 @@ using System.Threading;
 public class PlayerCanvasController : MonoBehaviourPunCallbacks
 {
 	public static PlayerCanvasController Instance;
-	//Äµ¹ö½º¸¦ ²¸°í Å³¶§ »ç¿ëÇÒ Äµ¹ö½º ±×·ì
+	//ìº”ë²„ìŠ¤ë¥¼ ê»´ê³  í‚¬ë•Œ ì‚¬ìš©í•  ìº”ë²„ìŠ¤ ê·¸ë£¹
 	private CanvasGroup canvasGroup;
 
 	[Header("UI")]
@@ -43,7 +43,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public GameObject ItemStolenNotifyPrefab;
 
 	private Coroutine gaugeCo;
-	//ÇÃ·¹ÀÌ¾îÀÇ Hit °ü·Ã UI°¡ È°¼ºÈ­µÇ¾ú´ÂÁö ¿©ºÎ
+	//í”Œë ˆì´ì–´ì˜ Hit ê´€ë ¨ UIê°€ í™œì„±í™”ë˜ì—ˆëŠ”ì§€ ì—¬ë¶€
 	[HideInInspector]
 	public bool selecting;
 
@@ -79,12 +79,12 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		InitTimer();
 	}
 
-	//¸¸¾à, ÇöÀç Å¸ÀÌ¸Ó°¡ ¼³Á¤µÇ¾ú°í, ½ÃÀÛ ½Ã°£ ¶ÇÇÑ ÃÊ±âÈ­ µÈ °æ¿ì
+	//ë§Œì•½, í˜„ì¬ íƒ€ì´ë¨¸ê°€ ì„¤ì •ë˜ì—ˆê³ , ì‹œì‘ ì‹œê°„ ë˜í•œ ì´ˆê¸°í™” ëœ ê²½ìš°
 	private void Update()
 	{
 		if (!TimeManager.instance.TurnTimerActivated || _startTime == -1f) return;
 
-		//½Ã°£ °è»ê ¼öÇà
+		//ì‹œê°„ ê³„ì‚° ìˆ˜í–‰
 		float remainTime = _endTime - (float)PhotonNetwork.Time;
 
 		if (remainTime < 0)
@@ -103,7 +103,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		_endTime = -1f;
 	}
 
-	//Å¸ÀÌ¸Ó°¡ ¼³Á¤µÇ¸é, ½ÃÀÛ, ³¡ ½Ã°£À» ¹Ş¾Æ¿Í¼­ ÀúÀåÇÑ´Ù.
+	//íƒ€ì´ë¨¸ê°€ ì„¤ì •ë˜ë©´, ì‹œì‘, ë ì‹œê°„ì„ ë°›ì•„ì™€ì„œ ì €ì¥í•œë‹¤.
 	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
 	{
 		if (propertiesThatChanged.TryGetValue(RoomPropKeys.PlayerTurnStartEndTime, out var value))
@@ -117,16 +117,16 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	}
 
 
-	//ÅÏ Á¤º¸¿¡ µû¶ó¼­ Hit Text¸¦ º¯°æÇÏ´Â ÇÔ¼ö
+	//í„´ ì •ë³´ì— ë”°ë¼ì„œ Hit Textë¥¼ ë³€ê²½í•˜ëŠ” í•¨ìˆ˜
 	public void UpdateGameHitText()
 	{
-		//Hit ÅØ½ºÆ®°¡ È°¼ºÈ­ µÇ¾îÀÖ°í
+		//Hit í…ìŠ¤íŠ¸ê°€ í™œì„±í™” ë˜ì–´ìˆê³ 
 		if (HitText.IsActive())
 		{
-			//³» ÅÏÀÌ¸é
+			//ë‚´ í„´ì´ë©´
 			if (GameHelper.IsMyTurn())
 			{
-				//³» ÅÏ¿¡ ÇØ´çµÇ´Â ÅØ½ºÆ®·Î º¯°æ
+				//ë‚´ í„´ì— í•´ë‹¹ë˜ëŠ” í…ìŠ¤íŠ¸ë¡œ ë³€ê²½
 				HitText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_PlayerHit);
 				OpenGauge();
 			}
@@ -138,7 +138,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		}
 	}
 
-	//Hit µ¥¹ÌÁö °ÔÀÌÁö ¿­±â 
+	//Hit ë°ë¯¸ì§€ ê²Œì´ì§€ ì—´ê¸° 
 	public void OpenGauge()
 	{
 		gaugeRoot.SetActive(true);
@@ -151,7 +151,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		gaugeCo = StartCoroutine(GaugeLoop());
 	}
 
-	//Hit µ¥¹ÌÁö °ÔÀÌÁö ´İ±â
+	//Hit ë°ë¯¸ì§€ ê²Œì´ì§€ ë‹«ê¸°
 	public void CloseGauge()
 	{
 		selecting = false;
@@ -160,22 +160,22 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		gaugeRoot.SetActive(false);
 	}
 
-	//µ¥¹ÌÁö °ÔÀÌÁö °ªÀ» º¯°æÇÏ´Â ·çÇÁ ÄÚ·çÆ¾
+	//ë°ë¯¸ì§€ ê²Œì´ì§€ ê°’ì„ ë³€ê²½í•˜ëŠ” ë£¨í”„ ì½”ë£¨í‹´
 	private IEnumerator GaugeLoop()
 	{
-		float t = gaugeSlider.maxValue; // 0~1 ¹üÀ§¿¡¼­ ½ÃÀÛ
+		float t = gaugeSlider.maxValue; // 0~1 ë²”ìœ„ì—ì„œ ì‹œì‘
 
 		while (selecting)
 		{
-			t -= Time.deltaTime * speed;   // speed°¡ Å¬¼ö·Ï »¡¸® ³»·Á°¨
+			t -= Time.deltaTime * speed;   // speedê°€ í´ìˆ˜ë¡ ë¹¨ë¦¬ ë‚´ë ¤ê°
 			if (t <= gaugeSlider.minValue) t = gaugeSlider.maxValue;
 
-			gaugeSlider.value = t;        // ±×´ë·Î 1 -> 0
+			gaugeSlider.value = t;        // ê·¸ëŒ€ë¡œ 1 -> 0
 			yield return null;
 		}
 	}
 
-	//Æ¯Á¤ ½ÃÁ¡¿¡ hit°¡ ´­¸®¸é, ÇØ´ç ½ÃÁ¡ÀÇ µ¥¹ÌÁö °ÔÀÌÁö °ªÀ» ¹İÈ¯
+	//íŠ¹ì • ì‹œì ì— hitê°€ ëˆŒë¦¬ë©´, í•´ë‹¹ ì‹œì ì˜ ë°ë¯¸ì§€ ê²Œì´ì§€ ê°’ì„ ë°˜í™˜
 	public float SelectNow()
 	{
 		if (!selecting) return -1;
@@ -187,33 +187,33 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	}
 
 
-	//Hit text¸¦ È°¼ºÈ­ ÇÏ´Â ÇÔ¼ö
+	//Hit textë¥¼ í™œì„±í™” í•˜ëŠ” í•¨ìˆ˜
 	public void SetHitTextActive()
 	{
 		//Debug.LogError("my turn: " + myTurn + ", In Game Turn: " + CurrentTurn);
-		//¿ÀºêÁ§Æ® È°¼ºÈ­
+		//ì˜¤ë¸Œì íŠ¸ í™œì„±í™”
 		HitTextObj.SetActive(true);
-		//ÅØ½ºÆ® ¿ÀºêÁ§Æ®¸¦ ¶ç¿ì´Â ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı
+		//í…ìŠ¤íŠ¸ ì˜¤ë¸Œì íŠ¸ë¥¼ ë„ìš°ëŠ” ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ
 		HitTextAnim.Play("UI_Player_HitText_Up");
-		//³» ÅÏÀÎ °æ¿ì
+		//ë‚´ í„´ì¸ ê²½ìš°
 		if (GameHelper.IsMyTurn())
 		{
-			//³» ÅÏ¿¡ ÇØ´çµÇ´Â ÅØ½ºÆ®·Î º¯°æ
+			//ë‚´ í„´ì— í•´ë‹¹ë˜ëŠ” í…ìŠ¤íŠ¸ë¡œ ë³€ê²½
 			HitText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_PlayerHit);
-			OpenGauge();
+			// OpenGauge();
 		}
 		else
 		{
-			//³» ÅÏÀÌ ¾Æ´Ï¸é, ³» ÅÏÀÌ ¾Æ´Ï¶ó´Â ÅØ½ºÆ®·Î º¯°æ
+			//ë‚´ í„´ì´ ì•„ë‹ˆë©´, ë‚´ í„´ì´ ì•„ë‹ˆë¼ëŠ” í…ìŠ¤íŠ¸ë¡œ ë³€ê²½
 			HitText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_PlayerNHit);
 			CloseGauge();
 		}
 	}
 
-	//Hit Text¸¦ ºñÈ°¼ºÈ­ ÇÏ´Â ÇÔ¼ö
+	//Hit Textë¥¼ ë¹„í™œì„±í™” í•˜ëŠ” í•¨ìˆ˜
 	public void SetHitTextUnActive()
 	{
-		//HitText¸¦ ºñÈ°¼ºÈ­ ÇÏ´Â ¾Ö´Ï¸ŞÀÌ¼Ç¿¡ ÀÌº¥Æ®·Î ºñÈ°¼ºÇÔ¼ö°¡ »ğÀÔµÇ¾î ÀÖ¾î¼­ µû·Î ºñÈ°¼ºÈ­´Â ÇÏÁö ¾ÊÀ½
+		//HitTextë¥¼ ë¹„í™œì„±í™” í•˜ëŠ” ì• ë‹ˆë©”ì´ì…˜ì— ì´ë²¤íŠ¸ë¡œ ë¹„í™œì„±í•¨ìˆ˜ê°€ ì‚½ì…ë˜ì–´ ìˆì–´ì„œ ë”°ë¡œ ë¹„í™œì„±í™”ëŠ” í•˜ì§€ ì•ŠìŒ
 		HitTextAnim.Play("UI_Player_HitText_Down");
 		CloseGauge();
 		HitText.text = "";
@@ -254,7 +254,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		INC.SetStolenActive(ItemDB.Instance.Get(itemId), FromPlayer, ToPlayer);
 	}
 
-	//ÇöÀç ÇÃ·¹ÀÌ¾î »óÅÂ UI¸¦ ¾÷µ¥ÀÌÆ® ÇÏ´Â ÇÔ¼ö
+	//í˜„ì¬ í”Œë ˆì´ì–´ ìƒíƒœ UIë¥¼ ì—…ë°ì´íŠ¸ í•˜ëŠ” í•¨ìˆ˜
 	public void updatePlayerStatus(string Energy, string HP, string Damage, string Barrier, string TreeMult)
 	{
 		//if (!photonView.IsMine) return;
@@ -266,10 +266,10 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		TreeMultValue.text = TreeMult;
 	}
 
-	//Äµ¹ö½º¸¦ ÄÑ°í ²ô´Â RPC ÇÔ¼ö¸¦ ½ÇÇàÇÒ ÇÔ¼ö
+	//ìº”ë²„ìŠ¤ë¥¼ ì¼œê³  ë„ëŠ” RPC í•¨ìˆ˜ë¥¼ ì‹¤í–‰í•  í•¨ìˆ˜
 	public void SetActiveCanvas(bool active)
 	{
-		//RPC ÇÔ¼ö È£Ãâ
+		//RPC í•¨ìˆ˜ í˜¸ì¶œ
 		photonView.RPC(nameof(RPC_SetActiveCanvas), RpcTarget.All, active);
 	}
 

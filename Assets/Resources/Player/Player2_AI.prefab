@@ -1665,8 +1665,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
   animator: {fileID: 2492846899768299628}
+  firstPersonTweenAnimator: {fileID: 0}
   hitAnimCount: 4
   avoidRepeat: 1
+  axeSwayTransform: {fileID: 0}
+  rotSwayMultiplier: 1
+  rotMaxSway: 15
+  rotSmoothStep: 4
+  posSwayMultiplier: 0.005
+  posMaxSway: 0.05
+  posSmoothStep: 6
+  playerCamera: {fileID: 0}
+  shakeStrength: 0.5
+  shakeDuration: 0.4
+  shakeFrequency: 10
+  aiHitSoundDelay: 0.4
+  axeTransform: {fileID: 0}
+  itemTransform: {fileID: 0}
+  itemMeshRenderer: {fileID: 0}
+  itemUsePoint:
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 0}
+  isAI: 0
 --- !u!114 &2716088925901640895
 MonoBehaviour:
   m_ObjectHideFlags: 0

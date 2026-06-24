@@ -4,11 +4,13 @@ using Photon.Pun;
 using UnityEngine;
 using System;
 using UnityEngine.AI;
+using Photon.Realtime;
+using Potan.CoreUtils;
 
 [RequireComponent(typeof(PhotonView))]
 public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInstantiateMagicCallback
 {
-    //AI 플레이어 고유 번호(현재는 1000 으로 고정 번호 부여)
+    //AI 플레이어 고유 번호
     public int PlayerActNum { get; set; }
 
     [HideInInspector] public AIBrain aiBrain;
@@ -22,20 +24,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     public float deceleration = 12f;
 
     //애니메이션 관련 파라미터
-    [Header("Animator")]
-    private Animator animator;
-    private bool hasAnimator;
-    private float _animationBlend;
-    private int _animIDSpeedX;
-    private int _animIDSpeedZ;
-    private int _animIDGrounded;
-    private int _animIDJump;
-    private int _animIDFreeFall;
-    private int _animIDMotionSpeed;
-
-    public GameObject AICanvas;
-    private AICanvasController canvasController;
-
+    private PlayerAnimationController animationController;
 
     //마을 업그레이드 중인지 여부를 저장할 플래그
     private bool UpgradePhase;
@@ -78,18 +67,21 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         aiBrain = GetComponent<AIBrain>();
         aiBrain.InitializeBrain(PlayerActNum);
 
-        GameObject canvas = Instantiate(AICanvas);
-        canvasController = canvas.GetComponent<AICanvasController>();
-        canvasController.PlayerActNum = PlayerActNum;
-
         //임시 플래그 설정, 움직임 구현 시 설정해야 함
         isLookingAtTree = true;
     }
 
     private void Awake()
     {
-        animator = GetComponent<Animator>();
-        AssignAnimationIDs();
+        //애니메이션 컨트롤러 할당
+        if (TryGetComponent(out PlayerAnimationController pac))
+        {
+            animationController = pac;
+        }
+        else
+        {
+            DevLog.LogError($"AIController: PlayerAnimationController not found", this);
+        }
     }
 
     private void Update()
@@ -125,12 +117,13 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         }
 
         UpdateAnimation();
-
     }
 
     // 움직임에 따른 애니메이션 업데이트
     private void UpdateAnimation()
     {
+        if (animationController == null) return;
+
         //NevMeshAgent의 속도 값 받아오기
         Vector3 velocity = aiBrain.aINevMeshController.agent.velocity;
         //현재 속도 값 구하기(벡터 크기)
@@ -141,10 +134,9 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         float speed01 = (maxSpeed > 0f) ? Mathf.Clamp01(currentSpeed / maxSpeed) : 0f;
 
         //거의 움직이지 않는 경우
-        if (currentSpeed < 0.01f || speed01 < 0.01f)
+        if (currentSpeed < 0.01f || speed01 < 0.001f)
         {
-            animator.SetFloat(_animIDSpeedX, 0f, 0.1f, Time.deltaTime);
-            animator.SetFloat(_animIDSpeedZ, 0f, 0.1f, Time.deltaTime);
+            animationController.UpdateMoveVisuals(0f, 0f, Time.deltaTime);
         }
         else
         {
@@ -160,28 +152,13 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
             float moveZ = Vector3.Dot(dir, fwd) * speed01;
 
             //애니메이션 반영
-            animator.SetFloat(_animIDSpeedX, moveX, 0.1f, Time.deltaTime);
-            animator.SetFloat(_animIDSpeedZ, moveZ, 0.1f, Time.deltaTime);
+            animationController.UpdateMoveVisuals(moveX, moveZ, Time.deltaTime);
         }
-    }
-
-    private void AssignAnimationIDs()
-    {
-        _animIDSpeedX = Animator.StringToHash("Speed_X");
-        _animIDSpeedZ = Animator.StringToHash("Speed_Z");
-        _animIDGrounded = Animator.StringToHash("Grounded");
-        _animIDJump = Animator.StringToHash("Jump");
-        _animIDFreeFall = Animator.StringToHash("FreeFall");
-        _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
     }
 
     private void ResetAnimation()
     {
-        if (animator != null)
-        {
-            animator.SetFloat("Speed_X", 0f);
-            animator.SetFloat("Speed_Z", 0f);
-        }
+        animationController?.UpdateMoveVisuals(0f, 0f, 0.1f);
     }
 
     //플레이어 턴 처리 비동기 함수(임시)
@@ -303,8 +280,8 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         WhileHittingMotion = true;
         //Hit 관련 UI 비활성화
         PlayerCanvasController.Instance.SetHitTextUnActive();
-        //임의의 Hit 모션 재생 후 해당 모션 index 받아오기
-        int idx = gameObject.GetComponent<PlayerAnimationController>().PlayHit();
+        // Hit 모션 재생
+        animationController?.PlayHitAnimation();
     }
 
     public void OnAnimStateExit(int stateKey)

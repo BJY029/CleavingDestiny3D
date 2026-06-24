@@ -13,6 +13,13 @@
       "source": "local-tarball",
       "dependencies": {}
     },
+    "com.potan.coreutils": {
+      "version": "https://github.com/Potan7/com.potan.coreutils.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "d02f29d07d209b3a71ffad9ee3525a996fbc799a"
+    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,
@@ -20,7 +27,7 @@
       "dependencies": {}
     },
     "com.unity.addressables": {
-      "version": "2.9.0",
+      "version": "2.9.1",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -30,7 +37,7 @@
         "com.unity.modules.jsonserialize": "1.0.0",
         "com.unity.modules.imageconversion": "1.0.0",
         "com.unity.modules.unitywebrequest": "1.0.0",
-        "com.unity.scriptablebuildpipeline": "2.6.0",
+        "com.unity.scriptablebuildpipeline": "2.6.1",
         "com.unity.modules.unitywebrequestassetbundle": "1.0.0"
       },
       "url": "https://packages.unity.com"
@@ -211,7 +218,7 @@
       }
     },
     "com.unity.scriptablebuildpipeline": {
-      "version": "2.6.0",
+      "version": "2.6.1",
       "depth": 1,
       "source": "registry",
       "dependencies": {

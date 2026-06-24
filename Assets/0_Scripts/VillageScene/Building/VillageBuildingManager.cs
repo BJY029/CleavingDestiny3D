@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Potan.CoreUtils;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -30,10 +31,11 @@ namespace Village.Building
 
         private async void OnBuildingClicked(VillageBuilding building)
         {
-            Debug.Log("BuildingManager received click from: " + building.buildingType);
+            DevLog.Log("BuildingManager received click from: " + building.buildingType, this);
+
             if (currentBuildingUI != null)
             {
-                Debug.Log("A building UI is already open. Ignoring click.");
+                DevLog.Log("A building UI is already open. Ignoring click.");
                 return;
             }
 
