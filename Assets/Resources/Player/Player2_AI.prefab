@@ -1550,6 +1550,7 @@ MonoBehaviour:
   rotationSmoothTime: 0.08
   accelation: 12
   deceleration: 12
+  AICanvas: {fileID: 7581484061504611596, guid: 1c3156f67125f8b47a1d632d8839511d, type: 3}
 --- !u!114 &7639534108227341128
 MonoBehaviour:
   m_ObjectHideFlags: 0

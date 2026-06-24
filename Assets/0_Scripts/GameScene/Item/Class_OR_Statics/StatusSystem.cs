@@ -51,7 +51,7 @@ public class StatusSystem
             {
                 //남은 turn을 0으로 처리(만료 처리 수행)
                 st.remainingTurns = 0;
-                StatusSyncHub.instance.Master_BroadcastRemove(ownerActorNum, st.spec.statusId);
+                StatusSyncHub.instance?.Master_BroadcastRemove(ownerActorNum, st.spec.statusId);
             }
 
             //특정 플레이어의 상태이상 객체 중, N Turn 동안 활성화 된 상태 이상인 경우
@@ -59,15 +59,14 @@ public class StatusSystem
             {
                 //남은 Turn 정보 1 감소
                 st.remainingTurns--;
-                if (StatusUIModel.instance.GetStatusInfoInstance(ownerActorNum, st.spec.statusId, out var IS))
+                if (StatusUIModel.instance != null && StatusUIModel.instance.GetStatusInfoInstance(ownerActorNum, st.spec.statusId, out var IS))
                 {
                     IS.remainingTurns = st.remainingTurns;
-                    StatusSyncHub.instance.Master_BroadcastUpdate(IS);
+                    StatusSyncHub.instance?.Master_BroadcastUpdate(IS);
                 }
                 else
                 {
                     Console.WriteLine("Item Status Remove Error; No Status Info founded");
-
                 }
             }
         }
@@ -103,7 +102,7 @@ public class StatusSystem
             for (int i = 0; i < toRemove.Count; i++)
             {
                 StatusInstance st = toRemove[i];
-                StatusSyncHub.instance.Master_BroadcastRemove(st.ownerActorNum, st.spec.statusId);
+                StatusSyncHub.instance?.Master_BroadcastRemove(st.ownerActorNum, st.spec.statusId);
             }
         }
 
@@ -128,7 +127,7 @@ public class StatusSystem
             for (int i = 0; i < toRemove.Count; i++)
             {
                 StatusInstance st = toRemove[i];
-                StatusSyncHub.instance.Master_BroadcastRemove(st.ownerActorNum, st.spec.statusId);
+                StatusSyncHub.instance?.Master_BroadcastRemove(st.ownerActorNum, st.spec.statusId);
             }
         }
 

@@ -31,7 +31,7 @@ DESC_DMG_DOUBLE,한 턴에 두 번의 공격 효과를 적용합니다.,Executes
 DESC_DMG_RUSTY,이번 턴에 가하는 데미지가 50% 감소합니다.,Decreases damage dealt this turn by 50%.
 DESC_DMG_GREASED,이번 턴의 기본 공격 데미지가 0이 됩니다.,Sets base attack damage to 0 for this turn.
 DESC_DMG_TERMITE,오늘 하루 동안 매 턴마다 나무에게 20~150의 방어 무시 피해를 입힙니다.,Deals 20-150 true damage to the Tree every turn for the duration of the day.
-DESC_DMG_BLIND,이번 턴에 나무에게 20 또는 200의 랜덤 데미지를 입힙니다.,Deals a random amount of damage (20 or 200) to the Tree this turn.
+DESC_DMG_BLIND,이번 턴에 나무에게 20 또는 2000의 랜덤 데미지를 입힙니다.,Deals a random amount of damage (20 or 2000) to the Tree this turn.
 DESC_DMG_COMBO,"효과 선택 후 콤보 성공 시 해당 효과 적용, 실패 시 반대 효과가 적용됩니다. (감소: 80% / 증가: 250%)","Choose an effect. Success applies it; failure applies the opposite. (Dmg Reduction: 80% / Dmg Increase: 250%)"
 DESC_DEF_RESIN,마을 방어력이 50 증가합니다.,Increases Village Defense by 50.
 DESC_DEF_SILVER,이번 턴에 나무에게 입힌 데미지의 100%를 방어력으로 전환합니다.,Converts 100% of damage dealt to the Tree into Defense this turn.

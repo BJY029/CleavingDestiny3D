@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BasicRoomSetting
   m_EditorClassIdentifier: Assembly-CSharp::RoomSetting
   treeHP: 30000
-  treeAtkPow: 1500
+  treeAtkPow: 600
   startDay: 1
   initialTurn: 0
   initialTurnIndex: 1

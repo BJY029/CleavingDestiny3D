@@ -15,7 +15,7 @@ public class DamageResolver
         _status = status;
     }
 
-    public void Resolve(DamagePacket dmg, EffectContext ctx)
+    public void Resolve(DamagePacket dmg, EffectContext ctx, SimGameState state = null)
     {
         //공격 직전 트리거 발행
         _bus.publish(new GameEvent
@@ -23,13 +23,14 @@ public class DamageResolver
             type = TriggerMask.OnBeforeAttack,
             actorNum = dmg.attackerNum,
             payload = dmg
-        }, ctx);
+        }, ctx, state);
 
         //데미지 계산
         //덮어쓰는 데미지가 있으면, 해당 데미지 사용, 아니면 기본 데미지 사용
         int calcDmg = (dmg.overrideDamage >= 0) ? dmg.overrideDamage : dmg.baseDamage;
         //배수 적용
         calcDmg = Mathf.RoundToInt(calcDmg * dmg.multiplier);
+        if (state != null) state.SetPlayerDmgMultRate(dmg.attackerNum, dmg.multiplier);
 
         //공격력->방어력 전환 단계 트리거 발행
         _bus.publish(new GameEvent
@@ -37,11 +38,16 @@ public class DamageResolver
             type = TriggerMask.OnDamageConvert,
             actorNum = dmg.attackerNum,
             payload = dmg
-        }, ctx);
+        }, ctx, state);
 
-        float baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum);
+        float baseRate;
+        if (state == null)
+            baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum);
+        else
+            baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum, state);
         float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate + dmg.convertRateDelta;
         rate = Mathf.Clamp01(rate);
+        if (state != null) state.SetPlayerBarConRate(dmg.attackerNum, rate);
 
         //최종 데미지 확정
         dmg.finalDamage = calcDmg;
@@ -53,7 +59,7 @@ public class DamageResolver
             type = TriggerMask.OnAfterAttack,
             actorNum = dmg.attackerNum,
             payload = dmg
-        }, ctx);
+        }, ctx, state);
     }
 
     public (float dmgMultiRate, float dmgOverrideDmg, float BarrierConvRate) ResolveRatio(DamagePacket dmg, EffectContext ctx)

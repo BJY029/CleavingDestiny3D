@@ -5,7 +5,7 @@ using UnityEngine;
 //리펙토링 필요
 public static class StatusBehaviours
 {
-    public static void Execute(StatusInstance st, GameEvent e, EffectContext ctx)
+    public static void Execute(StatusInstance st, GameEvent e, EffectContext ctx, SimGameState state = null)
     {
         var dmg = e.payload as DamagePacket;
 
@@ -16,7 +16,7 @@ public static class StatusBehaviours
                 //공격 전에만 반응
                 if (e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
                 //평타만 적용 하거나, 기본 평타 관련 데미지 객체가 아닌 경우, 실행 안함
-                if(st.spec.basicOnly && !dmg.isBasicAttack) return;
+                if (st.spec.basicOnly && !dmg.isBasicAttack) return;
                 //배수 누적
                 dmg.multiplier *= st.spec.multiplier;
 
@@ -33,25 +33,25 @@ public static class StatusBehaviours
                 return;
             //연속 베기 아이템(2배)
             case "DMG_DOUBLE":
-				if (e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
-				if (st.spec.basicOnly && !dmg.isBasicAttack) return;
-				dmg.multiplier *= st.spec.multiplier;
+                if (e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
+                if (st.spec.basicOnly && !dmg.isBasicAttack) return;
+                dmg.multiplier *= st.spec.multiplier;
 
-				ctx.Log?.Invoke($"[Status] DMG_DOUBLE x{st.spec.multiplier}");
-				return;
+                ctx.Log?.Invoke($"[Status] DMG_DOUBLE x{st.spec.multiplier}");
+                return;
             //날 무디기 아이템
             case "DMG_RUSTY":
-				if (e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
-				if (st.spec.basicOnly && !dmg.isBasicAttack) return;
-				dmg.multiplier *= st.spec.multiplier;
+                if (e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
+                if (st.spec.basicOnly && !dmg.isBasicAttack) return;
+                dmg.multiplier *= st.spec.multiplier;
 
-				ctx.Log?.Invoke($"[Status] DMG_RUSTY x{st.spec.multiplier}");
-				return;
+                ctx.Log?.Invoke($"[Status] DMG_RUSTY x{st.spec.multiplier}");
+                return;
             //기름 바르기 아이템
-			case "DMG_GREASED":
-                if(e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
+            case "DMG_GREASED":
+                if (e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
                 //평타 관련 데미지 객체가 아닌 경우 무시
-                if(!dmg.isBasicAttack) return;
+                if (!dmg.isBasicAttack) return;
 
                 //데미지 고정 덮어쓰기
                 dmg.overrideDamage = 0;
@@ -67,15 +67,25 @@ public static class StatusBehaviours
 
                 int terDmg = ctx.Rng.Range(st.spec.randMin, st.spec.randMax + 1);
 
-                float hp = ctx.GetTreeHP();
-                hp -= terDmg;
-                ctx.SetTreeHP_MasterOnly(hp);
+                float hp;
+                if (state == null)
+                {
+                    hp = ctx.GetTreeHP();
+                    hp -= terDmg;
+                    ctx.SetTreeHP(hp);
+                }
+                else
+                {
+                    hp = ctx.GetTreeHP(state);
+                    hp -= terDmg;
+                    ctx.SetTreeHP(hp, state);
+                }
 
-				ctx.Log?.Invoke($"[Status] DMG_TERMITE -{terDmg}(TreeHP = {hp})");
-				return;
+                ctx.Log?.Invoke($"[Status] DMG_TERMITE -{terDmg}(TreeHP = {hp})");
+                return;
             //눈 가리고 때리기 아이템
             case "DMG_BLIND":
-                if(e.type != TriggerMask.OnBeforeAttack) return;
+                if (e.type != TriggerMask.OnBeforeAttack) return;
 
                 if (!dmg.isBasicAttack) return;
 
@@ -85,8 +95,8 @@ public static class StatusBehaviours
 
                 dmg.overrideDamage = value;
 
-				ctx.Log?.Invoke($"[Status] DMG_BLIND overriedDamage = {value}");
-				return;
+                ctx.Log?.Invoke($"[Status] DMG_BLIND overriedDamage = {value}");
+                return;
             //은빛가호 아이템
             case "DEF_SILVER":
                 if (e.type != TriggerMask.OnDamageConvert) return;
@@ -94,51 +104,52 @@ public static class StatusBehaviours
 
                 dmg.convertRateOverride = st.spec.convertRate;
 
-				ctx.Log?.Invoke($"[Status] DEF_SILVER overriedBarrierConvertRate = {dmg.convertRateOverride}");
-				return;
+                ctx.Log?.Invoke($"[Status] DEF_SILVER overriedBarrierConvertRate = {dmg.convertRateOverride}");
+                return;
 
             case "GIM_TAUNT":
-                if(dmg.attackerNum != st.ownerActorNum) return;
-				//공격 전에만 반응
-				if (e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
-				//평타만 적용 하거나, 기본 평타 관련 데미지 객체가 아닌 경우, 실행 안함
-				if (st.spec.basicOnly && !dmg.isBasicAttack) return;
-				//배수 누적
-				dmg.multiplier *= st.spec.multiplier;
+                if (dmg.attackerNum != st.ownerActorNum) return;
+                //공격 전에만 반응
+                if (e.type != TriggerMask.OnBeforeAttack || dmg == null) return;
+                //평타만 적용 하거나, 기본 평타 관련 데미지 객체가 아닌 경우, 실행 안함
+                if (st.spec.basicOnly && !dmg.isBasicAttack) return;
+                //배수 누적
+                dmg.multiplier *= st.spec.multiplier;
 
-                if(st.spec.consumeOnTrigger) st.remainingTurns = 0;
+                if (st.spec.consumeOnTrigger) st.remainingTurns = 0;
 
-				//디버그 로그로 임시 실행
-				ctx.Log?.Invoke($"[Status] GIM_TAUNT x{st.spec.multiplier}");
-				return;
+                //디버그 로그로 임시 실행
+                ctx.Log?.Invoke($"[Status] GIM_TAUNT x{st.spec.multiplier}");
+                return;
 
             case "GIM_SPY":
                 if (e.type != TriggerMask.OnVillageStart) return;
-                if(!PhotonNetwork.IsMasterClient) return;
+                if (!PhotonNetwork.IsMasterClient) return;
 
                 int target = st.ownerActorNum;
 
                 float curVillageShileld = ctx.GetPlayerVillageShield(target);
                 float calc = curVillageShileld * st.spec.multiplier;
-                ctx.SetPlayerVIllageShield(target, calc);
+                if (state == null) ctx.SetPlayerVIllageShield(target, calc);
+                else ctx.SetPlayerVIllageShield(target, calc, state);
 
                 st.remainingTurns = 0;
-				ctx.Log?.Invoke($"[Status] GIM_SPY Player{target}'s village Shild set to {calc}");
-				break;
+                ctx.Log?.Invoke($"[Status] GIM_SPY Player{target}'s village Shild set to {calc}");
+                break;
 
             case "GIM_CURSE":
-                if(e.type != TriggerMask.OnDamageConvert) return;
+                if (e.type != TriggerMask.OnDamageConvert) return;
 
-                if(dmg.attackerNum != st.ownerActorNum) return;
+                if (dmg.attackerNum != st.ownerActorNum) return;
                 if (dmg.convertRateOverride >= 0f) return;
 
                 float delta = st.spec.convertRate;
                 dmg.convertRateDelta += delta;
 
-				st.remainingTurns = 0;
+                st.remainingTurns = 0;
 
-				ctx.Log?.Invoke($"[Curse] convertRateDelta {delta} applied to attacker={dmg.attackerNum}");
-				break;
-		}
+                ctx.Log?.Invoke($"[Curse] convertRateDelta {delta} applied to attacker={dmg.attackerNum}");
+                break;
+        }
     }
 }
