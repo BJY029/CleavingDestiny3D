@@ -154,6 +154,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         firstPersonObjects.SetActive(true); //1인칭 오브젝트 켜기
 
         cam = _mainCamera.GetComponent<Camera>();
+        DamageTextManager.instance.SetTargetCamera(cam);
 
         isLookingAtTree = false;
         UpgradePhase = false;
@@ -496,7 +497,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         DevLog.Log($"<color=green>[HIT - DoublePressStrike]</color> Player {PlayerActNum} KeyDown Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
 
-        animationController?.PlayStrikeAnimation();
+        animationController?.PlayStrikeAnimation(damage);
     }
 
     // 나무 베기 준비 상태 취소 메서드
@@ -589,7 +590,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         PlayerCanvasController.Instance.SetHitTextUnActive();
 
         // 애니메이션 컨트롤러에 타격 요청 (내부에서 RPC 처리됨)
-        animationController?.PlayHitAnimation();
+        animationController?.PlayHitAnimation(damage);
     }
 
     //HIT 애니메이션이 종료된 후 behaviour에 등록된 NotifyOnAnimExit로 호출되는 함수

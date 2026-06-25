@@ -157,7 +157,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     }
 
     // Hit 애니메이션 실행
-    public void PlayHitAnimation()
+    public void PlayHitAnimation(int damage)
     {
         // 도끼 휘두르기
         if (!isAI && photonView.IsMine)
@@ -167,7 +167,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
             if (firstPersonTweenAnimator != null)
             {
                 firstPersonTweenAnimator.PlayHitAnimation(
-                    onImpactEvent: FirstPersonAxeHit,
+                    onImpactEvent: () => FirstPersonAxeHit(damage),
                     onCompleteCallback: () =>
                     {
                         axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 기본으로 되돌림
@@ -209,14 +209,14 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     }
 
     // 1인칭 타격 애니메이션 및 3인칭 동기화 RPC 작동 (F Key Up 시점에 호출)
-    public void PlayStrikeAnimation()
+    public void PlayStrikeAnimation(int damage)
     {
         if (!isAI && photonView.IsMine)
         {
             if (firstPersonTweenAnimator != null)
             {
                 firstPersonTweenAnimator.PlayStrikeAnimation(
-                    onImpactEvent: FirstPersonAxeHit,
+                    onImpactEvent: () => FirstPersonAxeHit(damage),
                     onCompleteCallback: () =>
                     {
                         axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 복원
@@ -275,13 +275,16 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         animNotify?.OnAnimStateExit(stateKey);
     }
 
-    public void FirstPersonAxeHit()
+    public void FirstPersonAxeHit(int damage)
     {
         // 1인칭 타격 이펙트 재생 (카메라 쉐이크 및 이펙트는 로컬에서만)
         if (photonView.IsMine)
         {
             // hitEffectObject.Play();
             VFXManager.Instance.PlayPredefinedEffect(VFXManager.VFXIndex.Hit_Tree, axeTransform.position);
+
+            Vector3 damageTextPos = axeTransform.position;
+            DamageTextManager.instance.ShowDamage(damage, damageTextPos);
         }
 
         Tween.ShakeLocalPosition(playerCamera.transform,

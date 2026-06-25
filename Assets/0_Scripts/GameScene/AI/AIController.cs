@@ -281,7 +281,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         //Hit 관련 UI 비활성화
         PlayerCanvasController.Instance.SetHitTextUnActive();
         // Hit 모션 재생
-        animationController?.PlayHitAnimation();
+        animationController?.PlayHitAnimation(damage);
     }
 
     public void OnAnimStateExit(int stateKey)
