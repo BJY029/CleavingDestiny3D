@@ -178,7 +178,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
         // 전체(타인 화면 포함): 애니메이션 트리거
         int idx = GetRandomIndex();
-        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, idx);
+        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, idx, damage);
     }
 
     // 1인칭 준비 자세 애니메이션 실행 (F Key Down 시점에 호출)
@@ -227,11 +227,11 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
         // 전체(타인 화면 포함): 애니메이션 트리거
         int idx = GetRandomIndex();
-        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, idx);
+        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, idx, damage);
     }
 
     [PunRPC]
-    private void RPC_PlayHit(int idx)
+    private void RPC_PlayHit(int idx, int damage)
     {
         if (animator == null) return;
 
@@ -244,6 +244,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         if (isAI)
         {
             PlayAIHitSoundAsync().Forget();
+            ShowDamageTextAsync(damage).Forget();
         }
     }
 
@@ -253,6 +254,13 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         await UniTask.Delay((int)(aiHitSoundDelay * 1000), cancellationToken: this.GetCancellationTokenOnDestroy());
 
         PlayLocalHitSound();
+    }
+
+    private async UniTaskVoid ShowDamageTextAsync(int damage)
+    {
+        await UniTask.Delay((int)(aiHitSoundDelay * 1000), cancellationToken: this.GetCancellationTokenOnDestroy());
+
+        DamageTextManager.instance.ShowDamageToOthers(damage, isAI);
     }
 
     private int GetRandomIndex()
@@ -285,6 +293,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
             Vector3 damageTextPos = axeTransform.position;
             DamageTextManager.instance.ShowDamage(damage, damageTextPos);
+            DamageTextManager.instance.ShowDamageToOthers(damage, isAI);
         }
 
         Tween.ShakeLocalPosition(playerCamera.transform,
