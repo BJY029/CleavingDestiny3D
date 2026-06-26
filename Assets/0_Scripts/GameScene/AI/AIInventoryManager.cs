@@ -85,6 +85,9 @@ public class AIInventoryManager : AILogicModule
                 float score = EvaluateUtilityCurves(item, context);
                 score += EvaluateGimmicks(item, context);
 
+                //for check
+                //if (item.itemId == "4002") score += 30000;
+
                 Debug.Log($"이름 : {item.displayName_ID}, 점수 : {score}");
 
                 if (score > highestScore)

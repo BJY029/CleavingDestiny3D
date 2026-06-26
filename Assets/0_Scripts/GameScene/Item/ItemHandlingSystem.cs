@@ -207,6 +207,30 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			ctx.Log?.Invoke($"[ItemLockPick] Player{actorNum}'s Lock added");
 			return;
 		}
+		//If Smoke Item
+		if (item.itemId == "4002")
+		{
+			var ctx = new EffectContext(_rng, Debug.Log);
+			ctx.SetHideDmgTrigger(actorNum);
+			ctx.Log?.Invoke($"[ItemSmoke] Player{actorNum}'s Activate Smoke(Hide Dmg)");
+
+			//AddStatus에 정의된 해당 아이템 정보를 가져온다.
+			StatusSpec ss = item.effects[0].statusSpce;
+
+			//남은 턴 수를 durationType을 기반으로 초기화하고
+			int remainTurns = getRemainTurns(ss);
+
+			var gbst = setAndGetStatusInstance(ss, actorNum, actorNum, remainTurns);
+
+			_statusSystem.Add(gbst);
+
+			Master_UpdateItemStatusUI(item, gbst);
+			//디버깅
+			Debug.Log($"[Item] AddStatus {ss.statusId} to {actorNum}");
+
+
+			return;
+		}
 
 		//아이템 적용 대상을 기준으로 분기하여 처리한다.
 		switch (item.target)

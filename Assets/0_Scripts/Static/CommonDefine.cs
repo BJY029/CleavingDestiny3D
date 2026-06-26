@@ -138,6 +138,7 @@ public static class ItemPropKeys
     public static string LOCKPICK(int actor) => $"LOCKPICK_{actor}";
 
     public static string LOCKCNT(int actor) => $"LOCK_CNT_{actor}";
+    public static string HIDEDMG(int actor) => $"HIDEDMG_{actor}";
 
     public static string COMMON_RATE(int actor) => $"COMMON_RATE_{actor}";
     public static string HERO_RATE(int actor) => $"HERO_RATE_{actor}";

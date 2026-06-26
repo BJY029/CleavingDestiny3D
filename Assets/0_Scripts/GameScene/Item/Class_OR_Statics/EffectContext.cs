@@ -206,4 +206,9 @@ public class EffectContext
 		return playerNum == 1 ? state.p1LockpickCnt : state.p2LockpickCnt;
 	}
 
+	public void SetHideDmgTrigger(int actorNum)
+	{
+		PhotonPropertyHelper.SetRoomProp(ItemPropKeys.HIDEDMG(actorNum), true);
+	}
+
 }

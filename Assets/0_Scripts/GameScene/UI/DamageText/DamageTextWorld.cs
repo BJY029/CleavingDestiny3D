@@ -33,7 +33,8 @@ public class DamageTextWorld : MonoBehaviour
 
     private void Play(int damage)
     {
-        damageText.text = damage.ToString();
+        if (damage == -1) damageText.text = "???";
+        else damageText.text = damage.ToString();
         canvasGroup.alpha = 1f;
         transform.localScale = Vector3.zero;
 

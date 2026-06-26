@@ -280,8 +280,14 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         WhileHittingMotion = true;
         //Hit 관련 UI 비활성화
         PlayerCanvasController.Instance.SetHitTextUnActive();
+
+        bool isHiden = PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.HIDEDMG(PlayerActNum));
+        int sendingDmgValue = isHiden ? -1 : damage;
+
         // Hit 모션 재생
-        animationController?.PlayHitAnimation(damage);
+        animationController?.PlayHitAnimation(sendingDmgValue);
+
+        if (isHiden) PhotonPropertyHelper.SetRoomProp(ItemPropKeys.HIDEDMG(PlayerActNum), false);
     }
 
     public void OnAnimStateExit(int stateKey)

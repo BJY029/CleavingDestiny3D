@@ -8663,6 +8663,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0fc74dcb8904b364bb16e9e7957609c0, type: 2}
   - {fileID: 11400000, guid: b87b8ba60160e6a40bc29539e4bcfb5a, type: 2}
   - {fileID: 11400000, guid: ea1e9843db73d664c907ecd1daf6cf6d, type: 2}
+  - {fileID: 11400000, guid: 6609d3a5744e4c146bc6a009ccb5154c, type: 2}
   - {fileID: 11400000, guid: 32a0ac771362dbf4c83423ceda724bee, type: 2}
   - {fileID: 11400000, guid: 3cb46e45e22708d4291cd8b76efbaeda, type: 2}
   - {fileID: 11400000, guid: ddef8b6828049464ea061d945a5c702e, type: 2}
@@ -18915,7 +18916,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DamageTextManager
   damageTextPrefab: {fileID: -1852325402968453960, guid: 9e6bfc0329082474f9fc41fa26463581, type: 3}
   TreeCenter: {fileID: 1646487949}
-  othersTextRadius: 1.6
+  othersTextRadius: 2
   othersTextHeight: 1.5
 --- !u!114 &1884323082
 MonoBehaviour:

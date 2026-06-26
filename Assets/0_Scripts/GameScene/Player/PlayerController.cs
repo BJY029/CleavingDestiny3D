@@ -495,9 +495,15 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
         damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
 
+        bool isHiden = PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.HIDEDMG(PlayerActNum));
+        int sendingDmgValue = isHiden ? -1 : damage;
+        Debug.LogWarning($"isHide : {isHiden}");
+
         DevLog.Log($"<color=green>[HIT - DoublePressStrike]</color> Player {PlayerActNum} KeyDown Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
 
-        animationController?.PlayStrikeAnimation(damage);
+        animationController?.PlayStrikeAnimation(sendingDmgValue);
+
+        if (isHiden) PhotonPropertyHelper.SetRoomProp(ItemPropKeys.HIDEDMG(PlayerActNum), false);
     }
 
     // 나무 베기 준비 상태 취소 메서드
