@@ -1,4 +1,4 @@
-﻿ID,KR,EN
+ID,KR,EN
 UI_Load_Finding,상대 찾는 중,Looking for an opponent
 UI_Load_Waiting,상대 기다리는 중,Waiting for opponent
 UI_Load_MatchSuccess,매칭 성공! 게임에 입장합니다.,Matching success! Enter the game.
@@ -20,3 +20,4 @@ UI_Item_LockPick_Warning,락픽이 없습니다.,There are no lockpicks.
 UI_Item_LockPick_Has,락픽 갯수,Number of lock picks
 UI_Exit_Lobby,로비로 나가기,Back To Lobby
 UI_Exit_Game,게임 나가기,Quit Game
+UI_Load_ReturningToLobby,로비로 복귀중,Returning to Lobby

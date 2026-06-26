@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Photon.Pun;
 using Photon.Realtime;
+using Potan.CoreUtils;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class MatchResultManager : MonoBehaviourPunCallbacks
 {
@@ -16,6 +18,8 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
     private MatchResultReason _lastResaon = MatchResultReason.NONE;
     private float delay = 3.0f;
     private string aiAttachedKey;
+    
+    
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -235,17 +239,69 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         }
 
         GameEndedCanvasController.instance.SetGameEndedCanvas(state, _lastResaon.ToString());
-        StartCoroutine(DelayedExitProcess(delay));
 
-        Debug.Log($"[MatchResult] State : {state}, Loser : Player{LoserActorNum}, Reason : {reason}, TurnCnt : {turnIndex}");
+        DevLog.Log($"<color=green>[MatchResult]</color> State : {state}, Loser : Player{LoserActorNum}, Reason : {reason}, TurnCnt : {turnIndex}");
     }
 
-    //임시 효과, 일정 이상 UI 표기 후 게임 나가기
-    IEnumerator DelayedExitProcess(float delay)
+    #if UNITY_EDITOR
+    private void Update()
     {
-        yield return new WaitForSeconds(delay);
+        if (!IsInitializer()) return;
+        
+        if (Keyboard.current.digit1Key.wasPressedThisFrame)
+        {
+            DevLog.Log("<color=red>DEBUG: 플레이어 나무 승리</color>", this);
+            
+            foreach (var kvp in PlayerManager.Instance.Players)
+            {
+                int actNum = kvp.Value.actorNumber;
+                Player p = PhotonNetwork.CurrentRoom.GetPlayer(actNum);
 
-        if (GameExitHandler.instance != null)
-            GameExitHandler.instance.RequestLeaveGame();
+                if (p == null)  //p == ai 플레이어
+                {
+                    TrySetMatchResult(actNum, MatchResultReason.TREE_DESTROYED);
+                }
+            }
+        }
+
+        if (Keyboard.current.digit2Key.wasPressedThisFrame)
+        {
+            DevLog.Log("<color=red>DEBUG: 플레이어 나무 패배</color>", this);
+            
+            TrySetMatchResult(PhotonNetwork.LocalPlayer.ActorNumber, MatchResultReason.TREE_DESTROYED);
+        }
+
+        if (Keyboard.current.digit3Key.wasPressedThisFrame)
+        {
+            DevLog.Log("<color=red>DEBUG: 플레이어 마을 승리</color>", this);
+            
+            foreach (var kvp in PlayerManager.Instance.Players)
+            {
+                int actNum = kvp.Value.actorNumber;
+                Player p = PhotonNetwork.CurrentRoom.GetPlayer(actNum);
+
+                if (p == null)  //p == ai 플레이어
+                {
+                    TrySetMatchResult(actNum, MatchResultReason.VILLAGE_DESTROYED);
+                }
+            }
+        }
+        
+        if (Keyboard.current.digit4Key.wasPressedThisFrame)
+        {
+            DevLog.Log("<color=red>DEBUG: 플레이어 마을 패배</color>", this);
+            
+            //패배 처리 설정 
+            TrySetMatchResult(PhotonNetwork.LocalPlayer.ActorNumber, MatchResultReason.VILLAGE_DESTROYED);
+        }
+        
+        if (Keyboard.current.digit5Key.wasPressedThisFrame)
+        {
+            DevLog.Log("<color=red>DEBUG: 플레이어 무승부</color>", this);
+            
+            // 무승부 처리
+            TrySetMatchResult(-1, MatchResultReason.DRAW);
+        }
     }
+    #endif
 }

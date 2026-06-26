@@ -36,5 +36,18 @@ public class GameEndedCanvasController : MonoBehaviour
         //관련 정보 설정
         WinLoseText.text = "You " + state;
         ReasonText.text = "Reason : " + reason;
+
+        // 마우스 커서 활성화
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    //나가기 버튼 클릭 시 호출될 함수
+    public void OnClickExitButton()
+    {
+        if (GameExitHandler.Instance != null)
+        {
+            GameExitHandler.Instance.RequestLeaveGame();
+        }
     }
 }

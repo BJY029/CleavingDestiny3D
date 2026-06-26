@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CommonDefine
@@ -38,6 +38,7 @@ public class UI_CSV
     public const string UI_Load_Waiting = "UI_Load_Waiting";
     public const string UI_Load_MatchSuccess = "UI_Load_MatchSuccess";
     public const string UI_Load_Loading = "UI_Load_Loading";
+    public const string UI_Load_ReturningToLobby = "UI_Load_ReturningToLobby";
     public const string UI_ItemNotify_Title = "UI_ItemNotify_Title";
     public const string UI_ItemSacrifice_Title = "UI_ItemSacrifice_Title";
     public const string UI_ItemSacrifice_TableDesc = "UI_ItemSacrifice_TableDesc";
