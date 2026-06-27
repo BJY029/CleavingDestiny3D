@@ -106,7 +106,14 @@ public static class StatusBehaviours
 
                 ctx.Log?.Invoke($"[Status] DEF_SILVER overriedBarrierConvertRate = {dmg.convertRateOverride}");
                 return;
+            case "REC_RESERVE":
+                if (e.type != TriggerMask.OnVillageStart) return;
+                int playerNum = st.ownerActorNum;
+                int playerCurEnergy = PhotonPropertyHelper.GetPlayerProp<int>(playerNum, PlayerPropKeys.Energy);
+                PhotonPropertyHelper.SetPlayerProp(playerNum, PlayerPropKeys.CarryOverEnergy, playerCurEnergy);
 
+                ctx.Log?.Invoke($"[Status] REC_RESERVE Player{playerNum}'s Energy has been Reserved : {playerCurEnergy}");
+                return;
             case "GIM_TAUNT":
                 if (dmg.attackerNum != st.ownerActorNum) return;
                 //공격 전에만 반응

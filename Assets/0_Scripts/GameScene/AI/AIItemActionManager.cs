@@ -137,6 +137,8 @@ public class AIItemActionManager : AILogicModule
             float score = brain.InventoryManager.EvaluateUtilityCurves(item, context);
             score += brain.InventoryManager.EvaluateGimmicks(item, context);
 
+            //if (item.itemId == "3003") score += 10000;
+
             Debug.Log($"이름 : {item.displayName_ID}, 점수 : {score}");
 
             if (score > highestScore)
