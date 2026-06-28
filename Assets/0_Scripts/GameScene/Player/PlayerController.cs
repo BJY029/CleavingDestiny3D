@@ -154,6 +154,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         firstPersonObjects.SetActive(true); //1인칭 오브젝트 켜기
 
         cam = _mainCamera.GetComponent<Camera>();
+        CameraSwitchManager.Instance.RegisterPlayerCamera(cam);
         DamageTextManager.instance.SetTargetCamera(cam);
 
         isLookingAtTree = false;
@@ -336,6 +337,13 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         {
             //만약 현재 실행중인 미니게임이 없다면, 해당 인터페이스로 설정
             if (currentMinigame == null) currentMinigame = LockpickController.instance;
+            //움직임 막기
+            SetInputLocked(true);
+            return;
+        }
+        if (WoodChopController.instance.isPlaying)
+        {
+            if (currentMinigame == null) currentMinigame = WoodChopController.instance;
             //움직임 막기
             SetInputLocked(true);
             return;
@@ -523,6 +531,12 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     {
         //내 객체가 아니면 return
         if (!photonView.IsMine) return;
+        if (WoodChopController.instance.isPlaying)
+        {
+            //미니 게임 관련 인터페이스 상호작용 수행
+            currentMinigame?.OnInteract(this);
+        }
+
         //내 턴이 아니면 return
         if (!GameHelper.IsMyTurn()) return;
 

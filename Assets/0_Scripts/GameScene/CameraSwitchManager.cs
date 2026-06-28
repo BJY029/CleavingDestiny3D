@@ -3,46 +3,76 @@ using UnityEngine;
 public class CameraSwitchManager : MonoBehaviour
 {
     public static CameraSwitchManager Instance;
-	private void Awake()
-	{
-		if (Instance != null)
-		{
-			Destroy(Instance);
-			return;
-		}
-		Instance = this;
-	}
-	
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
-	public Camera mainCamera;
+    private void Start()
+    {
+        SetOnly(branchCamera);
+    }
+
+    public Camera mainCamera;
     public Camera branchCamera;
+    public Camera woodLogMinigameCamera;
+
+    [Header("Runtime Assigned")]
+    [SerializeField] private Camera playerCamera;
+
+    // Player가 스폰된 뒤 자기 카메라를 등록하는 함수
+    public void RegisterPlayerCamera(Camera cam)
+    {
+        playerCamera = cam;
+
+        // 기본 상태는 플레이어 카메라 ON
+        SetOnly(playerCamera);
+    }
 
     //메인 카메라를 켜고 끄는 함수
     public void GameCameraToggle(bool toggle)
     {
-		mainCamera.enabled = toggle;
-	}
+        mainCamera.enabled = toggle;
+    }
 
     public void Off_ExceptPlayerCam()
     {
-        mainCamera.enabled = false;
-        branchCamera.enabled = false;
+        SetOnly(playerCamera);
     }
-	public void Branch_to_Game()
+    public void Branch_to_Game()
     {
-        ChangeCamera_to_from(branchCamera, mainCamera);
+        SetOnly(playerCamera);
     }
 
-    private void ChangeCamera_to_from(Camera existingCam, Camera changeCam)
+    public void Player_to_LogMiniGame()
     {
-        existingCam.enabled = false;
-        changeCam.enabled = true;
+        SetOnly(woodLogMinigameCamera);
     }
 
-    private void PlayerCameraOn()
+    public void LogMiniGame_to_Player()
     {
-        mainCamera.enabled = false;
-        branchCamera.enabled = false;
+        SetOnly(playerCamera);
     }
 
+    private void SetOnly(Camera targetCam)
+    {
+        if (playerCamera != null)
+            playerCamera.enabled = false;
+
+        if (branchCamera != null)
+            branchCamera.enabled = false;
+
+        if (woodLogMinigameCamera != null)
+            woodLogMinigameCamera.enabled = false;
+
+        if (targetCam != null)
+            targetCam.enabled = true;
+        else
+            Debug.LogWarning("[CameraSwitchManager] 전환할 카메라가 없습니다.");
+    }
 }

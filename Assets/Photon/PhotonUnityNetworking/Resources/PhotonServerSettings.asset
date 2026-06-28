@@ -94,6 +94,15 @@ MonoBehaviour:
   - RPC_BuyShopItem
   - RPC_PlayHitSound
   - RPC_ShowDamageToOthers
+  - RPC_EndDuel
+  - RPC_RequestChop
+  - RPC_RequestStartDuel
+  - RPC_SyncStartDuel
+  - RPC_SyncTurn
+  - RPC_ApplySuccessfulSlice
+  - RPC_RequestChopByHitPoint
+  - RPC_ApplySuccessfulStrike
+  - RPC_RequestChopByInteract
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
