@@ -233,6 +233,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		}
 		if (item.itemId == "4006")
 		{
+			Player requestPlayer = null;
 			Player targetPlayer = null;
 			Player[] playerNums = PhotonNetwork.PlayerList;
 			//다른 플레이어 찾기
@@ -240,12 +241,12 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			{
 				if (player.ActorNumber != actorNum)
 					targetPlayer = player;
-
+				else requestPlayer = player;
 			}
 
 			//임시, 1cost 도박 진행
 			if (targetPlayer != null)
-				WoodChopController.instance.RequestStartDual(targetPlayer, 1);
+				WoodChopController.instance.RequestStartDual(requestPlayer, targetPlayer, 1);
 		}
 
 		//아이템 적용 대상을 기준으로 분기하여 처리한다.

@@ -103,6 +103,7 @@ MonoBehaviour:
   - RPC_RequestChopByHitPoint
   - RPC_ApplySuccessfulStrike
   - RPC_RequestChopByInteract
+  - RPC_RequestStartDual
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

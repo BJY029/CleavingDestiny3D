@@ -14,6 +14,7 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
     [SerializeField] private Material crossSectionMaterial;
 
     [Header("Axe Auto Move")]
+    [SerializeField] private Transform axeBladePoint;
     [SerializeField] private Transform axeRoot;
     [SerializeField] private Transform axeLeftPoint;
     [SerializeField] private Transform axeRightPoint;
@@ -24,14 +25,18 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
     [SerializeField] private float axeStrikeDownTime = 0.12f;
     [SerializeField] private float axeStrikeUpTime = 0.18f;
     [SerializeField] private float afterStrikeDelay = 0.15f;
+    [SerializeField] private float freezeBeforeStrikeDelay = 0.06f;
+    [SerializeField] private float axeFreezeSmoothTime = 0.04f;
+
 
     private bool isResolvingStrike;
-    private float frozenAxeX01;
+
 
     [Header("Slice Physics")]
     [SerializeField] private float discardForce = 2.5f;
     [SerializeField] private float discardTorque = 4f;
     [SerializeField] private float discardDestroyDelay = 2f;
+
 
     [Header("Rule Settings")]
     [SerializeField] private float edgeMargin = 0.02f;
@@ -41,7 +46,6 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
     private GameObject currentWood;
 
-    private WoodChopDuelRules rules;
     public bool isPlaying { get; private set; }
 
     private int playerAActorNumber;
@@ -52,9 +56,11 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
     private double turnStartTime;
 
-    private float syncedSegmentLeft;
-    private float syncedSegmentRight;
     private int syncedCurrentPlayerIndex;
+
+    private bool isWaitingMasterResult;
+    private bool isAxeFrozenByNetwork;
+    private Coroutine strikeCoroutine;
 
     private int CurrentTurnActorNumber
     {
@@ -68,27 +74,27 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
     {
         if (instance == null) instance = this;
         else Destroy(gameObject);
-
-
-        //규칙 객체 초기화
-        rules = new WoodChopDuelRules(
-            playerCount: 2,
-            edgeMargin: edgeMargin,
-            minChoppableWidth: minChoppableWidth
-        );
     }
 
     //미니게임 진행중이면 시간을 지속적으로 계산한다.
     private void Update()
     {
         if (!isPlaying) return;
-        if (!isResolvingStrike) UpdateAxeView();
+        if (!isResolvingStrike && !isWaitingMasterResult && !isAxeFrozenByNetwork)
+            UpdateAxeView();
 
         if (PhotonNetwork.IsMasterClient) Master_CheckTimeout();
     }
 
+    public void RequestStartDual(Player requestPlayer, Player targetPlayer, int betAmount)
+    {
+        photonView.RPC(nameof(RPC_RequestStartDual), requestPlayer, targetPlayer, betAmount);
+    }
+
+
     //미니게임 시작 함수
-    public void RequestStartDual(Player targetPlayer, int betAmount)
+    [PunRPC]
+    public void RPC_RequestStartDual(Player targetPlayer, int betAmount)
     {
         if (targetPlayer == null) return;
         if (!PhotonNetwork.InRoom) return;
@@ -137,25 +143,21 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
         turnCnt = 0;
 
-        rules.Reset(0);
-
-        syncedSegmentLeft = rules.CurrentSegment.left;
-        syncedSegmentRight = rules.CurrentSegment.right;
-        syncedCurrentPlayerIndex = rules.CurrentPlayerIndex;
+        syncedCurrentPlayerIndex = 0;
 
         turnStartTime = PhotonNetwork.Time + 0.2d;
         isPlaying = true;
 
         //Master에서 초기화된 값들 클라이언트들에게 전파
         photonView.RPC(nameof(RPC_SyncStartDuel), RpcTarget.All,
-        playerAActorNumber, playerBActorNumber, energyBet, syncedSegmentLeft, syncedSegmentRight, syncedCurrentPlayerIndex,
+        playerAActorNumber, playerBActorNumber, energyBet, syncedCurrentPlayerIndex,
         turnStartTime, turnCnt);
     }
 
     //각 클라이언트가 정보를 받아서 미니 게임 정보를 초기화한다.
     [PunRPC]
     private void RPC_SyncStartDuel(int actorA, int actorB, int betAmount,
-    float segmentLeft, float segmentRight, int currentPlayerIndex, double startTime, int syncedTurnCount)
+    int currentPlayerIndex, double startTime, int syncedTurnCount)
     {
         CameraSwitchManager.Instance.Player_to_LogMiniGame();
 
@@ -163,14 +165,12 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         playerBActorNumber = actorB;
         energyBet = betAmount;
 
-        syncedSegmentLeft = segmentLeft;
-        syncedSegmentRight = segmentRight;
         syncedCurrentPlayerIndex = currentPlayerIndex;
 
         turnStartTime = startTime;
         turnCnt = syncedTurnCount;
 
-        isResolvingStrike = false;
+        ResetAxeRuntimeState();
         isPlaying = true;
 
         SpawnLocalWood();
@@ -188,6 +188,8 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
     {
         if (!isPlaying) return;
         if (currentWood == null) return;
+        if (isResolvingStrike) return;
+        if (isWaitingMasterResult) return;
 
         int localActorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
 
@@ -198,6 +200,11 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         }
 
         double pressTime = PhotonNetwork.Time;
+        float predictedCutX01 = GetAxeX01(pressTime);
+
+        isWaitingMasterResult = true;
+
+        FreezeAxeAt(predictedCutX01);
 
         photonView.RPC(
             nameof(RPC_RequestChopByInteract),
@@ -206,6 +213,16 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
             pressTime
         );
     }
+
+    private void FreezeAxeAt(float axeX01)
+    {
+        if (axeRoot == null) return;
+        if (axeLeftPoint == null || axeRightPoint == null) return;
+        if (axeUpPoint == null) return;
+
+        axeRoot.position = GetAxeUpPosition(axeX01);
+    }
+
     //Master가 인터렉트를 처리하는 함수
     [PunRPC]
     private void RPC_RequestChopByInteract(int requestActorNumber, double pressTime, PhotonMessageInfo info)
@@ -216,9 +233,16 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         if (isResolvingStrike) return;
         if (info.Sender.ActorNumber != requestActorNumber) return;
 
-        int currentPlayerIndex = rules.CurrentPlayerIndex;
+        int currentPlayerIndex = syncedCurrentPlayerIndex;
         int expectedActorNumber = GetActorNumberByPlayerIndex(currentPlayerIndex);
-        if (requestActorNumber != expectedActorNumber) return;
+
+        if (requestActorNumber != expectedActorNumber)
+        {
+            Debug.LogWarning(
+                $"[WoodChop] 턴 불일치 / request={requestActorNumber}, expected={expectedActorNumber}, currentPlayerIndex={currentPlayerIndex}"
+            );
+            return;
+        }
 
         if (pressTime < turnStartTime)
         {
@@ -245,69 +269,62 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
     private void Master_ResolveChop(int currentPlayerIndex, int requesterActorNumber, float cutX01)
     {
-        float oldSegmentLeft = rules.CurrentSegment.left;
-        float oldSegmentRight = rules.CurrentSegment.right;
+        WoodSegment currentWoodSegment = CalculateWoodSegmentOnAxeRail(currentWood);
 
-        ChopResolve result = rules.TryChop(currentPlayerIndex, cutX01);
-
-        if (result.type == ChopResolveType.Ignored)
+        if (currentWoodSegment.width <= minChoppableWidth)
         {
+            Master_EndDuel(requesterActorNumber, "더 이상 자를 수 없음");
             return;
         }
 
-        if (result.type == ChopResolveType.Failed)
+        bool isOutside =
+            cutX01 <= currentWoodSegment.left + edgeMargin ||
+            cutX01 >= currentWoodSegment.right - edgeMargin;
+
+        if (isOutside)
         {
-            int loserActorNumber = GetActorNumberByPlayerIndex(result.loserIndex);
-            Master_EndDuel(loserActorNumber, "쪼개기 실패");
+            Master_EndDuel(requesterActorNumber, "나무 바깥을 찍음");
             return;
         }
 
-        if (result.type == ChopResolveType.Success)
-        {
-            bool keepRightPiece = Mathf.Abs(result.nextSegment.left - cutX01) < 0.001f;
+        int nextPlayerIndex = 1 - currentPlayerIndex;
 
-            isResolvingStrike = true;
+        double nextTurnStartTime =
+            PhotonNetwork.Time
+            + axeFreezeSmoothTime
+            + freezeBeforeStrikeDelay
+            + axeStrikeDownTime
+            + axeStrikeUpTime
+            + afterStrikeDelay;
 
-            double nextTurnStartTime =
-                PhotonNetwork.Time + axeStrikeDownTime + axeStrikeUpTime + afterStrikeDelay;
+        int nextTurnCnt = turnCnt + 1;
 
-            int nextTurnCnt = turnCnt + 1;
+        isResolvingStrike = true;
 
-            photonView.RPC(
-                nameof(RPC_ApplySuccessfulStrike),
-                RpcTarget.All,
-                cutX01,
-                keepRightPiece,
-                oldSegmentLeft,
-                oldSegmentRight,
-                result.nextSegment.left,
-                result.nextSegment.right,
-                rules.CurrentPlayerIndex,
-                nextTurnStartTime,
-                nextTurnCnt
-            );
-        }
+        photonView.RPC(
+            nameof(RPC_ApplySuccessfulStrike),
+            RpcTarget.All,
+            cutX01,
+            nextPlayerIndex,
+            nextTurnStartTime,
+            nextTurnCnt
+        );
     }
 
     [PunRPC]
     private void RPC_ApplySuccessfulStrike(
         float cutX01,
-        bool keepRightPiece,
-        float oldSegmentLeft,
-        float oldSegmentRight,
-        float nextSegmentLeft,
-        float nextSegmentRight,
         int nextPlayerIndex,
         double nextTurnStartTime,
         int syncedTurnCount)
     {
-        StartCoroutine(Co_PlayAxeStrikeAndSlice(
+        isWaitingMasterResult = false;
+
+
+        if (strikeCoroutine != null) StopCoroutine(strikeCoroutine);
+
+        strikeCoroutine = StartCoroutine(Co_PlayAxeStrikeAndSlice(
             cutX01,
-            keepRightPiece,
-            oldSegmentLeft,
-            oldSegmentRight,
-            nextSegmentLeft,
-            nextSegmentRight,
             nextPlayerIndex,
             nextTurnStartTime,
             syncedTurnCount
@@ -316,35 +333,18 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
     private System.Collections.IEnumerator Co_PlayAxeStrikeAndSlice(
     float cutX01,
-    bool keepRightPiece,
-    float oldSegmentLeft,
-    float oldSegmentRight,
-    float nextSegmentLeft,
-    float nextSegmentRight,
     int nextPlayerIndex,
     double nextTurnStartTime,
     int syncedTurnCount)
     {
         isResolvingStrike = true;
-        frozenAxeX01 = cutX01;
+        isAxeFrozenByNetwork = true;
 
-        Vector3 xPosition = Vector3.Lerp(
-            axeLeftPoint.position,
-            axeRightPoint.position,
-            cutX01
-        );
+        yield return Co_SmoothFreezeAxe(cutX01);
+        yield return new WaitForSeconds(freezeBeforeStrikeDelay);
 
-        Vector3 upPosition = new Vector3(
-            xPosition.x,
-            axeUpPoint.position.y,
-            xPosition.z
-        );
-
-        Vector3 downPosition = new Vector3(
-            xPosition.x,
-            axeDownPoint.position.y,
-            xPosition.z
-        );
+        Vector3 upPosition = GetAxeUpPosition(cutX01);
+        Vector3 downPosition = GetAxeDownPosition(cutX01);
 
         float t = 0f;
 
@@ -352,15 +352,13 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         {
             t += Time.deltaTime;
             float ratio = Mathf.Clamp01(t / axeStrikeDownTime);
-
             axeRoot.position = Vector3.Lerp(upPosition, downPosition, ratio);
-
             yield return null;
         }
 
         axeRoot.position = downPosition;
 
-        SliceCurrentWood(cutX01, keepRightPiece, oldSegmentLeft, oldSegmentRight);
+        SliceCurrentWood(cutX01);
 
         t = 0f;
 
@@ -368,51 +366,68 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         {
             t += Time.deltaTime;
             float ratio = Mathf.Clamp01(t / axeStrikeUpTime);
-
             axeRoot.position = Vector3.Lerp(downPosition, upPosition, ratio);
-
             yield return null;
         }
 
         yield return new WaitForSeconds(afterStrikeDelay);
 
-        syncedSegmentLeft = nextSegmentLeft;
-        syncedSegmentRight = nextSegmentRight;
         syncedCurrentPlayerIndex = nextPlayerIndex;
-
         turnStartTime = nextTurnStartTime;
         turnCnt = syncedTurnCount;
 
         isResolvingStrike = false;
+        isAxeFrozenByNetwork = false;
+
+        strikeCoroutine = null;
 
         Debug.Log($"장작 쪼개기 성공 / 다음 턴 Player {CurrentTurnActorNumber}");
     }
 
-    private void SliceCurrentWood(float globalCutX01, bool keepRightPiece, float oldSegmentLeft, float oldSegmentRight)
+    private System.Collections.IEnumerator Co_SmoothFreezeAxe(float cutX01)
+    {
+        if (axeRoot == null)
+        {
+            yield break;
+        }
+
+        Vector3 startPosition = axeRoot.position;
+
+        Vector3 targetPosition = GetAxeUpPosition(cutX01);
+
+        float t = 0f;
+
+        while (t < axeFreezeSmoothTime)
+        {
+            t += Time.deltaTime;
+            float ratio = Mathf.Clamp01(t / axeFreezeSmoothTime);
+
+            axeRoot.position = Vector3.Lerp(startPosition, targetPosition, ratio);
+
+            yield return null;
+        }
+
+        axeRoot.position = targetPosition;
+    }
+
+    private void SliceCurrentWood(float cutX01)
     {
         if (currentWood == null) return;
 
-        Bounds localBounds = GetLocalMeshBounds(currentWood);
-
-        float local01 = Mathf.InverseLerp(oldSegmentLeft, oldSegmentRight, globalCutX01);
-
-        float localCutX = Mathf.Lerp(localBounds.min.x, localBounds.max.x, local01);
-
-        Vector3 localPlanePoint = new Vector3(localCutX, localBounds.center.y, localBounds.center.z);
-
-        Vector3 planeWorldPoint = currentWood.transform.TransformPoint(localPlanePoint);
-
-        Vector3 planeWorldNormal = currentWood.transform.right;
+        Vector3 planeWorldPoint = GetCutPlanePoint(cutX01);
+        Vector3 planeWorldNormal = GetCutAxisNormal();
 
         SlicedHull hull = currentWood.Slice(planeWorldPoint, planeWorldNormal, crossSectionMaterial);
 
         if (hull == null) return;
 
+        Transform sourceParent = currentWood.transform.parent;
+        Vector3 sourceLocalPosition = currentWood.transform.localPosition;
+        Quaternion sourceLocalRotation = currentWood.transform.localRotation;
+        Vector3 sourceLocalScale = currentWood.transform.localScale;
+
         GameObject upperHull = hull.CreateUpperHull(currentWood, crossSectionMaterial);
         GameObject lowerHull = hull.CreateLowerHull(currentWood, crossSectionMaterial);
-
-        Debug.Log($"[WoodChop] upperHull={(upperHull != null ? upperHull.name : "null")}");
-        Debug.Log($"[WoodChop] lowerHull={(lowerHull != null ? lowerHull.name : "null")}");
 
         if (upperHull == null || lowerHull == null)
         {
@@ -420,41 +435,179 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
             return;
         }
 
+        ApplySourceTransformToHull(upperHull, sourceParent, sourceLocalPosition, sourceLocalRotation, sourceLocalScale);
+        ApplySourceTransformToHull(lowerHull, sourceParent, sourceLocalPosition, sourceLocalRotation, sourceLocalScale);
+
         SetupSlicedPiece(upperHull);
         SetupSlicedPiece(lowerHull);
 
-        GameObject keepPiece = SelectKeepPiece(upperHull, lowerHull, planeWorldPoint, planeWorldNormal, keepRightPiece);
+        GameObject keepPiece = SelectLargerPiece(upperHull, lowerHull, planeWorldNormal);
 
         GameObject discardPiece = keepPiece == upperHull ? lowerHull : upperHull;
 
-        Debug.Log($"[WoodChop] 기존 currentWood 제거 예정: {currentWood.name}");
         Destroy(currentWood);
 
         currentWood = keepPiece;
         currentWood.name = "current_wood";
         currentWood.tag = "WoodLog";
 
-        Debug.Log($"[WoodChop] 유지 조각: {currentWood.name}, 버릴 조각: {discardPiece.name}");
-        ThrowAwayDiscardPiece(discardPiece, planeWorldNormal, keepRightPiece);
+        ThrowAwayDiscardPiece(discardPiece, keepPiece, planeWorldNormal);
     }
 
-    private GameObject SelectKeepPiece(GameObject upperHull, GameObject lowerHull, Vector3 planeWorldPoint, Vector3 planeWorldNormal, bool keepRightPiece)
+    private WoodSegment CalculateWoodSegmentOnAxeRail(GameObject wood)
     {
-        float upperSide = Vector3.Dot(GetWorldBoundsCenter(upperHull) - planeWorldPoint, planeWorldNormal);
-        float lowerSide = Vector3.Dot(GetWorldBoundsCenter(lowerHull) - planeWorldPoint, planeWorldNormal);
+        if (wood == null)
+        {
+            return new WoodSegment(0f, 1f);
+        }
 
-        bool upperIsRight = upperSide > lowerSide;
+        Renderer renderer = wood.GetComponent<Renderer>();
 
-        if (keepRightPiece) return upperIsRight ? upperHull : lowerHull;
+        if (renderer == null)
+        {
+            return new WoodSegment(0f, 1f);
+        }
 
-        return upperIsRight ? lowerHull : upperHull;
+        Vector3 left = axeLeftPoint.position;
+        Vector3 right = axeRightPoint.position;
+
+        Vector3 railVector = right - left;
+        float railLengthSqr = railVector.sqrMagnitude;
+
+        if (railLengthSqr <= 0.0001f)
+        {
+            return new WoodSegment(0f, 1f);
+        }
+
+        Bounds bounds = renderer.bounds;
+        Vector3 center = bounds.center;
+        Vector3 extents = bounds.extents;
+
+        Vector3[] corners =
+        {
+        center + new Vector3( extents.x,  extents.y,  extents.z),
+        center + new Vector3( extents.x,  extents.y, -extents.z),
+        center + new Vector3( extents.x, -extents.y,  extents.z),
+        center + new Vector3( extents.x, -extents.y, -extents.z),
+        center + new Vector3(-extents.x,  extents.y,  extents.z),
+        center + new Vector3(-extents.x,  extents.y, -extents.z),
+        center + new Vector3(-extents.x, -extents.y,  extents.z),
+        center + new Vector3(-extents.x, -extents.y, -extents.z),
+    };
+
+        float min01 = float.MaxValue;
+        float max01 = float.MinValue;
+
+        for (int i = 0; i < corners.Length; i++)
+        {
+            float t = Vector3.Dot(corners[i] - left, railVector) / railLengthSqr;
+
+            min01 = Mathf.Min(min01, t);
+            max01 = Mathf.Max(max01, t);
+        }
+
+        return new WoodSegment(
+            Mathf.Clamp01(min01),
+            Mathf.Clamp01(max01)
+        );
+    }
+
+    private GameObject SelectLargerPiece(GameObject upperHull, GameObject lowerHull, Vector3 axis)
+    {
+        float upperLength = GetProjectedMeshLength(upperHull, axis);
+        float lowerLength = GetProjectedMeshLength(lowerHull, axis);
+
+        return upperLength >= lowerLength ? upperHull : lowerHull;
+    }
+
+    private float GetProjectedMeshLength(GameObject target, Vector3 axis)
+    {
+        axis.Normalize();
+
+        MeshFilter meshFilter = target.GetComponent<MeshFilter>();
+
+        if (meshFilter == null || meshFilter.sharedMesh == null)
+        {
+            return GetProjectedRendererLength(target, axis);
+        }
+
+        Vector3[] vertices = meshFilter.sharedMesh.vertices;
+
+        if (vertices == null || vertices.Length == 0)
+        {
+            return 0f;
+        }
+
+        float min = float.MaxValue;
+        float max = float.MinValue;
+
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            Vector3 worldPoint = target.transform.TransformPoint(vertices[i]);
+            float projected = Vector3.Dot(worldPoint, axis);
+
+            min = Mathf.Min(min, projected);
+            max = Mathf.Max(max, projected);
+        }
+
+        return max - min;
+    }
+
+    private float GetProjectedRendererLength(GameObject target, Vector3 axis)
+    {
+        Renderer renderer = target.GetComponent<Renderer>();
+
+        if (renderer == null)
+        {
+            return 0f;
+        }
+
+        Bounds bounds = renderer.bounds;
+
+        Vector3 center = bounds.center;
+        Vector3 extents = bounds.extents;
+
+        Vector3[] corners =
+        {
+        center + new Vector3( extents.x,  extents.y,  extents.z),
+        center + new Vector3( extents.x,  extents.y, -extents.z),
+        center + new Vector3( extents.x, -extents.y,  extents.z),
+        center + new Vector3( extents.x, -extents.y, -extents.z),
+        center + new Vector3(-extents.x,  extents.y,  extents.z),
+        center + new Vector3(-extents.x,  extents.y, -extents.z),
+        center + new Vector3(-extents.x, -extents.y,  extents.z),
+        center + new Vector3(-extents.x, -extents.y, -extents.z),
+    };
+
+        float min = float.MaxValue;
+        float max = float.MinValue;
+
+        for (int i = 0; i < corners.Length; i++)
+        {
+            float projected = Vector3.Dot(corners[i], axis);
+
+            min = Mathf.Min(min, projected);
+            max = Mathf.Max(max, projected);
+        }
+
+        return max - min;
+    }
+
+    private void ApplySourceTransformToHull(GameObject piece, Transform sourceParent, Vector3 sourceLocalPosition
+    , Quaternion sourceLocalRotation, Vector3 sourceLocalScale)
+    {
+        if (piece == null) return;
+
+        piece.transform.SetParent(sourceParent, false);
+        piece.transform.localPosition = sourceLocalPosition;
+        piece.transform.localRotation = sourceLocalRotation;
+        piece.transform.localScale = sourceLocalScale;
     }
 
     private void SetupSlicedPiece(GameObject piece)
     {
         if (piece == null) return;
 
-        piece.transform.SetParent(woodParent, true);
         piece.tag = "WoodLog";
 
         MeshCollider meshCollider = piece.GetComponent<MeshCollider>();
@@ -471,7 +624,10 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         rb.useGravity = false;
     }
 
-    private void ThrowAwayDiscardPiece(GameObject discardPiece, Vector3 planeWorldNormal, bool keptRightPiece)
+    private void ThrowAwayDiscardPiece(
+    GameObject discardPiece,
+    GameObject keepPiece,
+    Vector3 planeWorldNormal)
     {
         if (discardPiece == null)
         {
@@ -481,19 +637,41 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
         Rigidbody rb = discardPiece.GetComponent<Rigidbody>();
 
-
-        if (rb != null)
+        if (rb == null)
         {
-            rb.isKinematic = false;
-            rb.useGravity = true;
-
-            Vector3 forceDirection = keptRightPiece ? -planeWorldNormal : planeWorldNormal;
-            Debug.Log($"[WoodChop] 버리는 조각 날림 / discard={discardPiece.name}, dir={forceDirection}, force={discardForce}");
-            rb.AddForce(forceDirection * discardForce, ForceMode.Impulse);
-            rb.AddTorque(Random.insideUnitSphere * discardTorque, ForceMode.Impulse);
+            rb = discardPiece.AddComponent<Rigidbody>();
         }
 
+        rb.isKinematic = false;
+        rb.useGravity = true;
+
+        // 버리는 조각이 남는 조각 기준 어느 쪽에 있는지 계산
+        Vector3 keepCenter = GetWorldBoundsCenter(keepPiece);
+        Vector3 discardCenter = GetWorldBoundsCenter(discardPiece);
+
+        float side = Vector3.Dot(
+            discardCenter - keepCenter,
+            planeWorldNormal
+        );
+
+        Vector3 sideDirection = side >= 0f
+            ? planeWorldNormal
+            : -planeWorldNormal;
+
+        // 옆으로만 날리면 밋밋하니까 살짝 위로 띄움
+        Vector3 forceDirection = (sideDirection + Vector3.up * 0.35f).normalized;
+
+        // 버리는 조각은 더 이상 현재 장작 판정에 쓰이지 않도록 태그 제거
+        discardPiece.tag = "Untagged";
+
+        rb.AddForce(forceDirection * discardForce, ForceMode.Impulse);
+        rb.AddTorque(Random.insideUnitSphere * discardTorque, ForceMode.Impulse);
+
         Destroy(discardPiece, discardDestroyDelay);
+
+        Debug.Log(
+            $"[WoodChop] 버리는 조각 날림 / discard={discardPiece.name}, dir={forceDirection}, force={discardForce}"
+        );
     }
 
     //Master가 시간을 계산한다.
@@ -507,11 +685,8 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         //제한 시간 내이면 아무것도 안한다.
         if (elapsed < turnTimeLimit) return;
 
-        //제한 시간을 넘은 경우 실패 처리한다.
-        ChopResolve result = rules.FailCurrentPlayer();
-
         //패배 처리 수행
-        int loserActorNumber = GetActorNumberByPlayerIndex(result.loserIndex);
+        int loserActorNumber = GetActorNumberByPlayerIndex(syncedCurrentPlayerIndex);
 
         Master_EndDuel(loserActorNumber, "시간 초과");
     }
@@ -542,6 +717,7 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
     private void RPC_EndDuel(int loserActorNumber, int winnerActorNumber, string reason)
     {
         isPlaying = false;
+        ResetAxeRuntimeState();
 
         CameraSwitchManager.Instance.LogMiniGame_to_Player();
 
@@ -551,19 +727,91 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         // ResultPanel.Show(winnerActorNumber, loserActorNumber, reason);
     }
 
+    private void ResetAxeRuntimeState()
+    {
+        isResolvingStrike = false;
+        isWaitingMasterResult = false;
+        isAxeFrozenByNetwork = false;
+
+        if (strikeCoroutine != null)
+        {
+            StopCoroutine(strikeCoroutine);
+            strikeCoroutine = null;
+        }
+    }
+
     private void UpdateAxeView()
     {
         if (axeRoot == null) return;
         if (axeLeftPoint == null || axeRightPoint == null) return;
         if (axeUpPoint == null) return;
 
-        float axeX01 = isResolvingStrike ? frozenAxeX01 : GetAxeX01(PhotonNetwork.Time);
+        float axeX01 = GetAxeX01(PhotonNetwork.Time);
 
-        Vector3 xPosition = Vector3.Lerp(axeLeftPoint.position, axeRightPoint.position, axeX01);
+        axeRoot.position = GetAxeUpPosition(axeX01);
+    }
 
-        Vector3 targetPosition = new Vector3(xPosition.x, axeUpPoint.position.y, xPosition.z);
+    private Vector3 GetCutAxisNormal()
+    {
+        return (axeRightPoint.position - axeLeftPoint.position).normalized;
+    }
 
-        axeRoot.position = targetPosition;
+    private Vector3 GetCutPlanePoint(float cutX01)
+    {
+        Vector3 railPoint = Vector3.Lerp(axeLeftPoint.position, axeRightPoint.position, cutX01);
+
+        Vector3 axis = GetCutAxisNormal();
+        Vector3 woodCenter = GetWorldBoundsCenter(currentWood);
+
+        float distanceOnAxis = Vector3.Dot(railPoint - woodCenter, axis);
+
+        return woodCenter + axis * distanceOnAxis;
+    }
+
+    private Vector3 GetAxeRootPositionForBladeTarget(Vector3 bladeTargetWorld)
+    {
+        if (axeBladePoint == null)
+        {
+            return bladeTargetWorld;
+        }
+
+        Vector3 bladeOffset = axeBladePoint.position - axeRoot.position;
+
+        return bladeTargetWorld - bladeOffset;
+    }
+
+    private Vector3 GetAxeUpPosition(float cutX01)
+    {
+        Vector3 railPoint = Vector3.Lerp(
+            axeLeftPoint.position,
+            axeRightPoint.position,
+            cutX01
+        );
+
+        Vector3 bladeTarget = new Vector3(
+            railPoint.x,
+            axeUpPoint.position.y,
+            railPoint.z
+        );
+
+        return GetAxeRootPositionForBladeTarget(bladeTarget);
+    }
+
+    private Vector3 GetAxeDownPosition(float cutX01)
+    {
+        Vector3 railPoint = Vector3.Lerp(
+            axeLeftPoint.position,
+            axeRightPoint.position,
+            cutX01
+        );
+
+        Vector3 bladeTarget = new Vector3(
+            railPoint.x,
+            axeDownPoint.position.y,
+            railPoint.z
+        );
+
+        return GetAxeRootPositionForBladeTarget(bladeTarget);
     }
 
 
@@ -605,18 +853,6 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         return 2f - repeated;
     }
 
-
-    private Bounds GetLocalMeshBounds(GameObject target)
-    {
-        MeshFilter meshFilter = target.GetComponent<MeshFilter>();
-
-        if (meshFilter != null && meshFilter.sharedMesh != null)
-        {
-            return meshFilter.sharedMesh.bounds;
-        }
-
-        return new Bounds(Vector3.zero, Vector3.one);
-    }
 
     private Vector3 GetWorldBoundsCenter(GameObject target)
     {

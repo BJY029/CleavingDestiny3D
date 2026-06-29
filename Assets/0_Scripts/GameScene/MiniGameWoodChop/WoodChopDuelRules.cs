@@ -29,11 +29,17 @@ public enum ChopResolveType
     Failed
 }
 
+public enum KeptWoodSide
+{
+    None, Left, Right
+}
+
 public struct ChopResolve
 {
     public ChopResolveType type;
     public int loserIndex;
     public WoodSegment nextSegment;
+    public KeptWoodSide keptSide;
 
     public static ChopResolve Ignored(WoodSegment segment)
     {
@@ -41,17 +47,19 @@ public struct ChopResolve
         {
             type = ChopResolveType.Ignored,
             loserIndex = -1,
-            nextSegment = segment
+            nextSegment = segment,
+            keptSide = KeptWoodSide.None
         };
     }
 
-    public static ChopResolve Success(WoodSegment segment)
+    public static ChopResolve Success(WoodSegment segment, KeptWoodSide keptSide)
     {
         return new ChopResolve
         {
             type = ChopResolveType.Success,
             loserIndex = -1,
             nextSegment = segment,
+            keptSide = keptSide
         };
     }
 
@@ -61,7 +69,8 @@ public struct ChopResolve
         {
             type = ChopResolveType.Failed,
             loserIndex = loserIndex,
-            nextSegment = segment
+            nextSegment = segment,
+            keptSide = KeptWoodSide.None,
         };
     }
 }
@@ -90,6 +99,12 @@ public class WoodChopDuelRules
         CurrentPlayerIndex = startPlayerIndex;
     }
 
+    public void Reset(float initialLeft, float initialRight, int startPlayerIndex)
+    {
+        CurrentSegment = new WoodSegment(initialLeft, initialRight);
+        CurrentPlayerIndex = startPlayerIndex;
+    }
+
     public ChopResolve TryChop(int playerIndex, float cutX01)
     {
         if (playerIndex != CurrentPlayerIndex)
@@ -105,11 +120,21 @@ public class WoodChopDuelRules
         WoodSegment leftPlace = new WoodSegment(CurrentSegment.left, cutX01);
         WoodSegment rightPlace = new WoodSegment(cutX01, CurrentSegment.right);
 
-        CurrentSegment = leftPlace.width >= rightPlace.width ? leftPlace : rightPlace;
+        KeptWoodSide keptSide;
+        if (leftPlace.width >= rightPlace.width)
+        {
+            CurrentSegment = leftPlace;
+            keptSide = KeptWoodSide.Left;
+        }
+        else
+        {
+            CurrentSegment = rightPlace;
+            keptSide = KeptWoodSide.Right;
+        }
 
         CurrentPlayerIndex = (CurrentPlayerIndex + 1) % playerCount;
 
-        return ChopResolve.Success(CurrentSegment);
+        return ChopResolve.Success(CurrentSegment, keptSide);
     }
 
     public ChopResolve FailCurrentPlayer()
