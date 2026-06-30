@@ -120,13 +120,13 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         if (!IsPlayerInRoom(requestActorNumber) || !IsPlayerInRoom(targetActorNumber)) return;
 
         //TODO : 기력 보유 여부 검증
-        int p1Eng = PhotonPropertyHelper.GetPlayerProp<int>(requestActorNumber, PlayerPropKeys.Energy);
-        int p2Eng = PhotonPropertyHelper.GetPlayerProp<int>(targetActorNumber, PlayerPropKeys.Energy);
-        if (p1Eng < betAmount || p2Eng < betAmount)
-        {
-            Debug.LogWarning("배팅 기력 부족");
-            return;
-        }
+        // int p1Eng = PhotonPropertyHelper.GetPlayerProp<int>(requestActorNumber, PlayerPropKeys.Energy);
+        // int p2Eng = PhotonPropertyHelper.GetPlayerProp<int>(targetActorNumber, PlayerPropKeys.Energy);
+        // if (p1Eng < betAmount || p2Eng < betAmount)
+        // {
+        //     Debug.LogWarning("배팅 기력 부족");
+        //     return;
+        // }
 
         //Master에게 정보 전달
         Master_StartDuel(requestActorNumber, targetActorNumber, betAmount);
@@ -701,13 +701,7 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
         int winnerActorNumber = loserActorNumber == playerAActorNumber ? playerBActorNumber : playerAActorNumber;
 
-        //기력 처리
-        int WinnerEng = PhotonPropertyHelper.GetPlayerProp<int>(winnerActorNumber, PlayerPropKeys.Energy);
-        int WinnerEngMax = PhotonPropertyHelper.GetPlayerProp<int>(winnerActorNumber, PlayerPropKeys.MaxEnergy);
-        int loserEng = PhotonPropertyHelper.GetPlayerProp<int>(loserActorNumber, PlayerPropKeys.Energy);
-
-        PhotonPropertyHelper.SetPlayerProp(winnerActorNumber, PlayerPropKeys.Energy, Mathf.Min(WinnerEng + energyBet, WinnerEngMax));
-        PhotonPropertyHelper.SetPlayerProp(loserActorNumber, PlayerPropKeys.Energy, Mathf.Max(loserEng - energyBet, 0));
+        BettingSystemController.instance.Master_SettleBetResult(winnerActorNumber, loserActorNumber, energyBet);
 
         //게임 끝내기
         photonView.RPC(nameof(RPC_EndDuel), RpcTarget.All, loserActorNumber, winnerActorNumber, reason);

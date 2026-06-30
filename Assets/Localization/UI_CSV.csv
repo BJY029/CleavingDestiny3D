@@ -12,6 +12,17 @@ UI_PlayerNotHIT,내 차례가 아닙니다.,Not my Turn.
 UI_ItemNotify_Title,아이템이 사용되었습니다!,Item has been used!
 UI_ItemSacrifice_Title,바칠 제물을 선택하세요.,Choose an item to sacrifice.
 UI_ItemSacrifice_TableDesc,공격력 감소량,Reduction amount
+UI_ItemBet_Req_Title,기력을 배팅하세요!,Bet your energy!
+UI_ItemBet_Req_Desc1,배팅 가능한 기력,Bettable energy
+UI_ItemBet_Req_Desc2,배팅할 기력,Energy to bet
+UI_ItemBet_Rec_Title,요청 수신,Request Received
+UI_ItemBet_Rec_Desc1,배팅된 기력량,Wagered amount
+UI_ItemBet_Rec_Desc2,요청을 수락하시겠습니까?,Would you like to accept?
+UI_ItemBet_Rec_Desc3,거절 시 요청자가 얻는 기력,The energy the requester\ngains when refusing
+UI_ItemBet_Rec_Desc4,패배 시 부족한 기력은 마을 체력 피해로 전환됩니다,On defeat, missing energy damages Village HP.
+UI_ItemBet_W_Title,상대방 기다리는 중...,Waiting for Player...
+UI_ItemBet_W_Desc1,상대방이 거절 시 얻는 기력,Amount of energy gained when the target refuses
+UI_ItemBet_W_Desc2,상대방이 배팅 금액 설정 중,Opponent is setting the betting amount
 UI_Warning_Energy,기력이 부족합니다.,Not enough energy
 UI_Warning_FullInv,인벤토리가 가득찼습니다.,Full Inventory
 UI_Warning_NotEnoughItem,아이템 수가 부족합니다.,Not enough items.

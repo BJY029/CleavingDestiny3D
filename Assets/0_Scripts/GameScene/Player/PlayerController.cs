@@ -327,7 +327,8 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         }
         if (ItemOfferCanvasController.instance.isOfferPanelOpened
         || ItemSelectionController.instance.IsItemSelectionActivated
-        || SettingCanvasController.instance.IsSettingPanelOpened)
+        || SettingCanvasController.instance.IsSettingPanelOpened
+        || BettingSystemController.instance.BettingSystemActivated)
         {
             SetInputLocked(true);
             return;

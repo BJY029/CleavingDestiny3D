@@ -104,6 +104,14 @@ MonoBehaviour:
   - RPC_ApplySuccessfulStrike
   - RPC_RequestChopByInteract
   - RPC_RequestStartDual
+  - Init_SetActive_RecPanel
+  - Init_SetActive_ReqPanel
+  - Init_SetActive_WPanel
+  - RPC_RequestVerification
+  - RPC_StartBettingGame
+  - RPC_StartLogWoodGame
+  - RPC_CloseBetPanels
+  - RPC_RejectBettingGame
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

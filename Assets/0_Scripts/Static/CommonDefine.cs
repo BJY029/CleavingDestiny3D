@@ -41,6 +41,18 @@ public class UI_CSV
     public const string UI_ItemNotify_Title = "UI_ItemNotify_Title";
     public const string UI_ItemSacrifice_Title = "UI_ItemSacrifice_Title";
     public const string UI_ItemSacrifice_TableDesc = "UI_ItemSacrifice_TableDesc";
+    public const string UI_ItemBet_Req_Title = "UI_ItemBet_Req_Title";
+    public const string UI_ItemBet_Req_Desc1 = "UI_ItemBet_Req_Desc1";
+    public const string UI_ItemBet_Req_Desc2 = "UI_ItemBet_Req_Desc2";
+    public const string UI_ItemBet_Rec_Title = "UI_ItemBet_Rec_Title";
+    public const string UI_ItemBet_Rec_Desc1 = "UI_ItemBet_Rec_Desc1";
+    public const string UI_ItemBet_Rec_Desc2 = "UI_ItemBet_Rec_Desc2";
+    public const string UI_ItemBet_Rec_Desc3 = "UI_ItemBet_Rec_Desc3";
+    public const string UI_ItemBet_Rec_Desc4 = "UI_ItemBet_Rec_Desc4";
+    public const string UI_ItemBet_W_Title = "UI_ItemBet_W_Title";
+    public const string UI_ItemBet_W_Desc1 = "UI_ItemBet_W_Desc1";
+    public const string UI_ItemBet_W_Desc2 = "UI_ItemBet_W_Desc2";
+
     public const string UI_Warning_Energy = "UI_Warning_Energy";
     public const string UI_Warning_FullInv = "UI_Warning_FullInv";
     public const string UI_Warning_NotEnoughItem = "UI_Warning_NotEnoughItem";
