@@ -15,9 +15,11 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
     //경기 결과 결정 여부
     public bool _isResultResolved { get; private set; } = false;
     //경기 결과 이유
-    private MatchResultReason _lastResaon = MatchResultReason.NONE;
+    private MatchResultReason _lastResaon = MatchResultReason.None;
     private float delay = 3.0f;
     private string aiAttachedKey;
+    
+    [SerializeField] private GameEndedCanvasController gameEndedCanvasController;
     
     
     void Awake()
@@ -105,7 +107,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         //게임 종료 처리, 패배한 플레이어의 번호 가져오기
         int LostActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
         //패배 처리 설정 
-        TrySetMatchResult(LostActor, MatchResultReason.TREE_DESTROYED);
+        TrySetMatchResult(LostActor, MatchResultReason.TreeDestroyed);
 
         return true;
     }
@@ -138,10 +140,10 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         if (destroyedVillage.Count == 1)
         {
             int LostActor = destroyedVillage[0];
-            TrySetMatchResult(LostActor, MatchResultReason.VILLAGE_DESTROYED);
+            TrySetMatchResult(LostActor, MatchResultReason.VillageDestroyed);
         }
         //마을이 파괴된 플레이어가 2명 이상인 경우, 무승부로 처리
-        else TrySetMatchResult(-1, MatchResultReason.DRAW);
+        else TrySetMatchResult(-1, MatchResultReason.Draw);
 
         return true;
     }
@@ -216,7 +218,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         //있으면, out 으로  reason이 반환되며, 없으면 조건문 내에서 NONE으로 설정됨
         if (!Enum.TryParse(reasonStr, out MatchResultReason reason))
         {
-            reason = MatchResultReason.NONE;
+            reason = MatchResultReason.None;
         }
 
         _lastResaon = reason;
@@ -228,19 +230,20 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
 
     private void ShowEndGameUI(int LoserActorNum, MatchResultReason reason, int turnIndex)
     {
-        string state;
+        MatchResultType result = MatchResultType.None;
         if (LoserActorNum == -1)
         {
-            state = "Draw"; // 무승부 처리
+            result = MatchResultType.Draw;
         }
         else
         {
-            state = PhotonNetwork.LocalPlayer.ActorNumber == LoserActorNum ? "Lost" : "Win";
+            result = PhotonNetwork.LocalPlayer.ActorNumber == LoserActorNum ? MatchResultType.Loss : MatchResultType.Win;
         }
 
-        GameEndedCanvasController.instance.SetGameEndedCanvas(state, _lastResaon.ToString());
 
-        DevLog.Log($"<color=green>[MatchResult]</color> State : {state}, Loser : Player{LoserActorNum}, Reason : {reason}, TurnCnt : {turnIndex}");
+        gameEndedCanvasController.SetGameEndedCanvas(result, _lastResaon);
+
+        DevLog.Log($"<color=green>[MatchResult]</color> State : {result}, Loser : Player{LoserActorNum}, Reason : {reason}, TurnCnt : {turnIndex}");
     }
 
     #if UNITY_EDITOR
@@ -259,7 +262,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
 
                 if (p == null)  //p == ai 플레이어
                 {
-                    TrySetMatchResult(actNum, MatchResultReason.TREE_DESTROYED);
+                    TrySetMatchResult(actNum, MatchResultReason.TreeDestroyed);
                 }
             }
         }
@@ -268,7 +271,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         {
             DevLog.Log("<color=red>DEBUG: 플레이어 나무 패배</color>", this);
             
-            TrySetMatchResult(PhotonNetwork.LocalPlayer.ActorNumber, MatchResultReason.TREE_DESTROYED);
+            TrySetMatchResult(PhotonNetwork.LocalPlayer.ActorNumber, MatchResultReason.TreeDestroyed);
         }
 
         if (Keyboard.current.digit3Key.wasPressedThisFrame)
@@ -282,7 +285,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
 
                 if (p == null)  //p == ai 플레이어
                 {
-                    TrySetMatchResult(actNum, MatchResultReason.VILLAGE_DESTROYED);
+                    TrySetMatchResult(actNum, MatchResultReason.VillageDestroyed);
                 }
             }
         }
@@ -292,7 +295,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
             DevLog.Log("<color=red>DEBUG: 플레이어 마을 패배</color>", this);
             
             //패배 처리 설정 
-            TrySetMatchResult(PhotonNetwork.LocalPlayer.ActorNumber, MatchResultReason.VILLAGE_DESTROYED);
+            TrySetMatchResult(PhotonNetwork.LocalPlayer.ActorNumber, MatchResultReason.VillageDestroyed);
         }
         
         if (Keyboard.current.digit5Key.wasPressedThisFrame)
@@ -300,7 +303,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
             DevLog.Log("<color=red>DEBUG: 플레이어 무승부</color>", this);
             
             // 무승부 처리
-            TrySetMatchResult(-1, MatchResultReason.DRAW);
+            TrySetMatchResult(-1, MatchResultReason.Draw);
         }
     }
     #endif

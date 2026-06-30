@@ -666,6 +666,8 @@ MonoBehaviour:
   loadingPanel: {fileID: 8909475629543212740}
   sceneLoadingText: {fileID: 9210035594857943385}
   mainLoadingText: {fileID: 4909635440530577839}
+  timer: {fileID: 7872804090686962227}
+  stopMatching: {fileID: 596722092138998346}
 --- !u!1 &8598844808776326347
 GameObject:
   m_ObjectHideFlags: 0

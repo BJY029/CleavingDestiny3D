@@ -41,13 +41,12 @@ public class MatchController : MonoBehaviourPunCallbacks
 	private float duration = 0.4f;
 
 
-	//매치메이킹 관련 UI 요소
-	[Header("Loading Panel")]
-	public GameObject LoadingPanel;
-	public TextMeshProUGUI LoadingText;
-	public TextMeshProUGUI SceneLoadingText;
-	public TextMeshProUGUI Timer;
-	public Button StopMatching;
+	// 씬로더의 공용 UI 요소를 실시간 바인딩하여 씬 복귀 시 레퍼런스 유실 방지
+	protected GameObject LoadingPanel => SceneLoader.Instance != null ? SceneLoader.Instance.loadingPanel : null;
+	protected TextMeshProUGUI LoadingText => SceneLoader.Instance != null ? SceneLoader.Instance.mainLoadingText : null;
+	protected TextMeshProUGUI SceneLoadingText => SceneLoader.Instance != null ? SceneLoader.Instance.sceneLoadingText : null;
+	protected TextMeshProUGUI Timer => SceneLoader.Instance != null ? SceneLoader.Instance.timer : null;
+	protected Button StopMatching => SceneLoader.Instance != null ? SceneLoader.Instance.stopMatching : null;
 
 	protected virtual void Start()
 	{
@@ -57,6 +56,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 	//매치메이킹을 시도하는 함수
 	protected void FindMatch()
 	{
+		Debug.Log($"[MatchController] FindMatch() 호출됨. IsConnectedAndReady: {PhotonNetwork.IsConnectedAndReady}, InRoom: {PhotonNetwork.InRoom}");
 		// 서버 연결 완료 및 방에 있지 않은 상태 확인 (GameServer에서 매칭 시도 방지)
 		if (PhotonNetwork.IsConnectedAndReady && !PhotonNetwork.InRoom)
 		{
@@ -105,7 +105,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 		}
 		else
 		{
-			Debug.LogError("Not connected to server.");
+			Debug.LogError($"Not connected to server or in room. IsConnectedAndReady: {PhotonNetwork.IsConnectedAndReady}, InRoom: {PhotonNetwork.InRoom}");
 		}
 	}
 
@@ -337,6 +337,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 
 	protected void StartSoloplay()
 	{
+		Debug.Log($"[MatchController] StartSoloplay() 호출됨. LoadingPanel: {LoadingPanel != null}");
 		if (LoadingPanel == null) return;
 
 		// 매치메이킹 플래그 설정 (로딩 UI 및 취소 로직용)

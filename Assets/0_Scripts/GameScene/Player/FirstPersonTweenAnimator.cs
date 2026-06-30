@@ -173,37 +173,37 @@ public class FirstPersonTweenAnimator : MonoBehaviour
 
         actionSequence = Sequence.Create()
             // ----------------------------------------------------
-            // [A] 추가 당기기 페이즈 - 도끼를 뒤로 더 힘껏 당김 (0.3초)
+            // 도끼를 뒤로 더 힘껏 당김
             // ----------------------------------------------------
             .Group(Tween.LocalPosition(axeTransform, pullBackPos, 0.3f, Ease.OutQuad))
             .Group(Tween.LocalRotation(axeTransform, pullBackRot, 0.3f, Ease.OutQuad))
             .Group(Tween.LocalRotation(cameraAnimationPivot, camPullBackRot, 0.3f, Ease.OutQuad))
 
             // ----------------------------------------------------
-            // [B] 힘 축적 대기 페이즈 - 당긴 상태에서 일시 정지/대기 (0.3초)
+            // 당긴 상태에서 일시 정지
             // ----------------------------------------------------
             .Chain(Tween.Delay(0.3f))
 
             // ----------------------------------------------------
-            // [C] 타격 페이즈 (Strike) - 정면 수평 횡베기 강타 (0.15초)
+            // 타격 - 정면 수평 횡베기 강타
             // ----------------------------------------------------
             .Chain(Tween.LocalPosition(axeTransform, strikePos, 0.15f, Ease.InQuad))
             .Group(Tween.LocalRotation(axeTransform, strikeRot, 0.15f, Ease.InQuad))
             .Group(Tween.LocalRotation(cameraAnimationPivot, Quaternion.identity, 0.15f, Ease.InQuad))
 
-            // 타격 시점 싱크 콜백 (이펙트, 화면 흔들림, 사운드 가동 - 타격 동작 0.15초 중 0.12초 시점에 동작하도록 조정)
+            // 타격 시점 콜백 발동
             .Group(Sequence.Create()
                 .ChainDelay(0.12f)
-                .ChainCallback(() => onImpactEvent?.Invoke())
+                .ChainCallback(onImpactEvent)
             )
 
             // ----------------------------------------------------
-            // [D] 타격 후 대기 페이즈 - 내리친 지점에서 힘의 흔적을 남기며 더 대기 (0.75초)
+            // 타격 후 대기
             // ----------------------------------------------------
             .Chain(Tween.Delay(0.75f))
 
             // ----------------------------------------------------
-            // [E] 복귀 페이즈 (Recovery) - 타격 후 복구 및 기본 자세 복원 (0.5초)
+            // 복귀
             // ----------------------------------------------------
             .Chain(Tween.LocalPosition(axeTransform, axeDefaultPos, 0.5f, Ease.OutQuad))
             .Group(Tween.LocalRotation(axeTransform, axeDefaultRot, 0.5f, Ease.OutQuad))

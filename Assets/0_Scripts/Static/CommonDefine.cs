@@ -169,11 +169,19 @@ public enum GamePhaseValue
 
 public enum MatchResultReason
 {
-    NONE,
-    TREE_DESTROYED,
-    VILLAGE_DESTROYED,
-    Player_Left,
-    DRAW,
+    None,
+    TreeDestroyed,
+    VillageDestroyed,
+    PlayerLeft,
+    Draw,
+}
+
+public enum MatchResultType
+{
+    None,
+    Win,
+    Loss,
+    Draw
 }
 
 public enum LocationCommand

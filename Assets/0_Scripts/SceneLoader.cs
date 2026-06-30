@@ -4,15 +4,18 @@ using TMPro;
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using System;
+using UnityEngine.UI;
 
 public class SceneLoader : MonoBehaviour
 {
     public static SceneLoader Instance;
 
     [Header("UI References")]
-    [SerializeField] private GameObject loadingPanel;
-    [SerializeField] private TextMeshProUGUI sceneLoadingText;
-    [SerializeField] private TextMeshProUGUI mainLoadingText;
+    public GameObject loadingPanel;
+    public TextMeshProUGUI sceneLoadingText;
+    public TextMeshProUGUI mainLoadingText;
+    public TextMeshProUGUI timer;
+    public Button stopMatching;
 
     private const float DotDuration = 0.4f;
     private const float WaitDuration = 0.5f;

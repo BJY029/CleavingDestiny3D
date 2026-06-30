@@ -32,7 +32,7 @@ public class GameExitHandler : MonoBehaviourPunCallbacks
 
         if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
         {
-            MatchResultManager.Instance.TrySetMatchResult(otherPlayer.ActorNumber, MatchResultReason.Player_Left);
+            MatchResultManager.Instance.TrySetMatchResult(otherPlayer.ActorNumber, MatchResultReason.PlayerLeft);
         }
     }
 
