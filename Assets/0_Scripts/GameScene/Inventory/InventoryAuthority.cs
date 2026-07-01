@@ -1,4 +1,4 @@
-﻿using Photon.Pun;
+using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
 using System.Linq;
@@ -260,6 +260,11 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		//기력량 업데이트
 		PhotonPropertyHelper.SetPlayerProp(requestActor, PlayerPropKeys.Energy, playerEng - item.itemCost);
+
+		// 사용한 아이템 수 증가
+		int itemsUsed = PhotonPropertyHelper.GetPlayerProp<int>(requestActor, PlayerPropKeys.ItemsUsedCount, 0);
+		itemsUsed++;
+		PhotonPropertyHelper.SetPlayerProp(requestActor, PlayerPropKeys.ItemsUsedCount, itemsUsed);
 
 
 		//사용한 아이템 인벤토리에서 제거

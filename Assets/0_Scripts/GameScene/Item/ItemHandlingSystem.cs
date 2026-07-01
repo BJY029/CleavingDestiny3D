@@ -587,6 +587,11 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		hp -= dmg.finalDamage;
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, hp);
 
+		// 누적 데미지 저장
+		int cumulativeDamage = PhotonPropertyHelper.GetPlayerProp<int>(cmd.attackerNum, PlayerPropKeys.CumulativeDamage, 0);
+		cumulativeDamage += dmg.finalDamage;
+		PhotonPropertyHelper.SetPlayerProp(cmd.attackerNum, PlayerPropKeys.CumulativeDamage, cumulativeDamage);
+
 
 		//TODO: 게임 종료 검증
 		if (MatchResultManager.Instance.TryResolveResultByTreeHP())

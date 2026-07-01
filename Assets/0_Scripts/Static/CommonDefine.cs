@@ -79,6 +79,7 @@ public static class RoomPropKeys
     public const string MatchResultReason = "MatchResultReaon"; //string
     public const string MatchResolveTurnIndex = "MatchResolveTurnIndex"; //int
     //public const string Weather = "Weather";
+    public const string MatchStartTime = "MatchStartTime"; //double
 }
 
 //플레이어 CustomProperty Key
@@ -115,6 +116,12 @@ public static class PlayerPropKeys
     public const string Item_HeroWeight = "Item_HeroWeight";
     public const string Item_RareWeight = "Item_RareWeight";
     public const string Item_LegendaryWeight = "Item_LegendaryWeight";
+
+    // 누적 경기 스탯 키
+    public const string CumulativeDamage = "CumulativeDamage"; //int
+    public const string CumulativeDamageReceived = "CumulativeDamageReceived"; //float
+    public const string ItemsUsedCount = "ItemsUsedCount"; //int
+    public const string CumulativeGoldSpent = "CumulativeGoldSpent"; //int
 }
 
 public static class ItemPropKeys

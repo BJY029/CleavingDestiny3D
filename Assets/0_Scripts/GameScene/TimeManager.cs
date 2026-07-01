@@ -50,6 +50,18 @@ public class TimeManager : MonoBehaviourPunCallbacks
     {
         //턴 타이머가 시작되고, MasterClient인 경우에만 시간을 계산한다.
         if (!TurnTimerActivated) return;
+
+        // 게임이 종료(END)되었다면 타이머를 비활성화합니다.
+        if (PhotonNetwork.InRoom)
+        {
+            GamePhaseValue phase = PhotonPropertyHelper.GetRoomProp<GamePhaseValue>(RoomPropKeys.GamePhase);
+            if (phase == GamePhaseValue.END)
+            {
+                TurnTimerActivated = false;
+                return;
+            }
+        }
+
         if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient)
         {
             if (PhotonNetwork.Time >= _endTime)

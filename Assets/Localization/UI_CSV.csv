@@ -21,8 +21,8 @@ UI_Item_LockPick_Has,락픽 갯수,Number of lock picks
 UI_Exit_Lobby,로비로 나가기,Back To Lobby
 UI_Exit_Game,게임 나가기,Quit Game
 UI_Load_ReturningToLobby,로비로 복귀중,Returning to Lobby
-UI_Result_Win,승리,Victory
-UI_Result_Loss,패배,Defeat
+UI_Result_Win,승리,VICTORY
+UI_Result_Loss,패배,DEFEAT
 UI_Result_Draw,무승부,Draw
 UI_ResultReason_Loss_TreeDestroyed,나무를 베었습니다.,You felled the tree.
 UI_ResultReason_Loss_VillageDestroyed,마을이 무너졌습니다.,Your village collapsed.

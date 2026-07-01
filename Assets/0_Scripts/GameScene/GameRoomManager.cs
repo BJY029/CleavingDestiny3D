@@ -58,6 +58,7 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 				{ RoomPropKeys.MatchLoserActor, roomSet.LoserActNum},
 				{ RoomPropKeys.MatchResultReason, roomSet.MatchEndReason},
 				{ RoomPropKeys.MatchResolveTurnIndex, roomSet.ResolvedTurnIdx},
+				{ RoomPropKeys.MatchStartTime, PhotonNetwork.Time },
 			};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
 
