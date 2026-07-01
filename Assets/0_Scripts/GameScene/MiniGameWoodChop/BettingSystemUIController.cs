@@ -39,6 +39,16 @@ public class BettingSystemUIController : MonoBehaviourPunCallbacks
     public TextMeshProUGUI W_Desc;
     public TextMeshProUGUI W_EnergyValue;
 
+    private enum BettingUITimerType
+    {
+        None, Request, Receive
+    }
+
+    private BettingUITimerType currentTimerType = BettingUITimerType.None;
+    private bool isUITimerRunning = false;
+    private double uiTimerStartTime = -1d;
+    private float uiTimerDuration = 0f;
+
     //현재 처리중인 Player 정보 저장
     private int curReqActorNumber = -1;
     private int curTarActorNumber = -1;
@@ -48,6 +58,106 @@ public class BettingSystemUIController : MonoBehaviourPunCallbacks
         Req_Panel.SetActive(false);
         Rec_Panel.SetActive(false);
         W_Panel.SetActive(false);
+    }
+
+    private void Update()
+    {
+        UpdateBettingTimerSlider();
+    }
+
+    public void Master_StartRequestTimer(int requestActorNumber, double startTime, float duration)
+    {
+        Player requestPlayer = GetPlayer(requestActorNumber);
+
+        if (requestPlayer == null)
+        {
+            Debug.LogWarning("[BettingUI] 요청자 플레이어를 찾을 수 없습니다.");
+            return;
+        }
+
+        photonView.RPC(nameof(RPC_StartBettingUITimer), requestPlayer, (int)BettingUITimerType.Request, startTime, duration);
+    }
+
+    public void Master_StartReceiveTimer(int targetActorNumber, double startTime, float duration)
+    {
+        Player targetPlayer = GetPlayer(targetActorNumber);
+
+        if (targetPlayer == null)
+        {
+            Debug.LogWarning("[BettingUI] 수신자 플레이어를 찾을 수 없습니다.");
+            return;
+        }
+
+        photonView.RPC(nameof(RPC_StartBettingUITimer), targetPlayer, (int)BettingUITimerType.Receive, startTime, duration);
+    }
+
+    public void Master_StopBettingTimer(int requestActorNumber, int targetActorNumber)
+    {
+        Player requestPlayer = GetPlayer(requestActorNumber);
+        Player targetPlayer = GetPlayer(targetActorNumber);
+
+        if (requestPlayer != null)
+        {
+            photonView.RPC(nameof(RPC_StopBettingUITimer), requestPlayer);
+        }
+
+        if (targetPlayer != null)
+        {
+            photonView.RPC(nameof(RPC_StopBettingUITimer), targetPlayer);
+        }
+    }
+
+    private void UpdateBettingTimerSlider()
+    {
+        if (!isUITimerRunning) return;
+
+        float elapsed = Mathf.Max(0f, (float)(PhotonNetwork.Time - uiTimerStartTime));
+        float remaining = Mathf.Clamp(uiTimerDuration - elapsed, 0f, uiTimerDuration);
+
+        Slider targetSlider = null;
+
+        if (currentTimerType == BettingUITimerType.Request) targetSlider = Req_Timer;
+        else if (currentTimerType == BettingUITimerType.Receive) targetSlider = Rec_Timer;
+
+        if (targetSlider == null) return;
+
+        targetSlider.maxValue = uiTimerDuration;
+        targetSlider.value = remaining;
+
+        if (remaining <= 0f) StopLocalUITimer();
+    }
+
+    private void StartLocalUITimer(BettingUITimerType timerType, double startTime, float duration)
+    {
+        currentTimerType = timerType;
+        uiTimerStartTime = startTime;
+        uiTimerDuration = Mathf.Max(0.01f, duration);
+        isUITimerRunning = true;
+
+        Req_Timer.gameObject.SetActive(timerType == BettingUITimerType.Request);
+        Rec_Timer.gameObject.SetActive(timerType == BettingUITimerType.Receive);
+
+        if (timerType == BettingUITimerType.Request)
+        {
+            Req_Timer.maxValue = uiTimerDuration;
+            Req_Timer.value = uiTimerDuration;
+        }
+        else if (timerType == BettingUITimerType.Receive)
+        {
+            Rec_Timer.maxValue = uiTimerDuration;
+            Rec_Timer.value = uiTimerDuration;
+        }
+    }
+
+    private void StopLocalUITimer()
+    {
+        isUITimerRunning = false;
+        currentTimerType = BettingUITimerType.None;
+        uiTimerStartTime = -1d;
+        uiTimerDuration = 0f;
+
+        Req_Timer.value = 0f;
+        Rec_Timer.value = 0f;
     }
 
     private Player GetPlayer(int actorNumber)
@@ -144,7 +254,19 @@ public class BettingSystemUIController : MonoBehaviourPunCallbacks
             return;
         }
 
-        BettingSystemController.instance.RejectBettingGame(curReqActorNumber, curTarActorNumber, betEngValue);
+        BettingSystemController.instance.RejectBettingGame(curReqActorNumber, curTarActorNumber, betEngValue, false);
+    }
+
+    [PunRPC]
+    private void RPC_StartBettingUITimer(int timerType, double startTime, float duration)
+    {
+        StartLocalUITimer((BettingUITimerType)timerType, startTime, duration);
+    }
+
+    [PunRPC]
+    private void RPC_StopBettingUITimer()
+    {
+        StopLocalUITimer();
     }
 
     [PunRPC]
@@ -218,6 +340,8 @@ public class BettingSystemUIController : MonoBehaviourPunCallbacks
         Req_Panel.SetActive(false);
         Rec_Panel.SetActive(false);
 
+        StopLocalUITimer();
+
         W_Title.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_ItemBet_W_Title);
 
         if (isRequester)
@@ -243,6 +367,8 @@ public class BettingSystemUIController : MonoBehaviourPunCallbacks
         Req_Panel.SetActive(false);
         Rec_Panel.SetActive(false);
         W_Panel.SetActive(false);
+
+        StopLocalUITimer();
 
         curReqActorNumber = -1;
         curTarActorNumber = -1;

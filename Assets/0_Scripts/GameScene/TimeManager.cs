@@ -19,6 +19,8 @@ public class TimeManager : MonoBehaviourPunCallbacks
     //Master가 대표로 관리하며, 해당 플래그를 브로드캐스트 하여 클라 전체에게 공유한다.
     public bool TurnTimerActivated { get; private set; } = false;
     public bool ForceToHit { get; private set; } = false;
+    public bool TurnTimerPaused { get; private set; } = false;
+    private double _pausedRemainingTime = -1d;
     //각 플레이어에게 주어지는 시간(RoomProp에서 받아옴)
     private float PlayerTurnLimitedTime;
     //시작, 끝 시간
@@ -77,6 +79,12 @@ public class TimeManager : MonoBehaviourPunCallbacks
     {
         //타이머 비활성화 설정
         TurnTimerActivated = false;
+        TurnTimerPaused = false;
+        _pausedRemainingTime = -1d;
+
+        photonView.RPC(nameof(Broadcast_SetMainTimerState), RpcTarget.All, TurnTimerActivated, TurnTimerPaused);
+
+
         int curTurnNum = GameHelper.getCurrentTurnActorNum();
 
         //요청자 정보가 있고, 해당 요청자가 현재 턴인 경우
@@ -103,6 +111,68 @@ public class TimeManager : MonoBehaviourPunCallbacks
         Requester = null;
     }
 
+    public void PauseMainTurnTimerForMiniGame()
+    {
+        if (PhotonNetwork.IsMasterClient) Master_PauseMainTurnTimerForMiniGame();
+        else photonView.RPC(nameof(RPC_PauseMainTurnTimerForMiniGame), RpcTarget.MasterClient);
+    }
+
+    public void ResumeMainTurnTimerAfterMiniGame()
+    {
+        if (PhotonNetwork.IsMasterClient) Master_ResumeMainTurnTimerAfterMiniGame();
+        else photonView.RPC(nameof(RPC_ResumeMainTurnTimerAfterMiniGame), RpcTarget.MasterClient);
+    }
+
+    private void Master_PauseMainTurnTimerForMiniGame()
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        if (!TurnTimerActivated) return;
+
+        _pausedRemainingTime = Mathf.Max(0f, (float)(_endTime - PhotonNetwork.Time));
+
+        TurnTimerActivated = false;
+        TurnTimerPaused = true;
+
+        photonView.RPC(nameof(Broadcast_SetMainTimerState), RpcTarget.All, TurnTimerActivated, TurnTimerPaused);
+
+        Debug.Log($"[TimeManager] 메인 턴 타이머 일시정지 / 남은 시간: {_pausedRemainingTime}");
+    }
+
+    private void Master_ResumeMainTurnTimerAfterMiniGame()
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        if (!TurnTimerPaused) return;
+        if (_pausedRemainingTime <= 0d) return;
+
+        _startTime = PhotonNetwork.Time;
+        _endTime = _startTime + _pausedRemainingTime;
+
+        TurnTimerActivated = true;
+        TurnTimerPaused = false;
+        _pausedRemainingTime = -1d;
+
+        Vector2 timeValue = new Vector2((float)_startTime, (float)_endTime);
+        PhotonPropertyHelper.SetRoomProp(RoomPropKeys.PlayerTurnStartEndTime, timeValue);
+
+        photonView.RPC(nameof(Broadcast_SetMainTimerState), RpcTarget.All, TurnTimerActivated, TurnTimerPaused);
+
+        Debug.Log($"[TimeManager] 메인 턴 타이머 재개 / 새 종료 시간: {_endTime}");
+    }
+
+    [PunRPC]
+    private void RPC_PauseMainTurnTimerForMiniGame()
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        Master_PauseMainTurnTimerForMiniGame();
+    }
+
+    [PunRPC]
+    private void RPC_ResumeMainTurnTimerAfterMiniGame()
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        Master_ResumeMainTurnTimerAfterMiniGame();
+    }
+
     //MasterClient가 실행하는 턴 시작 설정
     [PunRPC]
     public void RPC_StartTurnTimer(PhotonMessageInfo info)
@@ -114,8 +184,11 @@ public class TimeManager : MonoBehaviourPunCallbacks
 
         //타이머 활성화
         TurnTimerActivated = true;
+        TurnTimerPaused = false;
+        _pausedRemainingTime = -1d;
         //해당 플래그를 브로드캐스트 한다.
-        photonView.RPC(nameof(Broadcast_SetTurnTimeFlag), RpcTarget.Others, TurnTimerActivated);
+        photonView.RPC(nameof(Broadcast_SetMainTimerState), RpcTarget.All, TurnTimerActivated, TurnTimerPaused);
+        //photonView.RPC(nameof(Broadcast_SetTurnTimeFlag), RpcTarget.Others, TurnTimerActivated);
 
         //시작, 끝 시간 설정 및 프로퍼티 업데이트
         _startTime = PhotonNetwork.Time;
@@ -132,8 +205,11 @@ public class TimeManager : MonoBehaviourPunCallbacks
         if (!PhotonNetwork.IsMasterClient) return;
         //타이머 중단
         TurnTimerActivated = false;
+        TurnTimerPaused = false;
+        _pausedRemainingTime = -1d;
         //브로드캐스트로 플래그 전파
-        photonView.RPC(nameof(Broadcast_SetTurnTimeFlag), RpcTarget.Others, TurnTimerActivated);
+        photonView.RPC(nameof(Broadcast_SetMainTimerState), RpcTarget.All, TurnTimerActivated, TurnTimerPaused);
+        //photonView.RPC(nameof(Broadcast_SetTurnTimeFlag), RpcTarget.Others, TurnTimerActivated);
         _startTime = -1f;
         _endTime = -1f;
         Requester = null;
@@ -143,6 +219,13 @@ public class TimeManager : MonoBehaviourPunCallbacks
     public void Broadcast_SetTurnTimeFlag(bool flag)
     {
         TurnTimerActivated = flag;
+    }
+
+    [PunRPC]
+    public void Broadcast_SetMainTimerState(bool activate, bool paused)
+    {
+        TurnTimerActivated = activate;
+        TurnTimerPaused = paused;
     }
 
     //타이머 요청자가 실행하는 타이머 종료 함수

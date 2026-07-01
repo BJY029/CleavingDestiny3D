@@ -112,6 +112,13 @@ MonoBehaviour:
   - RPC_StartLogWoodGame
   - RPC_CloseBetPanels
   - RPC_RejectBettingGame
+  - Broadcast_SetMainTimerState
+  - RPC_PauseMainTurnTimerForMiniGame
+  - RPC_ResumeMainTurnTimerAfterMiniGame
+  - RPC_ClearBettingTimer
+  - RPC_SetTimer
+  - RPC_StartBettingUITimer
+  - RPC_StopBettingUITimer
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

@@ -711,6 +711,8 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
     private void RPC_EndDuel(int loserActorNumber, int winnerActorNumber, string reason)
     {
         isPlaying = false;
+        TimeManager.instance.ResumeMainTurnTimerAfterMiniGame();
+
         ResetAxeRuntimeState();
 
         CameraSwitchManager.Instance.LogMiniGame_to_Player();

@@ -246,7 +246,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 			//임시, 1cost 도박 진행
 			if (targetPlayer != null)
-				BettingSystemController.instance.StartBettingGame(requestPlayer, targetPlayer);
+				BettingSystemController.instance.Master_StartBettingGame(requestPlayer.ActorNumber, targetPlayer.ActorNumber);
 		}
 
 		//아이템 적용 대상을 기준으로 분기하여 처리한다.
