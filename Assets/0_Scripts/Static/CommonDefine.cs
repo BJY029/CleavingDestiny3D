@@ -52,6 +52,14 @@ public class UI_CSV
     public const string UI_ItemBet_W_Title = "UI_ItemBet_W_Title";
     public const string UI_ItemBet_W_Desc1 = "UI_ItemBet_W_Desc1";
     public const string UI_ItemBet_W_Desc2 = "UI_ItemBet_W_Desc2";
+    public const string UI_LogWood_MyTurn = "UI_LogWood_MyTurn";
+    public const string UI_LogWood_OpTurn = "UI_LogWood_OpTurn";
+    public const string UI_LogWood_Interact = "UI_LogWood_Interact";
+    public const string UI_LogWood_Wait = "UI_LogWood_Wait";
+    public const string UI_LogWood_Result_Win_Title = "UI_LogWood_Result_Win_Title";
+    public const string UI_LogWood_Result_Lose_Title = "UI_LogWood_Result_Lose_Title";
+    public const string UI_LogWood_Result_Win_Desc = "UI_LogWood_Result_Win_Desc";
+    public const string UI_LogWood_Result_Lose_Desc = "UI_LogWood_Result_Lose_Desc";
 
     public const string UI_Warning_Energy = "UI_Warning_Energy";
     public const string UI_Warning_FullInv = "UI_Warning_FullInv";

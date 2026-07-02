@@ -23,6 +23,14 @@ UI_ItemBet_Rec_Desc4,패배 시 부족한 기력은 마을 체력 피해로 전�
 UI_ItemBet_W_Title,상대방 기다리는 중...,Waiting for Player...
 UI_ItemBet_W_Desc1,상대방이 거절 시 얻는 기력,Amount of energy gained when the target refuses
 UI_ItemBet_W_Desc2,상대방이 배팅 금액 설정 중,Opponent is setting the betting amount
+UI_LogWood_MyTurn,내 차례,My Turn
+UI_LogWood_OpTurn,상대 차례,Opponent's Turn
+UI_LogWood_Interact,'스페이스바'로 상호작용,Press 'Spacebar' to interact
+UI_LogWood_Wait,상대 기다리는 중,Waiting for an opponent
+UI_LogWood_Result_Win_Title,승리!,Win!
+UI_LogWood_Result_Lose_Title,패배,Lose
+UI_LogWood_Result_Win_Desc,상대방이 나무 쪼개기를 실패했습니다.,Opponent failed to chop wood.
+UI_LogWood_Result_Lose_Desc,나무 쪼개기를 실패했습니다...,Failed to chop wood...
 UI_Warning_Energy,기력이 부족합니다.,Not enough energy
 UI_Warning_FullInv,인벤토리가 가득찼습니다.,Full Inventory
 UI_Warning_NotEnoughItem,아이템 수가 부족합니다.,Not enough items.

@@ -344,7 +344,7 @@ public class BettingSystemController : MonoBehaviourPunCallbacks
     }
 
     //미니 게임 결과 값을 반영하는 함수
-    public void Master_SettleBetResult(int winnerActorNumber, int loserActorNumber, int betEnergy)
+    public void Master_SettleBetResult(int winnerActorNumber, int loserActorNumber, int betEnergy, string reason)
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
@@ -361,11 +361,12 @@ public class BettingSystemController : MonoBehaviourPunCallbacks
         PhotonPropertyHelper.SetPlayerProp(winnerActorNumber, PlayerPropKeys.Energy, newWinnerEnergy);
         PhotonPropertyHelper.SetPlayerProp(loserActorNumber, PlayerPropKeys.Energy, newLoserEnergy);
 
+        float villageDamage = 0f;
         //초과된 기력 값에 대해 마을 체력을 감소시키는 계산 수행
         if (shortage > 0)
         {
             float loserVillageHP = PhotonPropertyHelper.GetPlayerProp<float>(loserActorNumber, PlayerPropKeys.VillageHP);
-            float villageDamage = shortage * villageHPBasicValue;
+            villageDamage = shortage * villageHPBasicValue;
             float newLoserVillageHP = Mathf.Max(0f, loserVillageHP - villageDamage);
 
             PhotonPropertyHelper.SetPlayerProp(loserActorNumber, PlayerPropKeys.VillageHP, newLoserVillageHP);
@@ -373,5 +374,7 @@ public class BettingSystemController : MonoBehaviourPunCallbacks
             Debug.Log($"[Betting] 기력 부족분 발생 / 부족 기력: {shortage}, 마을 체력 피해: {villageDamage}");
         }
         CurRequesterPlayerNum = CurTargetPlayerNum = -1;
+
+        WoodChopController.instance.EndDuel(loserActorNumber, winnerActorNumber, energyTakenFromLoser, betEnergy, reason, villageDamage);
     }
 }

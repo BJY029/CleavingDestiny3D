@@ -2,10 +2,13 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using EzySlice;
+using System.Collections;
 
 public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractable
 {
     public static WoodChopController instance;
+
+    public WoodChopUIController woodChopUIController;
 
     [Header("Wood")]
     [SerializeField] private GameObject woodPrefab;
@@ -41,8 +44,10 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
     [Header("Rule Settings")]
     [SerializeField] private float edgeMargin = 0.02f;
     [SerializeField] private float minChoppableWidth = 0.06f;
-
     [SerializeField] private float turnTimeLimit = 3f;
+
+    [Header("Wait UI Time")]
+    [SerializeField] private float waitDuraion = 2f;
 
     private GameObject currentWood;
 
@@ -67,6 +72,14 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         get
         {
             return syncedCurrentPlayerIndex == 0 ? playerAActorNumber : playerBActorNumber;
+        }
+    }
+
+    private int OpponentTurnActorNumber
+    {
+        get
+        {
+            return syncedCurrentPlayerIndex == 0 ? playerBActorNumber : playerAActorNumber;
         }
     }
 
@@ -147,6 +160,9 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
         turnStartTime = PhotonNetwork.Time + 0.2d;
         isPlaying = true;
+
+        woodChopUIController.Master_SetCurTurnUI(actorA, turnStartTime, turnTimeLimit);
+        woodChopUIController.Master_SetOpTurnUI(actorB);
 
         //Master에서 초기화된 값들 클라이언트들에게 전파
         photonView.RPC(nameof(RPC_SyncStartDuel), RpcTarget.All,
@@ -382,6 +398,12 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         strikeCoroutine = null;
 
         Debug.Log($"장작 쪼개기 성공 / 다음 턴 Player {CurrentTurnActorNumber}");
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            woodChopUIController.Master_SetCurTurnUI(CurrentTurnActorNumber, turnStartTime, turnTimeLimit);
+            woodChopUIController.Master_SetOpTurnUI(OpponentTurnActorNumber);
+        }
     }
 
     private System.Collections.IEnumerator Co_SmoothFreezeAxe(float cutX01)
@@ -701,26 +723,46 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
         int winnerActorNumber = loserActorNumber == playerAActorNumber ? playerBActorNumber : playerAActorNumber;
 
-        BettingSystemController.instance.Master_SettleBetResult(winnerActorNumber, loserActorNumber, energyBet);
+        BettingSystemController.instance.Master_SettleBetResult(winnerActorNumber, loserActorNumber, energyBet, reason);
 
         //게임 끝내기
-        photonView.RPC(nameof(RPC_EndDuel), RpcTarget.All, loserActorNumber, winnerActorNumber, reason);
+        //photonView.RPC(nameof(RPC_EndDuel), RpcTarget.All, loserActorNumber, winnerActorNumber);
+    }
+
+    public void EndDuel(int loserActorNumber, int winnerActorNumber, int loserReductEnergy, int winnerEarnEnergy, string reason, float villageDamage = 0f)
+    {
+        photonView.RPC(nameof(RPC_EndDuel), RpcTarget.All, loserActorNumber, winnerActorNumber, loserReductEnergy, winnerEarnEnergy, villageDamage, reason);
     }
 
     [PunRPC]
-    private void RPC_EndDuel(int loserActorNumber, int winnerActorNumber, string reason)
+    private void RPC_EndDuel(int loserActorNumber, int winnerActorNumber, int loserReductEnergy, int winnerEarnEnergy, float villageDamage, string reason)
     {
-        isPlaying = false;
-        TimeManager.instance.ResumeMainTurnTimerAfterMiniGame();
-
         ResetAxeRuntimeState();
 
-        CameraSwitchManager.Instance.LogMiniGame_to_Player();
+        bool isWin = PhotonNetwork.LocalPlayer.ActorNumber == winnerActorNumber ? true : false;
+        if (isWin)
+        {
+            StartCoroutine(CO_EndDuel(isWin, winnerEarnEnergy, villageDamage));
+        }
+        else
+        {
+            StartCoroutine(CO_EndDuel(isWin, loserReductEnergy, villageDamage));
+        }
+
 
         Debug.Log($"나무 쪼개기 종료 / 승리: Player {winnerActorNumber}, 패배: Player {loserActorNumber}, 사유: {reason}");
+    }
 
-        // 결과 UI 표시
-        // ResultPanel.Show(winnerActorNumber, loserActorNumber, reason);
+    private IEnumerator CO_EndDuel(bool isWin, int energy, float villageHP = 0)
+    {
+        woodChopUIController.SetWinLoseUI(isWin, energyBet, villageHP);
+
+        yield return new WaitForSeconds(waitDuraion);
+
+        isPlaying = false;
+        TimeManager.instance.ResumeMainTurnTimerAfterMiniGame();
+        CameraSwitchManager.Instance.LogMiniGame_to_Player();
+        woodChopUIController.UIOff();
     }
 
     private void ResetAxeRuntimeState()
