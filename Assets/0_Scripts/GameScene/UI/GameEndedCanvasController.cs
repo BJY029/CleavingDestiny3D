@@ -19,7 +19,11 @@ public class GameEndedCanvasController : MonoBehaviour
     public TextMeshProUGUI ReasonText;
 
     [Header("Stats UI")]
-    public TextMeshProUGUI StatsText; // 유니티 에디터에서 전용 텍스트 컴포넌트 할당용 
+    public TextMeshProUGUI StatsText; // 유니티 에디터에서 전용 텍스트 컴포넌트 할당용 (헤더 또는 전체 출력용)
+
+    [Header("Stats UI (1:1 Left/Right)")]
+    public TextMeshProUGUI LeftPlayerStatsText;  // 로컬 플레이어 (나)
+    public TextMeshProUGUI RightPlayerStatsText; // 상대 플레이어 (적 또는 AI)
 
     //게임 종료 UI 출력
     public void SetGameEndedCanvas(MatchResultType state, MatchResultReason reason)
@@ -29,19 +33,42 @@ public class GameEndedCanvasController : MonoBehaviour
         Canvases.SetActive(false);
         //승패 UI 캔버스켜기
         GameEndedPanel.SetActive(true);
-        //관련 정보 설정
-        // WinLoseText.text = "You " + state;
-        // ReasonText.text = "Reason : " + reason;
 
         string reasonStr = LocalizationManager.Instance.GetText(CSV_Type.UI, state == MatchResultType.Draw ? "UI_ResultReason_Draw" : $"UI_ResultReason_{state}_{reason}");
         WinLoseText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, $"UI_Result_{state}");
         ReasonText.text = reasonStr;
 
-        // 경기 통계 빌드 및 표시
-        if (StatsText != null)
+        // 진행 시간 및 라운드 헤더 빌드
+        string matchHeader = BuildMatchHeaderString();
+
+        // 1:1 경기 통계 조립 (나 vs 상대)
+        int localActor = PhotonNetwork.LocalPlayer.ActorNumber;
+        string leftStats = "";
+        string rightStats = "";
+
+        if (PlayerManager.Instance != null && PlayerManager.Instance.Players != null)
         {
-            string stats = BuildStatsString();
-            StatsText.text = stats;
+            foreach (var kvp in PlayerManager.Instance.Players)
+            {
+                if (kvp.Key == localActor)
+                {
+                    leftStats = GetPlayerStatsString(kvp.Key, kvp.Value);
+                }
+                else
+                {
+                    rightStats = GetPlayerStatsString(kvp.Key, kvp.Value);
+                }
+            }
+        }
+
+        if (LeftPlayerStatsText != null) LeftPlayerStatsText.text = leftStats;
+        if (RightPlayerStatsText != null) RightPlayerStatsText.text = rightStats;
+        if (StatsText != null) StatsText.text = matchHeader;
+
+        // 플레이어 입력 비활성화 (움직임 및 카메라 회전 방지)
+        if (KeyInteractManager.Instance != null)
+        {
+            KeyInteractManager.Instance.SetPlayerActionsEnabled(false);
         }
 
         // 마우스 커서 활성화
@@ -49,7 +76,7 @@ public class GameEndedCanvasController : MonoBehaviour
         Cursor.visible = true;
     }
 
-    private string BuildStatsString()
+    private string BuildMatchHeaderString()
     {
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
@@ -60,50 +87,44 @@ public class GameEndedCanvasController : MonoBehaviour
             double elapsed = PhotonNetwork.Time - startTime;
             int minutes = (int)(elapsed / 60);
             int seconds = (int)(elapsed % 60);
-            sb.AppendLine($"진행 시간: {minutes:00}:{seconds:00}");
+            sb.Append($"진행 시간: {minutes:00}:{seconds:00}");
         }
         else
         {
-            sb.AppendLine("진행 시간: 알 수 없음");
+            sb.Append("진행 시간: 알 수 없음");
         }
 
         // 2. 경과 라운드 (일차)
         int currentDay = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentDay, 1);
-        sb.AppendLine($"진행 라운드: {currentDay}일차");
-        sb.AppendLine();
+        sb.Append($"  |  진행 라운드: {currentDay}일차");
 
-        // 3. 각 플레이어별 스탯
-        if (PlayerManager.Instance != null && PlayerManager.Instance.Players != null)
+        return sb.ToString();
+    }
+
+    private string GetPlayerStatsString(int actorNum, RuntimePlayerInfo info)
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+        string displayName = info.playerName;
+        if (info.isAI)
         {
-            sb.AppendLine("<b>[ 플레이어 기록 ]</b>");
-            foreach (var kvp in PlayerManager.Instance.Players)
-            {
-                int actorNum = kvp.Key;
-                RuntimePlayerInfo info = kvp.Value;
-
-                string displayName = info.playerName;
-                if (info.isAI)
-                {
-                    displayName += " (AI)";
-                }
-                else if (actorNum == PhotonNetwork.LocalPlayer.ActorNumber)
-                {
-                    displayName += " (나)";
-                }
-
-                int dmgDealt = PhotonPropertyHelper.GetPlayerProp<int>(actorNum, PlayerPropKeys.CumulativeDamage, 0);
-                float dmgReceived = PhotonPropertyHelper.GetPlayerProp<float>(actorNum, PlayerPropKeys.CumulativeDamageReceived, 0f);
-                int itemsUsed = PhotonPropertyHelper.GetPlayerProp<int>(actorNum, PlayerPropKeys.ItemsUsedCount, 0);
-                int goldSpent = PhotonPropertyHelper.GetPlayerProp<int>(actorNum, PlayerPropKeys.CumulativeGoldSpent, 0);
-
-                sb.AppendLine($"<b>{displayName}</b>");
-                sb.AppendLine($"  • 가한 피해: {dmgDealt:N0}");
-                sb.AppendLine($"  • 받은 피해: {dmgReceived:F0}");
-                sb.AppendLine($"  • 사용한 아이템: {itemsUsed}개");
-                sb.AppendLine($"  • 사용한 골드: {goldSpent:N0}G");
-                sb.AppendLine();
-            }
+            displayName += " (AI)";
         }
+        else if (actorNum == PhotonNetwork.LocalPlayer.ActorNumber)
+        {
+            displayName += " (나)";
+        }
+
+        int dmgDealt = PhotonPropertyHelper.GetPlayerProp<int>(actorNum, PlayerPropKeys.CumulativeDamage, 0);
+        float dmgReceived = PhotonPropertyHelper.GetPlayerProp<float>(actorNum, PlayerPropKeys.CumulativeDamageReceived, 0f);
+        int itemsUsed = PhotonPropertyHelper.GetPlayerProp<int>(actorNum, PlayerPropKeys.ItemsUsedCount, 0);
+        int goldSpent = PhotonPropertyHelper.GetPlayerProp<int>(actorNum, PlayerPropKeys.CumulativeGoldSpent, 0);
+
+        sb.AppendLine($"<b>{displayName}</b>");
+        sb.AppendLine($"  • 가한 피해: {dmgDealt:N0}");
+        sb.AppendLine($"  • 받은 피해: {dmgReceived:F0}");
+        sb.AppendLine($"  • 사용한 아이템: {itemsUsed}개");
+        sb.AppendLine($"  • 사용한 골드: {goldSpent:N0}G");
 
         return sb.ToString();
     }
