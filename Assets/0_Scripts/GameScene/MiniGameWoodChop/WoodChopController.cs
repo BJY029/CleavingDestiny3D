@@ -175,6 +175,7 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
     private void RPC_SyncStartDuel(int actorA, int actorB, int betAmount,
     int currentPlayerIndex, double startTime, int syncedTurnCount)
     {
+        woodChopUIController.HideCanvasForMiniGame();
         CameraSwitchManager.Instance.Player_to_LogMiniGame();
 
         playerAActorNumber = actorA;
@@ -737,6 +738,7 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
     [PunRPC]
     private void RPC_EndDuel(int loserActorNumber, int winnerActorNumber, int loserReductEnergy, int winnerEarnEnergy, float villageDamage, string reason)
     {
+        isPlaying = false;
         ResetAxeRuntimeState();
 
         bool isWin = PhotonNetwork.LocalPlayer.ActorNumber == winnerActorNumber ? true : false;
@@ -759,10 +761,10 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
         yield return new WaitForSeconds(waitDuraion);
 
-        isPlaying = false;
         TimeManager.instance.ResumeMainTurnTimerAfterMiniGame();
         CameraSwitchManager.Instance.LogMiniGame_to_Player();
         woodChopUIController.UIOff();
+        woodChopUIController.RestoreCanvasAfterMiniGame();
     }
 
     private void ResetAxeRuntimeState()

@@ -14,6 +14,11 @@ public class WoodChopUIController : MonoBehaviourPunCallbacks
     public TextMeshProUGUI GameResult;
     public Slider TimeSlider;
 
+    [Header("Hide Canvas During Minigame")]
+    [SerializeField] private GameObject[] canvasToHideDuriongMiniGame;
+    private bool[] canvasOriginalActivateStates;
+    private bool canvasStatesSaved = false;
+
     private enum TurnUIType
     {
         None, MyTurn, OpTurn
@@ -134,5 +139,37 @@ public class WoodChopUIController : MonoBehaviourPunCallbacks
         uiTimerStartTime = -1d;
         uiTimerDuration = 0f;
         TimeSlider.value = 0f;
+    }
+
+    public void HideCanvasForMiniGame()
+    {
+        if (canvasToHideDuriongMiniGame == null || canvasToHideDuriongMiniGame.Length == 0) return;
+
+        canvasOriginalActivateStates = new bool[canvasToHideDuriongMiniGame.Length];
+
+        for (int i = 0; i < canvasToHideDuriongMiniGame.Length; i++)
+        {
+            if (canvasToHideDuriongMiniGame[i] == null) continue;
+
+            canvasOriginalActivateStates[i] = canvasToHideDuriongMiniGame[i].activeSelf;
+            canvasToHideDuriongMiniGame[i].SetActive(false);
+        }
+
+        canvasStatesSaved = true;
+    }
+
+    public void RestoreCanvasAfterMiniGame()
+    {
+        if (!canvasStatesSaved) return;
+        if (canvasToHideDuriongMiniGame == null || canvasToHideDuriongMiniGame.Length == 0) return;
+
+        for (int i = 0; i < canvasToHideDuriongMiniGame.Length; i++)
+        {
+            if (canvasToHideDuriongMiniGame[i] == null) continue;
+            if (i >= canvasOriginalActivateStates.Length) continue;
+
+            canvasToHideDuriongMiniGame[i].SetActive(canvasOriginalActivateStates[i]);
+        }
+        canvasStatesSaved = false;
     }
 }

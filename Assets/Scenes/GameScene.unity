@@ -2174,10 +2174,10 @@ MonoBehaviour:
   axeFreezeSmoothTime: 0.04
   discardForce: 2.5
   discardTorque: 4
-  discardDestroyDelay: 2
+  discardDestroyDelay: 1
   edgeMargin: 0.02
   minChoppableWidth: 0.06
-  turnTimeLimit: 10
+  turnTimeLimit: 5
   waitDuraion: 3
 --- !u!114 &283923198
 MonoBehaviour:
@@ -23229,6 +23229,11 @@ MonoBehaviour:
   Desc: {fileID: 509450417}
   GameResult: {fileID: 654234549}
   TimeSlider: {fileID: 634602101}
+  canvasToHideDuriongMiniGame:
+  - {fileID: 1030991273}
+  - {fileID: 452008717}
+  - {fileID: 1210394495}
+  - {fileID: 1735231609}
 --- !u!114 &1820870460
 MonoBehaviour:
   m_ObjectHideFlags: 0
