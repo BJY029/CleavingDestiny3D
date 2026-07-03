@@ -120,6 +120,9 @@ MonoBehaviour:
   - RPC_StartBettingUITimer
   - RPC_StopBettingUITimer
   - InitUI
+  - RPC_ShowMissionFailUI
+  - RPC_ShowMissionSuccessUI
+  - RPC_ShowMissionUI
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

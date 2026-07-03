@@ -205,3 +205,18 @@ public enum LocationCommand
     OPP_INV_ENTRY,
     OPP_HIT,
 }
+
+public enum NewDrugGameEventType
+{
+    TurnStarted,
+    TurnEnded,
+    WaveStarted,
+    WaveEnded,
+    ItemUsed,
+    BasicAttackUsed,
+    SkillUsed,
+    TreeDamaged,
+    StaminaSpent,
+    DefenseChanged,
+    GameEnded
+}
