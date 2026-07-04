@@ -63,6 +63,13 @@ namespace Village
 
             PhotonPropertyHelper.SetPlayerProp(actorNumber, PlayerPropKeys.Gold, newGold);
 
+            if (amount < 0)
+            {
+                int spent = PhotonPropertyHelper.GetPlayerProp<int>(actorNumber, PlayerPropKeys.CumulativeGoldSpent, 0);
+                spent += Mathf.Abs(amount);
+                PhotonPropertyHelper.SetPlayerProp(actorNumber, PlayerPropKeys.CumulativeGoldSpent, spent);
+            }
+
             if (actorNumber == PhotonNetwork.LocalPlayer.ActorNumber)
             {
                 OnGoldChanged?.Invoke(_cachedGold);
@@ -121,6 +128,10 @@ namespace Village
 
             _propCache.Clear();
             _propCache[PlayerPropKeys.Gold] = newGold;
+
+            int spent = PhotonPropertyHelper.GetPlayerProp<int>(actorNumber, PlayerPropKeys.CumulativeGoldSpent, 0);
+            spent += cost;
+            _propCache[PlayerPropKeys.CumulativeGoldSpent] = spent;
 
             int[] currentUpgrades = GetUpgradeLevelsSnapshot(actorNumber);
             int nextLevel = currentLevel + 1;

@@ -23,8 +23,14 @@ public class MatchController : MonoBehaviourPunCallbacks
 	private bool allowSceneChange = false;
 	//역할 분배 완료 플래그
 	private bool roleDistribution = false;
-	//솔로 모드 진입 플래그
-	private bool isStartingSolo = false;
+	//솔로 모드 진입 플래그 (정적 변수에 상태 유지)
+	public static bool IsStartingSoloGlobal = false;
+	protected bool isStartingSolo
+	{
+		get => IsStartingSoloGlobal;
+		set => IsStartingSoloGlobal = value;
+	}
+	public bool IsStartingSolo => isStartingSolo;
 
 
 	//매치메이킹 경과 타이머 갱신 코루틴
@@ -35,32 +41,24 @@ public class MatchController : MonoBehaviourPunCallbacks
 	private float duration = 0.4f;
 
 
-	//매치메이킹 관련 UI 요소
-	[Header("Loading Panel")]
-	public GameObject LoadingPanel;
-	public TextMeshProUGUI LoadingText;
-	public TextMeshProUGUI SceneLoadingText;
-	public TextMeshProUGUI Timer;
-	public Button StopMatching;
+	// 씬로더의 공용 UI 요소를 실시간 바인딩하여 씬 복귀 시 레퍼런스 유실 방지
+	protected GameObject LoadingPanel => SceneLoader.Instance != null ? SceneLoader.Instance.loadingPanel : null;
+	protected TextMeshProUGUI LoadingText => SceneLoader.Instance != null ? SceneLoader.Instance.mainLoadingText : null;
+	protected TextMeshProUGUI SceneLoadingText => SceneLoader.Instance != null ? SceneLoader.Instance.sceneLoadingText : null;
+	protected TextMeshProUGUI Timer => SceneLoader.Instance != null ? SceneLoader.Instance.timer : null;
+	protected Button StopMatching => SceneLoader.Instance != null ? SceneLoader.Instance.stopMatching : null;
 
-	private void Start()
+	protected virtual void Start()
 	{
 		SceneLoadingText.text = "";
-		// 로비(메인 메뉴)로 돌아왔을 때 오프라인 모드가 켜져 있다면
-		// 이를 해제하고 다시 온라인 서버에 연결하도록 처리해야함
-		if (PhotonNetwork.OfflineMode)
-		{
-			PhotonNetwork.OfflineMode = false; // 오프라인 모드 해제
-			GameManager.Instance.isSoloPlay = false;
-			PhotonNetwork.ConnectUsingSettings(); // 포톤 설정파일을 이용해 다시 온라인 연결 시도
-		}
 	}
 
 	//매치메이킹을 시도하는 함수
 	protected void FindMatch()
 	{
-		//서버 연결 상태라면
-		if (PhotonNetwork.IsConnectedAndReady)
+		Debug.Log($"[MatchController] FindMatch() 호출됨. IsConnectedAndReady: {PhotonNetwork.IsConnectedAndReady}, InRoom: {PhotonNetwork.InRoom}");
+		// 서버 연결 완료 및 방에 있지 않은 상태 확인 (GameServer에서 매칭 시도 방지)
+		if (PhotonNetwork.IsConnectedAndReady && !PhotonNetwork.InRoom)
 		{
 			if (LoadingPanel == null) return;
 
@@ -68,6 +66,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 			isFindingMatch = true;
 
 			//로딩 패널 활성화
+			LoadingPanel.SetActive(true);
 			LoadingPanel.transform.localScale = Vector3.one;
 
 			//...이 반복되어 표시되도록 한다.
@@ -106,7 +105,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 		}
 		else
 		{
-			Debug.LogError("Not connected to server.");
+			Debug.LogError($"Not connected to server or in room. IsConnectedAndReady: {PhotonNetwork.IsConnectedAndReady}, InRoom: {PhotonNetwork.InRoom}");
 		}
 	}
 
@@ -143,7 +142,11 @@ public class MatchController : MonoBehaviourPunCallbacks
 		}
 
 		//로딩 패널 비활성화(크기 0으로 설정)
-		if (LoadingPanel != null) LoadingPanel.transform.localScale = Vector3.zero;
+		if (LoadingPanel != null)
+		{
+			LoadingPanel.transform.localScale = Vector3.zero;
+			LoadingPanel.SetActive(false);
+		}
 	}
 
 	//타이머를 갱신하는 코루틴
@@ -200,10 +203,11 @@ public class MatchController : MonoBehaviourPunCallbacks
 		//인원 구성이 완료되면 (2명이거나, 솔로모드라 오프라인 모드일 경우)
 		if (PhotonNetwork.CurrentRoom.PlayerCount == 2 || PhotonNetwork.OfflineMode)
 		{
+			isStartingSolo = false;
 			GameManager.Instance.nextScene = CommonDefine.GAMESCENE;
 
 			//역할 분배
-			//RoleDistribution();
+			RoleDistribution();
 
 			// 솔로 플레이(오프라인 모드)일 경우, 자동으로 P1 역할 할당 및 분배 완료 처리
 			if (PhotonNetwork.OfflineMode)
@@ -213,8 +217,8 @@ public class MatchController : MonoBehaviourPunCallbacks
 				roleDistribution = true;
 			}
 
-			//씬 로드
-			LoadScene().Forget();
+			// 로딩 UI만 표시 (포톤 LoadLevel로 씬 전환이 전파되며 씬 로드 완료 시 자동 해제됨)
+			SceneLoader.Instance.ShowLoadingUI();
 			//씬 전환 코루틴 시작
 			StartCoroutine(StopTimerAndFinalizeMatch());
 		}
@@ -275,8 +279,8 @@ public class MatchController : MonoBehaviourPunCallbacks
 		//매치메이킹 취소 불가능하게 버튼 비활성화
 		StopMatching.gameObject.SetActive(false);
 
-		//비동기식 씬 로드가 완료되고, 역할 분배가 끝나길 기다려 전환한다.
-		yield return new WaitUntil(() => allowSceneChange == true && roleDistribution == true);
+		// 마스터 클라이언트는 역할 분배 완료를 대기하고, 일반 클라이언트는 즉시 통과
+		yield return new WaitUntil(() => !PhotonNetwork.IsMasterClient || roleDistribution == true);
 
 		//해당 방의 방장이며, 방이 안보이게 설정하고 씬 이동
 		if (PhotonNetwork.IsMasterClient)
@@ -333,12 +337,14 @@ public class MatchController : MonoBehaviourPunCallbacks
 
 	protected void StartSoloplay()
 	{
+		Debug.Log($"[MatchController] StartSoloplay() 호출됨. LoadingPanel: {LoadingPanel != null}");
 		if (LoadingPanel == null) return;
 
 		// 매치메이킹 플래그 설정 (로딩 UI 및 취소 로직용)
 		isFindingMatch = true;
 
 		// 로딩 패널 활성화
+		LoadingPanel.SetActive(true);
 		LoadingPanel.transform.localScale = Vector3.one;
 
 		// 로딩 텍스트 설정
@@ -374,39 +380,9 @@ public class MatchController : MonoBehaviourPunCallbacks
 	// 오프라인 룸 생성 및 진입
 	private void StartOfflineRoom()
 	{
-		isStartingSolo = false;
 		GameManager.Instance.isSoloPlay = true;
 		PhotonNetwork.OfflineMode = true;
 		PhotonNetwork.CreateRoom("SoloRoom"); // 오프라인 룸 생성 -> OnJoinedRoom 호출됨
-
 	}
 
-	//비동기식 씬을 로드하는 함수
-	async UniTask LoadScene()
-	{
-		await UniTask.Yield();
-		//비동기식 씬 로드
-		AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(GameManager.Instance.nextScene);
-		asyncOperation.allowSceneActivation = false;
-
-		//텍스트 원본 저장
-		string originText = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Load_Loading);
-		SceneLoadingText.text = originText;
-
-		if (spiningCancelToken != null)
-		{
-			spiningCancelToken.Cancel();
-			spiningCancelToken.Dispose();
-		}
-		spiningCancelToken = new CancellationTokenSource();
-		SpiningDots(SceneLoadingText, spiningCancelToken.Token).Forget();
-
-		await UniTask.WaitUntil(() => asyncOperation.progress >= 0.9f, cancellationToken: destroyCancellationToken);
-
-		spiningCancelToken.Cancel();
-		spiningCancelToken.Dispose();
-
-		asyncOperation.allowSceneActivation = true;
-		allowSceneChange = true;
-	}
 }

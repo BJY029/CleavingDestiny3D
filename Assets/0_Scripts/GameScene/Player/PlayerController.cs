@@ -1,4 +1,4 @@
-﻿using Photon.Pun;
+using Photon.Pun;
 using Potan.CoreUtils;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -454,6 +454,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         {
             isPreparingTreeCut = true;
             WhileAnimation = true; // 차징 중 움직임 잠금
+            SetInputLocked(true); // 상호작용 즉시 입력/속도 잠금 (슬라이딩 방지)
 
             characterController.enabled = false;
             Vector3 dirToTree = (TreeStatus.Instance.transform.position - transform.position).normalized;
@@ -751,6 +752,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     public void PlayUseItemAnimation(Transform itemSlotTransform, ItemClass currentItemClass, Texture itemTexture)
     {
         WhileAnimation = true;
+        SetInputLocked(true); // 상호작용 즉시 입력/속도 잠금 (슬라이딩 방지)
         animationController.UseItemAnimation(itemSlotTransform, currentItemClass, itemTexture, () =>
          {
              WhileAnimation = false;

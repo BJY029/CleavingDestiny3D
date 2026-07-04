@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
 
 	public int maxRoomPlayerCount = 2;
 	public bool isSoloPlay = false;
+	public bool isStartingSolo = false;
 
 	private void Awake()
 	{

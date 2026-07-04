@@ -31,7 +31,7 @@ public class RoomSetting : ScriptableObject
 
     [Header("Match Control")]
     public int LoserActNum = -1;
-    public string MatchEndReason = MatchResultReason.NONE.ToString();
+    public string MatchEndReason = MatchResultReason.None.ToString();
     public int ResolvedTurnIdx = -1;
 }
 

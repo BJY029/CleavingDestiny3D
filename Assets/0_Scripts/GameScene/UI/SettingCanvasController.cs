@@ -33,7 +33,7 @@ public class SettingCanvasController : MonoBehaviour
     private void Start()
     {
         CloseBtn.onClick.AddListener(ToggleSettingPanel);
-        LobbyBtn.onClick.AddListener(GameExitHandler.instance.RequestLeaveGame);
+        LobbyBtn.onClick.AddListener(GameExitHandler.Instance.RequestLeaveGame);
         QuitGameBtn.onClick.AddListener(OnClickExitGame);
     }
 

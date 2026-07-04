@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CommonDefine
@@ -38,6 +38,7 @@ public class UI_CSV
     public const string UI_Load_Waiting = "UI_Load_Waiting";
     public const string UI_Load_MatchSuccess = "UI_Load_MatchSuccess";
     public const string UI_Load_Loading = "UI_Load_Loading";
+    public const string UI_Load_ReturningToLobby = "UI_Load_ReturningToLobby";
     public const string UI_ItemNotify_Title = "UI_ItemNotify_Title";
     public const string UI_ItemSacrifice_Title = "UI_ItemSacrifice_Title";
     public const string UI_ItemSacrifice_TableDesc = "UI_ItemSacrifice_TableDesc";
@@ -78,6 +79,7 @@ public static class RoomPropKeys
     public const string MatchResultReason = "MatchResultReaon"; //string
     public const string MatchResolveTurnIndex = "MatchResolveTurnIndex"; //int
     //public const string Weather = "Weather";
+    public const string MatchStartTime = "MatchStartTime"; //double
 }
 
 //플레이어 CustomProperty Key
@@ -114,6 +116,12 @@ public static class PlayerPropKeys
     public const string Item_HeroWeight = "Item_HeroWeight";
     public const string Item_RareWeight = "Item_RareWeight";
     public const string Item_LegendaryWeight = "Item_LegendaryWeight";
+
+    // 누적 경기 스탯 키
+    public const string CumulativeDamage = "CumulativeDamage"; //int
+    public const string CumulativeDamageReceived = "CumulativeDamageReceived"; //float
+    public const string ItemsUsedCount = "ItemsUsedCount"; //int
+    public const string CumulativeGoldSpent = "CumulativeGoldSpent"; //int
 }
 
 public static class ItemPropKeys
@@ -168,11 +176,19 @@ public enum GamePhaseValue
 
 public enum MatchResultReason
 {
-    NONE,
-    TREE_DESTROYED,
-    VILLAGE_DESTROYED,
-    Player_Left,
-    DRAW,
+    None,
+    TreeDestroyed,
+    VillageDestroyed,
+    PlayerLeft,
+    Draw,
+}
+
+public enum MatchResultType
+{
+    None,
+    Win,
+    Loss,
+    Draw
 }
 
 public enum LocationCommand

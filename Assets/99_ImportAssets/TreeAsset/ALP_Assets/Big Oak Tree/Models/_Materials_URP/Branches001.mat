@@ -26,9 +26,9 @@ Material:
   m_Shader: {fileID: 4800000, guid: a41a47634ec9ed4438ea49a9aaaca71e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords:
+  m_ValidKeywords:
   - _ALPHATEST_ON
+  m_InvalidKeywords:
   - _DISABLE_SSR_TRANSPARENT
   - _DOUBLESIDED_ON
   - _MASKMAP
@@ -189,6 +189,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _MainAlbedoTex:
         m_Texture: {fileID: 2800000, guid: 211ca27924489134f88b69b65575eaaf, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainMaskMap:
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainMaskTex:
@@ -431,7 +435,7 @@ Material:
     - _BumpScale: 1
     - _CATEGORY_ALPHACLIPPING: 1
     - _CATEGORY_COLOR: 1
-    - _CATEGORY_COLORSHIFT: 0
+    - _CATEGORY_COLORSHIFT: 1
     - _CATEGORY_DIFFUSIONPROFILE: 1
     - _CATEGORY_METALLIC: 0
     - _CATEGORY_OCCLUSION: 1
@@ -589,6 +593,7 @@ Material:
     - _MainColorMode: 0
     - _MainMaskMaxValue: 0.008474648
     - _MainMaskMinValue: 0
+    - _MainMaskType: 0
     - _MainNormalValue: 1.3
     - _MainOcclusionValue: 0
     - _MainSmoothnessValue: 0.206
@@ -842,10 +847,8 @@ Material:
     - _useThreadMap: 1
     m_Colors:
     - Color_83777D09: {r: 0.51886785, g: 0.51886785, b: 0.51886785, a: 0}
-    - DiffusionProfile_261f48f1fbc94ccbafc421414859c159_Asset: {r: 0, g: 0, b: 0,
-        a: 0}
-    - DiffusionProfile_bfbe0deb8ec4428a9cfcdb968651903c_Asset: {r: 0, g: 0, b: 0,
-        a: 0}
+    - DiffusionProfile_261f48f1fbc94ccbafc421414859c159_Asset: {r: 0, g: 0, b: 0, a: 0}
+    - DiffusionProfile_bfbe0deb8ec4428a9cfcdb968651903c_Asset: {r: 0, g: 0, b: 0, a: 0}
     - Diffusion_Profile_Asset: {r: 0, g: 0, b: 0, a: 0}
     - _AlphaRemap: {r: 0, g: 1, b: 0, a: 0}
     - _BASE_COLOR: {r: 1, g: 1, b: 1, a: 0}
@@ -863,8 +866,7 @@ Material:
     - _DetailMaskRemap: {r: 0, g: 0, b: 0, a: 0}
     - _DetailMeshRemap: {r: 0, g: 0, b: 0, a: 0}
     - _DiffusionProfileAsset: {r: 0, g: 0, b: 0, a: 0}
-    - _DiffusionProfileHash_Asset: {r: -1.4084058e-35, g: 8.0126075e+12, b: -4.8417168e+30,
-        a: 2.0027151e-22}
+    - _DiffusionProfileHash_Asset: {r: -1.4084058e-35, g: 8.0126075e+12, b: -4.8417168e+30, a: 2.0027151e-22}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EMISSION_COLOR: {r: 0, g: 0, b: 0, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
@@ -934,6 +936,7 @@ Material:
     - _uvThreadST: {r: 1, g: 1, b: 0, a: 0}
     - _vertex_occlusion_mask_mode: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!114 &4025226808651751229
 MonoBehaviour:
   m_ObjectHideFlags: 11

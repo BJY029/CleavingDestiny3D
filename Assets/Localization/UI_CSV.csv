@@ -1,4 +1,4 @@
-﻿ID,KR,EN
+ID,KR,EN
 UI_Load_Finding,상대 찾는 중,Looking for an opponent
 UI_Load_Waiting,상대 기다리는 중,Waiting for opponent
 UI_Load_MatchSuccess,매칭 성공! 게임에 입장합니다.,Matching success! Enter the game.
@@ -20,3 +20,13 @@ UI_Item_LockPick_Warning,락픽이 없습니다.,There are no lockpicks.
 UI_Item_LockPick_Has,락픽 갯수,Number of lock picks
 UI_Exit_Lobby,로비로 나가기,Back To Lobby
 UI_Exit_Game,게임 나가기,Quit Game
+UI_Load_ReturningToLobby,로비로 복귀중,Returning to Lobby
+UI_Result_Win,승리,VICTORY
+UI_Result_Loss,패배,DEFEAT
+UI_Result_Draw,무승부,Draw
+UI_ResultReason_Loss_TreeDestroyed,나무를 베었습니다.,You felled the tree.
+UI_ResultReason_Loss_VillageDestroyed,마을이 무너졌습니다.,Your village collapsed.
+UI_ResultReason_Win_PlayerLeft,상대방이 게임을 떠났습니다.,The opponent has left the game.
+UI_ResultReason_Win_TreeDestroyed,상대방이 나무를 베었습니다.,The opponent felled the tree.
+UI_ResultReason_Win_VillageDestroyed,상대 마을이 무너졌습니다.,The opponent's village collapsed.
+UI_ResultReason_Draw,두 마을이 동시에 무너졌습니다.,Both villages collapsed.

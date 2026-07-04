@@ -281,6 +281,11 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		// 프로퍼티 업데이트
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageHP, currentVillageHP);
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VDamageProcessCompleted, true);
+
+		// 누적 받은 데미지 저장
+		float cumulativeReceived = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.CumulativeDamageReceived, 0f);
+		cumulativeReceived += damage;
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.CumulativeDamageReceived, cumulativeReceived);
 		InitTreeAtkMultRate();
 
 		//데미지 처리가 끝났다고 MasterClient에게 송신
@@ -302,6 +307,11 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 
 		PhotonPropertyHelper.SetPlayerProp(aiNumber, PlayerPropKeys.VillageHP, currentVillageHP);
 		PhotonPropertyHelper.SetPlayerProp(aiNumber, PlayerPropKeys.VDamageProcessCompleted, true);
+
+		// 누적 받은 데미지 저장 (AI)
+		float cumulativeReceived = PhotonPropertyHelper.GetPlayerProp<float>(aiNumber, PlayerPropKeys.CumulativeDamageReceived, 0f);
+		cumulativeReceived += damage;
+		PhotonPropertyHelper.SetPlayerProp(aiNumber, PlayerPropKeys.CumulativeDamageReceived, cumulativeReceived);
 
 		TurnManager.Instance.TreeDamageChecker();
 	}

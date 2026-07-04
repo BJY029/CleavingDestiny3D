@@ -8,20 +8,31 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 
 	private void Awake()
 	{
-		//¼ÓÇÑ ¹æÀÇ MasterClientÀÇ ¾À º¯È¯¿¡, ÀÚµ¿ ¾À º¯È¯ È°¼ºÈ­
+		//  MasterClient  È¯, Úµ  È¯ È°È­
 		PhotonNetwork.AutomaticallySyncScene = true;
 	}
 
 	private void Start()
 	{
-		//¿¬°á ½Ãµµ
+		// ì˜¤í”„ë¼ì¸ ëª¨ë“œ ìƒíƒœë¡œ ë¡œë¹„ì— ì§„ì…í•  ê²½ìš° í•´ì œ ì²˜ë¦¬
+		if (PhotonNetwork.OfflineMode)
+		{
+			PhotonNetwork.OfflineMode = false;
+		}
+		
+		if (GameManager.Instance != null)
+		{
+			GameManager.Instance.isSoloPlay = false;
+		}
+		
 		Connect();
 		Application.runInBackground = true;
 	}
 
 	private void Connect()
 	{
-		if (PhotonNetwork.IsConnected)
+		// 1. ì„œë²„ì— ì™„ì „íˆ ì—°ê²°ë˜ì–´ ìˆê³ , ë¡œë¹„ ì°¸ê°€ ëª…ë ¹ì„ ì¦‰ì‹œ ë³´ë‚¼ ìˆ˜ ìˆëŠ” ìƒíƒœì¸ ê²½ìš°
+		if (PhotonNetwork.IsConnectedAndReady)
 		{
 			LobbyUIManager.instance.setConnectedText("Connected. Joining lobby...");
 
@@ -31,26 +42,43 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 				LobbyUIManager.instance.setConnectedText("Connected to lobby.");
 			return;
 		}
-		//°ÔÀÓ ¼­¹ö Áö¿ª °íÁ¤(ÇÑ±¹)
+
+		// 2. ì†Œì¼“ì€ ì—°ê²°ë˜ì–´ ìˆìœ¼ë‚˜, ë§ˆìŠ¤í„° ì„œë²„ ë³µê·€ ì¤‘ì¸ ê³¼ë„ê¸° ìƒíƒœì¸ ê²½ìš° (IsConnectedAndReadyê°€ falseì¸ ìƒí™©)
+		if (PhotonNetwork.IsConnected)
+		{
+			LobbyUIManager.instance.setConnectedText("Connecting to master server...");
+			// ì´ ìƒíƒœì—ì„œëŠ” ì•„ë¬´ê²ƒë„ í•˜ì§€ ì•Šê³  ëŒ€ê¸°í•˜ë©´, í¬í†¤ì´ ì¤€ë¹„ë¥¼ ë§ˆì¹œ í›„ 
+			// ìë™ìœ¼ë¡œ OnConnectedToMaster() ì½œë°±ì„ ì‹¤í–‰í•˜ì—¬ JoinLobby()ë¥¼ ì²˜ë¦¬í•©ë‹ˆë‹¤.
+			return;
+		}
+
+		// 3. ì•„ì˜ˆ ì—°ê²°ì´ ì™„ì „íˆ ëŠê¸´ ìƒíƒœì¸ ê²½ìš° (Disconnected) -> ì¬ì ‘ì† í”„ë¡œì„¸ìŠ¤ ì‘ë™
+		LobbyUIManager.instance.setConnectedText("Disconnected. Reconnecting...");
+		
 		PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = "kr";
-		//°ÔÀÓ ¹èÆ÷ ¹öÀü ¼³Á¤
 		PhotonNetwork.GameVersion = gameVersion;
-		//¼­¹ö Á¢¼Ó ½Ãµµ
 		PhotonNetwork.ConnectUsingSettings();
 	}
 
-	//Master server ¿¬°á ÈÄ, Lobby¿¡ ¿¬°á ½Ãµµ
+	//Master server  , Lobby  Ãµ
 	public override void OnConnectedToMaster()
 	{
+		if (PhotonNetwork.OfflineMode) return;
+
 		LobbyUIManager.instance.setConnectedText("Connected. Joining lobby...");
 
 		PhotonNetwork.JoinLobby();
 	}
 
-	//·Îºñ ¿¬°á ¿Ï·á Ãâ·Â
+	//Îº  Ï· 
 	public override void OnJoinedLobby()
 	{
 		LobbyUIManager.instance.setConnectedText("Connected to lobby.");
+
+		if (ButtonController.Instance != null)
+		{
+			ButtonController.Instance.SetButtonsInteractable(true);
+		}
 
 		Cursor.lockState = CursorLockMode.None;
 		Cursor.visible = true;
@@ -67,16 +95,40 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 	private void InitPlayerProps()
 	{
 		if (PhotonNetwork.LocalPlayer.CustomProperties.Count == 0) return;
-		//ÇÃ·¹ÀÌ¾îÀÇ ÇÁ·ÎÆÛÆ¼¸¦ ¹Ş¾Æ¿À±â À§ÇÑ ÇØ½Ã ¼±¾ğ
+		//ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¼ï¿½ï¿½ ï¿½Ş¾Æ¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		ExitGames.Client.Photon.Hashtable allClear = new ExitGames.Client.Photon.Hashtable();
 
-		//·ÎÄÃ ÇÃ·¹ÀÌ¾î(È£ÃâÀÚ)ÀÇ ÇÁ·ÎÆÛÆ¼¸¦ µ¹¾Æº¸¸é¼­
+		//ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½(È£ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¼ï¿½ï¿½ ï¿½ï¿½ï¿½Æºï¿½ï¿½é¼­
 		foreach (var key in PhotonNetwork.LocalPlayer.CustomProperties.Keys)
 		{
-			//ÇÁ·ÎÆÛÆ¼ ÃÊ±âÈ­ ¼öÇà
+			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¼ ï¿½Ê±ï¿½È­ ï¿½ï¿½ï¿½ï¿½
 			allClear[key.ToString()] = null;
 		}
 		PhotonNetwork.LocalPlayer.SetCustomProperties(allClear);
 		Debug.Log("Player Props Init Completed");
+	}
+
+	public override void OnDisconnected(DisconnectCause cause)
+	{
+		// ì†”ë¡œ ëª¨ë“œ ì‹œì‘ ì¤‘ì´ê±°ë‚˜, ì˜¤í”„ë¼ì¸ ëª¨ë“œ ìƒíƒœì´ê±°ë‚˜, ì´ë¯¸ ì†”ë¡œ í”Œë ˆì´ ì¤‘ì´ë¼ë©´ ì˜¨ë¼ì¸ ì¬ì ‘ì† í•˜ì§€ ì•ŠìŒ
+		if (MatchController.IsStartingSoloGlobal || 
+			PhotonNetwork.OfflineMode || 
+			(GameManager.Instance != null && GameManager.Instance.isSoloPlay))
+		{
+			Debug.Log("[LobbyConnectController] ì†”ë¡œ ëª¨ë“œ(ì˜¤í”„ë¼ì¸) ìƒíƒœì´ë¯€ë¡œ ì˜¨ë¼ì¸ ì¬ì ‘ì†ì„ ìˆ˜í–‰í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
+			return;
+		}
+
+		Debug.LogWarning($"[LobbyConnectController] Disconnected from Photon. Cause: {cause}. Reconnecting...");
+		LobbyUIManager.instance.setConnectedText("Disconnected. Reconnecting...");
+
+		if (ButtonController.Instance != null)
+		{
+			ButtonController.Instance.SetButtonsInteractable(false);
+		}
+		
+		PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = "kr";
+		PhotonNetwork.GameVersion = gameVersion;
+		PhotonNetwork.ConnectUsingSettings();
 	}
 }
