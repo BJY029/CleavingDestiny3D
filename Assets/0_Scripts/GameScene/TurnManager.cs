@@ -252,20 +252,28 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 		//현재 턴 순서 값을 가져온다.
 		int currentIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurn);
+		int currentTurnActor = TurnOrder[currentIndex];
+		int currentWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
+		int currentTurnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
+
 		Debug.Log("Turn " + currentIndex + " End");
+
+		NotifyTurnEnded(currentIndex, currentTurnActor, currentTurnIndex, currentWaveCnt);
+
 		//다음 턴 순서, 다음 턴의 Actor 번호, 턴 카운트, 해당 턴에 제공할 Offer를 계산한다.
 		int nextIndex = (currentIndex + 1) % TurnOrder.Length;
 		int nextActor = TurnOrder[nextIndex];
-		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) + 1;
+		int turnIndex = currentTurnIndex + 1;
 		string offerStr = OfferAuthority.Instance.MakeOfferForTurn(nextActor, turnIndex);
 
 
 		//만약 모든 턴을 돌고 한 웨이브가 끝난 경우
 		if (nextIndex == 0)
 		{
-			//현재 웨이브 값을 불러온다.
-			int currentWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
 			Debug.Log("Wave " + currentWaveCnt + " End");
+
+			NotifyWaveEnded(currentWaveCnt, currentTurnIndex);
+
 			//웨이브 값을 하나 증가시킨다.
 			currentWaveCnt += 1;
 
@@ -287,6 +295,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				//웨이브 값을 갱신한다.
 				PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentWave, currentWaveCnt);
 				Debug.Log("Wave " + currentWaveCnt + " Start");
+
+				NotifyWaveStarted(currentWaveCnt, turnIndex);
 			}
 		}
 		//턴 변경 관련 처리를 한 번만 수행하기 위해 다음과 같은 RPC로 변수 초기화
@@ -301,6 +311,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			{ItemPropKeys.OFFER(nextActor), offerStr ?? "" }
 		};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
+
+		NotifyTurnStarted(nextIndex, nextActor, turnIndex, currentWaveCnt);
 		//마을 페이즈에 돌입하게 되면, 중간에 return이 되서 offer가 반영이 안된다.
 		//따라서 꼭 실제로 프로퍼티가 업데이트 된 후에 해당 플레그를 true로 설정해야 한다.
 		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
@@ -582,9 +594,13 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
 
+		RemoveUsedItem();
+
+		NotifyWaveStarted(roomSet.initialWave, turnIndex);
+		NotifyTurnStarted(nextIndex, nextActor, turnIndex, roomSet.initialWave);
+
 		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
 		//photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
-		RemoveUsedItem();
 	}
 
 	//프로퍼티 변경 감지
@@ -750,5 +766,58 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		{
 			_isAIWorking = false;
 		}
+	}
+
+
+	private void SendNewDrugMissionEvent(NewDrugGameEvent gameEvent)
+	{
+		if (!IsInitializer()) return;
+		if (NewDrugMissionManager.instance == null) return;
+
+		NewDrugMissionManager.instance.ReceiveGameEvent(gameEvent);
+	}
+
+	private void NotifyTurnEnded(int turnOrderIndex, int actorNumber, int turnIndex, int waveIndex)
+	{
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.TurnEnded,
+			TurnOrderIndex = turnOrderIndex,
+			ActorNumber = actorNumber,
+			TurnIndex = turnIndex,
+			WaveIndex = waveIndex
+		});
+	}
+
+	private void NotifyTurnStarted(int turnOrderIndex, int actorNumber, int turnIndex, int waveIndex)
+	{
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.TurnStarted,
+			TurnOrderIndex = turnOrderIndex,
+			ActorNumber = actorNumber,
+			TurnIndex = turnIndex,
+			WaveIndex = waveIndex
+		});
+	}
+
+	private void NotifyWaveEnded(int waveIndex, int turnIndex)
+	{
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.WaveEnded,
+			WaveIndex = waveIndex,
+			TurnIndex = turnIndex
+		});
+	}
+
+	private void NotifyWaveStarted(int waveIndex, int turnIndex)
+	{
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.WaveStarted,
+			WaveIndex = waveIndex,
+			TurnIndex = turnIndex
+		});
 	}
 }

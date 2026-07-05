@@ -5,14 +5,18 @@ public class NewDrugGameEvent
     public NewDrugGameEventType Type;
     public PlayerController Actor;
 
-    public int TurnIndex;
-    public int WaveIndex;
+    public int ActorNumber;
+    public int TurnOrderIndex;
 
-    public int DamageAmount;
+    public int TurnIndex;//
+    public int WaveIndex;//
+
+    public int DamageAmount;//
     public int StaminaAmount;
+    public float TreeHPAfter;//
 
-    public int DefenseValue;
-    public int DefneseDelta;
+    public float DefenseValue;
+    public float DefneseDelta;//
 
-    public ItemSO UsedItem;
+    public ItemSO UsedItem;//
 }

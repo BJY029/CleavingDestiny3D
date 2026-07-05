@@ -311,6 +311,38 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		//TODO: 아이템 효과 적용
 		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
 		ItemHandlingSystem.instance.AddItemStatusInstance(turnActor, item, uniqueId);
+		NotifyItemUsedForNewDrugMission(turnActor, item);
+	}
+
+	private void NotifyItemUsedForNewDrugMission(int actorNum, ItemSO usedItem)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+		if (NewDrugMissionManager.instance == null) return;
+
+		NewDrugMissionManager.instance.ReceiveGameEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.ItemUsed,
+			ActorNumber = actorNum,
+			UsedItem = usedItem,
+			TurnIndex = GetCurrentTurnIndex(),
+			WaveIndex = GetCurrentWaveIndex()
+		});
+
+		NewDrugMissionManager.instance.ReceiveGameEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.StaminaSpent,
+			StaminaAmount = usedItem.itemCost,
+		});
+	}
+
+	private int GetCurrentTurnIndex()
+	{
+		return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
+	}
+
+	private int GetCurrentWaveIndex()
+	{
+		return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
 	}
 
 	[PunRPC]

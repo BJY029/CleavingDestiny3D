@@ -618,6 +618,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//최종 데미지 계산(아이템도 함께 반영하여 계산)
 		_damageResolver.Resolve(dmg, ctx);
 
+		NotifyAttackActionForNewDrugMission(cmd.attackerNum, cmd.isBasicAttack);
+
 
 		//각 아이템의 남은 턴 수 계산, 남은 턴수가 모두 지나면 해당 아이템을 _statusSystem 리스트에서 삭제한다.
 		_statusSystem.TickTurnEnd(cmd.attackerNum);
@@ -627,6 +629,10 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		float hp = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeHP);
 		hp -= dmg.finalDamage;
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, hp);
+
+		NotifyTreeDamagedForNewDrugMission(cmd.attackerNum, dmg.finalDamage, hp);
+
+		NotifyDefenseChangedForNewDrugMission(cmd.attackerNum, dmg.convertedToBarrier);
 
 
 		//TODO: 게임 종료 검증
@@ -853,9 +859,12 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					ctx.Log?.Invoke("Item Shield Value null Exception");
 					return;
 				}
-				shield += ctx.GetPlayerVillageShield(actorNum);
+				float beforeShield = ctx.GetPlayerVillageShield(actorNum);
+				float afterShield = beforeShield + shield;
 
-				ctx.SetPlayerVIllageShield(actorNum, shield);
+				ctx.SetPlayerVIllageShield(actorNum, afterShield);
+
+				NotifyDefenseChangedForNewDrugMission(actorNum, shield);
 
 				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {shield}");
 				break;
@@ -867,11 +876,15 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					ctx.Log?.Invoke("Item Shield Value null Exception");
 					return;
 				}
-				float nextShield = ctx.GetPlayerVillageShield(actorNum) * mult;
+				float beforeShield_m = ctx.GetPlayerVillageShield(actorNum);
+				float afterShield_m = beforeShield_m * mult;
+				float deltaShield_m = afterShield_m - beforeShield_m;
 
-				ctx.SetPlayerVIllageShield(actorNum, nextShield);
+				ctx.SetPlayerVIllageShield(actorNum, afterShield_m);
 
-				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {nextShield}");
+				NotifyDefenseChangedForNewDrugMission(actorNum, deltaShield_m);
+
+				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {afterShield_m}");
 				break;
 			//플레이어 기력에 추가 기력을 +/- 하는 아이템이라면
 			case ItemEffect.DeltaPlayerEng:
@@ -881,12 +894,21 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					ctx.Log?.Invoke("Item Charge Value null Exception");
 					return;
 				}
+				int beforeEng = ctx.GetPlayerEng(actorNum);
+				int afterEng = beforeEng + eng;
+				int deltaEng = afterEng - beforeEng;
+				//eng += ctx.GetPlayerEng(actorNum);
 
-				eng += ctx.GetPlayerEng(actorNum);
+				ctx.SetPlayerEng(actorNum, afterEng);
 
-				ctx.SetPlayerEng(actorNum, eng);
+				if (deltaEng < 0)
+				{
+					int spentAmount = Mathf.Abs(deltaEng);
 
-				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s Energy Changed to {eng}");
+					NotifyStaminaSpentForNewDrugMission(actorNum, spentAmount);
+				}
+
+				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s Energy Changed to {afterEng}");
 				break;
 
 			case ItemEffect.TransferOpponentShieldPct:
@@ -945,5 +967,84 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	{
 		int cur = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
 		return cur == attackerNum;
+	}
+
+	private void SendNewDrugMissionEvent(NewDrugGameEvent gameEvent)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+		if (NewDrugMissionManager.instance == null) return;
+
+		NewDrugMissionManager.instance.ReceiveGameEvent(gameEvent);
+	}
+
+	private void NotifyAttackActionForNewDrugMission(int attackerNum, bool isBasicAttack)
+	{
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = isBasicAttack
+				? NewDrugGameEventType.BasicAttackUsed
+				: NewDrugGameEventType.SkillUsed,
+
+			ActorNumber = attackerNum,
+			TurnIndex = GetCurrentTurnIndex(),
+			WaveIndex = GetCurrentWaveIndex()
+		});
+	}
+
+	private void NotifyTreeDamagedForNewDrugMission(int attackerNum, int finalDamage, float treeHpAfter)
+	{
+		if (finalDamage <= 0) return;
+
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.TreeDamaged,
+
+			ActorNumber = attackerNum,
+			DamageAmount = finalDamage,
+			TreeHPAfter = treeHpAfter,
+
+			TurnIndex = GetCurrentTurnIndex(),
+			WaveIndex = GetCurrentWaveIndex()
+		});
+	}
+
+	private void NotifyDefenseChangedForNewDrugMission(int actorNum, float defenseDelta)
+	{
+		if (defenseDelta <= 0f) return;
+
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.DefenseChanged,
+
+			ActorNumber = actorNum,
+			DefneseDelta = defenseDelta,
+
+			TurnIndex = GetCurrentTurnIndex(),
+			WaveIndex = GetCurrentWaveIndex()
+		});
+	}
+
+	private void NotifyStaminaSpentForNewDrugMission(int actorNum, int staminaValue)
+	{
+		if (staminaValue <= 0) return;
+
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.StaminaSpent,
+			ActorNumber = actorNum,
+			StaminaAmount = staminaValue,
+			TurnIndex = GetCurrentTurnIndex(),
+			WaveIndex = GetCurrentWaveIndex()
+		});
+	}
+
+	private int GetCurrentTurnIndex()
+	{
+		return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
+	}
+
+	private int GetCurrentWaveIndex()
+	{
+		return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
 	}
 }

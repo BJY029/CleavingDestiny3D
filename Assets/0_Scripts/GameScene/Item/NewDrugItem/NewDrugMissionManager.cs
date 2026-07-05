@@ -61,6 +61,9 @@ public class NewDrugMissionManager : MonoBehaviourPun
         List<INewDrugMission> missions = new List<INewDrugMission>
         {
             new NoItemOnlyBasicAttackMission(),
+            new PrecisionDamageMission(100),
+            new SpendStaminaInOneTurnMission(12),
+            new ReachDefenseInOneTurnMission(500),
         };
 
         int randomIndex = Random.Range(0, missions.Count);
