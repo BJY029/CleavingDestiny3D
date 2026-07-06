@@ -1,6 +1,7 @@
 ﻿using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
@@ -18,6 +19,17 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			return;
 		}
 		Instance = this;
+	}
+
+	public Dictionary<int, bool> selectedNewDrugItem = new Dictionary<int, bool>();
+	public bool hasSelectedNewDrugItem(int actorNum)
+	{ return (selectedNewDrugItem.ContainsKey(actorNum) && selectedNewDrugItem[actorNum]); }
+
+	private void MarkSelectedNewDrugItem(int actorNum, string itemId)
+	{
+		if (itemId != "3001") return;
+		selectedNewDrugItem[actorNum] = true;
+		Debug.Log($"[NewDrugDevelopment] Actor {actorNum} selected new drug item.");
 	}
 
 	//3개 중 하나를 선택한 경우 호출 될 함수
@@ -84,6 +96,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		// 8. 서버(Photon Room)에 프로퍼티 설정을 요청하여 모든 클라이언트에 동기화합니다.
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
+
 		return true;
 	}
 
@@ -149,6 +162,8 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			return;
 		}
 
+		MarkSelectedNewDrugItem(actor, itemId);
+
 		Debug.Log($"Player{actor} took offer: {itemId}");
 	}
 
@@ -162,6 +177,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		if (Master_AddItemToInventory(actor, itemId))
 		{
+			MarkSelectedNewDrugItem(actor, itemId);
 			Debug.Log($"[InventoryAuthority] Actor {actor} bought {itemId} for {price}G (Gold deducted by client)");
 		}
 		else
@@ -318,6 +334,8 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
 		if (NewDrugMissionManager.instance == null) return;
+
+		if (usedItem.effects[0].effectType == ItemEffect.NewDrugDevelopment) return;
 
 		NewDrugMissionManager.instance.ReceiveGameEvent(new NewDrugGameEvent
 		{

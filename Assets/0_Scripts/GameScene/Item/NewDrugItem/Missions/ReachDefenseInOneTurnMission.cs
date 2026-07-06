@@ -2,10 +2,8 @@ using UnityEngine;
 
 public class ReachDefenseInOneTurnMission : INewDrugMission
 {
-    public string MissionName => "방어 안정화 실험";
-
-    public string MissionDesc => $"단 1턴 안에 마을 방어력을 {requiredDefenseAmount} 이상 증가시키세요.";
-
+    public string MissionName => LocalizationManager.Instance.GetText(CSV_Type.Mission, "M_NAME_REACHDEFENSE");
+    public string MissionDesc => LocalizationManager.Instance.GetFormatText(CSV_Type.Mission, "M_DESC_REACHDEFENSE", requiredDefenseAmount);
     public bool IsSuccess { get; private set; }
 
     public bool IsFailed { get; private set; }

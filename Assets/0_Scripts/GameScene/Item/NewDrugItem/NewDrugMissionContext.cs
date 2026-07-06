@@ -1,6 +1,6 @@
 public class NewDrugMissionContext
 {
-    public PlayerController Owner;
+    public int OwnerActorNumber;
 
     public int StartTurnIndex;
     public int StartWaveIndex;

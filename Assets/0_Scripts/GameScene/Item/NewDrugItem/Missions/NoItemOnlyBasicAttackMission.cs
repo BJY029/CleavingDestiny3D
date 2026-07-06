@@ -1,7 +1,7 @@
 public class NoItemOnlyBasicAttackMission : INewDrugMission
 {
-    public string MissionName => "순수 전투 실험";
-    public string MissionDesc => "한 웨이브 동안 아이템을 사용하지 않고 평타만 사용하세요.";
+    public string MissionName => LocalizationManager.Instance.GetText(CSV_Type.Mission, "M_NAME_BASICATTACK");
+    public string MissionDesc => LocalizationManager.Instance.GetText(CSV_Type.Mission, "M_DESC_BASICATTACK");
 
     public bool IsSuccess { get; private set; }
     public bool IsFailed { get; private set; }

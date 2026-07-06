@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class PrecisionDamageMission : INewDrugMission
 {
-    public string MissionName => "정밀 타격 실험";
+    public string MissionName => LocalizationManager.Instance.GetText(CSV_Type.Mission, "M_NAME_PRECISIONDAMAGE");
 
-    public string MissionDesc => $"연속된 2턴 동안 나무에게 준 데미지 차이를 {threshold} 이하로 맞추세요.";
+    public string MissionDesc => LocalizationManager.Instance.GetFormatText(CSV_Type.Mission, "M_NAME_PRECISIONDAMAGE", threshold);
 
     public bool IsSuccess { get; private set; }
 

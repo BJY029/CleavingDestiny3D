@@ -6,9 +6,10 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Cysharp.Threading.Tasks;
+using Unity.InferenceEngine.Tokenization.PostProcessors.Templating;
 
 public enum Language { KR, EN }
-public enum CSV_Type { UI, Item, Preload, Village, Option }
+public enum CSV_Type { UI, Item, Preload, Village, Option, Mission }
 
 public class LocalizationManager : MonoBehaviour
 {
@@ -343,6 +344,21 @@ public class LocalizationManager : MonoBehaviour
 				return value;
 		}
 		return id;
+	}
+
+	public string GetFormatText(CSV_Type type, string id, params object[] args)
+	{
+		string template = GetText(type, id);
+
+		try
+		{
+			return string.Format(template, args);
+		}
+		catch (FormatException e)
+		{
+			Debug.LogWarning($"[Localization] Format failed. ID: {id}, Text: {template}, Error: {e.Message}");
+			return template;
+		}
 	}
 
 	/// <summary>

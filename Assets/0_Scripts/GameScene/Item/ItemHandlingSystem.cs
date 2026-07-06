@@ -930,6 +930,22 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed from {myShieldValue} to {myShieldValue + deltaValue}");
 				ctx.Log?.Invoke($"[ItemProcessImm] Player{targetActNum}'s VillageShield Changed from {targetShieldValue} to {targetShieldValue - deltaValue}");
 				break;
+
+			case ItemEffect.NewDrugDevelopment:
+				if (!PhotonNetwork.IsMasterClient) return;
+
+				if (NewDrugMissionManager.instance == null) return;
+
+				bool reserved = NewDrugMissionManager.instance.ReserveMissionForNextDay(actorNum);
+
+				if (!reserved)
+				{
+					ctx.Log?.Invoke("[NewDrugDevelopment] Mission reservation failed");
+					return;
+				}
+
+				ctx.Log?.Invoke($"[NewDrugDevelopment] Player{actorNum} started new drug mission.");
+				break;
 		}
 	}
 

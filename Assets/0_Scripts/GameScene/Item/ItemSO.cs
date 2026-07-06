@@ -29,7 +29,8 @@ public enum ItemEffect
     DeltaVillageShield,
     MultVillageShield,
     TransferOpponentShieldPct,
-    DisplayByTag
+    NewDrugDevelopment,
+    DisplayByTag,
 }
 
 

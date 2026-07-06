@@ -596,6 +596,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 		RemoveUsedItem();
 
+		if (NewDrugMissionManager.instance != null)
+			NewDrugMissionManager.instance.TryStartPendingMissionOnNextDay();
+
 		NotifyWaveStarted(roomSet.initialWave, turnIndex);
 		NotifyTurnStarted(nextIndex, nextActor, turnIndex, roomSet.initialWave);
 

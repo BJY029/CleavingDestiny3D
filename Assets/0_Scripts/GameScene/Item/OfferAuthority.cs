@@ -108,6 +108,7 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 		RarityWeights shopWeights = new RarityWeights(1.0f, heroW, rareW, legendaryW);
 
 		List<ItemSO> items = ItemDB.Instance.GetItemsList();
+		items = FilterNewDrugDevelopmentItem(turnActor, items);
 		int randSeed = GetItemRollSeed(turnActor, turnIndex + shopNonce);
 
 		List<string> resultOffer = new List<string>();
@@ -149,6 +150,7 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 		}
 
 		List<ItemSO> items = ItemDB.Instance.GetItemsList();
+		items = FilterNewDrugDevelopmentItem(turnActor, items);
 		int randSeed = GetItemRollSeed(turnActor, turnIndex);
 
 		RarityWeights playerWeights = new(
@@ -194,5 +196,16 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 
 		while (picked.Count < count) picked.Add("Error");
 		itemCache.AddRange(picked);
+	}
+
+	private List<ItemSO> FilterNewDrugDevelopmentItem(int actorNum, List<ItemSO> items)
+	{
+		if (items == null) return new List<ItemSO>();
+
+		if (InventoryAuthority.Instance == null) return items;
+
+		if (!InventoryAuthority.Instance.hasSelectedNewDrugItem(actorNum)) return items;
+
+		return items.Where(item => item != null && item.itemId != "3001").ToList();
 	}
 }
