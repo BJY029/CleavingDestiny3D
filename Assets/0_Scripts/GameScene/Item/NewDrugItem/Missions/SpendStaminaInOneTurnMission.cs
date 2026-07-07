@@ -34,11 +34,12 @@ public class SpendStaminaInOneTurnMission : INewDrugMission
                 break;
             case NewDrugGameEventType.StaminaSpent:
                 currentTurnStaminaSpent += gameEvent.StaminaAmount;
+                Debug.LogWarning("ITEM ENERGY SPENT : " + gameEvent.StaminaAmount);
 
                 if (currentTurnStaminaSpent >= requiredStamina) IsSuccess = true;
                 break;
             case NewDrugGameEventType.TurnEnded:
-                currentTurnStaminaSpent = 0;
+                if (currentTurnStaminaSpent < requiredStamina) IsFailed = true;
                 break;
         }
     }

@@ -1,6 +1,8 @@
 using UnityEngine;
 using Photon.Pun;
 using System.Collections.Generic;
+using System.Collections;
+using Photon.Realtime;
 
 public enum NewDrugMissionState
 {
@@ -104,6 +106,8 @@ public class NewDrugMissionManager : MonoBehaviourPun
 
         Debug.Log($"[신약 개발 예약] Actor {actorNum}의 신약 개발 미션이 다음 날 시작됩니다.");
 
+        Player targetPlayer = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
+        photonView.RPC(nameof(RPC_ShowMissionReservedUI), targetPlayer, "", "");
         return true;
     }
 
@@ -142,16 +146,20 @@ public class NewDrugMissionManager : MonoBehaviourPun
             $"{runtime.CurrentMission.MissionName} / {runtime.CurrentMission.MissionDesc}"
         );
 
+        Player targetPlayer = PhotonNetwork.CurrentRoom.GetPlayer(runtime.OwnerActorNumber);
+        string MissionName = runtime.CurrentMission.MissionName;
+        string MissionContext = runtime.CurrentMission.MissionDesc;
+        photonView.RPC(nameof(RPC_ShowMissionUI), targetPlayer, MissionName, MissionContext);
     }
 
     private INewDrugMission CreateRandomMission()
     {
         List<INewDrugMission> missions = new List<INewDrugMission>
         {
-            new NoItemOnlyBasicAttackMission(),
-            new PrecisionDamageMission(100),
-            new SpendStaminaInOneTurnMission(12),
-            new ReachDefenseInOneTurnMission(500),
+            //new NoItemOnlyBasicAttackMission(),
+            //new PrecisionDamageMission(100),
+            new SpendStaminaInOneTurnMission(1),
+            //new ReachDefenseInOneTurnMission(500),
         };
 
         int randomIndex = Random.Range(0, missions.Count);
@@ -208,10 +216,10 @@ public class NewDrugMissionManager : MonoBehaviourPun
             case NewDrugGameEventType.TreeDamaged:
             case NewDrugGameEventType.StaminaSpent:
             case NewDrugGameEventType.DefenseChanged:
-                return gameEvent.ActorNumber == runtime.OwnerActorNumber;
-
             case NewDrugGameEventType.TurnStarted:
             case NewDrugGameEventType.TurnEnded:
+                return gameEvent.ActorNumber == runtime.OwnerActorNumber;
+
             case NewDrugGameEventType.WaveStarted:
             case NewDrugGameEventType.WaveEnded:
             case NewDrugGameEventType.GameEnded:
@@ -233,6 +241,11 @@ public class NewDrugMissionManager : MonoBehaviourPun
 
         //TODO: 보상 아이템 인벤토리에 지급
         //TODO : UI 처리
+        Player targetPlayer = PhotonNetwork.CurrentRoom.GetPlayer(runtime.OwnerActorNumber);
+        string MissionName = runtime.CurrentMission.MissionName;
+        string MissionContext = runtime.CurrentMission.MissionDesc;
+        photonView.RPC(nameof(RPC_ShowMissionSuccessUI), targetPlayer, MissionName, MissionContext);
+        photonView.RPC(nameof(RPC_ActiveNewDrug), targetPlayer, runtime.OwnerActorNumber);
     }
 
     private void FailMission(NewDrugMissionRuntime runtime)
@@ -242,6 +255,10 @@ public class NewDrugMissionManager : MonoBehaviourPun
         Debug.Log("[신약 개발 미션 실패]");
 
         //TODO : ui 처리
+        Player targetPlayer = PhotonNetwork.CurrentRoom.GetPlayer(runtime.OwnerActorNumber);
+        string MissionName = runtime.CurrentMission.MissionName;
+        string MissionContext = runtime.CurrentMission.MissionDesc;
+        photonView.RPC(nameof(RPC_ShowMissionFailUI), targetPlayer, MissionName, MissionContext);
     }
 
     public void MaskNewDrugUsed(int actorNum)
@@ -265,20 +282,49 @@ public class NewDrugMissionManager : MonoBehaviourPun
     }
 
     [PunRPC]
-    private void RPC_ShowMissionUI(string missionName, string description)
+    private void RPC_ShowMissionReservedUI(string missionName, string missionContext)
     {
-
+        PlayerCanvasController.Instance.ToggleMissionUI(true);
+        PlayerCanvasController.Instance.SetMissionUI(missionName, missionContext, NewDrugMissionState.PendingNextDay);
     }
 
     [PunRPC]
-    private void RPC_ShowMissionSuccessUI()
+    private void RPC_ShowMissionUI(string missionName, string missionContext)
     {
-
+        PlayerCanvasController.Instance.SetMissionUI(missionName, missionContext, NewDrugMissionState.Active);
     }
 
     [PunRPC]
-    private void RPC_ShowMissionFailUI()
+    private void RPC_ShowMissionSuccessUI(string missionName, string missionContext)
     {
+        PlayerCanvasController.Instance.SetMissionUI(missionName, missionContext, NewDrugMissionState.Complete);
+        StartCoroutine(OffMissionUI());
+    }
 
+    [PunRPC]
+    private void RPC_ActiveNewDrug(int actorNum)
+    {
+        if (PlayerManager.Instance.PlayersInv.TryGetValue((actorNum), out WorldInventory MyInv))
+        {
+            MyInv.ToggleNewDrugPosition(true);
+        }
+        else
+        {
+            Debug.LogError($"Failed to access {actorNum}'s Inv");
+            return;
+        }
+    }
+
+    [PunRPC]
+    private void RPC_ShowMissionFailUI(string missionName, string missionContext)
+    {
+        PlayerCanvasController.Instance.SetMissionUI(missionName, missionContext, NewDrugMissionState.Failed);
+        StartCoroutine(OffMissionUI());
+    }
+
+    private IEnumerator OffMissionUI()
+    {
+        yield return new WaitForSeconds(3f);
+        PlayerCanvasController.Instance.ToggleMissionUI(false);
     }
 }

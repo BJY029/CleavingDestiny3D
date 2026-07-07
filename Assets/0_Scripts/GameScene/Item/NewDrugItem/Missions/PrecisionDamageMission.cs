@@ -4,7 +4,7 @@ public class PrecisionDamageMission : INewDrugMission
 {
     public string MissionName => LocalizationManager.Instance.GetText(CSV_Type.Mission, "M_NAME_PRECISIONDAMAGE");
 
-    public string MissionDesc => LocalizationManager.Instance.GetFormatText(CSV_Type.Mission, "M_NAME_PRECISIONDAMAGE", threshold);
+    public string MissionDesc => LocalizationManager.Instance.GetFormatText(CSV_Type.Mission, "M_DESC_PRECISIONDAMAGE", threshold);
 
     public bool IsSuccess { get; private set; }
 
@@ -64,9 +64,9 @@ public class PrecisionDamageMission : INewDrugMission
         if (diff <= threshold)
         {
             IsSuccess = true;
-            return;
         }
+        else IsFailed = true;
 
-        previousTurnDamage = currentTrunDamage;
+        //previousTurnDamage = currentTrunDamage;
     }
 }

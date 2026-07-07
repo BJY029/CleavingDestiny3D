@@ -21,7 +21,7 @@ public class ReachDefenseInOneTurnMission : INewDrugMission
         IsSuccess = false;
         IsFailed = false;
 
-        currentTurnDefenseGain = 0;
+        currentTurnDefenseGain = 0f;
     }
 
     public void OnGameEvent(NewDrugGameEvent gameEvent)
@@ -31,7 +31,7 @@ public class ReachDefenseInOneTurnMission : INewDrugMission
         switch (gameEvent.Type)
         {
             case NewDrugGameEventType.TurnStarted:
-                currentTurnDefenseGain = 0;
+                currentTurnDefenseGain = 0f;
                 break;
 
             case NewDrugGameEventType.DefenseChanged:
@@ -45,7 +45,8 @@ public class ReachDefenseInOneTurnMission : INewDrugMission
                 break;
 
             case NewDrugGameEventType.TurnEnded:
-                currentTurnDefenseGain = 0;
+                if (currentTurnDefenseGain < requiredDefenseAmount)
+                    IsFailed = true;
                 break;
         }
     }

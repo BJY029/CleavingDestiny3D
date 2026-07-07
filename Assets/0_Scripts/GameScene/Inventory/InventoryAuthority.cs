@@ -335,6 +335,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		if (!PhotonNetwork.IsMasterClient) return;
 		if (NewDrugMissionManager.instance == null) return;
 
+		if (usedItem.effects == null || usedItem.effects.Count == 0) return;
 		if (usedItem.effects[0].effectType == ItemEffect.NewDrugDevelopment) return;
 
 		NewDrugMissionManager.instance.ReceiveGameEvent(new NewDrugGameEvent
@@ -349,6 +350,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		NewDrugMissionManager.instance.ReceiveGameEvent(new NewDrugGameEvent
 		{
 			Type = NewDrugGameEventType.StaminaSpent,
+			ActorNumber = actorNum,
 			StaminaAmount = usedItem.itemCost,
 		});
 	}
