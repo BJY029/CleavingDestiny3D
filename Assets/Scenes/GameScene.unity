@@ -12598,6 +12598,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ff0b8a0d58b1fcb488a71b50d3879371, type: 2}
   - {fileID: 11400000, guid: 5adc7810bfaf05f4fab26f98db2c7a33, type: 2}
   - {fileID: 11400000, guid: 2964e6f7c7985de498be78ffda3c37e2, type: 2}
+  - {fileID: 11400000, guid: b0ac4021648c32946b086fbbdd3abe0e, type: 2}
 --- !u!114 &1287227773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20218,6 +20219,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bb3c778dc638e74f9f4f59c594f4986, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AtlasManager
+  NewDrugItemSprite: {fileID: 21300000, guid: 0157dcf8ae434634b95291f5607b16c8, type: 3}
 --- !u!1 &1498511554
 GameObject:
   m_ObjectHideFlags: 0

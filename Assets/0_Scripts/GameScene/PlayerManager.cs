@@ -402,6 +402,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		var rt = new ExitGames.Client.Photon.Hashtable
 		{
 			{ItemPropKeys.INV(player.ActorNumber), ItemInfoSerializer.MakeEmptyInv(playerSetting.inventoryCapacity) },
+			{ItemPropKeys.INV_NEWDRUG(player.ActorNumber), false },
 			{ItemPropKeys.INV_CAPACITY(player.ActorNumber), playerSetting.inventoryCapacity },
 			{ItemPropKeys.OFFER(player.ActorNumber),"" },
 			{ItemPropKeys.LOCKPICK(player.ActorNumber), roomSetting.lockpickCount },
@@ -462,6 +463,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			{ $"{PlayerPropKeys.VDamageProcessCompleted}_{rp.actorNumber}", false},
 			{ $"{PlayerPropKeys.PDamageProcessCompleted}_{rp.actorNumber}", false},
 			{ItemPropKeys.INV(rp.actorNumber), ItemInfoSerializer.MakeEmptyInv(playerSetting.inventoryCapacity) },
+			{ItemPropKeys.INV_NEWDRUG(rp.actorNumber), false },
 			{ItemPropKeys.INV_CAPACITY(rp.actorNumber), playerSetting.inventoryCapacity },
 			{ItemPropKeys.OFFER(rp.actorNumber),"" },
 			{ItemPropKeys.LOCKPICK(rp.actorNumber), roomSetting.lockpickCount },

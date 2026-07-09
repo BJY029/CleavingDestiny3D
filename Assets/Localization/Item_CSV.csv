@@ -25,6 +25,7 @@ NAME_GIM_GAMBLE,기력 도박,Energy Wager
 NAME_GIM_DONATION,기부 천사,Sacrificial Heal
 NAME_GIM_ACIDRAIN,부식성 산성비,Acid Rain
 NAME_GIM_DIVINE,신의 가호,Divine Protection
+NAME_NEW_NEWDRUG,개발 된 신약, Newly Developed Drug
 DESC_DMG_SHARPEN,이번 턴에 가하는 데미지가 50% 증가합니다.,Increases damage dealt this turn by 50%.
 DESC_DMG_DULL,이번 턴에 가하는 데미지가 20% 감소합니다.,Decreases damage dealt this turn by 20%.
 DESC_DMG_DOUBLE,한 턴에 두 번의 공격 효과를 적용합니다.,Executes two slash attacks in a single turn.
@@ -51,3 +52,4 @@ DESC_GIM_GAMBLE,기력을 걸고 상대방과 미니게임을 진행합니다.,I
 DESC_GIM_DONATION,내 마을 체력을 500 소모하여 나무 체력을 2000 회복시킵니다.,Consumes 500 Village HP to restore 2000 Tree HP.
 DESC_GIM_ACIDRAIN,상대 마을의 현재 방어막(방어력)을 50% 제거합니다.,"Removes 50% of the enemy Village's current Defense/Shield."
 DESC_GIM_DIVINE,"나에게 적용된 모든 부정적인 효과(도발, 저주 등)를 정화합니다. (웨이브당 1회)","Cleanses all negative status effects (Taunt, Curse, etc.). (Once per wave)"
+DESC_NEW_NEWDRUG,사용 즉시 나무 체력을 2000 회복 시킵니다.,Recovers 2000 tree HP immediately upon use.

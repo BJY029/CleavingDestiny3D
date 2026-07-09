@@ -156,10 +156,10 @@ public class NewDrugMissionManager : MonoBehaviourPun
     {
         List<INewDrugMission> missions = new List<INewDrugMission>
         {
-            //new NoItemOnlyBasicAttackMission(),
-            //new PrecisionDamageMission(100),
-            new SpendStaminaInOneTurnMission(1),
-            //new ReachDefenseInOneTurnMission(500),
+            new NoItemOnlyBasicAttackMission(),
+            new PrecisionDamageMission(100),
+            new SpendStaminaInOneTurnMission(9),
+            new ReachDefenseInOneTurnMission(500),
         };
 
         int randomIndex = Random.Range(0, missions.Count);
@@ -246,6 +246,7 @@ public class NewDrugMissionManager : MonoBehaviourPun
         string MissionContext = runtime.CurrentMission.MissionDesc;
         photonView.RPC(nameof(RPC_ShowMissionSuccessUI), targetPlayer, MissionName, MissionContext);
         photonView.RPC(nameof(RPC_ActiveNewDrug), targetPlayer, runtime.OwnerActorNumber);
+        PhotonPropertyHelper.SetRoomProp(ItemPropKeys.INV_NEWDRUG(runtime.OwnerActorNumber), true);
     }
 
     private void FailMission(NewDrugMissionRuntime runtime)

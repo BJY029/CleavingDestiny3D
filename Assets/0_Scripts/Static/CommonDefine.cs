@@ -143,6 +143,7 @@ public static class ItemPropKeys
     //  Key : INV_2
     //  Value : "12:potion|13:bomb|_|21:shield|_"
     public static string INV(int actor) => $"INV_{actor}";
+    public static string INV_NEWDRUG(int actor) => $"INV_NEWDRUG_{actor}";
 
     //해당 플레이어의 인벤 슬롯 용량
     //ex) actor = 3

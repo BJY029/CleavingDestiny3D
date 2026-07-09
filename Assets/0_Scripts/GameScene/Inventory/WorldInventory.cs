@@ -137,6 +137,16 @@ public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCal
 
 	public void ToggleNewDrugPosition(bool toggle)
 	{
+		photonView.RPC(nameof(RPC_ToggleNewDrugPosition), RpcTarget.All, toggle);
+	}
+
+	[PunRPC]
+	private void RPC_ToggleNewDrugPosition(bool toggle)
+	{
 		NewDrugPosion.SetActive(toggle);
+		if (toggle)
+		{
+			NewDrugPosion.GetComponent<InventoryNewDrug>().InitOwnerActorNum(owner);
+		}
 	}
 }

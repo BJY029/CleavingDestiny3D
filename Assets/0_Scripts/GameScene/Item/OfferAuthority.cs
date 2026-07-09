@@ -15,6 +15,11 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 	// 상점 리롤 결과 수신 시 발생하는 이벤트 (대상ActorNum, nonce, 아이템ID배열)
 	public event Action<int, int, string[]> OnShopRerollReceived;
 
+	private static readonly HashSet<string> AI_MODE_BANNED_ITEM_IDS = new HashSet<string>
+	{
+		"3001", "4006"
+	};
+
 	private void Awake()
 	{
 		// 씬 기반 싱글톤: 기존 인스턴스가 있다면 파괴하고 현재 것을 등록
@@ -109,6 +114,7 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 
 		List<ItemSO> items = ItemDB.Instance.GetItemsList();
 		items = FilterNewDrugDevelopmentItem(turnActor, items);
+		items = FilterAIModeBannedItems(items);
 		int randSeed = GetItemRollSeed(turnActor, turnIndex + shopNonce);
 
 		List<string> resultOffer = new List<string>();
@@ -151,6 +157,7 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 
 		List<ItemSO> items = ItemDB.Instance.GetItemsList();
 		items = FilterNewDrugDevelopmentItem(turnActor, items);
+		items = FilterAIModeBannedItems(items);
 		int randSeed = GetItemRollSeed(turnActor, turnIndex);
 
 		RarityWeights playerWeights = new(
@@ -202,10 +209,22 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 	{
 		if (items == null) return new List<ItemSO>();
 
+		items = items.Where(item => item != null && item.itemId != "5000").ToList();
+
 		if (InventoryAuthority.Instance == null) return items;
 
 		if (!InventoryAuthority.Instance.hasSelectedNewDrugItem(actorNum)) return items;
 
 		return items.Where(item => item != null && item.itemId != "3001").ToList();
+	}
+
+	private List<ItemSO> FilterAIModeBannedItems(List<ItemSO> items)
+	{
+		if (items == null) return new List<ItemSO>();
+
+		if (!GameManager.Instance.isSoloPlay) return items;
+
+		return items.Where(item =>
+		item != null && !AI_MODE_BANNED_ITEM_IDS.Contains(item.itemId)).ToList();
 	}
 }

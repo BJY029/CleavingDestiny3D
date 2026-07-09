@@ -49,6 +49,11 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_UseItem), RpcTarget.MasterClient, ActNum, slotIdx);
 	}
 
+	public void RequestUseNewDrugItem(int ActNum, InventoryNewDrug nd)
+	{
+		photonView.RPC(nameof(RPC_UseNewDrugItem), RpcTarget.MasterClient, ActNum);
+	}
+
 	public void RequestSteelItem(int FromActor, int ToActor, int SelectedSlotIdx, WorldInventorySlot wi)
 	{
 		wis = wi;
@@ -184,6 +189,69 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		{
 			// 아이템 추가 실패 (인벤토리 가득 참)
 			Debug.LogError("[InventoryAuthority] Item Insertion ERROR (Inventory Full?)");
+		}
+	}
+
+	[PunRPC]
+	void RPC_UseNewDrugItem(int requestActor, PhotonMessageInfo info)
+	{
+		//Master 검증
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		//Turn 검증
+		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+		if (turnActor != requestActor)
+		{
+			if (!GameManager.Instance.isSoloPlay)
+			{
+				Debug.LogError("Requester isn't Current turn");
+				return;
+			}
+		}
+
+		bool hasNewDrugItem = PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.INV_NEWDRUG(requestActor));
+		if (!hasNewDrugItem)
+		{
+			Debug.LogError("Requester doesn't have NEW DRUG Itme!");
+			return;
+		}
+
+		ItemSO item = ItemDB.Instance.Get("5000");
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(requestActor);
+
+		photonView.RPC(nameof(RPC_OffNewDrug), player);
+
+		PlayerCanvasController.Instance.PopUpItemNotify(item.itemId, player);
+		string InvKey = ItemPropKeys.INV_NEWDRUG(requestActor);
+		//새롭게 업데이트할 프로퍼티
+		var newProps = new ExitGames.Client.Photon.Hashtable
+		{
+			{InvKey, false }
+		};
+
+		//검증 프로퍼티
+		var expected = new ExitGames.Client.Photon.Hashtable
+		{
+			{InvKey,  true},
+			{RoomPropKeys.CurrentTurnActor, turnActor },
+		};
+
+		//현재 expected 프로퍼티인 경우에만 newProps로 업데이트
+		PhotonNetwork.CurrentRoom.SetCustomProperties(newProps, expected);
+
+		//TODO: 아이템 효과 적용
+		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
+		ItemHandlingSystem.instance.AddItemStatusInstance(requestActor, item, -1);
+		//NotifyItemUsedForNewDrugMission(turnActor, item);
+	}
+
+	[PunRPC]
+	private void RPC_OffNewDrug()
+	{
+		int actNum = PhotonNetwork.LocalPlayer.ActorNumber;
+		if (PlayerManager.Instance.PlayersInv.TryGetValue((actNum), out WorldInventory MyInv))
+		{
+			MyInv.ToggleNewDrugPosition(false);
 		}
 	}
 
@@ -334,9 +402,11 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 	{
 		if (!PhotonNetwork.IsMasterClient) return;
 		if (NewDrugMissionManager.instance == null) return;
+		if (usedItem == null) return;
 
-		if (usedItem.effects == null || usedItem.effects.Count == 0) return;
-		if (usedItem.effects[0].effectType == ItemEffect.NewDrugDevelopment) return;
+		// 신약 개발 아이템 자체는 미션 시작 트리거라서 제외
+		if (usedItem.itemId == "3001")
+			return;
 
 		NewDrugMissionManager.instance.ReceiveGameEvent(new NewDrugGameEvent
 		{
@@ -347,12 +417,17 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			WaveIndex = GetCurrentWaveIndex()
 		});
 
-		NewDrugMissionManager.instance.ReceiveGameEvent(new NewDrugGameEvent
+		if (usedItem.itemCost > 0)
 		{
-			Type = NewDrugGameEventType.StaminaSpent,
-			ActorNumber = actorNum,
-			StaminaAmount = usedItem.itemCost,
-		});
+			NewDrugMissionManager.instance.ReceiveGameEvent(new NewDrugGameEvent
+			{
+				Type = NewDrugGameEventType.StaminaSpent,
+				ActorNumber = actorNum,
+				StaminaAmount = usedItem.itemCost,
+				TurnIndex = GetCurrentTurnIndex(),
+				WaveIndex = GetCurrentWaveIndex()
+			});
+		}
 	}
 
 	private int GetCurrentTurnIndex()
