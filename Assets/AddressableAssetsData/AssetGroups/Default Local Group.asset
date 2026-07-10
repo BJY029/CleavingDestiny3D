@@ -93,6 +93,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - ItemTexture
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 22d2ad579550f394fbfa7283aae59279
+    m_Address: Assets/Material/Item/4009.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 288c14db0cad6694880effbce4c21f40
     m_Address: Assets/Material/Item/4003.mat
     m_ReadOnly: 0

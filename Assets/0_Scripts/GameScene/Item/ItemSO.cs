@@ -30,7 +30,7 @@ public enum ItemEffect
     MultVillageShield,
     TransferOpponentShieldPct,
     NewDrugDevelopment,
-    DisplayByTag,
+    DispelStatusByTag,
 }
 
 
@@ -118,6 +118,7 @@ public class EffectSpec
 
     //effectType이 AddStatus인 경우, 다음 객체로 타입 정의
     public StatusSpec statusSpce;
+    public TagMask targetTags;
 }
 
 [System.Serializable]

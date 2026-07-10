@@ -19,7 +19,7 @@ MonoBehaviour:
   type: 0
   target: 5
   itemClass: 1
-  itemWeight: 1
+  itemWeight: 9999
   oncePerTurn: 0
   oncePerDay: 0
   oncePerGame: 0
@@ -44,3 +44,4 @@ MonoBehaviour:
       bypassConversion: 0
       basicOnly: 0
       consumeOnTrigger: 1
+    targetTags: 0

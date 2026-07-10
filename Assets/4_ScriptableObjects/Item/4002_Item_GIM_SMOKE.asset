@@ -17,7 +17,7 @@ MonoBehaviour:
   itemDesc_ID: DESC_GIM_SMOKE
   itemCost: 4
   type: 3
-  target: 6
+  target: 1
   itemClass: 2
   itemWeight: 1
   oncePerTurn: 1
@@ -44,3 +44,4 @@ MonoBehaviour:
       bypassConversion: 0
       basicOnly: 0
       consumeOnTrigger: 0
+    targetTags: 0

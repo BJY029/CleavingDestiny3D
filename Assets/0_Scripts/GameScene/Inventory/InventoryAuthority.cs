@@ -273,8 +273,8 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		}
 
 		//요청자 INV 정보 가져오기
-		string Inv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(turnActor));
-		int InvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(turnActor));
+		string Inv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(requestActor));
+		int InvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(requestActor));
 
 		//요청자 INV 정보 검증
 		var slots = ItemInfoSerializer.Decode(Inv, InvCap);
@@ -390,12 +390,12 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 				inv += $" {x.itemID} ";
 			}
 		}
-		Debug.Log($"Player{turnActor}'s inventory : {inv}");
+		Debug.Log($"Player{requestActor}'s inventory : {inv}");
 
 		//TODO: 아이템 효과 적용
 		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
-		ItemHandlingSystem.instance.AddItemStatusInstance(turnActor, item, uniqueId);
-		NotifyItemUsedForNewDrugMission(turnActor, item);
+		ItemHandlingSystem.instance.AddItemStatusInstance(requestActor, item, uniqueId);
+		NotifyItemUsedForNewDrugMission(requestActor, item);
 	}
 
 	private void NotifyItemUsedForNewDrugMission(int actorNum, ItemSO usedItem)

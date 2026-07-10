@@ -155,11 +155,14 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	{
 		foreach (var st in _statusSystem.ALL)
 		{
-			if (st.spec.tags == TagMask.Negative && st.ownerActorNum == actNum)
+			if (st.ownerActorNum != actNum) continue;
+
+			if ((st.spec.tags & TagMask.Negative) != 0)
 			{
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -297,22 +300,31 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					//AddStatus 외의 다른 아이템 효과로 정의된 아이템일 경우
 					if (es.effectType != ItemEffect.AddStatus)
 					{
-						if (GameManager.Instance.isSoloPlay)
+						// if (GameManager.Instance.isSoloPlay)
+						// {
+						// 	foreach (int num in PlayerManager.Instance.AIPlayerObj.Keys)
+						// 	{
+						// 		ItemProcessImm(num, es);
+						// 	}
+						// }
+						// else
+						// {
+						// 	//나를 제외한 다른 모든 플레이어에게 해당 즉시 적용 아이템 효과를 적용한다.
+						// 	foreach (Player player in playerNums)
+						// 	{
+						// 		if (player.ActorNumber != actorNum)
+						// 			ItemProcessImm(player.ActorNumber, es);
+						// 	}
+						// }
+						// continue;
+						List<int> targetActors = GetOpponentActors(actorNum);
+
+						foreach (int targetActor in targetActors)
 						{
-							foreach (int num in PlayerManager.Instance.AIPlayerObj.Keys)
-							{
-								ItemProcessImm(num, es);
-							}
+							ItemProcessImm(targetActor, es);
+							Debug.Log($"[Opponent Imm Item] caster={actorNum}, target={targetActor}, effect={es.effectType}");
 						}
-						else
-						{
-							//나를 제외한 다른 모든 플레이어에게 해당 즉시 적용 아이템 효과를 적용한다.
-							foreach (Player player in playerNums)
-							{
-								if (player.ActorNumber != actorNum)
-									ItemProcessImm(player.ActorNumber, es);
-							}
-						}
+
 						continue;
 					}
 
@@ -322,20 +334,54 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					//남은 턴 수를 durationType을 기반으로 초기화하고
 					int remainTurns = getRemainTurns(ss);
 
-					//다른 플레이어어정보로 초기화하여 해당 아이템 효과를 삽입한다.
-					foreach (Player player in playerNums)
+					// //다른 플레이어어정보로 초기화하여 해당 아이템 효과를 삽입한다.
+					// if (GameManager.Instance.isSoloPlay)
+					// {
+					// 	foreach (int aiActorNum in PlayerManager.Instance.AIPlayerObj.Keys)
+					// 	{
+					// 		if (aiActorNum == actorNum) continue;
+
+					// 		var opst = setAndGetStatusInstance(ss, aiActorNum, actorNum, remainTurns);
+
+					// 		_statusSystem.Add(opst);
+
+					// 		Master_UpdateItemStatusUI(item, opst);
+
+					// 		Debug.Log($"[Item] AddStatus {ss.statusId} to AI {aiActorNum}");
+					// 	}
+					// }
+					// else
+					// {
+					// 	foreach (Player player in playerNums)
+					// 	{
+					// 		if (player.ActorNumber != actorNum)
+					// 		{
+					// 			var opst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
+
+					// 			_statusSystem.Add(opst);
+
+					// 			Master_UpdateItemStatusUI(item, opst);
+
+					// 			Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
+					// 		}
+					// 	}
+					// }
+					List<int> statusTargets = GetOpponentActors(actorNum);
+
+					foreach (int targetActor in statusTargets)
 					{
-						if (player.ActorNumber != actorNum)
-						{
-							var opst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
+						var opst = setAndGetStatusInstance(ss, targetActor, actorNum, remainTurns);
 
-							_statusSystem.Add(opst);
+						_statusSystem.Add(opst);
 
-							Master_UpdateItemStatusUI(item, opst);
-							//디버깅
-							Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
-						}
+						Master_UpdateItemStatusUI(item, opst);
+
+						Debug.Log(
+							$"[Opponent AddStatus] caster={actorNum}, " +
+							$"target={targetActor}, status={ss.statusId}, tags={ss.tags}"
+						);
 					}
+
 				}
 				break;
 
@@ -373,15 +419,39 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					int remainTurns = getRemainTurns(ss);
 
 					//각 플레이어 정보로 초기화하여 아이템효과를 삽입한다.
-					foreach (Player player in playerNums)
+					if (GameManager.Instance.isSoloPlay)
 					{
-						var gbst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
+						foreach (Player player in playerNums)
+						{
+							var gbst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
 
-						_statusSystem.Add(gbst);
+							_statusSystem.Add(gbst);
+							Master_UpdateItemStatusUI(item, gbst);
 
-						Master_UpdateItemStatusUI(item, gbst);
-						//디버깅
-						Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
+							Debug.Log($"[Item] AddStatus {ss.statusId} to Player {player.ActorNumber}");
+						}
+
+						foreach (int aiActorNum in PlayerManager.Instance.AIPlayerObj.Keys)
+						{
+							var gbst = setAndGetStatusInstance(ss, aiActorNum, actorNum, remainTurns);
+
+							_statusSystem.Add(gbst);
+							Master_UpdateItemStatusUI(item, gbst);
+
+							Debug.Log($"[Item] AddStatus {ss.statusId} to AI {aiActorNum}");
+						}
+					}
+					else
+					{
+						foreach (Player player in playerNums)
+						{
+							var gbst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
+
+							_statusSystem.Add(gbst);
+							Master_UpdateItemStatusUI(item, gbst);
+
+							Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
+						}
 					}
 				}
 				break;
@@ -946,7 +1016,25 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 				ctx.Log?.Invoke($"[NewDrugDevelopment] Player{actorNum} started new drug mission.");
 				break;
+
+			case ItemEffect.DispelStatusByTag:
+				TagMask removeTags = es.targetTags;
+
+				if (removeTags == TagMask.None)
+				{
+					ctx.Log?.Invoke("[DispelStatusByTag] RemoveTags is None");
+					return;
+				}
+
+				int removedCount = _statusSystem.DispelByTags(actorNum, removeTags);
+				ctx.Log?.Invoke($"[DispelStatusByTag] Player{actorNum}'s statuses removed. Tags: {removeTags}, Count: {removedCount}");
+				break;
 		}
+	}
+
+	public List<StatusInstance> GetStatusesByTags(int actorNum, TagMask tags)
+	{
+		return _statusSystem.GetStatusByTags(actorNum, tags);
 	}
 
 	private int getRandomActNum_ExceptMe(int myActNum)
@@ -1062,5 +1150,44 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	private int GetCurrentWaveIndex()
 	{
 		return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
+	}
+
+	private List<int> GetOpponentActors(int actorNum)
+	{
+		List<int> targets = new List<int>();
+
+		if (GameManager.Instance.isSoloPlay)
+		{
+			bool actorIsAI = PlayerManager.Instance.AIPlayerObj.ContainsKey(actorNum);
+
+			if (actorIsAI)
+			{
+				// AI가 아이템을 썼으면 상대는 실제 플레이어
+				foreach (Player player in PhotonNetwork.PlayerList)
+				{
+					targets.Add(player.ActorNumber);
+				}
+			}
+			else
+			{
+				// 실제 플레이어가 아이템을 썼으면 상대는 AI
+				foreach (int aiActorNum in PlayerManager.Instance.AIPlayerObj.Keys)
+				{
+					targets.Add(aiActorNum);
+				}
+			}
+		}
+		else
+		{
+			foreach (Player player in PhotonNetwork.PlayerList)
+			{
+				if (player.ActorNumber != actorNum)
+				{
+					targets.Add(player.ActorNumber);
+				}
+			}
+		}
+
+		return targets;
 	}
 }

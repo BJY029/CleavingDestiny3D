@@ -10,38 +10,38 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 14ac315f804f03b4aa04259351c0af86, type: 3}
-  m_Name: 4005_Item_GIM_CURSE
+  m_Name: 4009_Item_GIM_DIVINE
   m_EditorClassIdentifier: Assembly-CSharp::ItemSO
-  itemId: 4005
-  displayName_ID: NAME_GIM_CURSE
-  itemDesc_ID: DESC_GIM_CURSE
-  itemCost: 5
+  itemId: 4009
+  displayName_ID: NAME_GIM_DIVINE
+  itemDesc_ID: DESC_GIM_DIVINE
+  itemCost: 0
   type: 3
-  target: 4
-  itemClass: 1
+  target: 0
+  itemClass: 3
   itemWeight: 9999
-  oncePerTurn: 1
-  oncePerDay: 0
+  oncePerTurn: 0
+  oncePerDay: 1
   oncePerGame: 0
   effects:
-  - effectType: 0
+  - effectType: 8
     intValue1: 0
     intValue2: 0
-    floatValue1: 0.15
+    floatValue1: 0
     floatValue2: 0
     statusSpce:
-      statusId: GIM_CURSE
-      durationType: 1
+      statusId: 
+      durationType: 0
       durationTurns: 0
-      triggers: 8
-      tags: 70
-      priority: 400
+      triggers: 0
+      tags: 1
+      priority: 0
       multiplier: 0
-      convertRate: -0.15
+      convertRate: 0
       flatValue: 0
       randMin: 0
       randMax: 0
       bypassConversion: 0
       basicOnly: 0
       consumeOnTrigger: 0
-    targetTags: 0
+    targetTags: 2
