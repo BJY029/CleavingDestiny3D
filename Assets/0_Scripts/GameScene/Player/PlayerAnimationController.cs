@@ -317,9 +317,9 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
     private void PlayLocalHitSound()
     {
-        if (TreeStatus.Instance != null && TreeStatus.Instance.treeAudioSource != null)
+        if (TreeStatus.Instance != null)
         {
-            TreeStatus.Instance.treeAudioSource.Play();
+            AudioManager.Instance.PlaySfx3D("HitWood", TreeStatus.Instance.transform.position);
         }
     }
 
