@@ -17,9 +17,33 @@ public class DamageTextManager : MonoBehaviourPun
 
     private Camera targetCamera;
 
+    private Vector3? cachedLocalHitPoint;
+    public void CacheLocalHitPoint(Vector3 hitPoint) { cachedLocalHitPoint = hitPoint; }
+
+
     public void SetTargetCamera(Camera camera)
     {
         targetCamera = camera;
+    }
+
+    public void ShowHiddenDamage()
+    {
+        ShowDamageNearTree(-1);
+    }
+
+
+    public void ShowResolveDamage(int finalDaamge, bool isLocalAttacker)
+    {
+        if (finalDaamge < 0) return;
+
+        if (isLocalAttacker && cachedLocalHitPoint.HasValue)
+        {
+            ShowDamage(finalDaamge, cachedLocalHitPoint.Value);
+            cachedLocalHitPoint = null;
+            return;
+        }
+
+        ShowDamageNearTree(finalDaamge);
     }
 
     public void ShowDamage(int damage, Vector3 hitPoint)
@@ -33,50 +57,27 @@ public class DamageTextManager : MonoBehaviourPun
         damageText.Initialize(targetCamera, damage);
     }
 
-    public void ShowDamageToOthers(int damage, bool isAI)
+    public void ShowDamageNearTree(int damage)
     {
-        if (!isAI)
-            photonView.RPC(nameof(RPC_ShowDamageToOthers), RpcTarget.Others, damage);
-        else
-            photonView.RPC(nameof(RPC_ShowDamageToOthers), RpcTarget.All, damage);
-    }
-
-    [PunRPC]
-    public void RPC_ShowDamageToOthers(int damage)
-    {
-        if (TreeCenter == null)
-            return;
+        if (TreeCenter == null) return;
 
         Vector3 treePos = TreeCenter.transform.position;
-
         Vector3 direction;
 
-        if (targetCamera != null)
-        {
-            // 나무 → 현재 로컬 카메라 방향
-            direction = targetCamera.transform.position - treePos;
-        }
-        else
-        {
-            direction = Vector3.forward;
-        }
+        if (targetCamera != null) direction = targetCamera.transform.position - treePos;
+        else direction = Vector3.forward;
 
         direction.y = 0f;
 
         if (direction.sqrMagnitude < 0.001f)
         {
-            direction = targetCamera != null
-                ? -targetCamera.transform.forward
-                : Vector3.forward;
-
+            direction = targetCamera != null ? -targetCamera.transform.forward : Vector3.forward;
             direction.y = 0f;
         }
 
         direction.Normalize();
 
-        Vector3 spawnPos = TreeCenter.transform.position +
-                            direction * othersTextRadius +
-                            Vector3.up * othersTextHeight;
+        Vector3 spawnPos = treePos + direction * othersTextRadius + Vector3.up * othersTextHeight;
 
         Vector3 offset = new Vector3(
             Random.Range(-0.15f, 0.15f),
@@ -85,7 +86,6 @@ public class DamageTextManager : MonoBehaviourPun
          );
 
         DamageTextWorld damageText = Instantiate(damageTextPrefab, spawnPos + offset, Quaternion.identity);
-
         damageText.Initialize(targetCamera, damage);
     }
 }

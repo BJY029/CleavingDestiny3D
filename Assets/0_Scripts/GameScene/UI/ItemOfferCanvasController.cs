@@ -5,11 +5,11 @@ using UnityEngine.InputSystem;
 public class ItemOfferCanvasController : MonoBehaviour
 {
 	//싱글턴
-    public static ItemOfferCanvasController instance;
+	public static ItemOfferCanvasController instance;
 
 	private void Awake()
 	{
-		if(instance != null && instance != this)
+		if (instance != null && instance != this)
 		{
 			Destroy(gameObject);
 			return;
@@ -33,7 +33,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 		if (Keyboard.current.tabKey.wasPressedThisFrame)
 		{
 			//내 턴인 경우(검증용)
-			if(GameHelper.IsMyTurn())
+			if (GameHelper.IsMyTurn())
 				//패널을 연다.
 				ToggleOfferPanel();
 		}
@@ -68,7 +68,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 		Debug.Log($"offered string : {offerList}");
 		// 3) Decode 예외 방어
 		var decoded = offerList.Split("|");
-	
+
 
 		if (decoded == null)
 		{
@@ -96,8 +96,8 @@ public class ItemOfferCanvasController : MonoBehaviour
 	private void ActiveOfferPanel()
 	{
 		//마우스 관련 설정
-		Cursor.lockState = CursorLockMode.None;
-		Cursor.visible = true;
+		//Cursor.lockState = CursorLockMode.None;
+		//Cursor.visible = true;
 
 		//UI 설정
 		OpenCloseText.SetActive(true);
@@ -105,11 +105,11 @@ public class ItemOfferCanvasController : MonoBehaviour
 		//HIT UI 비활성화(상호작용도 막음)
 		PlayerCanvasController.Instance.SetHitTextUnActive();
 
-		OffersPanel.SetActive(true);
+		//OffersPanel.SetActive(true);
 		//선택 Phase 임을 명시
 		isChoosingPhase = true;
 		//움직임 제한용 플래그
-		isOfferPanelOpened = true;
+		//isOfferPanelOpened = true;
 	}
 
 	//선택 창 토글 함수
@@ -141,7 +141,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 			//움직임 활성화
 			isOfferPanelOpened = false;
 		}
-		
+
 	}
 
 	public void Close()

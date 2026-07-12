@@ -88,9 +88,9 @@ public class AIInventoryManager : AILogicModule
                 score += EvaluateDispelItem(item, context);
 
                 //for check
-                if (item.itemId == "4003") score += 30000;
-                if (item.itemId == "4004") score += 30000;
-                if (item.itemId == "4005") score += 30000;
+                // if (item.itemId == "4003") score += 30000;
+                //if (item.itemId == "4004") score += 30000;
+                //if (item.itemId == "4005") score += 30000;
 
                 Debug.Log($"이름 : {item.displayName_ID}, 점수 : {score}");
 

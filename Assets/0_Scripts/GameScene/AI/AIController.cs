@@ -29,6 +29,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     //마을 업그레이드 중인지 여부를 저장할 플래그
     private bool UpgradePhase;
     private bool WhileHittingMotion;
+    private bool attackRequestSent;
     //데미지 관련 값
     private float damageRatio;
     private int damage;
@@ -270,6 +271,8 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
             currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100))
             : Mathf.RoundToInt(aiBrain.TreeAttacker.SelectDamage());
         //Hit 애니메이션 재생 
+
+        attackRequestSent = false;
         PlayHit();
     }
 
@@ -281,13 +284,26 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         //Hit 관련 UI 비활성화
         PlayerCanvasController.Instance.SetHitTextUnActive();
 
-        bool isHiden = PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.HIDEDMG(PlayerActNum));
-        int sendingDmgValue = isHiden ? -1 : damage;
-
         // Hit 모션 재생
-        animationController?.PlayHitAnimation(sendingDmgValue);
+        animationController?.PlayHitAnimation();
+    }
 
-        if (isHiden) PhotonPropertyHelper.SetRoomProp(ItemPropKeys.HIDEDMG(PlayerActNum), false);
+    public void RequestAttackAtImpact()
+    {
+        if (!PhotonNetwork.IsMasterClient)
+            return;
+
+        if (attackRequestSent) return;
+
+        if (damage < 0)
+        {
+            Debug.LogError("damage error");
+            return;
+        }
+
+        attackRequestSent = true;
+
+        TurnManager.Instance.RequestChangeTurn(damage, this);
     }
 
     public void OnAnimStateExit(int stateKey)
@@ -295,13 +311,13 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         //stateKey가 1이면, 즉 Hit 관련 모션이면
         if (stateKey == 1)
         {
-            if (damage < 0)
+            if (!attackRequestSent && damage >= 0)
             {
                 Debug.LogError("damage error");
-                return;
+                RequestAttackAtImpact();
             }
             //Hit 한 순간의 데미지 값을 인자로 해서 턴 전환 함수 호출
-            TurnManager.Instance.RequestChangeTurn(damage, this);
+            //TurnManager.Instance.RequestChangeTurn(damage, this);
             damage = -1;
             WhileHittingMotion = false;
         }

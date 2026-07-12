@@ -119,6 +119,13 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	{
 		//MasterClient만 수행
 		if (!IsInitializer()) return;
+
+		if (MatchResultManager.Instance.TryResolveResultByTreeHP())
+		{
+			Debug.Log("Match End By Tree HP 0");
+			return;
+		}
+
 		//모든 플레이어의 데미지 처리가 완료되었는지 확인한다.
 		if (PlayerHitCheck())
 		{

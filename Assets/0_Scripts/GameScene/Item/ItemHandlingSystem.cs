@@ -682,7 +682,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		{
 			attackerNum = cmd.attackerNum,
 			isBasicAttack = cmd.isBasicAttack,
-			baseDamage = cmd.baseDamage
+			baseDamage = cmd.baseDamage,
+			hidden = PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.HIDEDMG(cmd.attackerNum))
 		};
 
 		//최종 데미지 계산(아이템도 함께 반영하여 계산)
@@ -704,6 +705,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 		NotifyDefenseChangedForNewDrugMission(cmd.attackerNum, dmg.convertedToBarrier);
 
+		//계산된 결과를 각 클라이언트에게 브로드캐스트하는 함수 호출
+		BroadcastHitResult(cmd.attackerNum, dmg.finalDamage, dmg.convertedToBarrier, dmg.hidden, hp);
 
 		//TODO: 게임 종료 검증
 		if (MatchResultManager.Instance.TryResolveResultByTreeHP())
@@ -711,9 +714,6 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			Debug.Log("Match End By Tree HP 0");
 			return;
 		}
-
-		//계산된 결과를 각 클라이언트에게 브로드캐스트하는 함수 호출
-		BroadcastHitResult(cmd.attackerNum, dmg.finalDamage, dmg.convertedToBarrier, dmg.hidden, hp);
 	}
 
 	//마스터 클라이언트가 계산 결과를 각 클라이언트에게 브로드캐스트 하는 함수
@@ -783,7 +783,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//현재 턴이 AI인 경우
 		if (GameHelper.IsCurrentTurnAI())
 		{
-			Debug.Log("AI_OnAttackResult");
+			Debug.Log("AI_OnAttackResult : " + attackNum);
 			//AI에게 공격 결과 전송
 			AI_OnAttackResult(attackNum, fullInfoJson);
 			//만약 AI의 상대방(즉, MasterClient)에게 관련 정보를 전달하려면, 추가함수를 구성하도록 설정
@@ -823,19 +823,22 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	private void RPC_OnAttackResult(int attackerNum, string json)
 	{
 		var res = JsonUtility.FromJson<AttackResult>(json);
-
+		bool isLocalAttacker = res.attackerNum == PhotonNetwork.LocalPlayer.ActorNumber;
 
 		//UI 처리
 		if (res.hidden && res.finalDamage < 0)
 		{
 			//데미지를 가리는 UI 처리 수행
+			DamageTextManager.instance?.ShowHiddenDamage();
+			PhotonPropertyHelper.SetRoomProp(ItemPropKeys.HIDEDMG(attackerNum), false);
 		}
 		else
 		{
 			//기본 처리(데미지 공개)
+			DamageTextManager.instance?.ShowResolveDamage(res.finalDamage, isLocalAttacker);
 		}
 
-		if (res.attackerNum == PhotonNetwork.LocalPlayer.ActorNumber)
+		if (isLocalAttacker)
 		{
 			float currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.TotalDamage);
 			float currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageBarrier);
@@ -857,6 +860,16 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	private void AI_OnAttackResult(int attackerNum, string json)
 	{
 		var res = JsonUtility.FromJson<AttackResult>(json);
+
+		if (res.hidden)
+		{
+			DamageTextManager.instance?.ShowHiddenDamage();
+			PhotonPropertyHelper.SetRoomProp(ItemPropKeys.HIDEDMG(attackerNum), false);
+		}
+		else
+		{
+			DamageTextManager.instance?.ShowResolveDamage(res.finalDamage, false);
+		}
 
 		float currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(attackerNum, PlayerPropKeys.TotalDamage);
 		float currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(attackerNum, PlayerPropKeys.VillageBarrier);

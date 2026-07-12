@@ -63,6 +63,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private bool sprintPressed;
 
     private bool isPreparingTreeCut = false; // 나무 베기 준비 상태
+    private bool attackRequestSent;
 
     //움직임 관련 코드 내부에서 사용하는 파라미터
     private CharacterController characterController;
@@ -504,15 +505,10 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
         damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
 
-        bool isHiden = PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.HIDEDMG(PlayerActNum));
-        int sendingDmgValue = isHiden ? -1 : damage;
-        Debug.LogWarning($"isHide : {isHiden}");
-
         DevLog.Log($"<color=green>[HIT - DoublePressStrike]</color> Player {PlayerActNum} KeyDown Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
 
-        animationController?.PlayStrikeAnimation(sendingDmgValue);
-
-        if (isHiden) PhotonPropertyHelper.SetRoomProp(ItemPropKeys.HIDEDMG(PlayerActNum), false);
+        attackRequestSent = false;
+        animationController?.PlayStrikeAnimation();
     }
 
     // 나무 베기 준비 상태 취소 메서드
@@ -598,6 +594,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
         damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
         //Hit 애니메이션 재생 
+        attackRequestSent = false;
         PlayHit();
     }
 
@@ -611,7 +608,24 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         PlayerCanvasController.Instance.SetHitTextUnActive();
 
         // 애니메이션 컨트롤러에 타격 요청 (내부에서 RPC 처리됨)
-        animationController?.PlayHitAnimation(damage);
+        animationController?.PlayHitAnimation();
+    }
+
+    public void RequestAttackAtImpact()
+    {
+        if (!photonView.IsMine) return;
+
+        if (attackRequestSent) return;
+
+        if (damage < 0)
+        {
+            Debug.LogError("damage error");
+            return;
+        }
+
+        attackRequestSent = true;
+
+        TurnManager.Instance.RequestChangeTurn(damage, this);
     }
 
     //HIT 애니메이션이 종료된 후 behaviour에 등록된 NotifyOnAnimExit로 호출되는 함수
@@ -623,13 +637,15 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         {
             if (!photonView.IsMine) return;
 
-            if (damage < 0)
+            if (!attackRequestSent && damage >= 0)
             {
-                Debug.LogError("damage error");
-                return;
+                Debug.LogError(
+                    "[PlayerController] Impact callback was not invoked. " +
+                    "Requesting attack result on animation exit.");
+                RequestAttackAtImpact();
             }
             //Hit 한 순간의 데미지 값을 인자로 해서 턴 전환 함수 호출
-            TurnManager.Instance.RequestChangeTurn(damage, this);
+            //TurnManager.Instance.RequestChangeTurn(damage, this);
             damage = -1;
             WhileAnimation = false;
 

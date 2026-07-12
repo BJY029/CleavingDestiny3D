@@ -15,11 +15,11 @@ MonoBehaviour:
   itemId: 4009
   displayName_ID: NAME_GIM_DIVINE
   itemDesc_ID: DESC_GIM_DIVINE
-  itemCost: 0
+  itemCost: 7
   type: 3
   target: 0
   itemClass: 3
-  itemWeight: 9999
+  itemWeight: 1
   oncePerTurn: 0
   oncePerDay: 1
   oncePerGame: 0
