@@ -1,6 +1,7 @@
 using Photon.Pun;
 using Photon.Realtime;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
@@ -20,6 +21,17 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		Instance = this;
 	}
 
+	public Dictionary<int, bool> selectedNewDrugItem = new Dictionary<int, bool>();
+	public bool hasSelectedNewDrugItem(int actorNum)
+	{ return (selectedNewDrugItem.ContainsKey(actorNum) && selectedNewDrugItem[actorNum]); }
+
+	private void MarkSelectedNewDrugItem(int actorNum, string itemId)
+	{
+		if (itemId != "3001") return;
+		selectedNewDrugItem[actorNum] = true;
+		Debug.Log($"[NewDrugDevelopment] Actor {actorNum} selected new drug item.");
+	}
+
 	//3개 중 하나를 선택한 경우 호출 될 함수
 	public void RequestTakeOffer(string itemId)
 	{
@@ -35,6 +47,11 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 	{
 		wis = wi;
 		photonView.RPC(nameof(RPC_UseItem), RpcTarget.MasterClient, ActNum, slotIdx);
+	}
+
+	public void RequestUseNewDrugItem(int ActNum, InventoryNewDrug nd)
+	{
+		photonView.RPC(nameof(RPC_UseNewDrugItem), RpcTarget.MasterClient, ActNum);
 	}
 
 	public void RequestSteelItem(int FromActor, int ToActor, int SelectedSlotIdx, WorldInventorySlot wi)
@@ -84,6 +101,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		// 8. 서버(Photon Room)에 프로퍼티 설정을 요청하여 모든 클라이언트에 동기화합니다.
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
+
 		return true;
 	}
 
@@ -149,6 +167,8 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			return;
 		}
 
+		MarkSelectedNewDrugItem(actor, itemId);
+
 		Debug.Log($"Player{actor} took offer: {itemId}");
 	}
 
@@ -162,12 +182,76 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		if (Master_AddItemToInventory(actor, itemId))
 		{
+			MarkSelectedNewDrugItem(actor, itemId);
 			Debug.Log($"[InventoryAuthority] Actor {actor} bought {itemId} for {price}G (Gold deducted by client)");
 		}
 		else
 		{
 			// 아이템 추가 실패 (인벤토리 가득 참)
 			Debug.LogError("[InventoryAuthority] Item Insertion ERROR (Inventory Full?)");
+		}
+	}
+
+	[PunRPC]
+	void RPC_UseNewDrugItem(int requestActor, PhotonMessageInfo info)
+	{
+		//Master 검증
+		if (!PhotonNetwork.IsMasterClient) return;
+
+		//Turn 검증
+		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+		if (turnActor != requestActor)
+		{
+			if (!GameManager.Instance.isSoloPlay)
+			{
+				Debug.LogError("Requester isn't Current turn");
+				return;
+			}
+		}
+
+		bool hasNewDrugItem = PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.INV_NEWDRUG(requestActor));
+		if (!hasNewDrugItem)
+		{
+			Debug.LogError("Requester doesn't have NEW DRUG Itme!");
+			return;
+		}
+
+		ItemSO item = ItemDB.Instance.Get("5000");
+		Player player = PhotonNetwork.CurrentRoom.GetPlayer(requestActor);
+
+		photonView.RPC(nameof(RPC_OffNewDrug), player);
+
+		PlayerCanvasController.Instance.PopUpItemNotify(item.itemId, player);
+		string InvKey = ItemPropKeys.INV_NEWDRUG(requestActor);
+		//새롭게 업데이트할 프로퍼티
+		var newProps = new ExitGames.Client.Photon.Hashtable
+		{
+			{InvKey, false }
+		};
+
+		//검증 프로퍼티
+		var expected = new ExitGames.Client.Photon.Hashtable
+		{
+			{InvKey,  true},
+			{RoomPropKeys.CurrentTurnActor, turnActor },
+		};
+
+		//현재 expected 프로퍼티인 경우에만 newProps로 업데이트
+		PhotonNetwork.CurrentRoom.SetCustomProperties(newProps, expected);
+
+		//TODO: 아이템 효과 적용
+		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
+		ItemHandlingSystem.instance.AddItemStatusInstance(requestActor, item, -1);
+		//NotifyItemUsedForNewDrugMission(turnActor, item);
+	}
+
+	[PunRPC]
+	private void RPC_OffNewDrug()
+	{
+		int actNum = PhotonNetwork.LocalPlayer.ActorNumber;
+		if (PlayerManager.Instance.PlayersInv.TryGetValue((actNum), out WorldInventory MyInv))
+		{
+			MyInv.ToggleNewDrugPosition(false);
 		}
 	}
 
@@ -189,8 +273,8 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		}
 
 		//요청자 INV 정보 가져오기
-		string Inv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(turnActor));
-		int InvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(turnActor));
+		string Inv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(requestActor));
+		int InvCap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(requestActor));
 
 		//요청자 INV 정보 검증
 		var slots = ItemInfoSerializer.Decode(Inv, InvCap);
@@ -311,11 +395,54 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 				inv += $" {x.itemID} ";
 			}
 		}
-		Debug.Log($"Player{turnActor}'s inventory : {inv}");
+		Debug.Log($"Player{requestActor}'s inventory : {inv}");
 
 		//TODO: 아이템 효과 적용
 		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
-		ItemHandlingSystem.instance.AddItemStatusInstance(turnActor, item, uniqueId);
+		ItemHandlingSystem.instance.AddItemStatusInstance(requestActor, item, uniqueId);
+		NotifyItemUsedForNewDrugMission(requestActor, item);
+	}
+
+	private void NotifyItemUsedForNewDrugMission(int actorNum, ItemSO usedItem)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+		if (NewDrugMissionManager.instance == null) return;
+		if (usedItem == null) return;
+
+		// 신약 개발 아이템 자체는 미션 시작 트리거라서 제외
+		if (usedItem.itemId == "3001")
+			return;
+
+		NewDrugMissionManager.instance.ReceiveGameEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.ItemUsed,
+			ActorNumber = actorNum,
+			UsedItem = usedItem,
+			TurnIndex = GetCurrentTurnIndex(),
+			WaveIndex = GetCurrentWaveIndex()
+		});
+
+		if (usedItem.itemCost > 0)
+		{
+			NewDrugMissionManager.instance.ReceiveGameEvent(new NewDrugGameEvent
+			{
+				Type = NewDrugGameEventType.StaminaSpent,
+				ActorNumber = actorNum,
+				StaminaAmount = usedItem.itemCost,
+				TurnIndex = GetCurrentTurnIndex(),
+				WaveIndex = GetCurrentWaveIndex()
+			});
+		}
+	}
+
+	private int GetCurrentTurnIndex()
+	{
+		return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
+	}
+
+	private int GetCurrentWaveIndex()
+	{
+		return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
 	}
 
 	[PunRPC]

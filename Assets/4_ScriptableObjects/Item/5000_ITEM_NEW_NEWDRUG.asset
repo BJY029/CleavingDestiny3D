@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14ac315f804f03b4aa04259351c0af86, type: 3}
+  m_Name: 5000_ITEM_NEW_NEWDRUG
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSO
+  itemId: 5000
+  displayName_ID: NAME_NEW_NEWDRUG
+  itemDesc_ID: DESC_NEW_NEWDRUG
+  itemCost: 0
+  type: 2
+  target: 2
+  itemClass: 3
+  itemWeight: 0
+  oncePerTurn: 1
+  oncePerDay: 1
+  oncePerGame: 1
+  effects:
+  - effectType: 1
+    intValue1: 0
+    intValue2: 0
+    floatValue1: 2000
+    floatValue2: 0
+    statusSpce:
+      statusId: 
+      durationType: 0
+      durationTurns: 0
+      triggers: 0
+      tags: 0
+      priority: 0
+      multiplier: 0
+      convertRate: 0
+      flatValue: 0
+      randMin: 0
+      randMax: 0
+      bypassConversion: 0
+      basicOnly: 0
+      consumeOnTrigger: 0

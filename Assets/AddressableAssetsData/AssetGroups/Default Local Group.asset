@@ -57,6 +57,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - ItemMaterial
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 178df1ddfc6aea64fa7e79c2ef539ac2
+    m_Address: Assets/Material/Item/5000.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 19608d539f67fb54994d8294211a8c0b
     m_Address: Assets/Material/Item/1007.mat
     m_ReadOnly: 0
@@ -86,6 +92,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 22d2ad579550f394fbfa7283aae59279
+    m_Address: Assets/Material/Item/4009.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemMaterial
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 288c14db0cad6694880effbce4c21f40
     m_Address: Assets/Material/Item/4003.mat
@@ -214,6 +226,12 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9cb6bed824223084b8ea3e185ed9b17e
     m_Address: Assets/95_Textures/Items/1006.PNG
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a5044eade0ceadb4a93244be2d487694
+    m_Address: Assets/95_Textures/Items/5000.png
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemTexture

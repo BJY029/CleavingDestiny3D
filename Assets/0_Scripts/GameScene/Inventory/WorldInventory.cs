@@ -10,11 +10,13 @@ public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCal
 	//인벤토리 소유자 정보
 	int owner = -1;
 	public InventoryBarrier InvBarrier;
+	public GameObject NewDrugPosion;
 	//해당 인벤토리의 슬롯들 
 	[SerializeField] private List<WorldInventorySlot> slots = new();
 
 	private void Awake()
 	{
+		NewDrugPosion.SetActive(false);
 		//자식 오브젝트에서 슬롯 찾아서 리스트에 삽입
 		slots = GetComponentsInChildren<WorldInventorySlot>(true)
 			.OrderBy(s => s.slotIndex).ToList();
@@ -131,5 +133,20 @@ public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCal
 			}
 		}
 		Debug.Log($"Stealing Inventory Interact ERROR");
+	}
+
+	public void ToggleNewDrugPosition(bool toggle)
+	{
+		photonView.RPC(nameof(RPC_ToggleNewDrugPosition), RpcTarget.All, toggle);
+	}
+
+	[PunRPC]
+	private void RPC_ToggleNewDrugPosition(bool toggle)
+	{
+		NewDrugPosion.SetActive(toggle);
+		if (toggle)
+		{
+			NewDrugPosion.GetComponent<InventoryNewDrug>().InitOwnerActorNum(owner);
+		}
 	}
 }

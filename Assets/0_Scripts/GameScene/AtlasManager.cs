@@ -7,6 +7,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 public class AtlasManager : MonoBehaviour
 {
 	public static AtlasManager instance;
+	public Sprite NewDrugItemSprite;
 	private SpriteAtlas itemIconAtlas;
 	private Dictionary<string, Sprite> _spriteCache = new Dictionary<string, Sprite>();
 
@@ -32,6 +33,7 @@ public class AtlasManager : MonoBehaviour
 
 	public Sprite GetItemSprite(string itemId)
 	{
+		if (itemId == "5000") return NewDrugItemSprite;
 		if (itemIconAtlas == null)
 		{
 			Debug.LogError("Atlas connected error");
@@ -41,7 +43,11 @@ public class AtlasManager : MonoBehaviour
 		if (_spriteCache.ContainsKey(itemId)) return _spriteCache[itemId];
 
 		Sprite newSprite = itemIconAtlas.GetSprite(itemId);
-		if (newSprite == null) Debug.LogError("Fail to load sprite from Atlas");
+		if (newSprite == null)
+		{
+			Debug.LogError("Fail to load sprite from Atlas");
+			newSprite = itemIconAtlas.GetSprite("1000");
+		}
 		if (newSprite != null)
 		{
 			_spriteCache.Add(itemId, newSprite);

@@ -2,6 +2,7 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using UnityEngine.Rendering.Universal;
+using System.Collections.Generic;
 
 public class AIInventoryManager : AILogicModule
 {
@@ -84,6 +85,12 @@ public class AIInventoryManager : AILogicModule
                 // 예외 상황에 대한 처리 필요(희생 아이템인데 보유 아이템이 1개뿐인 경우 등)
                 float score = EvaluateUtilityCurves(item, context);
                 score += EvaluateGimmicks(item, context);
+                score += EvaluateDispelItem(item, context);
+
+                //for check
+                // if (item.itemId == "4003") score += 30000;
+                //if (item.itemId == "4004") score += 30000;
+                //if (item.itemId == "4005") score += 30000;
 
                 Debug.Log($"이름 : {item.displayName_ID}, 점수 : {score}");
 
@@ -377,6 +384,81 @@ public class AIInventoryManager : AILogicModule
         return ItemInfoSerializer.GetItemCostAvg(inv);
     }
 
+    private float EvaluateDispelItem(ItemSO item, AIContext ctx)
+    {
+        if (!IsDispelItem(item)) return 0f;
+
+        TagMask targetTags = GetDispelTargetTags(item);
+
+        if (targetTags == TagMask.None) return 0f;
+
+        List<StatusInstance> removableStatuses = ItemHandlingSystem.instance.GetStatusesByTags(brain.MyActorNum, targetTags);
+
+        if (removableStatuses == null || removableStatuses.Count == 0)
+        {
+            Debug.LogError("removableStatus is none!!!!!!");
+            return -9999f;
+        }
+
+        float score = 0f;
+
+        foreach (StatusInstance status in removableStatuses)
+        {
+            score += GetDebuffSeverityScore(status);
+        }
+
+        float villageHPRatio = ctx.curVillageHP / playerSetting.villageHP;
+        float treeHPRatio = ctx.curTreeHP / roomSetting.treeHP;
+
+        if (villageHPRatio <= 0.35f) score *= 1.8f;
+        else if (villageHPRatio <= 0.5f) score *= 1.4f;
+
+        if (treeHPRatio <= 0.3f) score *= 1.25f;
+
+        score -= item.itemCost * 5f;
+
+        return score;
+    }
+
+    private float GetDebuffSeverityScore(StatusInstance status)
+    {
+        if (status == null || status.spec == null) return 0f;
+
+        float score = 0f;
+        TagMask tags = status.spec.tags;
+
+        if ((tags & TagMask.Negative) != 0) score += 25f;
+
+        switch (status.spec.durationType)
+        {
+            case DurationType.ThisTurn:
+                // 이번 턴에 바로 터지는 효과이므로 최우선 정화 대상
+                score *= 2.0f;
+                break;
+
+            case DurationType.NextTurn:
+                // 다음 턴에 터지는 효과이므로 높은 우선순위
+                score *= 1.7f;
+                break;
+
+            case DurationType.Turns:
+                {
+                    // remainingTurns가 발동까지 남은 시간이라면 작을수록 위험
+                    int remain = Mathf.Clamp(status.remainingTurns, 0, 5);
+                    score *= 1f + (5 - remain) * 0.2f;
+                    break;
+                }
+
+            case DurationType.UntilWaveEnd:
+                // 웨이브 종료 시 터지는 효과.
+                // 남은 웨이브 시간이 정확히 없다면 중간 이상 우선순위로 처리
+                score *= 1.4f;
+                break;
+        }
+
+        return score;
+    }
+
     private bool HasTag(ItemSO item, TagMask targetTag)
     {
         foreach (var effect in item.effects)
@@ -412,5 +494,22 @@ public class AIInventoryManager : AILogicModule
             AIInv.InteractSlotByAI(gameObject.GetComponent<AIController>(), item);
         }
         await UniTask.Delay(1000, cancellationToken: token);
+    }
+
+    private bool IsDispelItem(ItemSO item)
+    {
+        if (item == null || item.effects == null) return false;
+
+        foreach (var effect in item.effects)
+        {
+            if (effect.effectType == ItemEffect.DispelStatusByTag) return true;
+        }
+
+        return false;
+    }
+
+    private TagMask GetDispelTargetTags(ItemSO item)
+    {
+        return TagMask.Negative;
     }
 }

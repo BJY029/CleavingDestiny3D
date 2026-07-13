@@ -53,6 +53,9 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     public static readonly int HashIsRun = Animator.StringToHash("IsRun");
     int firstPersonLayer;
 
+    private PlayerController playerController;
+    private AIController aiController;
+
     private IAnimNotify animNotify;
     [SerializeField] bool isAI = false;
 
@@ -65,11 +68,11 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     {
         if (animator == null) animator = GetComponent<Animator>();
 
-        if (TryGetComponent(out PlayerController playerController))
+        if (TryGetComponent(out playerController))
         {
             animNotify = playerController;
         }
-        else if (TryGetComponent(out AIController aiController))
+        else if (TryGetComponent(out aiController))
         {
             animNotify = aiController;
             isAI = true;
@@ -167,7 +170,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
             if (firstPersonTweenAnimator != null)
             {
                 firstPersonTweenAnimator.PlayHitAnimation(
-                    onImpactEvent: FirstPersonAxeHit,
+                    onImpactEvent: () => FirstPersonAxeHit(),
                     onCompleteCallback: () =>
                     {
                         axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 기본으로 되돌림
@@ -216,7 +219,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
             if (firstPersonTweenAnimator != null)
             {
                 firstPersonTweenAnimator.PlayStrikeAnimation(
-                    onImpactEvent: FirstPersonAxeHit,
+                    onImpactEvent: () => FirstPersonAxeHit(),
                     onCompleteCallback: () =>
                     {
                         axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 복원
@@ -243,16 +246,22 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         // AI인 경우, FBX 애니메이션 이벤트를 쓸 수 없으므로 지연 후 소리 재생
         if (isAI)
         {
-            PlayAIHitSoundAsync().Forget();
+            PlayAIImpactAsync().Forget();
         }
     }
 
-    private async UniTaskVoid PlayAIHitSoundAsync()
+    private async UniTaskVoid PlayAIImpactAsync()
     {
-        // 지정된 시간만큼 대기 (애니메이션 휘두르는 시간에 맞춤)
-        await UniTask.Delay((int)(aiHitSoundDelay * 1000), cancellationToken: this.GetCancellationTokenOnDestroy());
+        try
+        {
+            // 지정된 시간만큼 대기 (애니메이션 휘두르는 시간에 맞춤)
+            await UniTask.Delay((int)(aiHitSoundDelay * 1000), cancellationToken: this.GetCancellationTokenOnDestroy());
+        }
+        catch (OperationCanceledException) { return; }
 
         PlayLocalHitSound();
+
+        aiController?.RequestAttackAtImpact();
     }
 
     private int GetRandomIndex()
@@ -282,6 +291,10 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         {
             // hitEffectObject.Play();
             VFXManager.Instance.PlayPredefinedEffect(VFXManager.VFXIndex.Hit_Tree, axeTransform.position);
+
+            DamageTextManager.instance?.CacheLocalHitPoint(axeTransform.position);
+
+            playerController?.RequestAttackAtImpact();
         }
 
         Tween.ShakeLocalPosition(playerCamera.transform,

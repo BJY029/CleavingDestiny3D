@@ -212,8 +212,6 @@ MonoBehaviour:
   rotationSmoothTime: 0.08
   accelation: 12
   deceleration: 12
-  AICanvas: {fileID: 7581484061504611596, guid: 1c3156f67125f8b47a1d632d8839511d, type: 3}
-  Parent: {fileID: 0}
 --- !u!114 &-6142168861529792115
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298,7 +296,7 @@ MonoBehaviour:
   scoreTable: {fileID: 11400000, guid: 8be15f59696026042be4c2b2f5f22632, type: 2}
   playerSetting: {fileID: 11400000, guid: 0ab68fb3dcfba894bbce6a7513b5a994, type: 2}
   roomSetting: {fileID: 11400000, guid: a435e1ecc7289e04ca99639220cc8e4b, type: 2}
-  usageThreshold: 50
+  usageThreshold: 30
   useDelay: 1.2
 --- !u!114 &3630900598691098007
 MonoBehaviour:
@@ -328,8 +326,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
   animator: {fileID: 3710110911519245321}
+  firstPersonTweenAnimator: {fileID: 0}
   hitAnimCount: 4
   avoidRepeat: 1
+  axeSwayTransform: {fileID: 0}
+  rotSwayMultiplier: 1
+  rotMaxSway: 15
+  rotSmoothStep: 4
+  posSwayMultiplier: 0.005
+  posMaxSway: 0.05
+  posSmoothStep: 6
+  playerCamera: {fileID: 0}
+  shakeStrength: 0.5
+  shakeDuration: 0.4
+  shakeFrequency: 10
+  aiHitSoundDelay: 0.4
+  axeTransform: {fileID: 0}
+  itemTransform: {fileID: 0}
+  itemMeshRenderer: {fileID: 0}
+  itemUsePoint:
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 0}
+  isAI: 0
 --- !u!114 &-1081810206017964554
 MonoBehaviour:
   m_ObjectHideFlags: 0
