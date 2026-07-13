@@ -42,6 +42,26 @@ public class UI_CSV
     public const string UI_ItemNotify_Title = "UI_ItemNotify_Title";
     public const string UI_ItemSacrifice_Title = "UI_ItemSacrifice_Title";
     public const string UI_ItemSacrifice_TableDesc = "UI_ItemSacrifice_TableDesc";
+    public const string UI_ItemBet_Req_Title = "UI_ItemBet_Req_Title";
+    public const string UI_ItemBet_Req_Desc1 = "UI_ItemBet_Req_Desc1";
+    public const string UI_ItemBet_Req_Desc2 = "UI_ItemBet_Req_Desc2";
+    public const string UI_ItemBet_Rec_Title = "UI_ItemBet_Rec_Title";
+    public const string UI_ItemBet_Rec_Desc1 = "UI_ItemBet_Rec_Desc1";
+    public const string UI_ItemBet_Rec_Desc2 = "UI_ItemBet_Rec_Desc2";
+    public const string UI_ItemBet_Rec_Desc3 = "UI_ItemBet_Rec_Desc3";
+    public const string UI_ItemBet_Rec_Desc4 = "UI_ItemBet_Rec_Desc4";
+    public const string UI_ItemBet_W_Title = "UI_ItemBet_W_Title";
+    public const string UI_ItemBet_W_Desc1 = "UI_ItemBet_W_Desc1";
+    public const string UI_ItemBet_W_Desc2 = "UI_ItemBet_W_Desc2";
+    public const string UI_LogWood_MyTurn = "UI_LogWood_MyTurn";
+    public const string UI_LogWood_OpTurn = "UI_LogWood_OpTurn";
+    public const string UI_LogWood_Interact = "UI_LogWood_Interact";
+    public const string UI_LogWood_Wait = "UI_LogWood_Wait";
+    public const string UI_LogWood_Result_Win_Title = "UI_LogWood_Result_Win_Title";
+    public const string UI_LogWood_Result_Lose_Title = "UI_LogWood_Result_Lose_Title";
+    public const string UI_LogWood_Result_Win_Desc = "UI_LogWood_Result_Win_Desc";
+    public const string UI_LogWood_Result_Lose_Desc = "UI_LogWood_Result_Lose_Desc";
+
     public const string UI_Warning_Energy = "UI_Warning_Energy";
     public const string UI_Warning_FullInv = "UI_Warning_FullInv";
     public const string UI_Warning_NotEnoughItem = "UI_Warning_NotEnoughItem";
@@ -131,6 +151,7 @@ public static class ItemPropKeys
     //  Key : INV_2
     //  Value : "12:potion|13:bomb|_|21:shield|_"
     public static string INV(int actor) => $"INV_{actor}";
+    public static string INV_NEWDRUG(int actor) => $"INV_NEWDRUG_{actor}";
 
     //해당 플레이어의 인벤 슬롯 용량
     //ex) actor = 3
@@ -146,6 +167,7 @@ public static class ItemPropKeys
     public static string LOCKPICK(int actor) => $"LOCKPICK_{actor}";
 
     public static string LOCKCNT(int actor) => $"LOCK_CNT_{actor}";
+    public static string HIDEDMG(int actor) => $"HIDEDMG_{actor}";
 
     public static string COMMON_RATE(int actor) => $"COMMON_RATE_{actor}";
     public static string HERO_RATE(int actor) => $"HERO_RATE_{actor}";
@@ -199,4 +221,19 @@ public enum LocationCommand
     OPP_INV,
     OPP_INV_ENTRY,
     OPP_HIT,
+}
+
+public enum NewDrugGameEventType
+{
+    TurnStarted,
+    TurnEnded,
+    WaveStarted,
+    WaveEnded,
+    ItemUsed,
+    BasicAttackUsed,
+    SkillUsed,
+    TreeDamaged,
+    StaminaSpent,
+    DefenseChanged,
+    GameEnded
 }

@@ -26,19 +26,70 @@ public class StatusSystem
 
     public void Add(StatusInstance newStatus)
     {
+        UnityEngine.Debug.LogWarning(
+        $"[Status Add] owner={newStatus.ownerActorNum}, " +
+        $"statusId={newStatus.spec.statusId}, " +
+        $"tags={newStatus.spec.tags}, " +
+        $"duration={newStatus.spec.durationType}, " +
+        $"remain={newStatus.remainingTurns}"
+    );
         _status.Add(newStatus);
+    }
+
+    public List<StatusInstance> GetStatusByTags(int ownerActorNum, TagMask targetTags)
+    {
+        List<StatusInstance> result = new List<StatusInstance>();
+
+        for (int i = 0; i < _status.Count; i++)
+        {
+            StatusInstance st = _status[i];
+
+            UnityEngine.Debug.LogWarning(
+            $"[Status Check] owner={st.ownerActorNum}, " +
+            $"statusId={st.spec.statusId}, tags={st.spec.tags}, " +
+            $"matchOwner={st.ownerActorNum == ownerActorNum}, " +
+            $"matchTag={(st.spec.tags & targetTags) != 0}"
+        );
+
+            if (st.ownerActorNum != ownerActorNum) continue;
+
+            if ((st.spec.tags & targetTags) == 0) continue;
+
+            result.Add(st);
+        }
+        return result;
     }
 
     //특정 owner의 상태 이상을 태그 기준으로 제거
     //제거된 상태 이상 갯수 반환
     public int DispelByTags(int ownerActorNum, TagMask removeTags)
     {
-        //현재 상태 이상
-        int before = _status.Count;
-        //상태 이상 객체의 주체와 태그 정보를 AND 연산해서 0이 아니면(하나라도 겹치면) 삭제한다.
+        List<StatusInstance> toRemove = new List<StatusInstance>();
+
+        for (int i = 0; i < _status.Count; i++)
+        {
+            StatusInstance st = _status[i];
+
+            bool isOwner = st.ownerActorNum == ownerActorNum;
+            bool hasTargetTag = (st.spec.tags & removeTags) != 0;
+
+            if (isOwner && hasTargetTag) toRemove.Add(st);
+        }
+
+        if (toRemove.Count == 0) return 0;
+
+        if (PhotonNetwork.IsMasterClient && StatusSyncHub.instance != null)
+        {
+            for (int i = 0; i < toRemove.Count; i++)
+            {
+                StatusInstance st = toRemove[i];
+                StatusSyncHub.instance.Master_BroadcastRemove(st.ownerActorNum, st.spec.statusId);
+            }
+        }
+
         _status.RemoveAll(s => s.ownerActorNum == ownerActorNum && (s.spec.tags & removeTags) != 0);
-        //삭제 후의 상태 이상 갯수를 반환
-        return before - _status.Count;
+
+        return toRemove.Count;
     }
 
     //턴 종료 시 만료/감소  처리

@@ -42,6 +42,15 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public GameObject ItemNotifyPrefab;
 	public GameObject ItemStolenNotifyPrefab;
 
+	[Header("Mission Info")]
+	public GameObject MissionPanel;
+	public TextMeshProUGUI MissionState;
+	public TextMeshProUGUI MissionName;
+	public TextMeshProUGUI MissionContext;
+	public Color ReadyState;
+	public Color StartState;
+	public Color SuccessState;
+	public Color FailedState;
 	private Coroutine gaugeCo;
 	//플레이어의 Hit 관련 UI가 활성화되었는지 여부
 	[HideInInspector]
@@ -73,6 +82,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 
 		HitTextObj.SetActive(false);
 		WarningObj.SetActive(false);
+		MissionPanel.SetActive(false);
 		CloseGauge();
 		HitText.text = "";
 		WarningText.text = "";
@@ -271,6 +281,40 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	{
 		//RPC 함수 호출
 		photonView.RPC(nameof(RPC_SetActiveCanvas), RpcTarget.All, active);
+	}
+
+
+	public void ToggleMissionUI(bool toggle)
+	{
+		MissionPanel.SetActive(toggle);
+	}
+
+	public void SetMissionUI(string missionName, string missionContext, NewDrugMissionState state)
+	{
+		MissionName.text = missionName;
+		MissionContext.text = missionContext;
+
+		Image missionPanelImg = MissionPanel.GetComponent<Image>();
+		switch (state)
+		{
+			case NewDrugMissionState.PendingNextDay:
+				MissionState.text = LocalizationManager.Instance.GetText(CSV_Type.Mission, "M_UI_RESERVED");
+				missionPanelImg.color = ReadyState;
+				break;
+			case NewDrugMissionState.Active:
+				MissionState.text = LocalizationManager.Instance.GetText(CSV_Type.Mission, "M_UI_INPROGRESS");
+				missionPanelImg.color = StartState;
+				break;
+			case NewDrugMissionState.Complete:
+				MissionState.text = LocalizationManager.Instance.GetText(CSV_Type.Mission, "M_UI_SUCCESS");
+				missionPanelImg.color = SuccessState;
+				break;
+			case NewDrugMissionState.Failed:
+				MissionState.text = LocalizationManager.Instance.GetText(CSV_Type.Mission, "M_UI_FAILED");
+				missionPanelImg.color = FailedState;
+				break;
+			default: break;
+		}
 	}
 
 	[PunRPC]

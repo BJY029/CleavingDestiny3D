@@ -155,11 +155,14 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	{
 		foreach (var st in _statusSystem.ALL)
 		{
-			if (st.spec.tags == TagMask.Negative && st.ownerActorNum == actNum)
+			if (st.ownerActorNum != actNum) continue;
+
+			if ((st.spec.tags & TagMask.Negative) != 0)
 			{
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -206,6 +209,47 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			ctx.AddPlayerLockCount(actorNum);
 			ctx.Log?.Invoke($"[ItemLockPick] Player{actorNum}'s Lock added");
 			return;
+		}
+		//If Smoke Item
+		if (item.itemId == "4002")
+		{
+			var ctx = new EffectContext(_rng, Debug.Log);
+			ctx.SetHideDmgTrigger(actorNum);
+			ctx.Log?.Invoke($"[ItemSmoke] Player{actorNum}'s Activate Smoke(Hide Dmg)");
+
+			//AddStatus에 정의된 해당 아이템 정보를 가져온다.
+			StatusSpec ss = item.effects[0].statusSpce;
+
+			//남은 턴 수를 durationType을 기반으로 초기화하고
+			int remainTurns = getRemainTurns(ss);
+
+			var gbst = setAndGetStatusInstance(ss, actorNum, actorNum, remainTurns);
+
+			_statusSystem.Add(gbst);
+
+			Master_UpdateItemStatusUI(item, gbst);
+			//디버깅
+			Debug.Log($"[Item] AddStatus {ss.statusId} to {actorNum}");
+
+
+			return;
+		}
+		if (item.itemId == "4006")
+		{
+			Player requestPlayer = null;
+			Player targetPlayer = null;
+			Player[] playerNums = PhotonNetwork.PlayerList;
+			//다른 플레이어 찾기
+			foreach (Player player in playerNums)
+			{
+				if (player.ActorNumber != actorNum)
+					targetPlayer = player;
+				else requestPlayer = player;
+			}
+
+			//임시, 1cost 도박 진행
+			if (targetPlayer != null)
+				BettingSystemController.instance.Master_StartBettingGame(requestPlayer.ActorNumber, targetPlayer.ActorNumber);
 		}
 
 		//아이템 적용 대상을 기준으로 분기하여 처리한다.
@@ -256,22 +300,31 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					//AddStatus 외의 다른 아이템 효과로 정의된 아이템일 경우
 					if (es.effectType != ItemEffect.AddStatus)
 					{
-						if (GameManager.Instance.isSoloPlay)
+						// if (GameManager.Instance.isSoloPlay)
+						// {
+						// 	foreach (int num in PlayerManager.Instance.AIPlayerObj.Keys)
+						// 	{
+						// 		ItemProcessImm(num, es);
+						// 	}
+						// }
+						// else
+						// {
+						// 	//나를 제외한 다른 모든 플레이어에게 해당 즉시 적용 아이템 효과를 적용한다.
+						// 	foreach (Player player in playerNums)
+						// 	{
+						// 		if (player.ActorNumber != actorNum)
+						// 			ItemProcessImm(player.ActorNumber, es);
+						// 	}
+						// }
+						// continue;
+						List<int> targetActors = GetOpponentActors(actorNum);
+
+						foreach (int targetActor in targetActors)
 						{
-							foreach (int num in PlayerManager.Instance.AIPlayerObj.Keys)
-							{
-								ItemProcessImm(num, es);
-							}
+							ItemProcessImm(targetActor, es);
+							Debug.Log($"[Opponent Imm Item] caster={actorNum}, target={targetActor}, effect={es.effectType}");
 						}
-						else
-						{
-							//나를 제외한 다른 모든 플레이어에게 해당 즉시 적용 아이템 효과를 적용한다.
-							foreach (Player player in playerNums)
-							{
-								if (player.ActorNumber != actorNum)
-									ItemProcessImm(player.ActorNumber, es);
-							}
-						}
+
 						continue;
 					}
 
@@ -281,20 +334,54 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					//남은 턴 수를 durationType을 기반으로 초기화하고
 					int remainTurns = getRemainTurns(ss);
 
-					//다른 플레이어어정보로 초기화하여 해당 아이템 효과를 삽입한다.
-					foreach (Player player in playerNums)
+					// //다른 플레이어어정보로 초기화하여 해당 아이템 효과를 삽입한다.
+					// if (GameManager.Instance.isSoloPlay)
+					// {
+					// 	foreach (int aiActorNum in PlayerManager.Instance.AIPlayerObj.Keys)
+					// 	{
+					// 		if (aiActorNum == actorNum) continue;
+
+					// 		var opst = setAndGetStatusInstance(ss, aiActorNum, actorNum, remainTurns);
+
+					// 		_statusSystem.Add(opst);
+
+					// 		Master_UpdateItemStatusUI(item, opst);
+
+					// 		Debug.Log($"[Item] AddStatus {ss.statusId} to AI {aiActorNum}");
+					// 	}
+					// }
+					// else
+					// {
+					// 	foreach (Player player in playerNums)
+					// 	{
+					// 		if (player.ActorNumber != actorNum)
+					// 		{
+					// 			var opst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
+
+					// 			_statusSystem.Add(opst);
+
+					// 			Master_UpdateItemStatusUI(item, opst);
+
+					// 			Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
+					// 		}
+					// 	}
+					// }
+					List<int> statusTargets = GetOpponentActors(actorNum);
+
+					foreach (int targetActor in statusTargets)
 					{
-						if (player.ActorNumber != actorNum)
-						{
-							var opst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
+						var opst = setAndGetStatusInstance(ss, targetActor, actorNum, remainTurns);
 
-							_statusSystem.Add(opst);
+						_statusSystem.Add(opst);
 
-							Master_UpdateItemStatusUI(item, opst);
-							//디버깅
-							Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
-						}
+						Master_UpdateItemStatusUI(item, opst);
+
+						Debug.Log(
+							$"[Opponent AddStatus] caster={actorNum}, " +
+							$"target={targetActor}, status={ss.statusId}, tags={ss.tags}"
+						);
 					}
+
 				}
 				break;
 
@@ -332,15 +419,39 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					int remainTurns = getRemainTurns(ss);
 
 					//각 플레이어 정보로 초기화하여 아이템효과를 삽입한다.
-					foreach (Player player in playerNums)
+					if (GameManager.Instance.isSoloPlay)
 					{
-						var gbst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
+						foreach (Player player in playerNums)
+						{
+							var gbst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
 
-						_statusSystem.Add(gbst);
+							_statusSystem.Add(gbst);
+							Master_UpdateItemStatusUI(item, gbst);
 
-						Master_UpdateItemStatusUI(item, gbst);
-						//디버깅
-						Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
+							Debug.Log($"[Item] AddStatus {ss.statusId} to Player {player.ActorNumber}");
+						}
+
+						foreach (int aiActorNum in PlayerManager.Instance.AIPlayerObj.Keys)
+						{
+							var gbst = setAndGetStatusInstance(ss, aiActorNum, actorNum, remainTurns);
+
+							_statusSystem.Add(gbst);
+							Master_UpdateItemStatusUI(item, gbst);
+
+							Debug.Log($"[Item] AddStatus {ss.statusId} to AI {aiActorNum}");
+						}
+					}
+					else
+					{
+						foreach (Player player in playerNums)
+						{
+							var gbst = setAndGetStatusInstance(ss, player.ActorNumber, actorNum, remainTurns);
+
+							_statusSystem.Add(gbst);
+							Master_UpdateItemStatusUI(item, gbst);
+
+							Debug.Log($"[Item] AddStatus {ss.statusId} to {player.ActorNumber}");
+						}
 					}
 				}
 				break;
@@ -571,11 +682,14 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		{
 			attackerNum = cmd.attackerNum,
 			isBasicAttack = cmd.isBasicAttack,
-			baseDamage = cmd.baseDamage
+			baseDamage = cmd.baseDamage,
+			hidden = PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.HIDEDMG(cmd.attackerNum))
 		};
 
 		//최종 데미지 계산(아이템도 함께 반영하여 계산)
 		_damageResolver.Resolve(dmg, ctx);
+
+		NotifyAttackActionForNewDrugMission(cmd.attackerNum, cmd.isBasicAttack);
 
 
 		//각 아이템의 남은 턴 수 계산, 남은 턴수가 모두 지나면 해당 아이템을 _statusSystem 리스트에서 삭제한다.
@@ -592,6 +706,12 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		cumulativeDamage += dmg.finalDamage;
 		PhotonPropertyHelper.SetPlayerProp(cmd.attackerNum, PlayerPropKeys.CumulativeDamage, cumulativeDamage);
 
+		NotifyTreeDamagedForNewDrugMission(cmd.attackerNum, dmg.finalDamage, hp);
+
+		NotifyDefenseChangedForNewDrugMission(cmd.attackerNum, dmg.convertedToBarrier);
+
+		//계산된 결과를 각 클라이언트에게 브로드캐스트하는 함수 호출
+		BroadcastHitResult(cmd.attackerNum, dmg.finalDamage, dmg.convertedToBarrier, dmg.hidden, hp);
 
 		//TODO: 게임 종료 검증
 		if (MatchResultManager.Instance.TryResolveResultByTreeHP())
@@ -599,9 +719,6 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			Debug.Log("Match End By Tree HP 0");
 			return;
 		}
-
-		//계산된 결과를 각 클라이언트에게 브로드캐스트하는 함수 호출
-		BroadcastHitResult(cmd.attackerNum, dmg.finalDamage, dmg.convertedToBarrier, dmg.hidden, hp);
 	}
 
 	//마스터 클라이언트가 계산 결과를 각 클라이언트에게 브로드캐스트 하는 함수
@@ -671,7 +788,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//현재 턴이 AI인 경우
 		if (GameHelper.IsCurrentTurnAI())
 		{
-			Debug.Log("AI_OnAttackResult");
+			Debug.Log("AI_OnAttackResult : " + attackNum);
 			//AI에게 공격 결과 전송
 			AI_OnAttackResult(attackNum, fullInfoJson);
 			//만약 AI의 상대방(즉, MasterClient)에게 관련 정보를 전달하려면, 추가함수를 구성하도록 설정
@@ -711,19 +828,22 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	private void RPC_OnAttackResult(int attackerNum, string json)
 	{
 		var res = JsonUtility.FromJson<AttackResult>(json);
-
+		bool isLocalAttacker = res.attackerNum == PhotonNetwork.LocalPlayer.ActorNumber;
 
 		//UI 처리
 		if (res.hidden && res.finalDamage < 0)
 		{
 			//데미지를 가리는 UI 처리 수행
+			DamageTextManager.instance?.ShowHiddenDamage();
+			PhotonPropertyHelper.SetRoomProp(ItemPropKeys.HIDEDMG(attackerNum), false);
 		}
 		else
 		{
 			//기본 처리(데미지 공개)
+			DamageTextManager.instance?.ShowResolveDamage(res.finalDamage, isLocalAttacker);
 		}
 
-		if (res.attackerNum == PhotonNetwork.LocalPlayer.ActorNumber)
+		if (isLocalAttacker)
 		{
 			float currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.TotalDamage);
 			float currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.VillageBarrier);
@@ -745,6 +865,16 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	private void AI_OnAttackResult(int attackerNum, string json)
 	{
 		var res = JsonUtility.FromJson<AttackResult>(json);
+
+		if (res.hidden)
+		{
+			DamageTextManager.instance?.ShowHiddenDamage();
+			PhotonPropertyHelper.SetRoomProp(ItemPropKeys.HIDEDMG(attackerNum), false);
+		}
+		else
+		{
+			DamageTextManager.instance?.ShowResolveDamage(res.finalDamage, false);
+		}
 
 		float currentTotalDamage = PhotonPropertyHelper.GetPlayerProp<float>(attackerNum, PlayerPropKeys.TotalDamage);
 		float currentBarrier = PhotonPropertyHelper.GetPlayerProp<float>(attackerNum, PlayerPropKeys.VillageBarrier);
@@ -817,9 +947,12 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					ctx.Log?.Invoke("Item Shield Value null Exception");
 					return;
 				}
-				shield += ctx.GetPlayerVillageShield(actorNum);
+				float beforeShield = ctx.GetPlayerVillageShield(actorNum);
+				float afterShield = beforeShield + shield;
 
-				ctx.SetPlayerVIllageShield(actorNum, shield);
+				ctx.SetPlayerVIllageShield(actorNum, afterShield);
+
+				NotifyDefenseChangedForNewDrugMission(actorNum, shield);
 
 				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {shield}");
 				break;
@@ -831,11 +964,15 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					ctx.Log?.Invoke("Item Shield Value null Exception");
 					return;
 				}
-				float nextShield = ctx.GetPlayerVillageShield(actorNum) * mult;
+				float beforeShield_m = ctx.GetPlayerVillageShield(actorNum);
+				float afterShield_m = beforeShield_m * mult;
+				float deltaShield_m = afterShield_m - beforeShield_m;
 
-				ctx.SetPlayerVIllageShield(actorNum, nextShield);
+				ctx.SetPlayerVIllageShield(actorNum, afterShield_m);
 
-				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {nextShield}");
+				NotifyDefenseChangedForNewDrugMission(actorNum, deltaShield_m);
+
+				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed to {afterShield_m}");
 				break;
 			//플레이어 기력에 추가 기력을 +/- 하는 아이템이라면
 			case ItemEffect.DeltaPlayerEng:
@@ -845,12 +982,21 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					ctx.Log?.Invoke("Item Charge Value null Exception");
 					return;
 				}
+				int beforeEng = ctx.GetPlayerEng(actorNum);
+				int afterEng = beforeEng + eng;
+				int deltaEng = afterEng - beforeEng;
+				//eng += ctx.GetPlayerEng(actorNum);
 
-				eng += ctx.GetPlayerEng(actorNum);
+				ctx.SetPlayerEng(actorNum, afterEng);
 
-				ctx.SetPlayerEng(actorNum, eng);
+				if (deltaEng < 0)
+				{
+					int spentAmount = Mathf.Abs(deltaEng);
 
-				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s Energy Changed to {eng}");
+					NotifyStaminaSpentForNewDrugMission(actorNum, spentAmount);
+				}
+
+				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s Energy Changed to {afterEng}");
 				break;
 
 			case ItemEffect.TransferOpponentShieldPct:
@@ -872,7 +1018,41 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 				ctx.Log?.Invoke($"[ItemProcessImm] Player{actorNum}'s VillageShield Changed from {myShieldValue} to {myShieldValue + deltaValue}");
 				ctx.Log?.Invoke($"[ItemProcessImm] Player{targetActNum}'s VillageShield Changed from {targetShieldValue} to {targetShieldValue - deltaValue}");
 				break;
+
+			case ItemEffect.NewDrugDevelopment:
+				if (!PhotonNetwork.IsMasterClient) return;
+
+				if (NewDrugMissionManager.instance == null) return;
+
+				bool reserved = NewDrugMissionManager.instance.ReserveMissionForNextDay(actorNum);
+
+				if (!reserved)
+				{
+					ctx.Log?.Invoke("[NewDrugDevelopment] Mission reservation failed");
+					return;
+				}
+
+				ctx.Log?.Invoke($"[NewDrugDevelopment] Player{actorNum} started new drug mission.");
+				break;
+
+			case ItemEffect.DispelStatusByTag:
+				TagMask removeTags = es.targetTags;
+
+				if (removeTags == TagMask.None)
+				{
+					ctx.Log?.Invoke("[DispelStatusByTag] RemoveTags is None");
+					return;
+				}
+
+				int removedCount = _statusSystem.DispelByTags(actorNum, removeTags);
+				ctx.Log?.Invoke($"[DispelStatusByTag] Player{actorNum}'s statuses removed. Tags: {removeTags}, Count: {removedCount}");
+				break;
 		}
+	}
+
+	public List<StatusInstance> GetStatusesByTags(int actorNum, TagMask tags)
+	{
+		return _statusSystem.GetStatusByTags(actorNum, tags);
 	}
 
 	private int getRandomActNum_ExceptMe(int myActNum)
@@ -909,5 +1089,123 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	{
 		int cur = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
 		return cur == attackerNum;
+	}
+
+	private void SendNewDrugMissionEvent(NewDrugGameEvent gameEvent)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+		if (NewDrugMissionManager.instance == null) return;
+
+		NewDrugMissionManager.instance.ReceiveGameEvent(gameEvent);
+	}
+
+	private void NotifyAttackActionForNewDrugMission(int attackerNum, bool isBasicAttack)
+	{
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = isBasicAttack
+				? NewDrugGameEventType.BasicAttackUsed
+				: NewDrugGameEventType.SkillUsed,
+
+			ActorNumber = attackerNum,
+			TurnIndex = GetCurrentTurnIndex(),
+			WaveIndex = GetCurrentWaveIndex()
+		});
+	}
+
+	private void NotifyTreeDamagedForNewDrugMission(int attackerNum, int finalDamage, float treeHpAfter)
+	{
+		if (finalDamage <= 0) return;
+
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.TreeDamaged,
+
+			ActorNumber = attackerNum,
+			DamageAmount = finalDamage,
+			TreeHPAfter = treeHpAfter,
+
+			TurnIndex = GetCurrentTurnIndex(),
+			WaveIndex = GetCurrentWaveIndex()
+		});
+	}
+
+	private void NotifyDefenseChangedForNewDrugMission(int actorNum, float defenseDelta)
+	{
+		if (defenseDelta <= 0f) return;
+
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.DefenseChanged,
+
+			ActorNumber = actorNum,
+			DefneseDelta = defenseDelta,
+
+			TurnIndex = GetCurrentTurnIndex(),
+			WaveIndex = GetCurrentWaveIndex()
+		});
+	}
+
+	private void NotifyStaminaSpentForNewDrugMission(int actorNum, int staminaValue)
+	{
+		if (staminaValue <= 0) return;
+
+		SendNewDrugMissionEvent(new NewDrugGameEvent
+		{
+			Type = NewDrugGameEventType.StaminaSpent,
+			ActorNumber = actorNum,
+			StaminaAmount = staminaValue,
+			TurnIndex = GetCurrentTurnIndex(),
+			WaveIndex = GetCurrentWaveIndex()
+		});
+	}
+
+	private int GetCurrentTurnIndex()
+	{
+		return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
+	}
+
+	private int GetCurrentWaveIndex()
+	{
+		return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
+	}
+
+	private List<int> GetOpponentActors(int actorNum)
+	{
+		List<int> targets = new List<int>();
+
+		if (GameManager.Instance.isSoloPlay)
+		{
+			bool actorIsAI = PlayerManager.Instance.AIPlayerObj.ContainsKey(actorNum);
+
+			if (actorIsAI)
+			{
+				// AI가 아이템을 썼으면 상대는 실제 플레이어
+				foreach (Player player in PhotonNetwork.PlayerList)
+				{
+					targets.Add(player.ActorNumber);
+				}
+			}
+			else
+			{
+				// 실제 플레이어가 아이템을 썼으면 상대는 AI
+				foreach (int aiActorNum in PlayerManager.Instance.AIPlayerObj.Keys)
+				{
+					targets.Add(aiActorNum);
+				}
+			}
+		}
+		else
+		{
+			foreach (Player player in PhotonNetwork.PlayerList)
+			{
+				if (player.ActorNumber != actorNum)
+				{
+					targets.Add(player.ActorNumber);
+				}
+			}
+		}
+
+		return targets;
 	}
 }

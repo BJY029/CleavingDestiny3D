@@ -93,6 +93,41 @@ MonoBehaviour:
   - RPC_RequestShopReroll
   - RPC_BuyShopItem
   - RPC_PlayHitSound
+  - RPC_ShowDamageToOthers
+  - RPC_EndDuel
+  - RPC_RequestChop
+  - RPC_RequestStartDuel
+  - RPC_SyncStartDuel
+  - RPC_SyncTurn
+  - RPC_ApplySuccessfulSlice
+  - RPC_RequestChopByHitPoint
+  - RPC_ApplySuccessfulStrike
+  - RPC_RequestChopByInteract
+  - RPC_RequestStartDual
+  - Init_SetActive_RecPanel
+  - Init_SetActive_ReqPanel
+  - Init_SetActive_WPanel
+  - RPC_RequestVerification
+  - RPC_StartBettingGame
+  - RPC_StartLogWoodGame
+  - RPC_CloseBetPanels
+  - RPC_RejectBettingGame
+  - Broadcast_SetMainTimerState
+  - RPC_PauseMainTurnTimerForMiniGame
+  - RPC_ResumeMainTurnTimerAfterMiniGame
+  - RPC_ClearBettingTimer
+  - RPC_SetTimer
+  - RPC_StartBettingUITimer
+  - RPC_StopBettingUITimer
+  - InitUI
+  - RPC_ShowMissionFailUI
+  - RPC_ShowMissionSuccessUI
+  - RPC_ShowMissionUI
+  - RPC_ShowMissionReservedUI
+  - RPC_ActiveNewDrug
+  - RPC_UseNewDrugItem
+  - RPC_ToggleNewDrugPosition
+  - RPC_OffNewDrug
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

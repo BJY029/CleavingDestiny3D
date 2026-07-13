@@ -187,7 +187,8 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		Debug.Log($"Current {actorLabel} Village HP : {currentVillageHP}");
 
 		currentGold += dayGoldIncome;
-		currentEnergy = Mathf.Min(currentEnergy + energyIncome, maxEnergy) + currentCarryOverEnergy;
+		currentEnergy = Mathf.Min(energyIncome + currentCarryOverEnergy, maxEnergy);
+		Debug.LogWarning($"CurrentEng : {energyIncome}(energyIncome) + {currentCarryOverEnergy}(currentCarryOverEnergy) or {maxEnergy}(maxEnergy)");
 		currentTotalDamage = 0;
 		currentBarrier = 0f;
 
@@ -213,7 +214,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		props.Clear();
 		props[PlayerPropKeys.Gold + attachedKey] = currentGold;
 		props[PlayerPropKeys.Energy + attachedKey] = currentEnergy;
-		props[PlayerPropKeys.CarryOverEnergy + attachedKey] = carryOverEnergy;
+		props[PlayerPropKeys.CarryOverEnergy + attachedKey] = /*carryOverEnergy*/0;
 		props[PlayerPropKeys.TotalDamage + attachedKey] = currentTotalDamage;
 		props[PlayerPropKeys.VillageBarrier + attachedKey] = currentBarrier;
 	}

@@ -1634,7 +1634,7 @@ MonoBehaviour:
   scoreTable: {fileID: 11400000, guid: 8be15f59696026042be4c2b2f5f22632, type: 2}
   playerSetting: {fileID: 11400000, guid: 0ab68fb3dcfba894bbce6a7513b5a994, type: 2}
   roomSetting: {fileID: 11400000, guid: a435e1ecc7289e04ca99639220cc8e4b, type: 2}
-  usageThreshold: 50
+  usageThreshold: 30
   useDelay: 1.2
 --- !u!114 &-8278461001936515571
 MonoBehaviour:

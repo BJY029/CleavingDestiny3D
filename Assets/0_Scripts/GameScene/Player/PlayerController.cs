@@ -63,6 +63,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private bool sprintPressed;
 
     private bool isPreparingTreeCut = false; // 나무 베기 준비 상태
+    private bool attackRequestSent;
 
     //움직임 관련 코드 내부에서 사용하는 파라미터
     private CharacterController characterController;
@@ -154,6 +155,8 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         firstPersonObjects.SetActive(true); //1인칭 오브젝트 켜기
 
         cam = _mainCamera.GetComponent<Camera>();
+        CameraSwitchManager.Instance.RegisterPlayerCamera(cam);
+        DamageTextManager.instance.SetTargetCamera(cam);
 
         isLookingAtTree = false;
         UpgradePhase = false;
@@ -325,7 +328,8 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         }
         if (ItemOfferCanvasController.instance.isOfferPanelOpened
         || ItemSelectionController.instance.IsItemSelectionActivated
-        || SettingCanvasController.instance.IsSettingPanelOpened)
+        || SettingCanvasController.instance.IsSettingPanelOpened
+        || BettingSystemController.instance.BettingSystemActivated)
         {
             SetInputLocked(true);
             return;
@@ -335,6 +339,13 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         {
             //만약 현재 실행중인 미니게임이 없다면, 해당 인터페이스로 설정
             if (currentMinigame == null) currentMinigame = LockpickController.instance;
+            //움직임 막기
+            SetInputLocked(true);
+            return;
+        }
+        if (WoodChopController.instance.isPlaying)
+        {
+            if (currentMinigame == null) currentMinigame = WoodChopController.instance;
             //움직임 막기
             SetInputLocked(true);
             return;
@@ -497,6 +508,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         DevLog.Log($"<color=green>[HIT - DoublePressStrike]</color> Player {PlayerActNum} KeyDown Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
 
+        attackRequestSent = false;
         animationController?.PlayStrikeAnimation();
     }
 
@@ -517,6 +529,12 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     {
         //내 객체가 아니면 return
         if (!photonView.IsMine) return;
+        if (WoodChopController.instance.isPlaying)
+        {
+            //미니 게임 관련 인터페이스 상호작용 수행
+            currentMinigame?.OnInteract(this);
+        }
+
         //내 턴이 아니면 return
         if (!GameHelper.IsMyTurn()) return;
 
@@ -577,6 +595,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
         damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
         //Hit 애니메이션 재생 
+        attackRequestSent = false;
         PlayHit();
     }
 
@@ -593,6 +612,23 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         animationController?.PlayHitAnimation();
     }
 
+    public void RequestAttackAtImpact()
+    {
+        if (!photonView.IsMine) return;
+
+        if (attackRequestSent) return;
+
+        if (damage < 0)
+        {
+            Debug.LogError("damage error");
+            return;
+        }
+
+        attackRequestSent = true;
+
+        TurnManager.Instance.RequestChangeTurn(damage, this);
+    }
+
     //HIT 애니메이션이 종료된 후 behaviour에 등록된 NotifyOnAnimExit로 호출되는 함수
     //IAnimNotify 인터페이스 상속으로 인해 다음 함수 구현
     public void OnAnimStateExit(int stateKey)
@@ -602,13 +638,15 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         {
             if (!photonView.IsMine) return;
 
-            if (damage < 0)
+            if (!attackRequestSent && damage >= 0)
             {
-                Debug.LogError("damage error");
-                return;
+                Debug.LogError(
+                    "[PlayerController] Impact callback was not invoked. " +
+                    "Requesting attack result on animation exit.");
+                RequestAttackAtImpact();
             }
             //Hit 한 순간의 데미지 값을 인자로 해서 턴 전환 함수 호출
-            TurnManager.Instance.RequestChangeTurn(damage, this);
+            //TurnManager.Instance.RequestChangeTurn(damage, this);
             damage = -1;
             WhileAnimation = false;
 
