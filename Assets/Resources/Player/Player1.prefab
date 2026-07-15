@@ -156,7 +156,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: f343bfef3d77720489ea246772212971, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
@@ -218,6 +218,8 @@ MonoBehaviour:
   mouseSensitivity: 0.1
   TopClamp: 35
   BottomClamp: -80
+  targetTerrain: {fileID: 0}
+  terrainHeightOffset: 0.05
   isGrounded: 0
   RayDistance: 5
   RayMultiplyer: 0

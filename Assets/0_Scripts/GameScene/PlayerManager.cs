@@ -13,6 +13,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	//전역 접근
 	public static PlayerManager Instance { get; private set; }
 
+	[SerializeField] private Terrain targetTerrain;
+	[SerializeField] private float heightOffset = 0.1f;
+
 	//플레이어 정보 관리용 딕셔너리(각 클라이언트마다 관리한다.)
 	private Dictionary<int, RuntimePlayerInfo> players = new();
 	//읽기 전용 딕셔너리
@@ -331,6 +334,8 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		spawnRot = new Quaternion[players.Count];
 		spawnInvRot = new Quaternion[players.Count];
 
+		if (targetTerrain == null) return;
+
 		float ang = 360 / (float)players.Count;
 
 		for (int i = 0; i < players.Count; i++)
@@ -338,26 +343,34 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			float angle = 2f * Mathf.PI * i / players.Count;
 
 			//플레이어 스폰 위치 계산
-			Vector3 offset = new Vector3(
+			Vector3 offset = CenterObject.position + new Vector3(
 				Mathf.Cos(angle) * radius,
 				0f,
 				Mathf.Sin(angle) * radius);
 
-			Vector3 hit_offset = new Vector3(
+			float terrainHeight = targetTerrain.SampleHeight(offset) + targetTerrain.transform.position.y;
+			offset.y = terrainHeight + heightOffset;
+
+			Vector3 hit_offset = CenterObject.position + new Vector3(
 				Mathf.Cos(angle) * hit_radius,
 				0f,
 				Mathf.Sin(angle) * hit_radius);
+			terrainHeight = targetTerrain.SampleHeight(hit_offset) + targetTerrain.transform.position.y;
+			hit_offset.y = terrainHeight + heightOffset;
 
 
 			//플레이어 인벤토리 스폰 위치 계산
-			Vector3 InvOffset = new Vector3(
+			Vector3 InvOffset = CenterObject.position + new Vector3(
 				Mathf.Cos(angle) * InvRadius,
 				0f,
 				Mathf.Sin(angle) * InvRadius);
 
-			spawnPos[i] = offset + CenterObject.position;
-			hitPos[i] = hit_offset + CenterObject.position;
-			spawnInvPos[i] = InvOffset + CenterObject.position;
+			terrainHeight = targetTerrain.SampleHeight(InvOffset) + targetTerrain.transform.position.y;
+			InvOffset.y = terrainHeight;
+
+			spawnPos[i] = offset;
+			hitPos[i] = hit_offset;
+			spawnInvPos[i] = InvOffset;
 			spawnRot[i] = Quaternion.LookRotation(CenterObject.position - spawnPos[i]);
 			spawnInvRot[i] = Quaternion.Euler(0f, (180f + (ang * i)) % 360f, 0f);
 		}
