@@ -18,7 +18,7 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "d02f29d07d209b3a71ffad9ee3525a996fbc799a"
+      "hash": "b5d154c509e93ca92af2b49dbf9ca845e3881d5e"
     },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
@@ -165,7 +165,7 @@
       }
     },
     "com.unity.multiplayer.playmode": {
-      "version": "2.0.1",
+      "version": "2.0.2",
       "depth": 0,
       "source": "registry",
       "dependencies": {

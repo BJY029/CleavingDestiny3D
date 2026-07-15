@@ -42,7 +42,7 @@ namespace Option
             gamePlaySetting.Initialize();
             soundSetting.Initialize();
         }
-
+        
         /// <summary>
         /// 옵션 메뉴 활성화/비활성화
         /// </summary>
