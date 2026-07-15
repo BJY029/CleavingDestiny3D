@@ -30,8 +30,10 @@ namespace Village.Building
         protected VillageType currentBuildingType;
 
         protected IVillageStatProvider VillageStat => VillageSystem.VillageStat;
-
-
+        
+        [SerializeField] Image npcImage;
+        [SerializeField] Sprite[] npcSprites;
+        
         public Action OnExitButtonClicked;
 
         protected virtual void Awake()
@@ -94,9 +96,12 @@ namespace Village.Building
 
         public virtual void RefreshStatusUI()
         {
-            int nextUpgradeCost = VillageStat.GetLevelUpgradedCost(currentBuildingType, VillageStat.GetVillageLevel(currentBuildingType));
+            int villageLevel = VillageStat.GetVillageLevel(currentBuildingType);
+            int nextUpgradeCost = VillageStat.GetLevelUpgradedCost(currentBuildingType, villageLevel);
             int currentGold = VillageSystem.VillageLogic.GetMyGold();
 
+            npcImage.sprite = npcSprites[Math.Clamp(villageLevel, 0, npcSprites.Length - 1)];
+            
             currentGoldText.SetText("{0}", currentGold);
             UpdateUpgradeButton(nextUpgradeCost, currentGold);
         }

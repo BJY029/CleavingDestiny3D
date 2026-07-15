@@ -1035,7 +1035,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 809c3c3dfc285d74a910ebc5036f4b90, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 94d05ddaee5782747813e69dcb535d83, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1295,6 +1295,13 @@ MonoBehaviour:
   upgradeCostText: {fileID: 4292305123187884534}
   upgradeButton: {fileID: 2667004716741910884}
   exitButton: {fileID: 2085944732727252736}
+  npcImage: {fileID: 2039675136854351418}
+  npcSprites:
+  - {fileID: 21300000, guid: 94d05ddaee5782747813e69dcb535d83, type: 3}
+  - {fileID: 21300000, guid: 3390b709348e97b45bd7a4c3ea997187, type: 3}
+  - {fileID: 21300000, guid: 6ed05b1b6add1fc4d8e58fbd308553c9, type: 3}
+  - {fileID: 21300000, guid: 65dc67142e6d16249b7506cdee478009, type: 3}
+  - {fileID: 21300000, guid: 6d701898c79752843976f9ae08e70efb, type: 3}
 --- !u!1 &6551609642809071284
 GameObject:
   m_ObjectHideFlags: 0

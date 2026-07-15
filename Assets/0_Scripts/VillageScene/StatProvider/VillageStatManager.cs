@@ -64,7 +64,7 @@ namespace Village
         {
             if (actorNumber == -1) actorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
 
-            object village = PhotonPropertyHelper.GetPlayerProp<object>(actorNumber, PlayerPropKeys.VillageUpgrades);
+            var village = PhotonPropertyHelper.GetPlayerProp<object>(actorNumber, PlayerPropKeys.VillageUpgrades);
             if (village != null)
             {
                 return ExtractLevelFromObject(type, village);
