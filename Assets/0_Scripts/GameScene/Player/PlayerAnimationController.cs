@@ -170,7 +170,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
             if (firstPersonTweenAnimator != null)
             {
                 firstPersonTweenAnimator.PlayHitAnimation(
-                    onImpactEvent: () => FirstPersonAxeHit(),
+                    onImpactEvent: FirstPersonAxeHit,
                     onCompleteCallback: () =>
                     {
                         axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 기본으로 되돌림
@@ -219,7 +219,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
             if (firstPersonTweenAnimator != null)
             {
                 firstPersonTweenAnimator.PlayStrikeAnimation(
-                    onImpactEvent: () => FirstPersonAxeHit(),
+                    onImpactEvent: FirstPersonAxeHit,
                     onCompleteCallback: () =>
                     {
                         axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 복원
@@ -255,7 +255,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         try
         {
             // 지정된 시간만큼 대기 (애니메이션 휘두르는 시간에 맞춤)
-            await UniTask.Delay((int)(aiHitSoundDelay * 1000), cancellationToken: this.GetCancellationTokenOnDestroy());
+            await UniTask.Delay(TimeSpan.FromSeconds(aiHitSoundDelay), cancellationToken: this.GetCancellationTokenOnDestroy());
         }
         catch (OperationCanceledException) { return; }
 
@@ -319,7 +319,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     {
         if (TreeStatus.Instance != null)
         {
-            AudioManager.Instance.PlaySfx3D("HitWood", TreeStatus.Instance.transform.position);
+            AudioManager.Instance.PlaySfx3D("hit_wood", TreeStatus.Instance.transform.position);
         }
     }
 

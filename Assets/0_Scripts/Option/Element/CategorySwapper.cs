@@ -9,7 +9,7 @@ namespace Option.Element
         [SerializeField] GameObject[] categoryObjects;
         [SerializeField] Button[] categoryButtons;
 
-        void Start()
+        private void Start()
         {
             for (int i = 0; i < categoryButtons.Length; i++)
             {
@@ -20,6 +20,7 @@ namespace Option.Element
 
         public void SwapCategory(int index)
         {
+            AudioManager.Instance?.PlaySfx2D("ui_button");
             for (int i = 0; i < categoryObjects.Length; i++)
             {
                 bool isActive = i == index;
