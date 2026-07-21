@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3955626770737847526
+--- !u!1 &5674981072747805393
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,48 +8,48 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7128559775178239307}
-  - component: {fileID: 6410295336057387953}
-  - component: {fileID: 1455635694988085835}
-  - component: {fileID: 4407742502849675476}
-  - component: {fileID: 5172953960587019971}
+  - component: {fileID: 2036111050569896382}
+  - component: {fileID: 3953344818935552530}
+  - component: {fileID: 6258115367595215617}
+  - component: {fileID: -3578589947021725914}
+  - component: {fileID: 4189437827704651276}
   m_Layer: 6
-  m_Name: TestBranch
+  m_Name: Branch
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7128559775178239307
+--- !u!4 &2036111050569896382
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3955626770737847526}
+  m_GameObject: {fileID: 5674981072747805393}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 8, y: 8, z: 8}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &6410295336057387953
+--- !u!33 &3953344818935552530
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3955626770737847526}
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &1455635694988085835
+  m_GameObject: {fileID: 5674981072747805393}
+  m_Mesh: {fileID: 6863175711911012604, guid: 27ab1494bf85d60429efb926ba6b8cc9, type: 3}
+--- !u!23 &6258115367595215617
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3955626770737847526}
+  m_GameObject: {fileID: 5674981072747805393}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -68,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 5987b65f4cfdb014bbaf1554be6804f9, type: 2}
+  - {fileID: 2100000, guid: 880f88e4975a429499181033699ea83e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -92,13 +92,29 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &4407742502849675476
+--- !u!114 &-3578589947021725914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5674981072747805393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d390205758537c4f81ee3094daaad1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BranchController
+  isSelected: 0
+  normalMat: {fileID: 2100000, guid: 880f88e4975a429499181033699ea83e, type: 2}
+  highlightMat: {fileID: 2100000, guid: f1e87b6f78f539048a64f88ff7b8fbed, type: 2}
+  selectedMat: {fileID: 2100000, guid: dd842374801ab6e4db35ef069e618b03, type: 2}
+--- !u!136 &4189437827704651276
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3955626770737847526}
+  m_GameObject: {fileID: 5674981072747805393}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -111,23 +127,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.53
-  m_Height: 2.18
+  m_Radius: 0.04049284
+  m_Height: 0.33
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &5172953960587019971
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3955626770737847526}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d390205758537c4f81ee3094daaad1f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BranchController
-  isSelected: 0
-  normalMat: {fileID: 2100000, guid: 5987b65f4cfdb014bbaf1554be6804f9, type: 2}
-  highlightMat: {fileID: 2100000, guid: 006132227a96625498e1ce92c7a72b76, type: 2}
-  selectedMat: {fileID: 2100000, guid: 8badef810fe17ab4a86ecc8b70f33f2f, type: 2}
+  m_Center: {x: 0, y: 0.15, z: 0}
