@@ -40,6 +40,22 @@ public class CameraSwitchManager : MonoBehaviour
         mainCamera.enabled = toggle;
     }
 
+    public void BranchCameraOn()
+    {
+        SetOnly(branchCamera);
+    }
+
+    public void MainCameraOn()
+    {
+        SetOnly(mainCamera);
+    }
+
+    public void PlayerCameraOn()
+    {
+        if (playerCamera == null) return;
+        SetOnly(playerCamera);
+    }
+
     public void Off_ExceptPlayerCam()
     {
         SetOnly(playerCamera);

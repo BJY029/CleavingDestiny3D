@@ -645,6 +645,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			//자신의 턴이라면
 			if (me == turnActor)
 			{
+				if (GameStarter.instance.CurrentPhase != GameStartPhase.MainGame) return;
 				//턴 타이머 시작
 				TimeManager.instance.StartTurnTimer();
 			}

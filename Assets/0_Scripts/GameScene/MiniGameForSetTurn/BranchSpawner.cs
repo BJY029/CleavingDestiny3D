@@ -141,8 +141,6 @@ public class BranchSpawner : MonoBehaviourPunCallbacks
         branchs[index].GetComponent<BranchController>().SetSelected();
 
         StartCoroutine(PlayBranchScaleEffect(selectedBranch.transform));
-
-        StickGameController.Instance.selectCount += 1;
     }
 
 

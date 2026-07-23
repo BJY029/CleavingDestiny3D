@@ -24,6 +24,15 @@ public enum ERROR
     FULL_INV,
 }
 
+public enum GameStartPhase : byte
+{
+    None = 0,
+    MapIntroduction = 1,
+    TurnSelection = 2,
+    PlayerPreparation = 3,
+    MainGame = 4
+}
+
 public class UI_CSV
 {
     public const string UI_PVP = "UI_PVP";
@@ -70,6 +79,27 @@ public class UI_CSV
     public const string UI_Item_LockPick_Has = "UI_Item_LockPick_Has";
     public const string UI_Exit_Lobby = "UI_Exit_Lobby";
     public const string UI_Exit_Game = "UI_Exit_Game";
+}
+
+public static class GameStartRoomKeys
+{
+    public const string Phase = "GameStartPhase";
+    public const string PhaseStartTime = "GameStartPhaseStart";
+    public const string PhaseDuration = "GameStartPhaseDuration";
+}
+
+public static class StickGameRoomKeys
+{
+    public const string StickLengths = "StickLengths";
+    public const string StickOwner = "StickOwner";
+
+    public const string SelectStartTime = "SelectStartTime";
+    public const string SelectDuration = "SelectDuration";
+
+    public const string SelectionResolved = "SelectionResolved";
+    public const string SelectionResolvedTime = "SelectionResolvedTime";
+
+    public const string TurnInfo = "TurnInfo";
 }
 
 //서버 CustomProperty Key
