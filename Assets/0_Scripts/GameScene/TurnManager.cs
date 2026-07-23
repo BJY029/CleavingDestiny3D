@@ -18,6 +18,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	private bool IsSinglePlayer => !PhotonNetwork.IsConnectedAndReady || !PhotonNetwork.InRoom || PhotonNetwork.OfflineMode;
 	[SerializeField]
 	private float VillageUpgradeLimitedTime;
+	[SerializeField]
+	private float timeChangeDelay = 2f;
 
 	public VillageSceneManager villageSceneManager;
 
@@ -216,6 +218,18 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		ChangeToNextTurn();
 	}
 
+	[PunRPC]
+	private void RPC_SetWeatherAsTime(int hour, int min)
+	{
+		WeatherMakerTimeController.instance.SetTime(hour, min);
+	}
+
+	[PunRPC]
+	private void RPC_PlayTimeFlow(int sHour, int sMin, float duration)
+	{
+		WeatherMakerTimeController.instance.PlayTimeTransition(sHour, sMin, duration);
+	}
+
 	//Hit 요청자 클라에서 실행될 Hit 처리
 	//[PunRPC]
 	//private void RPC_DoHitOnRequester(float damageRatio)
@@ -293,7 +307,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				PhotonPropertyHelper.SetRoomProp(RoomPropKeys.CurrentTurnActor, -1);
 				//날짜 변경인 경우
 				//마을 공격 액션 수행
-				photonView.RPC(nameof(TreeActionProcess), RpcTarget.All);
+				TreeActionProcess();
 				//StartVillageUpgradePhase();
 				return;
 			}
@@ -331,31 +345,33 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	// 	TurnHasChanged = true;
 	// }
 
-	[PunRPC]
 	public void TreeActionProcess()
 	{
+		if (!PhotonNetwork.IsMasterClient) return;
 		//TreeActionProcess가 실행중일때 중복 호출 막기
 		if (_isTreeActionRunning) return;
+
 		_isTreeActionRunning = true;
 		StartCoroutine(TreeAction());
 	}
 
 	IEnumerator TreeAction()
 	{
+		int curH = WeatherMakerTimeController.instance.GetCurHTime();
+		photonView.RPC(nameof(RPC_PlayTimeFlow), RpcTarget.All, curH, 22, timeChangeDelay);
+		yield return new WaitForSecondsRealtime(timeChangeDelay + 0.3f);
+
 		//싱글 플래이 모드라면, 바로 마을 모드 진입
 		if (IsSinglePlayer)
 		{
 			ItemHandlingSystem.instance.OnVillageStart();
-			yield return null;
 		}
 		else
 		{
 			int currentActionID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
 			_villageShieldProcessDone = -1;
 
-
-			if (PhotonNetwork.IsMasterClient)
-				photonView.RPC(nameof(RPC_RequestVillageShileldProcess), RpcTarget.MasterClient, currentActionID);
+			photonView.RPC(nameof(RPC_RequestVillageShileldProcess), RpcTarget.MasterClient, currentActionID);
 
 			float timeout = 5f;
 			while (currentActionID != _villageShieldProcessDone && timeout > 0)
@@ -363,7 +379,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				timeout -= Time.deltaTime;
 				yield return null;
 			}
-			if (timeout <= 0)
+			if (timeout <= 0f)
 				Debug.LogWarning("TreeAction RPC Timeout! 강제로 다음 페이즈로 넘어갑니다.");
 
 		}
@@ -610,6 +626,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		NotifyTurnStarted(nextIndex, nextActor, turnIndex, roomSet.initialWave);
 
 		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
+		photonView.RPC(nameof(RPC_SetWeatherAsTime), RpcTarget.All, 12, 0);
 		//photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 	}
 
