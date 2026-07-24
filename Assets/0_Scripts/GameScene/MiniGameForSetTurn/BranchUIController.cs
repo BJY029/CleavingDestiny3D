@@ -49,7 +49,7 @@ public class BranchUIController : MonoBehaviour
 
 		Curtain.color = new Color(c.r, c.g, c.b, 0f);
 
-		yield return new WaitForSeconds(waitDuration);
+		//yield return new WaitForSeconds(waitDuration);
 		BranchCanvas.gameObject.SetActive(false);
 	}
 }

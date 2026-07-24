@@ -16,13 +16,12 @@ public class GameStarter : MonoBehaviourPunCallbacks
 
     [Header("실제 Game")]
     [Tooltip("턴 정하기가 끝나기 전까지 비활성화할 게임 시스템")]
-    [SerializeField] private GameObject mainGameSystemRoot;
+    [SerializeField] private GameObject mainGameCanvas;
 
     private GameStartPhase currentPhase = GameStartPhase.None;
     public GameStartPhase CurrentPhase => currentPhase;
     private double phaseStartTime;
     private double PhaseDuration;
-
 
     private void Awake()
     {
@@ -60,6 +59,10 @@ public class GameStarter : MonoBehaviourPunCallbacks
                 break;
             case GameStartPhase.TurnSelection:
                 CheckTurnSelectionFinished(now);
+                break;
+            case GameStartPhase.TurnResult:
+                if (now >= phaseStartTime + PhaseDuration)
+                    SetPhase(GameStartPhase.MainGame);
                 break;
         }
     }
@@ -117,6 +120,9 @@ public class GameStarter : MonoBehaviourPunCallbacks
             case GameStartPhase.PlayerPreparation:
                 EnterPlayerPreparation();
                 break;
+            case GameStartPhase.TurnResult:
+                EnterTurnResult();
+                break;
             case GameStartPhase.MainGame:
                 EnterMainGame();
                 break;
@@ -126,6 +132,9 @@ public class GameStarter : MonoBehaviourPunCallbacks
     private void EnterMapIntroduction()
     {
         CameraSwitchManager.Instance.MainCameraOn();
+        //임시
+        GamePrepareCanvasController.instance.SetPrepareCanvasAsWeather(GameTheme.Clear);
+        mainGameCanvas.transform.localScale = Vector3.zero;
 
         if (stickGameController != null)
         {
@@ -137,7 +146,7 @@ public class GameStarter : MonoBehaviourPunCallbacks
     private void EnterTurnSelection()
     {
         //TODO : 캔버스 끄기
-
+        GamePrepareCanvasController.instance.SetUnActive();
         CameraSwitchManager.Instance.BranchCameraOn();
 
         if (stickGameController == null)
@@ -156,8 +165,24 @@ public class GameStarter : MonoBehaviourPunCallbacks
         PlayerManager.Instance.BeginPrepareStartGame();
     }
 
+    private void EnterTurnResult()
+    {
+        if (GamePrepareCanvasController.instance == null) return;
+
+        int firstActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+        bool isFirstTurn = PhotonNetwork.LocalPlayer.ActorNumber == firstActor;
+
+
+        CameraSwitchManager.Instance.MainCameraOn();
+        GamePrepareCanvasController.instance.ShowBranchGameResult(isFirstTurn);
+    }
+
     private void EnterMainGame()
     {
+        if (GamePrepareCanvasController.instance != null) GamePrepareCanvasController.instance.SetUnActive();
+
+        mainGameCanvas.transform.localScale = Vector3.one;
+        CameraSwitchManager.Instance.PlayerCameraOn();
         TimeManager.instance.StartTurnTimer();
     }
 

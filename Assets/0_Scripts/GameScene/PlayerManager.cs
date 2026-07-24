@@ -139,9 +139,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			{ RoomPropKeys.CurrentTurn, 0 },
 			{ RoomPropKeys.CurrentTurnActor, firstActor },
 			{ ItemPropKeys.OFFER(firstActor), offers ?? "" },
-			{ GameStartRoomKeys.Phase, (byte)GameStartPhase.MainGame},
+			{ GameStartRoomKeys.Phase, (byte)GameStartPhase.TurnResult},
 			{ GameStartRoomKeys.PhaseStartTime, PhotonNetwork.Time},
-			{ GameStartRoomKeys.PhaseDuration, 0d}
+			{ GameStartRoomKeys.PhaseDuration, 3d}
 		};
 
 		PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
@@ -209,7 +209,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		yield return curtainCoroutine;
 
-		CameraSwitchManager.Instance.Branch_to_Game();
+		CameraSwitchManager.Instance.MainCameraOn();
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
 
@@ -227,7 +227,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		TrySpawnAI();
 		if (IsInitializer()) yield return StartCoroutine(WaitForAIInitialization());
 
-		CameraSwitchManager.Instance.Off_ExceptPlayerCam();
+		//CameraSwitchManager.Instance.Off_ExceptPlayerCam();
 
 		GameCanvasController.Instance.gameObject.SetActive(true);
 		GameCanvasController.Instance.UpdateDayText();

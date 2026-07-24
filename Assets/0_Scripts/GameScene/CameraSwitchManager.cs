@@ -60,10 +60,6 @@ public class CameraSwitchManager : MonoBehaviour
     {
         SetOnly(playerCamera);
     }
-    public void Branch_to_Game()
-    {
-        SetOnly(playerCamera);
-    }
 
     public void Player_to_LogMiniGame()
     {
@@ -77,6 +73,9 @@ public class CameraSwitchManager : MonoBehaviour
 
     private void SetOnly(Camera targetCam)
     {
+        if (mainCamera != null)
+            mainCamera.enabled = false;
+
         if (playerCamera != null)
             playerCamera.enabled = false;
 
