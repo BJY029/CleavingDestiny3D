@@ -3,6 +3,8 @@ using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
+using DigitalRuby.WeatherMaker;
+using System.Collections;
 
 public class GameStarter : MonoBehaviourPunCallbacks
 {
@@ -17,6 +19,12 @@ public class GameStarter : MonoBehaviourPunCallbacks
     [Header("실제 Game")]
     [Tooltip("턴 정하기가 끝나기 전까지 비활성화할 게임 시스템")]
     [SerializeField] private GameObject mainGameCanvas;
+
+    [Header("Game Theme")]
+    [SerializeField] private GameThemeCatalogSO themeCatalog;
+    [SerializeField] WeatherMakerWeatherZoneScript globalWeatherZone;
+    private GameThemeSO currentGameTheme;
+    private Coroutine applyThemeCor;
 
     private GameStartPhase currentPhase = GameStartPhase.None;
     public GameStartPhase CurrentPhase => currentPhase;
@@ -34,13 +42,40 @@ public class GameStarter : MonoBehaviourPunCallbacks
         instance = this;
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
-        ApplyCurrentRoomPhase();
+        if (!PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom == null) yield break;
 
-        if (PhotonNetwork.IsMasterClient && PhotonNetwork.InRoom
-        && !PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey(GameStartRoomKeys.Phase))
-            SetPhase(GameStartPhase.MapIntroduction, mapIntroductionDuration);
+        bool hasTheme = PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey(GameStartRoomKeys.ThemeID);
+        bool hasPhase = PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey(GameStartRoomKeys.Phase);
+
+        if (hasTheme) yield return StartCoroutine(ApplyCurrentRoomThemeRoutine());
+        if (hasPhase) ApplyCurrentRoomPhase();
+
+        if (!PhotonNetwork.IsMasterClient) yield break;
+
+        if (!hasTheme || !hasPhase) InitializeGameStart();
+    }
+
+    private void InitializeGameStart()
+    {
+        if (!PhotonNetwork.IsMasterClient || PhotonNetwork.CurrentRoom == null) return;
+
+        if (themeCatalog == null) return;
+        GameThemeSO selectedTheme = themeCatalog.GetRandomTheme();
+
+        if (selectedTheme == null) return;
+
+        double now = PhotonNetwork.Time;
+        ExitGames.Client.Photon.Hashtable props = new()
+        {
+            {GameStartRoomKeys.ThemeID, selectedTheme.ThemeId},
+            {GameStartRoomKeys.Phase, (byte)GameStartPhase.MapIntroduction},
+            {GameStartRoomKeys.PhaseStartTime, now},
+            {GameStartRoomKeys.PhaseDuration, (double)mapIntroductionDuration},
+        };
+
+        PhotonNetwork.CurrentRoom.SetCustomProperties(props);
     }
 
     private void Update()
@@ -71,7 +106,7 @@ public class GameStarter : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.IsMasterClient || PhotonNetwork.CurrentRoom == null) return;
 
-        Hashtable properties = new()
+        ExitGames.Client.Photon.Hashtable properties = new()
         {
             {GameStartRoomKeys.Phase, (byte)phase},
             {GameStartRoomKeys.PhaseStartTime, PhotonNetwork.Time},
@@ -81,19 +116,29 @@ public class GameStarter : MonoBehaviourPunCallbacks
         PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
     }
 
-    public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
+    public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
     {
         base.OnRoomPropertiesUpdate(propertiesThatChanged);
 
-        if (propertiesThatChanged.ContainsKey(GameStartRoomKeys.Phase))
-            ApplyCurrentRoomPhase();
+        bool themeChanged = propertiesThatChanged.ContainsKey(GameStartRoomKeys.ThemeID);
+        bool phaseChanged = propertiesThatChanged.ContainsKey(GameStartRoomKeys.Phase);
+
+        if (themeChanged)
+        {
+            if (applyThemeCor != null) StopCoroutine(applyThemeCor);
+            applyThemeCor = StartCoroutine(ApplyThemeThenPhaseRoutine(phaseChanged));
+
+            return;
+        }
+
+        if (phaseChanged) ApplyCurrentRoomPhase();
     }
 
     private void ApplyCurrentRoomPhase()
     {
         if (!PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom == null) return;
 
-        Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
+        ExitGames.Client.Photon.Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
         if (!properties.TryGetValue(GameStartRoomKeys.Phase, out object phaseValue)) return;
 
         currentPhase = (GameStartPhase)Convert.ToByte(phaseValue);
@@ -105,6 +150,117 @@ public class GameStarter : MonoBehaviourPunCallbacks
             PhaseDuration = Convert.ToDouble(durationValue);
 
         ApplyPhase();
+    }
+
+    private IEnumerator ApplyCurrentRoomThemeRoutine()
+    {
+        if (!PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom == null) yield break;
+        if (!PhotonNetwork.CurrentRoom.CustomProperties.TryGetValue(GameStartRoomKeys.ThemeID, out object themeIDValue))
+            yield break;
+
+        string themeId = themeIDValue as string;
+
+        if (string.IsNullOrWhiteSpace(themeId))
+        {
+            Debug.LogError("Theme ID is NULL");
+            yield break;
+        }
+
+        if (themeCatalog == null || !themeCatalog.TryGetTheme(themeId, out GameThemeSO theme))
+        {
+            Debug.LogError("Can't find theme info");
+            yield break;
+        }
+
+        currentGameTheme = theme;
+
+        ApplyGameSettings(theme);
+
+        yield return StartCoroutine(ApplyWeatherThemeRoutine(theme));
+    }
+
+    private IEnumerator ApplyThemeThenPhaseRoutine(bool applyPhaseAfterTheme)
+    {
+        yield return StartCoroutine(ApplyCurrentRoomThemeRoutine());
+
+        if (applyPhaseAfterTheme) ApplyCurrentRoomPhase();
+
+        applyThemeCor = null;
+    }
+
+    private void ApplyGameSettings(GameThemeSO theme)
+    {
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("[GameStarter] GameManager가 없습니다.");
+            return;
+        }
+
+        if (theme.PlayerData == null)
+        {
+            Debug.LogError($"[{theme.name}] PlayerData가 없습니다.");
+            return;
+        }
+
+        if (theme.RoomData == null)
+        {
+            Debug.LogError($"[{theme.name}] RoomData가 없습니다.");
+            return;
+        }
+
+        GameManager.Instance.playerDefaultSetting = theme.PlayerData;
+        GameManager.Instance.roomDefaultSetting = theme.RoomData;
+    }
+
+    private void ApplyWeatherTheme(GameThemeSO theme)
+    {
+        if (applyThemeCor != null) StopCoroutine(applyThemeCor);
+
+        applyThemeCor = StartCoroutine(ApplyWeatherThemeRoutine(theme));
+    }
+
+    private IEnumerator ApplyWeatherThemeRoutine(GameThemeSO theme)
+    {
+        float timeout = 10f;
+        float elapsed = 0f;
+
+        while (WeatherMakerScript.Instance == null ||
+            WeatherMakerDayNightCycleManagerScript.Instance == null ||
+            globalWeatherZone == null)
+        {
+            elapsed += Time.unscaledDeltaTime;
+
+            if (elapsed >= timeout)
+            {
+                Debug.LogError("[GameStarter] Weather Maker 초기화 대기 초과");
+                applyThemeCor = null;
+                yield break;
+            }
+
+            yield return null;
+        }
+
+        if (theme.WeatherProfile == null)
+        {
+            Debug.LogError($"[{theme.name}] Weather Profile이 없습니다.");
+            applyThemeCor = null;
+            yield break;
+        }
+
+        WeatherMakerScript weatherMaker = WeatherMakerScript.Instance;
+        WeatherMakerProfileScript oldProfile = weatherMaker.LastLocalProfile;
+        WeatherMakerProfileScript newProfile = theme.WeatherProfile;
+
+        globalWeatherZone.gameObject.SetActive(true);
+
+        globalWeatherZone.SingleProfile = newProfile;
+
+        weatherMaker.RaiseWeatherProfileChanged(oldProfile, newProfile, 0f, 0f, true, null);
+
+        yield return null;
+        yield return new WaitForEndOfFrame();
+
+        applyThemeCor = null;
     }
 
     private void ApplyPhase()
@@ -132,15 +288,21 @@ public class GameStarter : MonoBehaviourPunCallbacks
     private void EnterMapIntroduction()
     {
         CameraSwitchManager.Instance.MainCameraOn();
-        //임시
-        GamePrepareCanvasController.instance.SetPrepareCanvasAsWeather(GameTheme.Clear);
         mainGameCanvas.transform.localScale = Vector3.zero;
 
         if (stickGameController != null)
         {
             stickGameController.EndStickGame();
         }
-        //TODO : 캔버스 켜기
+
+        if (currentGameTheme == null)
+        {
+            Debug.LogError("[GameStarter] 현재 GameThemeSO가 없습니다. Clear로 강제 설정합니다.");
+            GamePrepareCanvasController.instance.SetPrepareCanvasAsWeather(GameTheme.Clear);
+            return;
+        }
+
+        GamePrepareCanvasController.instance.SetPrepareCanvasAsWeather(currentGameTheme.ThemeType);
     }
 
     private void EnterTurnSelection()
@@ -183,6 +345,7 @@ public class GameStarter : MonoBehaviourPunCallbacks
 
         mainGameCanvas.transform.localScale = Vector3.one;
         CameraSwitchManager.Instance.PlayerCameraOn();
+        CameraSwitchManager.Instance.GameCameraToggle(false);
         TimeManager.instance.StartTurnTimer();
     }
 

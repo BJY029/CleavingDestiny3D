@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameThemeSO
   themeId: storm
   displayName: Storm
+  themeType: 1
   weatherProfile: {fileID: 11400000, guid: e6ee3c3c3c03f144bad8da0e89f1d127, type: 2}
   playerData: {fileID: 11400000, guid: 4ebe72004c11aff49926c098eae43222, type: 2}
   roomData: {fileID: 11400000, guid: c64d8fa34531e3c48b85a67dced203e4, type: 2}

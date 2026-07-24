@@ -31,13 +31,13 @@ public class CameraSwitchManager : MonoBehaviour
         playerCamera = cam;
 
         // 기본 상태는 플레이어 카메라 ON
-        SetOnly(playerCamera);
+        SetCameraState(playerCamera, false);
     }
 
     //메인 카메라를 켜고 끄는 함수
     public void GameCameraToggle(bool toggle)
     {
-        mainCamera.enabled = toggle;
+        SetCameraState(mainCamera, toggle);
     }
 
     public void BranchCameraOn()
@@ -71,23 +71,40 @@ public class CameraSwitchManager : MonoBehaviour
         SetOnly(playerCamera);
     }
 
-    private void SetOnly(Camera targetCam)
+    private void SetOnly(Camera targetCamera)
     {
-        if (mainCamera != null)
-            mainCamera.enabled = false;
+        SetCameraState(mainCamera, false);
+        SetCameraState(branchCamera, false);
+        SetCameraState(woodLogMinigameCamera, false);
+        SetCameraState(playerCamera, false);
 
-        if (playerCamera != null)
-            playerCamera.enabled = false;
+        if (targetCamera == null)
+        {
+            Debug.LogWarning(
+                "[CameraSwitchManager] 전환할 카메라가 없습니다.");
+            return;
+        }
 
-        if (branchCamera != null)
-            branchCamera.enabled = false;
+        SetCameraState(targetCamera, true);
+    }
 
-        if (woodLogMinigameCamera != null)
-            woodLogMinigameCamera.enabled = false;
+    private static void SetCameraState(
+        Camera targetCamera,
+        bool active)
+    {
+        if (targetCamera == null)
+        {
+            return;
+        }
 
-        if (targetCam != null)
-            targetCam.enabled = true;
-        else
-            Debug.LogWarning("[CameraSwitchManager] 전환할 카메라가 없습니다.");
+        targetCamera.enabled = active;
+
+        AudioListener[] listeners =
+            targetCamera.GetComponentsInChildren<AudioListener>(true);
+
+        foreach (AudioListener listener in listeners)
+        {
+            listener.enabled = active;
+        }
     }
 }

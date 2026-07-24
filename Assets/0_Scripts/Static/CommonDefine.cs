@@ -34,7 +34,7 @@ public enum GameStartPhase : byte
     MainGame = 5
 }
 
-public enum GameTheme
+public enum GameTheme : byte
 {
     Clear = 0,
     Storm = 1,
@@ -110,6 +110,7 @@ public static class GameStartRoomKeys
     public const string Phase = "GameStartPhase";
     public const string PhaseStartTime = "GameStartPhaseStart";
     public const string PhaseDuration = "GameStartPhaseDuration";
+    public const string ThemeID = "GameThemeID";
 }
 
 public static class StickGameRoomKeys

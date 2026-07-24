@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameThemeSO
   themeId: fog
   displayName: Fog
+  themeType: 2
   weatherProfile: {fileID: 11400000, guid: ad06c853d2fba5e4d9ba34a0babd6fa1, type: 2}
   playerData: {fileID: 11400000, guid: b3313fb50ef1e3344b94766f7e0d7129, type: 2}
   roomData: {fileID: 11400000, guid: bfdea4c699b33d24f8cffcf240337683, type: 2}

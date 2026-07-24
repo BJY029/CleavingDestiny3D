@@ -7,6 +7,7 @@ public class GameThemeSO : ScriptableObject
     [Header("Theme identification value")]
     [SerializeField] private string themeId;
     [SerializeField] private string displayName;
+    [SerializeField] private GameTheme themeType;
 
 
     [Header("Weather Maker")]
@@ -18,6 +19,7 @@ public class GameThemeSO : ScriptableObject
 
     public string ThemeId => themeId;
     public string DisplayName => displayName;
+    public GameTheme ThemeType => themeType;
 
     public WeatherMakerProfileScript WeatherProfile => weatherProfile;
 
