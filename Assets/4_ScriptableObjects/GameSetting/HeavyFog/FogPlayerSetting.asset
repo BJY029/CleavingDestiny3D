@@ -12,19 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07e03c7c99e313c468ee6c0c3e3a8736, type: 3}
   m_Name: FogPlayerSetting
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSetting
-  villageHP: 5000
+  villageHP: 4500
   villageBarrier: 0
-  barrierConversionRate: 0.3
-  initialGold: 500
+  barrierConversionRate: 0.2
+  initialGold: 600
   initialTotalDamage: 0
-  initialDayGoldIncome: 100
+  initialDayGoldIncome: 120
   initialBarrierArmor: 0
   VillageDmgMulti: 1
-  maxAtkPow: 1100
-  minAtkPow: 900
-  initialEnergy: 5
-  maxEnergy: 8
-  energyIncomePerDay: 5
+  maxAtkPow: 1250
+  minAtkPow: 950
+  initialEnergy: 6
+  maxEnergy: 9
+  energyIncomePerDay: 6
   carryOverEnergy: 0
   regenEnergyPerDay: 10
   commonWeight: 50

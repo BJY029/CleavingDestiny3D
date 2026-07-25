@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: GameThemeCatalog
   m_EditorClassIdentifier: Assembly-CSharp::GameThemeCatalogSO
   themes:
-  - {fileID: 11400000, guid: eb45c4f871406a641955c7c113e19df1, type: 2}
-  - {fileID: 11400000, guid: 4dda64504e8d14b41b4a67d059bd8633, type: 2}
-  - {fileID: 11400000, guid: 3544e9962ceeea44db1b1b693bd078fb, type: 2}
+  - theme: {fileID: 11400000, guid: eb45c4f871406a641955c7c113e19df1, type: 2}
+    weight: 6
+  - theme: {fileID: 11400000, guid: 3544e9962ceeea44db1b1b693bd078fb, type: 2}
+    weight: 2
+  - theme: {fileID: 11400000, guid: 4dda64504e8d14b41b4a67d059bd8633, type: 2}
+    weight: 2

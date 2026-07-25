@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 087df7fbd8c80d64db87e17acbbc200d, type: 3}
   m_Name: StormRoomSetting
   m_EditorClassIdentifier: Assembly-CSharp::RoomSetting
-  treeHP: 30000
-  treeAtkPow: 600
+  treeHP: 27000
+  treeAtkPow: 550
   startDay: 1
   initialTurn: 0
   initialTurnIndex: 1

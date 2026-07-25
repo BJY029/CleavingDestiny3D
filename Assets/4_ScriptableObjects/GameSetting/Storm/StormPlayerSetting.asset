@@ -12,18 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07e03c7c99e313c468ee6c0c3e3a8736, type: 3}
   m_Name: StormPlayerSetting
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSetting
-  villageHP: 5000
+  villageHP: 5500
   villageBarrier: 0
-  barrierConversionRate: 0.3
-  initialGold: 500
+  barrierConversionRate: 0.4
+  initialGold: 400
   initialTotalDamage: 0
-  initialDayGoldIncome: 100
+  initialDayGoldIncome: 80
   initialBarrierArmor: 0
   VillageDmgMulti: 1
-  maxAtkPow: 1100
-  minAtkPow: 900
+  maxAtkPow: 1150
+  minAtkPow: 750
   initialEnergy: 5
-  maxEnergy: 8
+  maxEnergy: 10
   energyIncomePerDay: 5
   carryOverEnergy: 0
   regenEnergyPerDay: 10

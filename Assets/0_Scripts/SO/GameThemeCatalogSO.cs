@@ -5,7 +5,21 @@ using System.Collections.Generic;
 [CreateAssetMenu(fileName = "GameThemeCatalogSO", menuName = "Scriptable Objects/GameThemeCatalogSO")]
 public class GameThemeCatalogSO : ScriptableObject
 {
-    [SerializeField] private List<GameThemeSO> themes = new();
+    [Serializable]
+    private class ThemeEntry
+    {
+        [SerializeField]
+        private GameThemeSO theme;
+
+        [Min(0)]
+        [SerializeField]
+        private int weight = 1;
+
+        public GameThemeSO Theme => theme;
+        public int Weight => weight;
+    }
+
+    [SerializeField] private List<ThemeEntry> themes = new();
 
     public int Count => themes.Count;
 
@@ -17,8 +31,30 @@ public class GameThemeCatalogSO : ScriptableObject
             return null;
         }
 
-        int index = UnityEngine.Random.Range(0, themes.Count);
-        return themes[index];
+        int totalWeight = 0;
+
+        foreach (ThemeEntry entry in themes)
+        {
+            if (entry == null || entry.Theme == null || entry.Weight <= 0) continue;
+
+            totalWeight += entry.Weight;
+        }
+
+        if (totalWeight <= 0) return null;
+
+        int randomValue = UnityEngine.Random.Range(0, totalWeight);
+        int accumlatedWeight = 0;
+
+        foreach (ThemeEntry entry in themes)
+        {
+            if (entry == null || entry.Theme == null || entry.Weight <= 0) continue;
+            accumlatedWeight += entry.Weight;
+
+            if (randomValue < accumlatedWeight) return entry.Theme;
+        }
+
+        Debug.LogError("failed to select theme as random");
+        return null;
     }
 
     public bool TryGetTheme(string themeId, out GameThemeSO result)
@@ -27,13 +63,13 @@ public class GameThemeCatalogSO : ScriptableObject
 
         if (string.IsNullOrWhiteSpace(themeId)) return false;
 
-        foreach (GameThemeSO theme in themes)
+        foreach (ThemeEntry entry in themes)
         {
-            if (theme == null) continue;
+            if (entry == null || entry.Theme == null) continue;
 
-            if (string.Equals(theme.ThemeId, themeId, StringComparison.Ordinal))
+            if (string.Equals(entry.Theme.ThemeId, themeId, StringComparison.Ordinal))
             {
-                result = theme;
+                result = entry.Theme;
                 return true;
             }
         }
@@ -42,17 +78,25 @@ public class GameThemeCatalogSO : ScriptableObject
     }
 
 #if UNITY_EDITOR
-    private void OnVaildate()
+    private void OnValidate()
     {
         HashSet<string> ids = new();
 
-        foreach (GameThemeSO theme in themes)
+        foreach (ThemeEntry entry in themes)
         {
-            if (theme == null || string.IsNullOrWhiteSpace(theme.ThemeId)) continue;
+            if (entry == null || entry.Theme == null) continue;
+            string themeId = entry.Theme.ThemeId;
 
-            if (!ids.Add(theme.ThemeId))
+            if (string.IsNullOrWhiteSpace(themeId)) continue;
+
+            if (!ids.Add(themeId))
             {
-                Debug.LogError($"중복된 Theme ID 존재 : {theme.ThemeId}", this);
+                Debug.LogError($"중복된 Theme ID 존재 : {themeId}", this);
+            }
+
+            if (entry.Weight <= 0)
+            {
+                Debug.LogError($"{themeId}의 가중치가 0 이하이므로, 랜덤 선택에서 제외됩니다.", this);
             }
         }
     }

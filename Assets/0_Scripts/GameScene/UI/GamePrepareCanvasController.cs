@@ -44,14 +44,14 @@ public class GamePrepareCanvasController : MonoBehaviour
             case GameTheme.Storm:
                 WeatherInfo.text = weather + " : " + LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Prepare_Weather_Storm);
                 //수정 필요
-                PlayerStatusInfo.text = player + " : " + LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Prepare_Common);
-                TreeStatusInfo.text = tree + " : " + LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Prepare_Common);
+                PlayerStatusInfo.text = player + " : " + LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Prepare_Strong);
+                TreeStatusInfo.text = tree + " : " + LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Prepare_Strong);
                 break;
             case GameTheme.Fog:
                 WeatherInfo.text = weather + " : " + LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Prepare_Weather_Fog);
                 //수정 필요
-                PlayerStatusInfo.text = player + " : " + LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Prepare_Common);
-                TreeStatusInfo.text = tree + " : " + LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Prepare_Common);
+                PlayerStatusInfo.text = player + " : " + LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Prepare_Weak);
+                TreeStatusInfo.text = tree + " : " + LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Prepare_Weak);
                 break;
         }
 
