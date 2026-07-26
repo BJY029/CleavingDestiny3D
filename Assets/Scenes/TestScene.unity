@@ -821,6 +821,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -5885677484571991951, guid: 6e4cab52048164d48b905ba0380f897c, type: 3}
+      propertyPath: m_SynchronizeParameters.Array.size
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: -1081810206017964554, guid: 6e4cab52048164d48b905ba0380f897c, type: 3}
       propertyPath: sceneViewId
       value: 1
@@ -832,7 +836,7 @@ PrefabInstance:
     - target: {fileID: 3710110911519245321, guid: 6e4cab52048164d48b905ba0380f897c, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: b0b1f9d87cb96994bbe5d36e5a317d7c, type: 2}
+      objectReference: {fileID: 9100000, guid: 51a44ad7ff37c5c4f96b62decbbce195, type: 2}
     - target: {fileID: 4748059610868810890, guid: 6e4cab52048164d48b905ba0380f897c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 2.0400589
@@ -875,10 +879,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6656179815138805705, guid: 6e4cab52048164d48b905ba0380f897c, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 6656179815138805705, guid: 6e4cab52048164d48b905ba0380f897c, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
