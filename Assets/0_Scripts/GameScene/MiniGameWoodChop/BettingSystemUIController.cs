@@ -6,6 +6,9 @@ using Photon.Realtime;
 
 public class BettingSystemUIController : MonoBehaviourPunCallbacks
 {
+    [Header("Backgrond UI")]
+    public GameObject BG;
+
     //요청자 화면에 뜨는 UI
     [Header("Request Panel UIs")]
     public Slider Req_Timer;
@@ -55,6 +58,7 @@ public class BettingSystemUIController : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        BG.SetActive(false);
         Req_Panel.SetActive(false);
         Rec_Panel.SetActive(false);
         W_Panel.SetActive(false);
@@ -287,6 +291,7 @@ public class BettingSystemUIController : MonoBehaviourPunCallbacks
         curTarActorNumber = tarActorNumber;
 
         Req_Panel.SetActive(true);
+        BG.SetActive(true);
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -329,6 +334,7 @@ public class BettingSystemUIController : MonoBehaviourPunCallbacks
         curTarActorNumber = tarActorNumber;
 
         Rec_Panel.SetActive(true);
+        BG.SetActive(true);
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -356,6 +362,7 @@ public class BettingSystemUIController : MonoBehaviourPunCallbacks
         }
 
         W_Panel.SetActive(true);
+        BG.SetActive(true);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -367,6 +374,7 @@ public class BettingSystemUIController : MonoBehaviourPunCallbacks
         Req_Panel.SetActive(false);
         Rec_Panel.SetActive(false);
         W_Panel.SetActive(false);
+        BG.SetActive(false);
 
         StopLocalUITimer();
 
