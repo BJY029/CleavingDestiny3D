@@ -113,8 +113,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     }
 
     [Header("First Person Visual Settings")]
-    [SerializeField] private bool use3DModelForFirstPerson = true; // true: 3인칭 애니메이션을 사용하되 3인칭 도끼 메쉬만 렌더링
-    [SerializeField] private Renderer[] thirdPersonAxeRenderers; // 1인칭 화면에 노출할 3인칭 도끼 렌더러 (미지정 시 이름 기반 감지)
+    [SerializeField] private GameObject[] characterModelObjects; // 캐릭터 몸체 모델 오브젝트 (1인칭 시 그림자 전용 처리)
 
     private void Awake()
     {
@@ -154,24 +153,12 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         // 이후부터는 로컬 플레이어만 실행하는 코드
 
-        if (use3DModelForFirstPerson)
-        {
-            // 3인칭 애니메이션을 활용하되, 3인칭 도끼만 렌더링하고 몸통/캐릭터는 그림자만 출력
-            Show3DPersonAxeOnly();
+        // 캐릭터 본체 모델만 숨기고 그림자는 남김 (휴머노이드 손 축에 별도로 붙은 도끼는 렌더링 유지)
+        HideCharacterModelBody();
 
-            if (firstPersonObjects != null)
-            {
-                DisableFirstPersonRenderersOnly(firstPersonObjects); // 1인칭 전용 Tween 도끼 오브젝트는 끔
-            }
-        }
-        else
+        if (firstPersonObjects != null)
         {
-            // 3인칭 본체만 숨기고 그림자는 남김 (1인칭 전용 도끼 노출)
-            SetShadowsOnlyRecursively(gameObject, firstPersonObjects);
-            if (firstPersonObjects != null)
-            {
-                EnableFirstPersonRenderersOnly(firstPersonObjects);
-            }
+            DisableFirstPersonRenderersOnly(firstPersonObjects); // 1인칭 카메라 등 제외 1인칭 레거시 렌더러 비활성화
         }
 
         cam = _mainCamera.GetComponent<Camera>();
@@ -184,50 +171,31 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         RayMultiplyer = 1;
     }
 
-    private void Show3DPersonAxeOnly()
+    private void HideCharacterModelBody()
     {
-        // 1. 전체 캐릭터 렌더러를 ShadowsOnly(그림자 전용)로 변경하여 캐릭터 몸체를 비활성화
-        var allRenderers = GetComponentsInChildren<Renderer>(true);
-        foreach (var r in allRenderers)
+        if (characterModelObjects != null)
         {
-            if (r != null && (firstPersonObjects == null || !r.transform.IsChildOf(firstPersonObjects.transform)))
+            // 지정된 캐릭터 본체 모델의 렌더러만 ShadowsOnly로 처리
+            foreach (var model in characterModelObjects)
             {
-                r.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
-            }
-        }
-
-        // 2. 3인칭 도끼 렌더러만 On으로 켜서 3인칭 애니메이션 동작 시 도끼만 렌더링되도록 처리
-        if (thirdPersonAxeRenderers != null && thirdPersonAxeRenderers.Length > 0)
-        {
-            foreach (var r in thirdPersonAxeRenderers)
-            {
-                if (r != null) r.shadowCastingMode = ShadowCastingMode.On;
+                SetShadowsOnlyRecursively(model);
             }
         }
         else
         {
-            // 지정된 도끼 렌더러가 없을 시 이름에 axe, weapon, item이 들어간 메쉬만 On 설정
-            Set3DPersonAxeOnlyByName(transform);
-        }
-    }
-
-    private void Set3DPersonAxeOnlyByName(Transform parent)
-    {
-        foreach (Transform child in parent)
-        {
-            if (child == null) continue;
-            if (firstPersonObjects != null && child.gameObject == firstPersonObjects) continue;
-
-            if (child.TryGetComponent<Renderer>(out var r))
+            // 미지정 시 캐릭터 SkinnedMeshRenderer (몸체) 메쉬만 ShadowsOnly 처리
+            var renderers = GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            foreach (var r in renderers)
             {
-                string nameLower = child.name.ToLower();
-                if (nameLower.Contains("axe") || nameLower.Contains("weapon") || nameLower.Contains("item"))
+                if (r != null && (firstPersonObjects == null || !r.transform.IsChildOf(firstPersonObjects.transform)))
                 {
-                    r.shadowCastingMode = ShadowCastingMode.On;
+                    // 도끼(MeshRenderer나 Axe이름)가 아닌 스킨드 메쉬 본체만 그림자 전용 설정
+                    if (!r.name.ToLower().Contains("axe") && !r.name.ToLower().Contains("weapon"))
+                    {
+                        r.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                    }
                 }
             }
-
-            Set3DPersonAxeOnlyByName(child);
         }
     }
 
@@ -244,28 +212,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         }
     }
 
-    private void EnableFirstPersonRenderersOnly(GameObject root)
-    {
-        if (root == null) return;
-        root.SetActive(true); // 1인칭 오브젝트 활성화
 
-        // 자식 렌더러들을 다시 활성화하여 1인칭 도끼만 보이도록 처리
-        var renderers = root.GetComponentsInChildren<Renderer>(true);
-        foreach (var r in renderers)
-        {
-            if (r != null) r.enabled = true;
-        }
-    }
-
-    private void EnsureAllRenderersOn()
-    {
-        // 3인칭 캐릭터 전체 렌더러(통합 메쉬 포함)를 정상 출력(ShadowCastingMode.On)으로 활성화
-        var allRenderers = GetComponentsInChildren<Renderer>(true);
-        foreach (var r in allRenderers)
-        {
-            if (r != null) r.shadowCastingMode = ShadowCastingMode.On;
-        }
-    }
 
     // 해당 오브젝트의 모든 자식 오브젝트들의 렌더러를 ShadowsOnly 모드로 변경하는 함수 (본인 포함)
     private void SetShadowsOnlyRecursively(GameObject obj, GameObject dismissObj = null)

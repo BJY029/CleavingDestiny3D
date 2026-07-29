@@ -11,17 +11,6 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     [SerializeField] private Animator animator; // 플레이어 애니메이터
     [SerializeField] private FirstPersonTweenAnimator firstPersonTweenAnimator; // 1인칭 도끼/아이템 트윈 애니메이터
 
-    [Header("Axe Sway Settings")]
-    [SerializeField] private Transform axeSwayTransform; // 도끼 트랜스폼
-    [SerializeField] float rotSwayMultiplier = 1.0f;
-    [SerializeField] float rotMaxSway = 15f;
-    [SerializeField] float rotSmoothStep = 4f;
-    [SerializeField] float posSwayMultiplier = 0.005f;
-    [SerializeField] float posMaxSway = 0.05f; // 너무 많이 벗어나지 않게 제한
-    [SerializeField] float posSmoothStep = 6f;
-    private Quaternion initialRotation;
-    private Vector3 initialPosition;
-
     [Header("Camera Shake Settings")]
     [SerializeField] Camera playerCamera; // 플레이어 카메라
     [SerializeField] private float shakeStrength = 0.5f;
@@ -61,9 +50,6 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
     MaterialPropertyBlock itemMpb;
 
-    // [Header("Effect")]
-    // [SerializeField] ParticleSystem hitEffectObject;
-
     private void Awake()
     {
         if (animator == null) animator = GetComponent<Animator>();
@@ -90,12 +76,6 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
             axeOriginalLayer = axeTransform.gameObject.layer; // 도끼의 원래 레이어 저장
         }
 
-        if (axeSwayTransform != null)
-        {
-            initialRotation = axeSwayTransform.localRotation; // 도끼의 초기 회전값 저장
-            initialPosition = axeSwayTransform.localPosition; // 도끼의 초기 위치값 저장
-        }
-
         Transform cameraAnimationPivot = null;
         if (playerCamera != null)
         {
@@ -117,66 +97,16 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     {
         animator.SetFloat(HashSpeedX, moveX, 0.1f, deltaTime);
         animator.SetFloat(HashSpeedZ, moveZ, 0.1f, deltaTime);
-
-        if (!isAI && photonView.IsMine && firstPersonTweenAnimator != null)
-        {
-            float speed = new Vector2(moveX, moveZ).magnitude;
-            if (speed < 0.1f)
-            {
-                firstPersonTweenAnimator.SetMovementState(FirstPersonTweenAnimator.MovementState.Idle);
-            }
-            else if (speed > 0.7f)
-            {
-                firstPersonTweenAnimator.SetMovementState(FirstPersonTweenAnimator.MovementState.Run);
-            }
-            else
-            {
-                firstPersonTweenAnimator.SetMovementState(FirstPersonTweenAnimator.MovementState.Walk);
-            }
-        }
     }
 
     public void UpdateCamera(Vector2 lookDelta)
     {
-        if (isAI || !photonView.IsMine) return;
-
-        float mouseX_Rot = Mathf.Clamp(lookDelta.x * rotSwayMultiplier, -rotMaxSway, rotMaxSway);
-        float mouseY_Rot = Mathf.Clamp(lookDelta.y * rotSwayMultiplier, -rotMaxSway, rotMaxSway);
-
-        Quaternion targetRotation = Quaternion.Euler(mouseY_Rot, -mouseX_Rot, 0f) * initialRotation;
-
-        float currentRotSmooth = lookDelta.magnitude > 0.1f ? rotSmoothStep * 1.5f : rotSmoothStep;
-        axeSwayTransform.localRotation = Quaternion.Slerp(axeSwayTransform.localRotation, targetRotation, currentRotSmooth * Time.deltaTime);
-
-        // 마우스를 움직인 반대 방향(-lookDelta)으로 도끼의 목표 위치를 잡습니다.
-        float mouseX_Pos = Mathf.Clamp(lookDelta.x * posSwayMultiplier, -posMaxSway, posMaxSway);
-        float mouseY_Pos = Mathf.Clamp(lookDelta.y * posSwayMultiplier, -posMaxSway, posMaxSway);
-
-        Vector3 targetPosition = new Vector3(-mouseX_Pos, -mouseY_Pos, 0f) + initialPosition;
-
-        axeSwayTransform.localPosition = Vector3.Lerp(axeSwayTransform.localPosition, targetPosition, posSmoothStep * Time.deltaTime);
+        // Sway 제거: 필요 시 시점 회전이나 추가 연출 확장용 빈 메서드 유지
     }
-
-    [Header("First Person Animation Settings")]
-    [SerializeField] private bool useTweenAnimator = false; // true: Tween 애니메이션 사용, false: 3인칭 Animator 공유 사용
 
     // Hit 애니메이션 실행
     public void PlayHitAnimation()
     {
-        // 도끼 휘두르기
-        if (!isAI && photonView.IsMine && useTweenAnimator && firstPersonTweenAnimator != null && axeTransform != null)
-        {
-            axeTransform.gameObject.layer = firstPersonLayer; // 도끼를 1인칭 레이어로 변경하여 잘 보이도록 설정
-
-            firstPersonTweenAnimator.PlayHitAnimation(
-                onImpactEvent: FirstPersonAxeHit,
-                onCompleteCallback: () =>
-                {
-                    axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 기본으로 되돌림
-                }
-            );
-        }
-
         // 전체(타인 화면 포함 및 로컬): 애니메이션 트리거
         photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All);
     }
@@ -184,12 +114,6 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     // 준비 자세 애니메이션 실행 (F Key Down 시점에 호출)
     public void PlayReadyAnimation()
     {
-        if (!isAI && photonView.IsMine && useTweenAnimator && firstPersonTweenAnimator != null && axeTransform != null)
-        {
-            axeTransform.gameObject.layer = firstPersonLayer;
-            firstPersonTweenAnimator.PlayReadyAnimation();
-        }
-
         // 전체(타인 화면 포함): HitReady = true
         photonView.RPC(nameof(RPC_SetHitReady), RpcTarget.All, true);
     }
@@ -197,12 +121,6 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     // 준비 자세 애니메이션 취소 (취소 키 입력 시 호출)
     public void CancelReadyAnimation()
     {
-        if (!isAI && photonView.IsMine && useTweenAnimator && firstPersonTweenAnimator != null && axeTransform != null)
-        {
-            firstPersonTweenAnimator.CancelReadyAnimation();
-            axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 복원
-        }
-
         // 전체(타인 화면 포함): HitReady = false
         photonView.RPC(nameof(RPC_SetHitReady), RpcTarget.All, false);
     }
@@ -210,17 +128,6 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     // 타격 애니메이션 (F Key Up 또는 2번째 F Key Down 시점에 호출)
     public void PlayStrikeAnimation()
     {
-        if (!isAI && photonView.IsMine && useTweenAnimator && firstPersonTweenAnimator != null && axeTransform != null)
-        {
-            firstPersonTweenAnimator.PlayStrikeAnimation(
-                onImpactEvent: FirstPersonAxeHit,
-                onCompleteCallback: () =>
-                {
-                    axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 복원
-                }
-            );
-        }
-
         // 전체(타인 화면 포함): 애니메이션 트리거
         photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All);
     }
@@ -232,6 +139,9 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         animator.SetBool(HashHitReady, isReady);
     }
 
+    [Header("Hit Timing Settings")]
+    [SerializeField] private float playerHitSoundDelay = 0.35f; // 플레이어 타격음 및 임팩트 지연 시간 (초)
+
     [PunRPC]
     private void RPC_PlayHit()
     {
@@ -240,11 +150,26 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         animator.ResetTrigger(HashHit);
         animator.SetTrigger(HashHit);
 
-        // AI인 경우, FBX 애니메이션 이벤트를 쓸 수 없으므로 지연 후 소리 재생
         if (isAI)
         {
             PlayAIImpactAsync().Forget();
         }
+        else
+        {
+            // 플레이어: 3인칭 타격 애니메이션의 도끼 타격 타이밍에 맞춰 소리 및 타격 이펙트 재생
+            PlayPlayerImpactAsync().Forget();
+        }
+    }
+
+    private async UniTaskVoid PlayPlayerImpactAsync()
+    {
+        try
+        {
+            await UniTask.Delay(TimeSpan.FromSeconds(playerHitSoundDelay), cancellationToken: this.GetCancellationTokenOnDestroy());
+        }
+        catch (OperationCanceledException) { return; }
+
+        FirstPersonAxeHit();
     }
 
     private async UniTaskVoid PlayAIImpactAsync()
@@ -270,23 +195,28 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
     public void FirstPersonAxeHit()
     {
-        // 1인칭 타격 이펙트 재생 (카메라 쉐이크 및 이펙트는 로컬에서만)
+        Vector3 hitPos = axeTransform != null ? axeTransform.position :
+            (TreeStatus.Instance != null ? TreeStatus.Instance.transform.position : transform.position + transform.forward);
+
+        // 타격 이펙트 및 대미지 요청 (로컬 플레이어)
         if (photonView.IsMine)
         {
-            // hitEffectObject.Play();
-            VFXManager.Instance.PlayPredefinedEffect(VFXManager.VFXIndex.Hit_Tree, axeTransform.position);
+            VFXManager.Instance.PlayPredefinedEffect(VFXManager.VFXIndex.Hit_Tree, hitPos);
 
-            DamageTextManager.instance?.CacheLocalHitPoint(axeTransform.position);
+            DamageTextManager.instance?.CacheLocalHitPoint(hitPos);
 
             playerController?.RequestAttackAtImpact();
         }
 
-        Tween.ShakeLocalPosition(playerCamera.transform,
-            strength: new Vector3(shakeStrength, shakeStrength, 0f),
-            duration: shakeDuration,
-            frequency: shakeFrequency);
+        if (playerCamera != null)
+        {
+            Tween.ShakeLocalPosition(playerCamera.transform,
+                strength: new Vector3(shakeStrength, shakeStrength, 0f),
+                duration: shakeDuration,
+                frequency: shakeFrequency);
+        }
 
-        // 플레이어인 경우에만 1인칭 애니메이션 이벤트에서 소리를 트리거함
+        // 플레이어인 경우에만 타격 소리 트리거
         if (!isAI && photonView.IsMine)
         {
             photonView.RPC(nameof(RPC_PlayHitSound), RpcTarget.All);
@@ -301,7 +231,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
     private void PlayLocalHitSound()
     {
-        if (TreeStatus.Instance != null)
+        if (TreeStatus.Instance != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlaySfx3D("hit_wood", TreeStatus.Instance.transform.position);
         }
