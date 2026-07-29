@@ -111,7 +111,7 @@ public class WoodChopUIController : MonoBehaviourPunCallbacks
             TurnValue.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_LogWood_Result_Win_Title);
             Desc.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_LogWood_Result_Win_Desc);
             GameResult.text = "ENERGY + " + energy;
-            GameResult.color = Color.blue;
+            GameResult.color = Color.lightBlue;
         }
         else
         {

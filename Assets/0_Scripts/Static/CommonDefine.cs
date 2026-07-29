@@ -24,6 +24,23 @@ public enum ERROR
     FULL_INV,
 }
 
+public enum GameStartPhase : byte
+{
+    None = 0,
+    MapIntroduction = 1,
+    TurnSelection = 2,
+    PlayerPreparation = 3,
+    TurnResult = 4,
+    MainGame = 5
+}
+
+public enum GameTheme : byte
+{
+    Clear = 0,
+    Storm = 1,
+    Fog = 2,
+}
+
 public class UI_CSV
 {
     public const string UI_PVP = "UI_PVP";
@@ -70,6 +87,44 @@ public class UI_CSV
     public const string UI_Item_LockPick_Has = "UI_Item_LockPick_Has";
     public const string UI_Exit_Lobby = "UI_Exit_Lobby";
     public const string UI_Exit_Game = "UI_Exit_Game";
+
+
+    public const string UI_Prepare_Weather = "UI_Prepare_Weather";
+    public const string UI_Prepare_Weather_Clear = "UI_Prepare_Weather_Clear";
+    public const string UI_Prepare_Weather_Storm = "UI_Prepare_Weather_Storm";
+    public const string UI_Prepare_Weather_Fog = "UI_Prepare_Weather_Fog";
+    public const string UI_Prepare_Player = "UI_Prepare_Player";
+    public const string UI_Prepare_Tree = "UI_Prepare_Tree";
+    public const string UI_Prepare_Weak = "UI_Prepare_Weak";
+    public const string UI_Prepare_Common = "UI_Prepare_Common";
+    public const string UI_Prepare_Strong = "UI_Prepare_Strong";
+    public const string UI_Prepare_WaitingMG = "UI_Prepare_WaitingMG";
+    public const string UI_Prepare_WaitingMainG = "UI_Prepare_WaitingMainG";
+    public const string UI_Prepare_MGResult = "UI_Prepare_MGResult";
+    public const string UI_Prepare_MGResult_Win = "UI_Prepare_MGResult_Win";
+    public const string UI_Prepare_MGResult_Lose = "UI_Prepare_MGResult_Lose";
+}
+
+public static class GameStartRoomKeys
+{
+    public const string Phase = "GameStartPhase";
+    public const string PhaseStartTime = "GameStartPhaseStart";
+    public const string PhaseDuration = "GameStartPhaseDuration";
+    public const string ThemeID = "GameThemeID";
+}
+
+public static class StickGameRoomKeys
+{
+    public const string StickLengths = "StickLengths";
+    public const string StickOwner = "StickOwner";
+
+    public const string SelectStartTime = "SelectStartTime";
+    public const string SelectDuration = "SelectDuration";
+
+    public const string SelectionResolved = "SelectionResolved";
+    public const string SelectionResolvedTime = "SelectionResolvedTime";
+
+    public const string TurnInfo = "TurnInfo";
 }
 
 //서버 CustomProperty Key

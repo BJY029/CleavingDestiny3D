@@ -40,7 +40,7 @@ public class BranchController : MonoBehaviourPunCallbacks, IPointerEnterHandler,
 	{
 		myLength = length;
 
-		transform.localScale = new Vector3(1, myLength, 1);
+		transform.localScale = new Vector3(5f, 5f * myLength, 5f);
 		transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z - myLength);
 	}
 
@@ -49,14 +49,14 @@ public class BranchController : MonoBehaviourPunCallbacks, IPointerEnterHandler,
 	{ myIndex = index; }
 
 
-	public float getLength() {  return myLength; }
+	public float getLength() { return myLength; }
 	public int getIdx() { return myIndex; }
 
 	//선택되는 경우 실행될 함수
 	public void SetSelected()
 	{
 		isSelected = true;
-		if(rend != null && selectedMat != null)
+		if (rend != null && selectedMat != null)
 		{
 			rend.material = selectedMat;
 		}
@@ -68,7 +68,7 @@ public class BranchController : MonoBehaviourPunCallbacks, IPointerEnterHandler,
 		if (isSelected) return;
 
 		//Debug.LogError("mouse in");
-		if(rend != null && highlightMat != null)
+		if (rend != null && highlightMat != null)
 		{
 			rend.material = highlightMat;
 		}
