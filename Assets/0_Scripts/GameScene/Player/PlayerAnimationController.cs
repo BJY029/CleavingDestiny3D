@@ -157,41 +157,37 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         axeSwayTransform.localPosition = Vector3.Lerp(axeSwayTransform.localPosition, targetPosition, posSmoothStep * Time.deltaTime);
     }
 
+    [Header("First Person Animation Settings")]
+    [SerializeField] private bool useTweenAnimator = false; // true: Tween 애니메이션 사용, false: 3인칭 Animator 공유 사용
+
     // Hit 애니메이션 실행
     public void PlayHitAnimation()
     {
         // 도끼 휘두르기
-        if (!isAI && photonView.IsMine)
+        if (!isAI && photonView.IsMine && useTweenAnimator && firstPersonTweenAnimator != null && axeTransform != null)
         {
             axeTransform.gameObject.layer = firstPersonLayer; // 도끼를 1인칭 레이어로 변경하여 잘 보이도록 설정
 
-            if (firstPersonTweenAnimator != null)
-            {
-                firstPersonTweenAnimator.PlayHitAnimation(
-                    onImpactEvent: FirstPersonAxeHit,
-                    onCompleteCallback: () =>
-                    {
-                        axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 기본으로 되돌림
-                    }
-                );
-            }
+            firstPersonTweenAnimator.PlayHitAnimation(
+                onImpactEvent: FirstPersonAxeHit,
+                onCompleteCallback: () =>
+                {
+                    axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 기본으로 되돌림
+                }
+            );
         }
 
-        // 전체(타인 화면 포함): 애니메이션 트리거
+        // 전체(타인 화면 포함 및 로컬): 애니메이션 트리거
         photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All);
     }
 
     // 준비 자세 애니메이션 실행 (F Key Down 시점에 호출)
     public void PlayReadyAnimation()
     {
-        if (!isAI && photonView.IsMine)
+        if (!isAI && photonView.IsMine && useTweenAnimator && firstPersonTweenAnimator != null && axeTransform != null)
         {
             axeTransform.gameObject.layer = firstPersonLayer;
-
-            if (firstPersonTweenAnimator != null)
-            {
-                firstPersonTweenAnimator.PlayReadyAnimation();
-            }
+            firstPersonTweenAnimator.PlayReadyAnimation();
         }
 
         // 전체(타인 화면 포함): HitReady = true
@@ -201,12 +197,9 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     // 준비 자세 애니메이션 취소 (취소 키 입력 시 호출)
     public void CancelReadyAnimation()
     {
-        if (!isAI && photonView.IsMine)
+        if (!isAI && photonView.IsMine && useTweenAnimator && firstPersonTweenAnimator != null && axeTransform != null)
         {
-            if (firstPersonTweenAnimator != null)
-            {
-                firstPersonTweenAnimator.CancelReadyAnimation();
-            }
+            firstPersonTweenAnimator.CancelReadyAnimation();
             axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 복원
         }
 
@@ -217,18 +210,15 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     // 타격 애니메이션 (F Key Up 또는 2번째 F Key Down 시점에 호출)
     public void PlayStrikeAnimation()
     {
-        if (!isAI && photonView.IsMine)
+        if (!isAI && photonView.IsMine && useTweenAnimator && firstPersonTweenAnimator != null && axeTransform != null)
         {
-            if (firstPersonTweenAnimator != null)
-            {
-                firstPersonTweenAnimator.PlayStrikeAnimation(
-                    onImpactEvent: FirstPersonAxeHit,
-                    onCompleteCallback: () =>
-                    {
-                        axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 복원
-                    }
-                );
-            }
+            firstPersonTweenAnimator.PlayStrikeAnimation(
+                onImpactEvent: FirstPersonAxeHit,
+                onCompleteCallback: () =>
+                {
+                    axeTransform.gameObject.layer = axeOriginalLayer; // 도끼 레이어 복원
+                }
+            );
         }
 
         // 전체(타인 화면 포함): 애니메이션 트리거

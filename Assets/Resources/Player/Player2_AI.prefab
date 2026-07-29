@@ -1688,6 +1688,7 @@ MonoBehaviour:
   leftHandWeight: 1
   enableIK: 1
   isAI: 0
+  useTweenAnimator: 0
 --- !u!114 &2716088925901640895
 MonoBehaviour:
   m_ObjectHideFlags: 0

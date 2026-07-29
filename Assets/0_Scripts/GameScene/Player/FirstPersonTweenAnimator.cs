@@ -131,6 +131,14 @@ public class FirstPersonTweenAnimator : MonoBehaviour
         }
     }
 
+    [Header("Two-Handed Horizontal Axe Pose Offsets")]
+    [SerializeField] private Vector3 readyPos = new Vector3(0.65f, 0.95f, 0.35f);
+    [SerializeField] private Vector3 readyRotEuler = new Vector3(-15f, 75f, -80f);
+    [SerializeField] private Vector3 pullBackPos = new Vector3(0.8f, 1.0f, 0.2f);
+    [SerializeField] private Vector3 pullBackRotEuler = new Vector3(-25f, 85f, -95f);
+    [SerializeField] private Vector3 strikePos = new Vector3(-0.1f, 1.0f, 0.7f);
+    [SerializeField] private Vector3 strikeRotEuler = new Vector3(15.54f, -85.617f, -70.569f);
+
     /// <summary>
     /// [타격 1단계: 준비 페이즈] 도끼를 오른쪽 어깨 위로 깊게 치켜들며 가로 날로 조준 상태를 형성합니다.
     /// </summary>
@@ -142,8 +150,7 @@ public class FirstPersonTweenAnimator : MonoBehaviour
         if (bobbingSequence.isAlive) bobbingSequence.Stop();
         if (actionSequence.isAlive) actionSequence.Stop();
 
-        Vector3 readyPos = new Vector3(0.65f, 0.95f, 0.35f);
-        Quaternion readyRot = Quaternion.Euler(-15f, 75f, -80f);
+        Quaternion readyRot = Quaternion.Euler(readyRotEuler);
         Quaternion camReadyRot = Quaternion.Euler(0f, 60f, 0f);
 
         actionSequence = Sequence.Create()
@@ -163,13 +170,11 @@ public class FirstPersonTweenAnimator : MonoBehaviour
         if (actionSequence.isAlive) actionSequence.Stop();
 
         // 1단계(준비) 상태에서 2단계 시작 시 뒤로 더 당길 위치 및 회전 설정
-        Vector3 pullBackPos = new Vector3(0.8f, 1.0f, 0.2f);
-        Quaternion pullBackRot = Quaternion.Euler(-25f, 85f, -95f);
+        Quaternion pullBackRot = Quaternion.Euler(pullBackRotEuler);
         Quaternion camPullBackRot = Quaternion.Euler(0f, 70f, 0f);
 
         // 최종 타격 위치 및 회전 설정
-        Vector3 strikePos = new Vector3(-0.1f, 1.0f, 0.7f);
-        Quaternion strikeRot = Quaternion.Euler(15.54f, -85.617f, -70.569f);
+        Quaternion strikeRot = Quaternion.Euler(strikeRotEuler);
 
         actionSequence = Sequence.Create()
             // ----------------------------------------------------
