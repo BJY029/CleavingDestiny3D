@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,6 +21,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 	private void Start()
 	{
 		OffersPanel.SetActive(false);
+		TitleText.SetActive(false);
 		OpenCloseText.SetActive(false);
 	}
 
@@ -45,6 +47,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 	[Header("UI Panel")]
 	public GameObject OffersPanel;
 	public GameObject OpenCloseText;
+	public GameObject TitleText;
 
 	//현재 상태 명시
 	private bool isChoosingPhase = false;
@@ -118,6 +121,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 		//현재 상태에 따라서 패널을 열고 닫는다.
 		bool isActive = OffersPanel.activeSelf;
 		OffersPanel.SetActive(!isActive);
+		TitleText.SetActive(!isActive);
 		//닫혀있던 상태인 경우 -> 열림 처리
 		if (!isActive)
 		{
@@ -147,6 +151,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 	public void Close()
 	{
 		OffersPanel?.SetActive(false);
+		TitleText?.SetActive(false);
 
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
