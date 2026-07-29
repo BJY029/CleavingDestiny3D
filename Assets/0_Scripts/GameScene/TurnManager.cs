@@ -436,6 +436,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		if (isAlreadyUpgraded) return;
 
 		isVillagePhase = true;
+		//CameraSwitchManager.Instance.TurnOffAllCam();
 
 		//현재 시간
 		float startTime = (float)PhotonNetwork.Time;

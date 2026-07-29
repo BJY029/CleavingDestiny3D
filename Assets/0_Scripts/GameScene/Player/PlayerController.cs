@@ -290,14 +290,14 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         //플레이어 카메라를 끄고
         cam.enabled = false;
         //메인 카메라 켜기
-        CameraSwitchManager.Instance.GameCameraToggle(true);
+        //CameraSwitchManager.Instance.GameCameraToggle(true);
     }
 
     //마을 업그레이드가 끝나면 실행될 함수
     public void VillageUpgradePhaseOut()
     {
         //메인 카메라 끄고
-        CameraSwitchManager.Instance.GameCameraToggle(false);
+        //CameraSwitchManager.Instance.GameCameraToggle(false);
         //플레이어 카메라 켜기
         cam.enabled = true;
     }

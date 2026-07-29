@@ -39,8 +39,8 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
   - {fileID: 1634849999918824420}
-  - {fileID: 1444155392022527101}
-  m_RendererFeatureMap: e47b35c26927b0167dbcf775adab0a14
+  - {fileID: 5702162565896244024}
+  m_RendererFeatureMap: e47b35c26927b016388bc66fa426224f
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -96,3 +96,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   m_Shader: {fileID: 4800000, guid: 0f854b35a0cf61a429bd5dcfea30eddd, type: 3}
+--- !u!114 &5702162565896244024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2c8a29639af6bf479d75609f847b594, type: 3}
+  m_Name: WeatherMakerURPRenderFeatureScript
+  m_EditorClassIdentifier: Assembly-CSharp::DigitalRuby.WeatherMaker.WeatherMakerURPRenderFeatureScript
+  m_Active: 1

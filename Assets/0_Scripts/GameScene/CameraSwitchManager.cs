@@ -34,6 +34,14 @@ public class CameraSwitchManager : MonoBehaviour
         SetCameraState(playerCamera, false);
     }
 
+    public void TurnOffAllCam()
+    {
+        SetCameraState(mainCamera, false);
+        SetCameraState(branchCamera, false);
+        SetCameraState(woodLogMinigameCamera, false);
+        SetCameraState(playerCamera, false);
+    }
+
     //메인 카메라를 켜고 끄는 함수
     public void GameCameraToggle(bool toggle)
     {
