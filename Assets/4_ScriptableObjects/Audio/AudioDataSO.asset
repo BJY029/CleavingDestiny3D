@@ -18,27 +18,18 @@ MonoBehaviour:
     volume: 1
     pitch: 1
     is3D: 1
-
+  - id: ui_button
+    clip: {fileID: 8300000, guid: d01cf0ef07f3a3f4bb836189cfa75328, type: 3}
+    volume: 0.4
+    pitch: 1
+    is3D: 0
   - id: UI_Hover
     clip: {fileID: 8300000, guid: 6b211cd82de849e4b9a82e8f93c20a55, type: 3}
     volume: 1
     pitch: 1
     is3D: 0
-
-  - id: UI_Click
-    clip: {fileID: 8300000, guid: 62fe39ee599422e4abcbc4e2f88dd882, type: 3}
-    volume: 1
-    pitch: 1
-    is3D: 0
-
   - id: UI_Toggle
-    clip: {fileID: 8300000, guid: 5f5775a1823f09d4e93f1fe172e4c67c, type: 3}
+    clip: {fileID: 8300000, guid: c344ccc28eacc5e4796b30d95f172e25, type: 3}
     volume: 1
-    pitch: 1
-    is3D: 0
-
-  - id: ui_button
-    clip: {fileID: 8300000, guid: d01cf0ef07f3a3f4bb836189cfa75328, type: 3}
-    volume: 0.4
     pitch: 1
     is3D: 0
