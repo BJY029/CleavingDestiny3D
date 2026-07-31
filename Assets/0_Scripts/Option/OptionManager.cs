@@ -1,4 +1,5 @@
 using System.IO;
+using Cysharp.Threading.Tasks;
 using Option.Element;
 using Potan.CoreUtils;
 using UnityEngine;
@@ -13,17 +14,20 @@ namespace Option
         // 설정 데이터가 최초 생성인지 저장 데이터 로드인지 구분하기 위한 변수
         internal bool isInitialized = false;
 
-        GameObject optionMenu;
+        private GameObject optionMenu;
 
-        [SerializeField] CategorySwapper categorySwapper;
-        [SerializeField] GamePlaySetting gamePlaySetting;
-        [SerializeField] SoundSetting soundSetting;
+        [SerializeField] private CategorySwapper categorySwapper;
+        [SerializeField] private GamePlaySetting gamePlaySetting;
+        [SerializeField] private SoundSetting soundSetting;
+
+        private string settingPath;
 
         private void Awake()
         {
-            if (Instance == null)
+            if (Instance == null || Instance == this)
             {
                 Instance = this;
+                settingPath = Path.Join(Application.persistentDataPath, "setting.json");
                 LoadSetting();
                 DontDestroyOnLoad(gameObject);
             }
@@ -33,7 +37,7 @@ namespace Option
             }
         }
 
-        void Start()
+        private void Start()
         {
             optionMenu = transform.GetChild(0).gameObject;
             optionMenu.SetActive(false);
@@ -53,24 +57,23 @@ namespace Option
 
             if (!isActive)
             {
-                SaveSetting();
+                AudioManager.Instance?.PlaySfx2D("ui_button");
+                SaveSetting().Forget();
             }
         }
 
-        async void SaveSetting()
+        private async UniTask SaveSetting()
         {
             string json = JsonUtility.ToJson(settingData);
-            string path = Application.persistentDataPath + "/setting.json";
-            await File.WriteAllTextAsync(path, json);
-            DevLog.Log($"Settings saved to: {path}", this);
+            await File.WriteAllTextAsync(settingPath, json);
+            DevLog.Log($"Settings saved to: {settingPath}", this);
         }
 
-        void LoadSetting()
+        private void LoadSetting()
         {
-            string path = Application.persistentDataPath + "/setting.json";
-            if (File.Exists(path))
+            if (File.Exists(settingPath))
             {
-                string json = File.ReadAllText(path);
+                string json = File.ReadAllText(settingPath);
                 settingData = JsonUtility.FromJson<SettingData>(json);
                 isInitialized = true;
             }
