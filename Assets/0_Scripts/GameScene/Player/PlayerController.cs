@@ -1,9 +1,12 @@
+using System;
+using Cysharp.Threading.Tasks;
 using NUnit.Framework;
 using Photon.Pun;
 using Potan.CoreUtils;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using Random = UnityEngine.Random;
 
 public interface ILookInteractable
 {
@@ -557,6 +560,61 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
 
         DevLog.Log($"<color=green>[HIT - DoublePressStrike]</color> Player {PlayerActNum} KeyDown Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
+
+        attackRequestSent = false;
+        animationController?.PlayStrikeAnimation();
+    }
+
+    // 시간 초과 / 타임아웃 자동 실행용 : 나무베기 준비 후 풀게이지(100%) 타격 자동 진행
+    public void AutoTriggerFullGaugeStrike()
+    {
+        if (!photonView.IsMine) return;
+
+        AutoTriggerFullGaugeStrikeAsync().Forget();
+    }
+
+    private async UniTaskVoid AutoTriggerFullGaugeStrikeAsync()
+    {
+        // 1. 아직 준비 상태가 아닌 경우 준비 상태 진입 (자동 타격 시에는 게이지 UI를 오픈하지 않음)
+        if (!isPreparingTreeCut)
+        {
+            isPreparingTreeCut = true;
+            WhileAnimation = true;
+            SetInputLocked(true);
+
+            MoveToTreeAttackPosition();
+
+            PlayerCanvasController.Instance?.SetHitTextUnActive();
+
+            animationController?.PlayReadyAnimation();
+
+            // 준비 연출을 위해 0.4초 연출 지연
+            await UniTask.Delay(TimeSpan.FromSeconds(0.4f), cancellationToken: destroyCancellationToken);
+        }
+        else
+        {
+            // 수동으로 준비 상태를 띄워놓고 방치하여 타임아웃된 경우, 열려있던 게이지 UI를 닫아줌
+            PlayerCanvasController.Instance?.CloseGauge();
+        }
+
+        // 2. 풀게이지(100%) 타격 실행
+        TriggerTreeStrikeWithGauge(100f);
+    }
+
+    private void TriggerTreeStrikeWithGauge(float overrideDamageRatio)
+    {
+        isPreparingTreeCut = false;
+
+        damageRatio = overrideDamageRatio;
+        PlayerCanvasController.Instance?.CloseGauge();
+        TimeManager.instance?.AbortTurnTimer();
+        ItemOfferCanvasController.instance?.Close();
+
+        int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow);
+        int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
+        damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100f));
+
+        DevLog.Log($"<color=green>[HIT - AutoFullGaugeStrike]</color> Player {PlayerActNum} Auto Full Gauge Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
 
         attackRequestSent = false;
         animationController?.PlayStrikeAnimation();
