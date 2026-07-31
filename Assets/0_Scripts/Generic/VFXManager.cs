@@ -64,8 +64,16 @@ public class VFXManager : MonoSceneSingleton<VFXManager>
         );
         colorModule.color = alphaGradient;
 
+        Shader particleShader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+        if (particleShader == null) particleShader = Shader.Find("Particles/Standard Unlit");
+        if (particleShader == null) particleShader = Shader.Find("Sprites/Default");
+
+        Material mat = new Material(particleShader);
+        if (mat.HasProperty("_BaseMap")) mat.SetTexture("_BaseMap", Texture2D.whiteTexture);
+        if (mat.HasProperty("_MainTex")) mat.mainTexture = Texture2D.whiteTexture;
+
         var renderer = cachedItemPS.GetComponent<ParticleSystemRenderer>();
-        renderer.material = new Material(Shader.Find("Particles/Standard Unlit"));
+        renderer.material = mat;
     }
 
     public void PlayPredefinedEffect(VFXIndex effect, Vector3 position)
@@ -125,12 +133,12 @@ public class VFXManager : MonoSceneSingleton<VFXManager>
         var main = cachedItemPS.main;
         main.startLifetime = new ParticleSystem.MinMaxCurve(0.3f, 0.6f);
         main.startSpeed = new ParticleSystem.MinMaxCurve(5f, maxSpeed);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.1f, 0.3f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.2f, 0.5f);
         main.startColor = mainColor;
 
         var emission = cachedItemPS.emission;
         emission.rateOverTime = 0;
-        emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, particleCount) });
+        emission.SetBursts(new[] { new ParticleSystem.Burst(0f, particleCount) });
 
         // 4. 실행
         cachedItemPS.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);

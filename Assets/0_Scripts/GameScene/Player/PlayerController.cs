@@ -208,11 +208,14 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         if (root == null) return;
         root.SetActive(true); // 카메라는 작동해야 하므로 오브젝트는 활성화 유지
 
-        // 자식 오브젝트들의 Renderer만 비활성화하여 1인칭 전용 도끼/손 메쉬만 숨김
+        // 자식 오브젝트들의 Renderer 중 아이템(Item) 렌더러는 제외하고 도끼/손 메쉬만 숨김
         var renderers = root.GetComponentsInChildren<Renderer>(true);
         foreach (var r in renderers)
         {
-            if (r != null) r.enabled = false;
+            if (r != null && !r.name.ToLower().Contains("item"))
+            {
+                r.enabled = false;
+            }
         }
     }
 
