@@ -7,6 +7,7 @@ using Unity.VisualScripting;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using Potan.CoreUtils;
+using System;
 
 public class StickGameController : MonoBehaviourPunCallbacks
 {
@@ -14,90 +15,107 @@ public class StickGameController : MonoBehaviourPunCallbacks
     [SerializeField]
     private int branchCount;
 
-    private float selectDurarionDefault = 20.0f;
-    private float selectStartTime;
-    private float selectDuration;
-    private float endTime;
+    private float SelectDurationDefault = 20.0f;
+    private double selectStartTime;
+    private double selectDuration;
+    private double endTime;
+
+    private bool phaseActive;
+    private bool isUpdatedTimer;
     private bool localResolved = false;
+    private bool resolveRequested;
+    private int playerCount;
 
     public Canvas BranchGameCanvas;
-    public int selectCount;
     public Slider Timer;
-    private int playerCount;
-    private bool isUpdatedTimer;
+
+
 
     // Singleton
     public static StickGameController Instance;
     private void Awake()
     {
-        if (Instance != null)
+        if (Instance != null && Instance != this)
         {
-            Destroy(Instance);
+            Destroy(gameObject);
             return;
         }
-        Instance = this;
 
-        selectCount = 0;
+        Instance = this;
     }
 
     void Start()
     {
-        BranchGameCanvas.transform.localScale = Vector3.zero;
-        playerCount = PhotonNetwork.PlayerList.Length;
+        BranchGameCanvas.enabled = false;
 
         Timer.value = 1f;
-        // 마스터 클라이언트가 스틱들을 초기화
-        //if(PhotonNetwork.IsMasterClient)
-        //{
-        //       InitSticks();
-        //}
-
-        var room = PhotonNetwork.CurrentRoom;
-        var props = room.CustomProperties;
-
-        isUpdatedTimer = false;
-        if (props.ContainsKey("SelectStartTime"))
-        {
-            selectStartTime = (float)props["SelectStartTime"];
-            selectDuration = (float)props["SelectDuration"];
-            endTime = selectStartTime + selectDuration;
-            isUpdatedTimer = true;
-            return;
-        }
-
-        // 타이머 초기화는 방장(MasterClient) 혹은 가장 빠른 번호의 플레이어가 수행
-        // (MasterClient)가 존재하지 않는 상황 대비
-        if (IsTimerInitializer())
-        {
-            // 모든 클라이언트가 최대한 동시에 타이머를 시작하기 위해 Photon 서버 시간을 기준으로 설정
-            float now = (float)PhotonNetwork.Time;
-
-            var ht = new ExitGames.Client.Photon.Hashtable
-            {
-                ["SelectStartTime"] = now,
-                ["SelectDuration"] = selectDurarionDefault,
-                ["SelectionResolved"] = false
-            };
-
-            room.SetCustomProperties(ht);
-            selectStartTime = now;
-            selectDuration = selectDurarionDefault;
-            endTime = selectStartTime + selectDuration;
-            isUpdatedTimer = true;
-        }
+        playerCount = PhotonNetwork.PlayerList.Length;
     }
+
+    public void BeginStickGame()
+    {
+        if (phaseActive) return;
+
+        phaseActive = true;
+        localResolved = false;
+        resolveRequested = false;
+        isUpdatedTimer = false;
+
+        playerCount = PhotonNetwork.PlayerList.Length;
+
+        BranchGameCanvas.enabled = true;
+        Timer.value = 1f;
+
+        //이미 초기화 된 상태가 존재하면 읽는다.
+        if (TryLoadRoundFromRoom()) return;
+
+        if (PhotonNetwork.IsMasterClient) InitializeStickGame();
+    }
+
+    public void EndStickGame()
+    {
+        phaseActive = false;
+
+        if (BranchGameCanvas != null) BranchGameCanvas.enabled = false;
+    }
+
+
+
+    private bool TryLoadRoundFromRoom()
+    {
+        if (!PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom == null) return false;
+
+        Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
+
+        if (!properties.TryGetValue(StickGameRoomKeys.SelectStartTime, out object startValue)
+        || !properties.TryGetValue(StickGameRoomKeys.SelectDuration, out object durationValue))
+            return false;
+
+        selectStartTime = Convert.ToDouble(startValue);
+        selectDuration = Convert.ToDouble(durationValue);
+        endTime = selectStartTime + selectDuration;
+
+        isUpdatedTimer = true;
+
+        if (BranchGameCanvas != null) BranchGameCanvas.enabled = true;
+
+        return true;
+    }
+
 
     public override void OnRoomPropertiesUpdate(Hashtable changedProps)
     {
-        if (changedProps.ContainsKey("SelectStartTime"))
+        if (changedProps.ContainsKey(StickGameRoomKeys.SelectStartTime) ||
+            changedProps.ContainsKey(StickGameRoomKeys.SelectDuration))
         {
-            var room = PhotonNetwork.CurrentRoom;
-            selectStartTime = (float)room.CustomProperties["SelectStartTime"];
-            selectDuration = (float)room.CustomProperties["SelectDuration"];
-            endTime = selectStartTime + selectDuration;
-            isUpdatedTimer = true;
-            BranchGameCanvas.transform.localScale = Vector3.one;
-            Debug.Log(selectStartTime + " " + selectDuration + " " + endTime);
+            TryLoadRoundFromRoom();
+        }
+
+        if (changedProps.TryGetValue(StickGameRoomKeys.SelectionResolved, out object resolvedValue)
+         && (bool)resolvedValue)
+        {
+            localResolved = true;
+            resolveRequested = false;
         }
     }
 
@@ -109,99 +127,109 @@ public class StickGameController : MonoBehaviourPunCallbacks
 
     private void Update()
     {
-        if (localResolved) return; ;
-        if (!isUpdatedTimer) return;
-        var room = PhotonNetwork.CurrentRoom;
+        if (!phaseActive || localResolved || !isUpdatedTimer || PhotonNetwork.CurrentRoom == null) return;
 
-        if (room == null) return;
+        Hashtable properties = PhotonNetwork.CurrentRoom.CustomProperties;
 
-        if (room.CustomProperties.TryGetValue("SelectionResolved", out var r) && (bool)r)
+        if (properties.TryGetValue(StickGameRoomKeys.SelectionResolved, out var r) && (bool)r)
         {
             localResolved = true;
             return;
         }
 
-        float now = (float)PhotonNetwork.Time;
+        double now = PhotonNetwork.Time;
         //double endTime = selectStartTime + selectDuration;
-        float remain = endTime - now;
-        Timer.value = remain / selectDuration;
+        double remain = endTime - now;
+        Timer.value = Mathf.Clamp01((float)(remain / selectDuration));
 
-        if (remain <= 0.0 || selectCount >= playerCount)
+        bool allPlayerSelected = AreAllPlayerSelected(properties);
+
+        if ((remain <= 0.0 || allPlayerSelected) && PhotonNetwork.IsMasterClient)
         {
-            Debug.Log($"Time's up or all selected: remain={remain}, selectCount={selectCount}, playerCount={playerCount}");
             ResolveSelection();
         }
     }
 
+    private bool AreAllPlayerSelected(Hashtable properties)
+    {
+        if (!properties.TryGetValue(StickGameRoomKeys.StickOwner, out object ownerValue))
+            return false;
+
+        int[] owners = (int[])ownerValue;
+
+        return PhotonNetwork.PlayerList.All(player => owners.Contains(player.ActorNumber));
+    }
+
     private void ResolveSelection()
     {
-        Debug.Log("time 0 or all selected");
+        if (!PhotonNetwork.IsMasterClient || resolveRequested || PhotonNetwork.CurrentRoom == null)
+            return;
 
-        if (!IsTimerInitializer())
+        localResolved = true;
+
+        Hashtable props = PhotonNetwork.CurrentRoom.CustomProperties;
+
+        if (!props.TryGetValue(StickGameRoomKeys.StickOwner, out object ownersValue)
+        || !props.TryGetValue(StickGameRoomKeys.StickLengths, out object lengthsValue))
         {
-            //localResolved = true;
+            resolveRequested = false;
+            Debug.LogError("스틱 데이터 초기화 안됨");
             return;
         }
-        localResolved = true;
-        var room = PhotonNetwork.CurrentRoom;
-        var props = room.CustomProperties;
-        var owners = (int[])props["StickOwner"];
-        var lengths = (int[])props["StickLengths"];
+
+        int[] owners = (int[])((int[])ownersValue).Clone();
+        int[] lengths = (int[])((int[])lengthsValue).Clone();
+
         var rand = new System.Random();
         int randIdx;
 
         // key: actorNum, value: selected length
         Dictionary<int, int> setTurns = new Dictionary<int, int>();
+        List<int> freeStickIndexes = Enumerable.Range(0, owners.Length).Where(index => owners[index] == -1).ToList();
 
         // 모든 플레이어를 순회하며
         foreach (Player p in PhotonNetwork.PlayerList)
         {
             // 플레이어의 고유 번호를 가져온다.
             int playerActNum = p.ActorNumber;
-            int flag = 0;
-            // 소유자 리스트를 확인하면서
-            for (int i = 0; i < owners.Length; i++)
+
+            int selectedIndex = Array.IndexOf(owners, playerActNum);
+
+            if (selectedIndex >= 0)
             {
-                // 해당 플레이어가 스틱을 이미 선택했다면
-                if (owners[i] == playerActNum)
-                {
-                    // 정보 추가
-                    setTurns.Add(playerActNum, lengths[i]);
-                    flag = 1;
-                    break;
-                }
+                setTurns[playerActNum] = lengths[selectedIndex];
+                continue;
             }
-            if (flag == 1) continue;
-            // 아직 스틱을 선택하지 않은 플레이어라면 (타임아웃 등)
-            do
+
+            if (freeStickIndexes.Count == 0)
             {
-                // 랜덤으로 스틱 선택
-                randIdx = rand.Next(0, branchCount);
-            } while (owners[randIdx] != -1); // 중복되지 않도록 방지
-            // 해당 스틱의 소유자로 플레이어 설정
-            owners[randIdx] = playerActNum;
-            // 정보 추가
-            setTurns.Add(playerActNum, lengths[randIdx]);
+                Debug.LogError("선택 가능한 나뭇가지수 부족");
+                resolveRequested = false;
+                return;
+            }
+
+            int randomListIndex = rand.Next(0, freeStickIndexes.Count);
+
+            int stickIdx = freeStickIndexes[randomListIndex];
+
+            freeStickIndexes.RemoveAt(randomListIndex);
+
+            owners[stickIdx] = playerActNum;
+            setTurns[playerActNum] = lengths[stickIdx];
         }
 
         if (GameManager.Instance.isSoloPlay)
         {
-            int player = PhotonNetwork.PlayerList.Length;
             int aiID = 1000;
-            for (int i = player + 1; i <= GameManager.Instance.maxRoomPlayerCount; i++)
-            {
-                do
-                {
-                    // 랜덤으로 스틱 선택
-                    randIdx = rand.Next(0, branchCount);
-                } while (owners[randIdx] != -1); // 중복되지 않도록 방지
 
-                // 해당 스틱의 소유자로 플레이어 설정
-                owners[randIdx] = aiID;
-                // 정보 추가
-                setTurns.Add(aiID, lengths[randIdx]);
-                aiID++;
+            do
+            {
+                randIdx = rand.Next(0, branchCount);
             }
+            while (owners[randIdx] != -1);
+
+            owners[randIdx] = aiID;
+            setTurns.Add(aiID, lengths[randIdx]);
         }
 
 
@@ -231,13 +259,26 @@ public class StickGameController : MonoBehaviourPunCallbacks
 
 #endif
         // 룸 프로퍼티에 저장
-        var newProps = new ExitGames.Client.Photon.Hashtable
+        Hashtable resultProperties = new()
+    {
         {
-            ["TurnInfo"] = turnOrder,
-            ["StickOwner"] = owners,
-            ["SelectionResolved"] = true,
-        };
-        room.SetCustomProperties(newProps);
+            StickGameRoomKeys.TurnInfo,
+            turnOrder
+        },
+        {
+            StickGameRoomKeys.StickOwner,
+            owners
+        },
+        {
+            StickGameRoomKeys.SelectionResolved,
+            true
+        },
+        {
+            StickGameRoomKeys.SelectionResolvedTime,
+            PhotonNetwork.Time
+        }
+    };
+        PhotonNetwork.CurrentRoom.SetCustomProperties(resultProperties);
     }
 
     // 마스터 클라이언트가 아니더라도 가장 낮은 ActorNumber를 가진 유저가 타이머 초기화를 수행
@@ -250,54 +291,68 @@ public class StickGameController : MonoBehaviourPunCallbacks
     }
 
     // 스틱 및 초기 데이터를 초기화하는 함수
-    public void InitSticks()
+    public void InitializeStickGame()
     {
+        if (!PhotonNetwork.IsMasterClient || PhotonNetwork.CurrentRoom == null) return;
+
         // 나뭇가지 개수만큼 배열 생성 및 초기화
         int[] lengths = new int[branchCount];
+        int[] owners = new int[branchCount];
         for (int i = 0; i < branchCount; i++)
         {
             lengths[i] = i + 1;
-        }
-        // 각 나뭇가지의 소유주를 저장할 배열 생성
-        int[] owners = new int[branchCount];
-
-        // 나뭇가지의 길이를 무작위로 섞기 위해 셔플 알고리즘 사용
-        int temp;
-        var rand = new System.Random();
-
-        for (int i = 0; i < branchCount; i++)
-        {
-            int randIdx = rand.Next(0, branchCount);
-            temp = lengths[randIdx];
-            lengths[randIdx] = lengths[i];
-            lengths[i] = temp;
-
             // 소유주 배열을 -1(소유주 없음)로 초기화
             owners[i] = -1;
         }
+        // 각 나뭇가지의 소유주를 저장할 배열 생성
 
-        // 테스트용
-        //for(int i = 0; i < branchCount; i++)
-        //{
-        //    Debug.LogError($"index{i+1} length = {lengths[i]}");
-        //}
 
-        // 룸 프로퍼티에 저장
-        var props = new ExitGames.Client.Photon.Hashtable
+        // 나뭇가지의 길이를 무작위로 섞기 위해 셔플 알고리즘 사용
+        System.Random random = new();
+
+        for (int i = lengths.Length - 1; i > 0; i--)
         {
-            ["StickLengths"] = lengths,
-            ["StickOwner"] = owners,
-        };
+            int randomIndex = random.Next(0, i + 1);
+            (lengths[i], lengths[randomIndex]) = (lengths[randomIndex], lengths[i]);
+        }
 
-        // 업데이트
-        PhotonNetwork.CurrentRoom.SetCustomProperties(props);
-        BranchGameCanvas.transform.localScale = Vector3.zero;
+        double now = PhotonNetwork.Time;
+
+        Hashtable properties = new()
+    {
+        {
+            StickGameRoomKeys.StickLengths,
+            lengths
+        },
+        {
+            StickGameRoomKeys.StickOwner,
+            owners
+        },
+        {
+            StickGameRoomKeys.SelectStartTime,
+            now
+        },
+        {
+            StickGameRoomKeys.SelectDuration,
+            (double)SelectDurationDefault
+        },
+        {
+            StickGameRoomKeys.SelectionResolved,
+            false
+        },
+        {
+            StickGameRoomKeys.SelectionResolvedTime,
+            0d
+        }
+    };
+
+        PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
     }
 
     // 특정 나뭇가지를 클릭했을 때 호출되는 함수
     public void OnClickStick(int stickIndex)
     {
-        if (!PhotonNetwork.InRoom) return;
+        if (!PhotonNetwork.InRoom || !phaseActive || localResolved) return;
 
         // 마스터 클라이언트에게 스틱 선택 요청
         photonView.RPC(nameof(RequestPickStick), RpcTarget.MasterClient, stickIndex);
@@ -313,8 +368,8 @@ public class StickGameController : MonoBehaviourPunCallbacks
         var room = PhotonNetwork.CurrentRoom;
         var props = room.CustomProperties;
 
-        var owners = (int[])props["StickOwner"];
-        var lengths = (int[])props["StickLengths"];
+        int[] owners = (int[])((int[])props["StickOwner"]).Clone();
+        int[] lengths = (int[])((int[])props["StickLengths"]).Clone();
 
         // 유효성 체크
         if (stickIndex < 0 || stickIndex >= owners.Length)

@@ -18,11 +18,11 @@ public class BranchUIController : MonoBehaviour
 	}
 
 	public Canvas BranchCanvas;
-    public TextMeshProUGUI Desc1;
+	public TextMeshProUGUI Desc1;
 	public TextMeshProUGUI Desc2;
 	public Image Curtain;
 
-	private float offDuration = 3f;
+	private float offDuration = 2f;
 	private float waitDuration = 2f;
 
 	private void Start()
@@ -38,7 +38,7 @@ public class BranchUIController : MonoBehaviour
 		float startAlpha = c.a;
 		float time = 0f;
 
-		while(time < offDuration)
+		while (time < offDuration)
 		{
 			time += Time.deltaTime;
 			float alpha = Mathf.Lerp(startAlpha, 0f, time / offDuration);
@@ -49,7 +49,7 @@ public class BranchUIController : MonoBehaviour
 
 		Curtain.color = new Color(c.r, c.g, c.b, 0f);
 
-		yield return new WaitForSeconds(waitDuration);
+		//yield return new WaitForSeconds(waitDuration);
 		BranchCanvas.gameObject.SetActive(false);
 	}
 }

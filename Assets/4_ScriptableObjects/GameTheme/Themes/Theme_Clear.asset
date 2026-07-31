@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 382788affe789274984a9b5b08bb5bef, type: 3}
+  m_Name: Theme_Clear
+  m_EditorClassIdentifier: Assembly-CSharp::GameThemeSO
+  themeId: clear
+  displayName: Clear
+  weatherProfile: {fileID: 11400000, guid: 9aad5ff5dfa09ce468205f676714f891, type: 2}
+  playerData: {fileID: 11400000, guid: 0ab68fb3dcfba894bbce6a7513b5a994, type: 2}
+  roomData: {fileID: 11400000, guid: a435e1ecc7289e04ca99639220cc8e4b, type: 2}

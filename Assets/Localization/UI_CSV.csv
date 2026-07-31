@@ -49,3 +49,17 @@ UI_ResultReason_Win_PlayerLeft,상대방이 게임을 떠났습니다.,The oppon
 UI_ResultReason_Win_TreeDestroyed,상대방이 나무를 베었습니다.,The opponent felled the tree.
 UI_ResultReason_Win_VillageDestroyed,상대 마을이 무너졌습니다.,The opponent's village collapsed.
 UI_ResultReason_Draw,두 마을이 동시에 무너졌습니다.,Both villages collapsed.
+UI_Prepare_Weather,날씨,Weather
+UI_Prepare_Weather_Clear,맑음,Clear
+UI_Prepare_Weather_Storm,폭풍우,Storm
+UI_Prepare_Weather_Fog,짙은 안개,Heavy Fog
+UI_Prepare_Player,플레이어 상태,Player State
+UI_Prepare_Tree,나무 상태,Tree State
+UI_Prepare_Weak,약함,Weak
+UI_Prepare_Common,보통,Common
+UI_Prepare_Strong,강함,Strong
+UI_Prepare_WaitingMG,곧 턴 결정 게임이 시작됩니다!,The turn-deciding game will begin shortly!
+UI_Prepare_WaitingMainG,곧 게임이 시작됩니다!,The game will begin shortly!
+UI_Prepare_MGResult,턴 순서 결정!,Turn Order Decided!
+UI_Prepare_MGResult_Win,당신은 선공입니다.\n먼저 행동할 수 있습니다.,You go first.\nYou can take the first action.
+UI_Prepare_MGResult_Lose,당신은 후공입니다.\n상대가 먼저 행동합니다.,You go second.\nYour opponent will act first.

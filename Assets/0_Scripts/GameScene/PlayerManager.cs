@@ -13,6 +13,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	//전역 접근
 	public static PlayerManager Instance { get; private set; }
 
+	[SerializeField] private Terrain targetTerrain;
+	[SerializeField] private float heightOffset = 0.1f;
+
 	//플레이어 정보 관리용 딕셔너리(각 클라이언트마다 관리한다.)
 	private Dictionary<int, RuntimePlayerInfo> players = new();
 	//읽기 전용 딕셔너리
@@ -32,7 +35,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	public bool succeedToPreapreGame = false;
 
 	//중복 초기화 방지 플래그
-	private bool isAlreadyInitialized;
+	private bool isAlreadyInitialized = false;
 	//MAsterClietn 에서만 사용
 	private bool AllReadyFlag = false;
 
@@ -49,6 +52,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 	public int TotalPlayerCount => players.Count;
 
+	public bool IsPrepared { get; private set; }
+	public bool IsPreparing { get; private set; }
+
 
 	private void Awake()
 	{
@@ -60,17 +66,6 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		Instance = this;
 	}
 
-
-	private void Start()
-	{
-		isAlreadyInitialized = false;
-		if (IsInitializer())
-		{
-			//게임 시작 시, 미니게임 시작
-			StickGameController.Instance.InitSticks();
-		}
-	}
-
 	private bool IsInitializer() => PhotonNetwork.IsMasterClient;
 	//private bool IsInitializer()
 	//{
@@ -80,48 +75,89 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	//	return myActor == minActor;
 	//}
 
-	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable changedProps)
+	public override void OnRoomPropertiesUpdate(
+	ExitGames.Client.Photon.Hashtable changedProps)
 	{
-		if (changedProps.ContainsKey("TurnInfo") && isAlreadyInitialized == false)
+		if (!PhotonNetwork.IsMasterClient)
 		{
-			isAlreadyInitialized = true;
-			UploadTurnInfoPropertyToRoom();
-			StartCoroutine(PrepareStartGame());
+			return;
+		}
+
+		bool aiReadyChanged = false;
+
+		foreach (object keyObject in changedProps.Keys)
+		{
+			if (keyObject is not string key)
+			{
+				continue;
+			}
+
+			if (key.StartsWith(
+					$"{PlayerPropKeys.IsReady}_",
+					StringComparison.Ordinal))
+			{
+				aiReadyChanged = true;
+				break;
+			}
+		}
+
+		if (aiReadyChanged)
+		{
+			StartMainGameWhenAllReady();
 		}
 	}
+
+	public void BeginPrepareStartGame()
+	{
+		if (IsPrepared || IsPreparing) return;
+
+		if (!PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom == null) return;
+
+		if (!PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey("TurnInfo"))
+			return;
+
+		IsPreparing = true;
+		StartCoroutine(PrepareStartGame());
+	}
+
+	private void StartMainGameWhenAllReady()
+	{
+		if (!PhotonNetwork.IsMasterClient || AllReadyFlag || !AllPlayersReady()) return;
+
+		AllReadyFlag = true;
+
+		int[] turnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
+
+		int firstActor = turnOrder[0];
+
+		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
+
+		string offers = OfferAuthority.Instance.MakeOfferForTurn(firstActor, turnIndex);
+
+		var properties = new ExitGames.Client.Photon.Hashtable
+		{
+			{ RoomPropKeys.CurrentTurn, 0 },
+			{ RoomPropKeys.CurrentTurnActor, firstActor },
+			{ ItemPropKeys.OFFER(firstActor), offers ?? "" },
+			{ GameStartRoomKeys.Phase, (byte)GameStartPhase.TurnResult},
+			{ GameStartRoomKeys.PhaseStartTime, PhotonNetwork.Time},
+			{ GameStartRoomKeys.PhaseDuration, 3d}
+		};
+
+		PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
+		TurnManager.Instance.setOfferGeneratedFromOutsied(true);
+	}
+
 
 	//플레이어 프로퍼티 감지
 	//모든 플레이어들이 준비가 되었는지 확인하기 위한 함수
 	public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
 	{
-		if (!IsInitializer()) return;     // 마스터만
-		if (AllReadyFlag) return;   //이미 모두 준비되었다고 감지 된 경우 아래 처리 안함
+		if (!PhotonNetwork.IsMasterClient) return;
 
-		//플레이어들의 IsReady 프로퍼티가 업데이트 된 경우
 		if (changedProps.ContainsKey(PlayerPropKeys.IsReady))
 		{
-			//모든 플레이어들이 준비 되었는지 확인
-			if (AllPlayersReady())
-			{
-				//준비 된 경우, 플래그를 설정하고
-				AllReadyFlag = true;
-
-				//첫 턴/오퍼를 "원자적으로" 세팅
-				int[] turnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
-				int firstActor = turnOrder[0];
-				int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
-				string offers = OfferAuthority.Instance.MakeOfferForTurn(firstActor, turnIndex);
-				//프로퍼티 한 번에 업데이트
-				var ht = new ExitGames.Client.Photon.Hashtable
-			{
-				{ RoomPropKeys.CurrentTurn, 0 },
-				{ RoomPropKeys.CurrentTurnActor, firstActor },
-				{ ItemPropKeys.OFFER(firstActor), offers ?? "" },
-			};
-				PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
-				//UI 처리를 위한 함수 호출
-				TurnManager.Instance.setOfferGeneratedFromOutsied(true);
-			}
+			StartMainGameWhenAllReady();
 		}
 	}
 
@@ -161,8 +197,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 	private IEnumerator PrepareStartGame()
 	{
-		IEnumerator handelUI = BranchUIController.Instance.FadeoutCurtain_GameStart();
-		StartCoroutine(handelUI);
+		//IEnumerator handelUI = BranchUIController.Instance.FadeoutCurtain_GameStart();
+		//StartCoroutine(handelUI);
+		Coroutine curtainCoroutine = StartCoroutine(BranchUIController.Instance.FadeoutCurtain_GameStart());
 
 		InitPlayersInfo();
 		SpawnPlayersOnCircle();
@@ -170,9 +207,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		InitPlayerProps();
 		if (IsInitializer()) InitAIProps();
 
-		yield return handelUI;
+		yield return curtainCoroutine;
 
-		CameraSwitchManager.Instance.Branch_to_Game();
+		CameraSwitchManager.Instance.MainCameraOn();
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
 
@@ -188,9 +225,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		ib.SetPermission(spawnPlayer);
 
 		TrySpawnAI();
+		if (IsInitializer()) yield return StartCoroutine(WaitForAIInitialization());
 
-
-		CameraSwitchManager.Instance.Off_ExceptPlayerCam();
+		//CameraSwitchManager.Instance.Off_ExceptPlayerCam();
 
 		GameCanvasController.Instance.gameObject.SetActive(true);
 		GameCanvasController.Instance.UpdateDayText();
@@ -199,8 +236,13 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
 
+		IsPreparing = false;
+		IsPrepared = true;
 		//AI에서 사용될 플래그, AI 모드에선 MasterClient만 해당 코드를 수행하므로, 별도의 처리 없이 그냥 플래그 초기화
 		succeedToPreapreGame = true;
+
+		//모든 프로퍼티가 준비 완료된 경우
+		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.IsReady, true);
 	}
 
 	//Masterclient가(즉 싱글 모드의 로컬 플레이어) AI 스폰 수행
@@ -215,6 +257,8 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 			if (p == null)
 			{
+				if (AIPlayerObj.TryGetValue(rp.actorNumber, out GameObject existingAI) && existingAI != null) continue;
+
 				object[] initData = new object[1] { rp.actorNumber };
 				//int aiActNum = rp.actorNumber;
 				int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
@@ -249,6 +293,57 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 				ai.aiBrain.InventoryManager.AIInv = spawnAIInv.GetComponent<WorldInventory>();
 			}
 		}
+	}
+
+	private IEnumerator WaitForAIInitialization()
+	{
+		if (!PhotonNetwork.IsMasterClient || !GameManager.Instance.isSoloPlay) yield break; ;
+
+		yield return null;
+
+		float timeout = 5f;
+		float elapsed = 0f;
+
+		while (elapsed < timeout)
+		{
+			bool allAIReady = true;
+
+			foreach (RuntimePlayerInfo runtimePlayer in players.Values)
+			{
+				int actorNum = runtimePlayer.actorNumber;
+
+				Player photonPlayer = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
+
+				if (photonPlayer != null) continue;
+
+				if (!AIPlayerObj.TryGetValue(actorNum, out GameObject aiObject) || aiObject == null)
+				{
+					allAIReady = false;
+					break;
+				}
+
+				AIController aIController = aiObject.GetComponent<AIController>();
+
+				if (aIController == null || aIController.aiBrain == null || aIController.aiBrain.InventoryManager == null
+				|| aIController.aiBrain.InventoryManager.AIInv == null)
+				{
+					allAIReady = false;
+					break;
+				}
+			}
+
+			if (allAIReady)
+			{
+				MarkAIPlayersReady();
+				yield break;
+			}
+
+			elapsed += Time.deltaTime;
+			yield return null;
+		}
+
+		Debug.LogError(
+		"[PlayerManager] AI 초기화 대기 시간이 초과되었습니다.");
 	}
 
 	//미니게임으로부터 turn 순서가 정해지면, 해당 정보 기반으로 플레이어 정보 채워넣을 예정
@@ -331,6 +426,8 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		spawnRot = new Quaternion[players.Count];
 		spawnInvRot = new Quaternion[players.Count];
 
+		if (targetTerrain == null) return;
+
 		float ang = 360 / (float)players.Count;
 
 		for (int i = 0; i < players.Count; i++)
@@ -338,26 +435,34 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			float angle = 2f * Mathf.PI * i / players.Count;
 
 			//플레이어 스폰 위치 계산
-			Vector3 offset = new Vector3(
+			Vector3 offset = CenterObject.position + new Vector3(
 				Mathf.Cos(angle) * radius,
 				0f,
 				Mathf.Sin(angle) * radius);
 
-			Vector3 hit_offset = new Vector3(
+			float terrainHeight = targetTerrain.SampleHeight(offset) + targetTerrain.transform.position.y;
+			offset.y = terrainHeight + heightOffset;
+
+			Vector3 hit_offset = CenterObject.position + new Vector3(
 				Mathf.Cos(angle) * hit_radius,
 				0f,
 				Mathf.Sin(angle) * hit_radius);
+			terrainHeight = targetTerrain.SampleHeight(hit_offset) + targetTerrain.transform.position.y;
+			hit_offset.y = terrainHeight + heightOffset;
 
 
 			//플레이어 인벤토리 스폰 위치 계산
-			Vector3 InvOffset = new Vector3(
+			Vector3 InvOffset = CenterObject.position + new Vector3(
 				Mathf.Cos(angle) * InvRadius,
 				0f,
 				Mathf.Sin(angle) * InvRadius);
 
-			spawnPos[i] = offset + CenterObject.position;
-			hitPos[i] = hit_offset + CenterObject.position;
-			spawnInvPos[i] = InvOffset + CenterObject.position;
+			terrainHeight = targetTerrain.SampleHeight(InvOffset) + targetTerrain.transform.position.y;
+			InvOffset.y = terrainHeight;
+
+			spawnPos[i] = offset;
+			hitPos[i] = hit_offset;
+			spawnInvPos[i] = InvOffset;
 			spawnRot[i] = Quaternion.LookRotation(CenterObject.position - spawnPos[i]);
 			spawnInvRot[i] = Quaternion.Euler(0f, (180f + (ang * i)) % 360f, 0f);
 		}
@@ -414,9 +519,6 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			{ItemPropKeys.LEGENDARY_RATE(player.ActorNumber), roomSetting.legendary_reduction_rate},
 		};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(rt);
-
-		//모든 프로퍼티가 준비 완료된 경우
-		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.IsReady, true);
 
 		Debug.Log("Init Player Props Success");
 	}
@@ -478,10 +580,29 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 				PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
 			}
 			//AI 플레이어도 Ready 됨을 명시하고, 해당 프로퍼티는 RoomProp에 저장되므로 따로 확인 함수를 호출해줘야 한다.
-			PhotonPropertyHelper.SetRoomProp($"{PlayerPropKeys.IsReady}_{rp.actorNumber}", true);
-			InitPlayerPropsInStartGame();
+			//PhotonPropertyHelper.SetRoomProp($"{PlayerPropKeys.IsReady}_{rp.actorNumber}", true);
+			//InitPlayerPropsInStartGame();
 		}
 
+	}
+
+	private void MarkAIPlayersReady()
+	{
+		if (!PhotonNetwork.IsMasterClient || !GameManager.Instance.isSoloPlay) return;
+
+		var readyProperties = new ExitGames.Client.Photon.Hashtable();
+
+		foreach (RuntimePlayerInfo runtimePlayer in players.Values)
+		{
+			int actorNum = runtimePlayer.actorNumber;
+			Player photonPlayer = PhotonNetwork.CurrentRoom.GetPlayer(actorNum);
+
+			if (photonPlayer != null) continue;
+
+			readyProperties[$"{PlayerPropKeys.IsReady}_{actorNum}"] = true;
+		}
+
+		if (readyProperties.Count > 0) PhotonNetwork.CurrentRoom.SetCustomProperties(readyProperties);
 	}
 
 	//모든 플레이어의 프로퍼티가 초기화 되었는지 확인

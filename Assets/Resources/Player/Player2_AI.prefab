@@ -1564,7 +1564,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AINevMeshController
   wayPointData: {fileID: 11400000, guid: 04a6ec45e289ce04ab46b084ff95ffff, type: 2}
   rotationSpeed: 10
-  agent: {fileID: 0}
+  agent: {fileID: -9051022522488421207}
 --- !u!114 &919099234606160331
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using Photon.Pun;
 using Potan.CoreUtils;
 using UnityEngine;
@@ -56,6 +57,10 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     [Tooltip("How far in degrees can you move the camera down")]
     public float BottomClamp = -90.0f;//아래쪽 카메라 회전 제한
+
+    [Header("Terrain Position")]
+    [SerializeField] private Terrain targetTerrain;
+    [SerializeField] private float terrainHeightOffset = 0.05f;
 
     //input system 관련 파라미터
     private Vector2 moveInput;
@@ -335,14 +340,14 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         //플레이어 카메라를 끄고
         cam.enabled = false;
         //메인 카메라 켜기
-        CameraSwitchManager.Instance.GameCameraToggle(true);
+        //CameraSwitchManager.Instance.GameCameraToggle(true);
     }
 
     //마을 업그레이드가 끝나면 실행될 함수
     public void VillageUpgradePhaseOut()
     {
         //메인 카메라 끄고
-        CameraSwitchManager.Instance.GameCameraToggle(false);
+        //CameraSwitchManager.Instance.GameCameraToggle(false);
         //플레이어 카메라 켜기
         cam.enabled = true;
     }
@@ -517,14 +522,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             WhileAnimation = true; // 차징 중 움직임 잠금
             SetInputLocked(true); // 상호작용 즉시 입력/속도 잠금 (슬라이딩 방지)
 
-            characterController.enabled = false;
-            Vector3 dirToTree = (TreeStatus.Instance.transform.position - transform.position).normalized;
-            Vector3 properPos = TreeStatus.Instance.transform.position - dirToTree * properDistanceToTree;
-            transform.position = properPos;
-
-            dirToTree.y = 0f;
-            transform.rotation = Quaternion.LookRotation(dirToTree);
-            characterController.enabled = true;
+            MoveToTreeAttackPosition();
 
             PlayerCanvasController.Instance.SetHitTextUnActive();
             PlayerCanvasController.Instance.OpenGauge();
@@ -632,12 +630,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             //타이머 중지
             TimeManager.instance.AbortTurnTimer();
 
-            characterController.enabled = false;
-            // 적절한 거리로 나무와의 위치 조정
-            Vector3 dirToTree = (TreeStatus.Instance.transform.position - transform.position).normalized;
-            Vector3 properPos = TreeStatus.Instance.transform.position - dirToTree * properDistanceToTree;
-            transform.position = properPos;
-            characterController.enabled = true;
+            MoveToTreeAttackPosition();
         }
         //Offer 패널 접근 막기
         ItemOfferCanvasController.instance.Close();
@@ -702,6 +695,72 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
             PlayerCanvasController.Instance.CloseGauge();
         }
+    }
+
+    private bool TryGetTreeAttackPosition(out Vector3 targetPosition, out Quaternion targetRotation)
+    {
+        targetPosition = transform.position;
+        targetRotation = transform.rotation;
+
+        if (TreeStatus.Instance == null)
+        {
+            Debug.LogError("[PlayerController] TreeStatus.Instance가 없습니다.");
+            return false;
+        }
+
+        if (targetTerrain == null)
+        {
+            targetTerrain = Terrain.activeTerrain;
+        }
+
+        if (targetTerrain == null)
+        {
+            Debug.LogError("[PlayerController] Target Terrain이 지정되지 않았습니다.");
+            return false;
+        }
+
+        Vector3 treePosition = TreeStatus.Instance.transform.position;
+        Vector3 directionFromTree = transform.position - treePosition;
+
+        directionFromTree.y = 0f;
+
+        if (directionFromTree.sqrMagnitude < 0.001f)
+        {
+            directionFromTree = -transform.forward;
+            directionFromTree.y = 0f;
+        }
+
+        directionFromTree.Normalize();
+
+        targetPosition = treePosition + directionFromTree * properDistanceToTree;
+
+        float terrainHeight = targetTerrain.SampleHeight(targetPosition) + targetTerrain.transform.position.y;
+        targetPosition.y = terrainHeight + terrainHeightOffset;
+
+        Vector3 lookDirection = treePosition - targetPosition;
+
+        lookDirection.y = 0f;
+
+        if (lookDirection.sqrMagnitude > 0.001f)
+        {
+            targetRotation = Quaternion.LookRotation(lookDirection.normalized);
+        }
+        return true;
+    }
+
+    private void MoveToTreeAttackPosition()
+    {
+        if (!TryGetTreeAttackPosition(out Vector3 targetPosition, out Quaternion targetRotation)) return;
+
+        bool wasControllerEnabled = characterController != null && characterController.enabled;
+
+        if (wasControllerEnabled) characterController.enabled = false;
+
+        transform.SetPositionAndRotation(targetPosition, targetRotation);
+
+        if (wasControllerEnabled) characterController.enabled = true;
+
+        velocity.y = -2f;
     }
 
     //회전 관련 코드 실행

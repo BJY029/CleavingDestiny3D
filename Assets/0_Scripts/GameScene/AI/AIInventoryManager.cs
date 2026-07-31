@@ -7,7 +7,7 @@ using System.Collections.Generic;
 public class AIInventoryManager : AILogicModule
 {
     [HideInInspector]
-    public WorldInventory AIInv { private get; set; }
+    public WorldInventory AIInv { get; set; }
 
     [Header("AI 아이템 사용 설정을 위한 점수표")]
     public AIItemScoreTableSO scoreTable;

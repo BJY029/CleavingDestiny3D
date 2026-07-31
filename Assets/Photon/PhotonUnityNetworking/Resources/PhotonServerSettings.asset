@@ -128,7 +128,8 @@ MonoBehaviour:
   - RPC_UseNewDrugItem
   - RPC_ToggleNewDrugPosition
   - RPC_OffNewDrug
-  - RPC_SetHitReady
+  - RPC_SetWeatherAsTime
+  - RPC_PlayTimeFlow
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
