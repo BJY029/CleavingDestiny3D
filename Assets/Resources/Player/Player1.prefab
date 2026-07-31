@@ -218,6 +218,8 @@ MonoBehaviour:
   mouseSensitivity: 0.1
   TopClamp: 35
   BottomClamp: -80
+  targetTerrain: {fileID: 0}
+  terrainHeightOffset: 0.05
   isGrounded: 0
   RayDistance: 5
   RayMultiplyer: 0
@@ -242,13 +244,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
   animator: {fileID: 3710110911519245321}
   firstPersonTweenAnimator: {fileID: 1440401903125089869}
-  axeSwayTransform: {fileID: 0}
-  rotSwayMultiplier: 1
-  rotMaxSway: 15
-  rotSmoothStep: 4
-  posSwayMultiplier: 0.005
-  posMaxSway: 0.05
-  posSmoothStep: 6
   playerCamera: {fileID: 999088748535264078}
   shakeStrength: 0.5
   shakeDuration: 0.3
@@ -265,6 +260,7 @@ MonoBehaviour:
   leftHandWeight: 1
   enableIK: 1
   isAI: 0
+  playerHitSoundDelay: 0.35
 --- !u!114 &-1081810206017964554
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -791,6 +787,7 @@ GameObject:
   - component: {fileID: 8770736010707431121}
   - component: {fileID: 999088748535264078}
   - component: {fileID: 2681575029477129177}
+  - component: {fileID: 3488950522481917145}
   m_Layer: 9
   m_Name: Camera
   m_TagString: Untagged
@@ -908,6 +905,14 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!81 &3488950522481917145
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2149352489403332841}
+  m_Enabled: 1
 --- !u!1 &2242180302259284903
 GameObject:
   m_ObjectHideFlags: 0

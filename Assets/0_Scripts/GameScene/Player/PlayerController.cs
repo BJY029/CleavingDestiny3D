@@ -147,7 +147,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         {
             //해당 플레이어의 카메라를 끈다.
             if (_mainCamera != null) _mainCamera.SetActive(false); // 원격 카메라 끄기
-            enabled = true; // Update에서 조기 return 될 거라 스크립트는 켬
 
             if (firstPersonObjects != null)
             {
