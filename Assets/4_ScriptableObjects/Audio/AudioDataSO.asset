@@ -13,8 +13,13 @@ MonoBehaviour:
   m_Name: AudioDataSO
   m_EditorClassIdentifier: Assembly-CSharp::CD3D.Audio.AudioDataSO
   audioDatas:
-  - id: HitWood
+  - id: hit_wood
     clip: {fileID: 8300000, guid: df7c7f632d851a54289dc9e9d2ccf738, type: 3}
     volume: 1
     pitch: 1
     is3D: 1
+  - id: ui_button
+    clip: {fileID: 8300000, guid: d01cf0ef07f3a3f4bb836189cfa75328, type: 3}
+    volume: 0.4
+    pitch: 1
+    is3D: 0

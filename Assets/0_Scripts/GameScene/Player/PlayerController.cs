@@ -117,6 +117,9 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         return InvAdmissionTicket;
     }
 
+    [Header("First Person Visual Settings")]
+    [SerializeField] private GameObject[] characterModelObjects; // 캐릭터 몸체 모델 오브젝트 (1인칭 시 그림자 전용 처리)
+
     private void Awake()
     {
         //애니메이션 컨트롤러 할당
@@ -144,7 +147,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         {
             //해당 플레이어의 카메라를 끈다.
             if (_mainCamera != null) _mainCamera.SetActive(false); // 원격 카메라 끄기
-            enabled = true; // Update에서 조기 return 될 거라 스크립트는 켬
 
             if (firstPersonObjects != null)
             {
@@ -155,9 +157,13 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         // 이후부터는 로컬 플레이어만 실행하는 코드
 
-        // 본체만 숨기고 그림자는 남기도록 설정
-        SetShadowsOnlyRecursively(gameObject, firstPersonObjects);
-        firstPersonObjects.SetActive(true); //1인칭 오브젝트 켜기
+        // 캐릭터 본체 모델만 숨기고 그림자는 남김 (휴머노이드 손 축에 별도로 붙은 도끼는 렌더링 유지)
+        HideCharacterModelBody();
+
+        if (firstPersonObjects != null)
+        {
+            DisableFirstPersonRenderersOnly(firstPersonObjects); // 1인칭 카메라 등 제외 1인칭 레거시 렌더러 비활성화
+        }
 
         cam = _mainCamera.GetComponent<Camera>();
         CameraSwitchManager.Instance.RegisterPlayerCamera(cam);
@@ -168,6 +174,49 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         WhileAnimation = false;
         RayMultiplyer = 1;
     }
+
+    private void HideCharacterModelBody()
+    {
+        if (characterModelObjects != null)
+        {
+            // 지정된 캐릭터 본체 모델의 렌더러만 ShadowsOnly로 처리
+            foreach (var model in characterModelObjects)
+            {
+                SetShadowsOnlyRecursively(model);
+            }
+        }
+        else
+        {
+            // 미지정 시 캐릭터 SkinnedMeshRenderer (몸체) 메쉬만 ShadowsOnly 처리
+            var renderers = GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            foreach (var r in renderers)
+            {
+                if (r != null && (firstPersonObjects == null || !r.transform.IsChildOf(firstPersonObjects.transform)))
+                {
+                    // 도끼(MeshRenderer나 Axe이름)가 아닌 스킨드 메쉬 본체만 그림자 전용 설정
+                    if (!r.name.ToLower().Contains("axe") && !r.name.ToLower().Contains("weapon"))
+                    {
+                        r.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                    }
+                }
+            }
+        }
+    }
+
+    private void DisableFirstPersonRenderersOnly(GameObject root)
+    {
+        if (root == null) return;
+        root.SetActive(true); // 카메라는 작동해야 하므로 오브젝트는 활성화 유지
+
+        // 자식 오브젝트들의 Renderer만 비활성화하여 1인칭 전용 도끼/손 메쉬만 숨김
+        var renderers = root.GetComponentsInChildren<Renderer>(true);
+        foreach (var r in renderers)
+        {
+            if (r != null) r.enabled = false;
+        }
+    }
+
+
 
     // 해당 오브젝트의 모든 자식 오브젝트들의 렌더러를 ShadowsOnly 모드로 변경하는 함수 (본인 포함)
     private void SetShadowsOnlyRecursively(GameObject obj, GameObject dismissObj = null)

@@ -26,9 +26,18 @@ public class ButtonController : MatchController
         base.Start();
 
         MatchmakingBtn.onClick.AddListener(FindMatch);
+        MatchmakingBtn.onClick.AddListener(PlayButtonClickSound);
+        
+        StopMatching.onClick.AddListener(PlayButtonClickSound);
         StopMatching.onClick.AddListener(CancelMatch);
+        
+        PlayWithAIBtn.onClick.AddListener(PlayButtonClickSound);
         PlayWithAIBtn.onClick.AddListener(StartSoloplay);
+        
+        ExitBtn.onClick.AddListener(PlayButtonClickSound);
         ExitBtn.onClick.AddListener(OnClickExitGame);
+        
+        OptionBtn.onClick.AddListener(PlayButtonClickSound);
         OptionBtn.onClick.AddListener(OnClickOption);
 
         if (LoadingPanel != null)
@@ -39,13 +48,18 @@ public class ButtonController : MatchController
         Debug.Log("[ButtonController] 리스너 등록 완료 및 버튼 임시 비활성화 처리됨.");
     }
 
+    private void PlayButtonClickSound()
+    {
+        AudioManager.Instance.PlaySfx2D("ui_button");
+    }
+
     public void SetButtonsInteractable(bool state)
     {
         if (MatchmakingBtn != null) MatchmakingBtn.interactable = state;
         if (PlayWithAIBtn != null) PlayWithAIBtn.interactable = state;
     }
 
-    void OnClickExitGame()
+    private void OnClickExitGame()
     {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -54,7 +68,7 @@ public class ButtonController : MatchController
 #endif
     }
 
-    void OnClickOption()
+    private void OnClickOption()
     {
         OptionManager.Instance.SetOptionMenu(true);
     }
