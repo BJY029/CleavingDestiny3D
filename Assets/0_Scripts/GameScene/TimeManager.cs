@@ -283,9 +283,9 @@ public class TimeManager : MonoBehaviourPunCallbacks
         //FadeOut
         await FadeCanvas.Instance.FadeOutAsync(1f);
 
-        //턴 넘기기 시도
+        // 턴 넘기기 시도 (준비 모션 -> 풀게이지 타격 자동 수행)
         if (pc != null)
-            pc.TryHit(true);
+            pc.AutoTriggerFullGaugeStrike();
 
         ForceToHit = false;
     }
