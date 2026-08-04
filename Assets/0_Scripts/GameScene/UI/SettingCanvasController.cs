@@ -1,3 +1,4 @@
+using Option;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,7 +16,7 @@ public class SettingCanvasController : MonoBehaviour
             return;
         }
 
-        Background.GetComponent<RectTransform>().localScale = Vector3.one;
+        Background.transform.localScale = Vector3.one;
         Background?.SetActive(false);
     }
 
@@ -24,6 +25,8 @@ public class SettingCanvasController : MonoBehaviour
 
     [Header("Buttons")]
     public Button CloseBtn;
+
+    public Button OptionBtn;
     public Button QuitGameBtn;
     public Button LobbyBtn;
 
@@ -35,6 +38,12 @@ public class SettingCanvasController : MonoBehaviour
         CloseBtn.onClick.AddListener(ToggleSettingPanel);
         LobbyBtn.onClick.AddListener(GameExitHandler.Instance.RequestLeaveGame);
         QuitGameBtn.onClick.AddListener(OnClickExitGame);
+        OptionBtn.onClick.AddListener(OnClickOption);
+    }
+
+    private void OnClickOption()
+    {
+        OptionManager.Instance.SetOptionMenu(true);
     }
 
     void OnClickExitGame()
@@ -60,6 +69,11 @@ public class SettingCanvasController : MonoBehaviour
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            
+            if (OptionManager.Instance.IsOptionMenuActive())
+            {
+                OptionManager.Instance.SetOptionMenu(false);
+            }
         }
     }
 
