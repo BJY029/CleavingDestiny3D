@@ -19,12 +19,12 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 		{
 			PhotonNetwork.OfflineMode = false;
 		}
-		
+
 		if (GameManager.Instance != null)
 		{
 			GameManager.Instance.isSoloPlay = false;
 		}
-		
+
 		Connect();
 		Application.runInBackground = true;
 	}
@@ -54,7 +54,7 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 
 		// 3. 아예 연결이 완전히 끊긴 상태인 경우 (Disconnected) -> 재접속 프로세스 작동
 		LobbyUIManager.instance.setConnectedText("Disconnected. Reconnecting...");
-		
+
 		PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = "kr";
 		PhotonNetwork.GameVersion = gameVersion;
 		PhotonNetwork.ConnectUsingSettings();
@@ -111,8 +111,8 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 	public override void OnDisconnected(DisconnectCause cause)
 	{
 		// 솔로 모드 시작 중이거나, 오프라인 모드 상태이거나, 이미 솔로 플레이 중이라면 온라인 재접속 하지 않음
-		if (MatchController.IsStartingSoloGlobal || 
-			PhotonNetwork.OfflineMode || 
+		if (MatchController.IsStartingSoloGlobal ||
+			PhotonNetwork.OfflineMode ||
 			(GameManager.Instance != null && GameManager.Instance.isSoloPlay))
 		{
 			Debug.Log("[LobbyConnectController] 솔로 모드(오프라인) 상태이므로 온라인 재접속을 수행하지 않습니다.");
@@ -126,7 +126,7 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 		{
 			ButtonController.Instance.SetButtonsInteractable(false);
 		}
-		
+
 		PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = "kr";
 		PhotonNetwork.GameVersion = gameVersion;
 		PhotonNetwork.ConnectUsingSettings();

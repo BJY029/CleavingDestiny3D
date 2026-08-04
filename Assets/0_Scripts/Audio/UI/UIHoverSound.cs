@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public class UIHoverSound : MonoBehaviour, IPointerEnterHandler
@@ -10,6 +11,7 @@ public class UIHoverSound : MonoBehaviour, IPointerEnterHandler
 
     public void OnPointerEnter(PointerEventData eventData)
     {
+        if (!GetComponent<Button>().IsInteractable()) return;
         if (Time.unscaledTime - _lastPlayTime < cooldown) return;
 
         _lastPlayTime = Time.unscaledTime;

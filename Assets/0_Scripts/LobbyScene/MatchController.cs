@@ -219,6 +219,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 
 			// 로딩 UI만 표시 (포톤 LoadLevel로 씬 전환이 전파되며 씬 로드 완료 시 자동 해제됨)
 			SceneLoader.Instance.ShowLoadingUI();
+			AudioManager.Instance.PlaySfx2D("Match_Con");
 			//씬 전환 코루틴 시작
 			StartCoroutine(StopTimerAndFinalizeMatch());
 		}

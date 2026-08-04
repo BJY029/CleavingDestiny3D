@@ -15,21 +15,73 @@ MonoBehaviour:
   audioDatas:
   - id: hit_wood
     clip: {fileID: 8300000, guid: df7c7f632d851a54289dc9e9d2ccf738, type: 3}
+    randomClips: []
+    useRandomClip: 0
     volume: 1
     pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
     is3D: 1
   - id: ui_button
     clip: {fileID: 8300000, guid: d01cf0ef07f3a3f4bb836189cfa75328, type: 3}
+    randomClips: []
+    useRandomClip: 0
     volume: 0.4
     pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
     is3D: 0
   - id: UI_Hover
     clip: {fileID: 8300000, guid: 6b211cd82de849e4b9a82e8f93c20a55, type: 3}
+    randomClips: []
+    useRandomClip: 0
     volume: 1
     pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
     is3D: 0
   - id: UI_Toggle
     clip: {fileID: 8300000, guid: c344ccc28eacc5e4796b30d95f172e25, type: 3}
+    randomClips: []
+    useRandomClip: 0
     volume: 1
     pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
+    is3D: 0
+  - id: Lobby_BGM
+    clip: {fileID: 8300000, guid: bfc23003d8b99d742a36423f5517d9fc, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
+    is3D: 0
+  - id: Match_Con
+    clip: {fileID: 8300000, guid: 54ca0552cb5bbab42939d7f4c71d986c, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
+    is3D: 0
+  - id: Map_Intro
+    clip: {fileID: 8300000, guid: 616f43ca9f2f2b242b11ac7a88f8b767, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
+    is3D: 0
+  - id: Turn_Result
+    clip: {fileID: 8300000, guid: f97a365a2b6e5264597bf624ecf3ccd9, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
     is3D: 0

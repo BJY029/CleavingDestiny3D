@@ -269,6 +269,7 @@ public class GameStarter : MonoBehaviourPunCallbacks
         {
             case GameStartPhase.MapIntroduction:
                 EnterMapIntroduction();
+                AudioManager.Instance.PlaySfx2D("Map_Intro");
                 break;
             case GameStartPhase.TurnSelection:
                 EnterTurnSelection();
@@ -277,6 +278,7 @@ public class GameStarter : MonoBehaviourPunCallbacks
                 EnterPlayerPreparation();
                 break;
             case GameStartPhase.TurnResult:
+                AudioManager.Instance.PlaySfx2D("Turn_Result");
                 EnterTurnResult();
                 break;
             case GameStartPhase.MainGame:

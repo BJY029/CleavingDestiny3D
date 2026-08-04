@@ -1,23 +1,37 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
+using UnityEngine;
+using Random = UnityEngine.Random;
 
 [System.Serializable]
 public struct AudioData
 {
     [Tooltip("오디오 재생에 사용할 키(ID) 값입니다.")]
     public string id;
-    
+
     [Tooltip("재생할 오디오 클립입니다.")]
     public AudioClip clip;
-    
+
+    [Tooltip("랜덤 재생 후보로 사용할 추가 오디오 클립입니다.")]
+    public AudioClip[] randomClips;
+
+    [Tooltip("기본 클립과 추가 클립 중 하나를 랜덤으로 선택합니다.")]
+    public bool useRandomClip;
+
     [Range(0f, 1f)]
     [Tooltip("기본 볼륨 설정입니다.")]
     public float volume;
-    
+
     [Range(0.1f, 3f)]
     [Tooltip("기본 피치 설정입니다.")]
     public float pitch;
-    
+
+    [Tooltip("피치를 범위 내에서 랜덤하게 설정합니다.")]
+    public bool useRandomPitch;
+
+    [Tooltip("X는 최소 피치, Y는 최대 피치입니다.")]
+    public Vector2 pitchRange;
+
     [Tooltip("3D 공간 음향 적용 여부입니다.")]
     public bool is3D;
 }
