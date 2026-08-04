@@ -34,6 +34,60 @@ public struct AudioData
 
     [Tooltip("3D 공간 음향 적용 여부입니다.")]
     public bool is3D;
+
+    public AudioData GetRandomizedData()
+    {
+        AudioData result = this;
+        if (useRandomClip) result.clip = GetRandomClip();
+
+        if (useRandomPitch) result.pitch = GetRandomValue(pitchRange, 0.1f, 3f);
+
+        return result;
+    }
+
+    private AudioClip GetRandomClip()
+    {
+        int vaildClipCount = clip != null ? 1 : 0;
+
+        if (randomClips != null)
+        {
+            foreach (AudioClip randomClip in randomClips)
+            {
+                if (randomClip != null)
+                    vaildClipCount++;
+            }
+        }
+
+        if (vaildClipCount == 0) return null;
+
+        int targetIndex = Random.Range(0, vaildClipCount);
+        int curIdx = 0;
+
+        if (clip != null)
+        {
+            if (curIdx == targetIndex) return clip;
+            curIdx++;
+        }
+
+        if (randomClips != null)
+        {
+            foreach (AudioClip randomClip in randomClips)
+            {
+                if (randomClip == null) continue;
+                if (curIdx == targetIndex) return randomClip;
+                curIdx++;
+            }
+        }
+        return clip;
+    }
+
+    private static float GetRandomValue(Vector2 range, float minimumLimit, float maximumLimit)
+    {
+        float min = Mathf.Clamp(Mathf.Min(range.x, range.y), minimumLimit, maximumLimit);
+        float max = Mathf.Clamp(Mathf.Max(range.x, range.y), minimumLimit, maximumLimit);
+
+        return Random.Range(min, max);
+    }
 }
 
 [CreateAssetMenu(fileName = "AudioDataSO", menuName = "Audio/AudioDataSO", order = 0)]
@@ -71,7 +125,18 @@ public class AudioDataSO : ScriptableObject
     /// </summary>
     public bool TryGetAudioData(string id, out AudioData data)
     {
-        if (_audioCache == null) Initialize();
-        return _audioCache.TryGetValue(id, out data);
+        data = default;
+
+        if (string.IsNullOrWhiteSpace(id))
+            return false;
+
+        if (_audioCache == null)
+            Initialize();
+
+        if (!_audioCache.TryGetValue(id, out AudioData cachedData))
+            return false;
+
+        data = cachedData.GetRandomizedData();
+        return true;
     }
 }
