@@ -50,10 +50,10 @@ MonoBehaviour:
     pitchRange: {x: 0, y: 0}
     is3D: 0
   - id: Lobby_BGM
-    clip: {fileID: 8300000, guid: bfc23003d8b99d742a36423f5517d9fc, type: 3}
+    clip: {fileID: 8300000, guid: bad7bd3f689416e4993291389491271f, type: 3}
     randomClips: []
     useRandomClip: 0
-    volume: 0.1
+    volume: 0.2
     pitch: 1
     useRandomPitch: 0
     pitchRange: {x: 0, y: 0}
@@ -104,5 +104,23 @@ MonoBehaviour:
     volume: 1
     pitch: 1
     useRandomPitch: 1
+    pitchRange: {x: 0.95, y: 1.05}
+    is3D: 0
+  - id: Village_Peaceful_BGM
+    clip: {fileID: 8300000, guid: 76f4074aa3ab5cf4096579a4e81dc9fd, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.2
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Game_Default_BGM
+    clip: {fileID: 8300000, guid: de4a0329e21a729429d9d000d7e65dc0, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.2
+    pitch: 1
+    useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0

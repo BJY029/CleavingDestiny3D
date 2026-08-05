@@ -125,6 +125,8 @@ public class StickGameController : MonoBehaviourPunCallbacks
         playerCount = PhotonNetwork.PlayerList.Length;
     }
 
+    private int _lastTickSec = -1;
+
     private void Update()
     {
         if (!phaseActive || localResolved || !isUpdatedTimer || PhotonNetwork.CurrentRoom == null) return;
@@ -141,6 +143,17 @@ public class StickGameController : MonoBehaviourPunCallbacks
         //double endTime = selectStartTime + selectDuration;
         double remain = endTime - now;
         Timer.value = Mathf.Clamp01((float)(remain / selectDuration));
+
+        int remainSec = Mathf.Max(0, Mathf.CeilToInt((float)remain));
+
+        if (remainSec > 0 && remainSec != _lastTickSec)
+        {
+            _lastTickSec = remainSec;
+            if (remainSec > 5)
+                AudioManager.Instance.PlaySfx2D("Time_Onetick");
+            else
+                AudioManager.Instance.PlaySfx2D("Time_Ticks");
+        }
 
         bool allPlayerSelected = AreAllPlayerSelected(properties);
 
