@@ -41,6 +41,9 @@ UI_Exit_Resume,계속하기,Resume
 UI_Exit_Option,옵션,Options
 UI_Exit_Lobby,로비로 나가기,Back To Lobby
 UI_Exit_Game,게임 나가기,Quit Game
+UI_Exit_Warning,진행 중인 게임을 포기하고 항복하시겠습니까?,Surrender and forfeit the match?
+UI_Exit_Warning_Exit,항복하고 나가기,Surrender & Leave
+UI_Exit_Warning_Cancel,계속하기,Resume Match
 UI_Load_ReturningToLobby,로비로 복귀중,Returning to Lobby
 UI_Result_Win,승리,VICTORY
 UI_Result_Loss,패배,DEFEAT
