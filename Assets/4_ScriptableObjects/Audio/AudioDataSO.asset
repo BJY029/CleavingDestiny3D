@@ -116,10 +116,54 @@ MonoBehaviour:
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
   - id: Game_Default_BGM
-    clip: {fileID: 8300000, guid: de4a0329e21a729429d9d000d7e65dc0, type: 3}
+    clip: {fileID: 8300000, guid: bfc23003d8b99d742a36423f5517d9fc, type: 3}
     randomClips: []
     useRandomClip: 0
     volume: 0.2
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Coins
+    clip: {fileID: 0}
+    randomClips:
+    - {fileID: 8300000, guid: 045880d66ba78634f99c1e8cdc85ae23, type: 3}
+    - {fileID: 8300000, guid: 8633b933bb1813b44a4b160ae0342eb8, type: 3}
+    - {fileID: 8300000, guid: fec458693a5738b44a1c6e105abdeee0, type: 3}
+    - {fileID: 8300000, guid: 881d8007ba72cee429d8cfb9363a8e84, type: 3}
+    useRandomClip: 1
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Branch_Hover
+    clip: {fileID: 8300000, guid: 52ec386dc519f4c4aa048086d2fdd4da, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Branch_Selected
+    clip: {fileID: 8300000, guid: 6dd4c370cf7c8af46a837c8c41405da8, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Hammer
+    clip: {fileID: 0}
+    randomClips:
+    - {fileID: 8300000, guid: 070b89d2c17e37b4c8d2c1c72d92a194, type: 3}
+    - {fileID: 8300000, guid: 1c7ba10a259e3a248913a91cebe30747, type: 3}
+    - {fileID: 8300000, guid: 639ebfb4a5f3d9443b43e0c6cd985858, type: 3}
+    - {fileID: 8300000, guid: 63bb562e73693924e9545ffdb9c105c9, type: 3}
+    useRandomClip: 1
+    volume: 1
     pitch: 1
     useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}

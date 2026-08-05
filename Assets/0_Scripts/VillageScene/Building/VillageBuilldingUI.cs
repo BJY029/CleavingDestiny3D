@@ -30,10 +30,10 @@ namespace Village.Building
         protected VillageType currentBuildingType;
 
         protected IVillageStatProvider VillageStat => VillageSystem.VillageStat;
-        
+
         [SerializeField] Image npcImage;
         [SerializeField] Sprite[] npcSprites;
-        
+
         public Action OnExitButtonClicked;
 
         protected virtual void Awake()
@@ -101,7 +101,7 @@ namespace Village.Building
             int currentGold = VillageSystem.VillageLogic.GetMyGold();
 
             npcImage.sprite = npcSprites[Math.Clamp(villageLevel, 0, npcSprites.Length - 1)];
-            
+
             currentGoldText.SetText("{0}", currentGold);
             UpdateUpgradeButton(nextUpgradeCost, currentGold);
         }
@@ -163,6 +163,15 @@ namespace Village.Building
             {
                 // 성공 시 현재 타입 기준으로 전체 UI를 다시 그려, 텍스트/버튼/이펙트 상태를 일관되게 유지
                 SetBuildingUI(currentBuildingType);
+                switch (currentBuildingType)
+                {
+                    case VillageType.Forge:
+                        AudioManager.Instance.PlaySfx2D("Hammer");
+                        break;
+                    default:
+                        AudioManager.Instance.PlaySfx2D("Coins");
+                        break;
+                }
             }
         }
 

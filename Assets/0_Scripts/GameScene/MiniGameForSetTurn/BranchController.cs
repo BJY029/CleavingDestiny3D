@@ -67,6 +67,8 @@ public class BranchController : MonoBehaviourPunCallbacks, IPointerEnterHandler,
 	{
 		if (isSelected) return;
 
+		AudioManager.Instance.PlaySfx2D("Branch_Hover");
+
 		//Debug.LogError("mouse in");
 		if (rend != null && highlightMat != null)
 		{
@@ -96,6 +98,7 @@ public class BranchController : MonoBehaviourPunCallbacks, IPointerEnterHandler,
 
 		//나뭇가지 선택 함수 호출
 		StickGameController.Instance.OnClickStick(myIndex);
+		AudioManager.Instance.PlaySfx2D("Branch_Selected");
 	}
 
 
