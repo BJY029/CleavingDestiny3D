@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Option;
+using Photon.Pun;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
@@ -38,6 +41,10 @@ public class SettingCanvasController : MonoBehaviour
     public Button warningYesBtn;
     public Button warningNoBtn;
     public TextMeshProUGUI warningYesBtnText;
+    
+    [Header("Player Status")]
+    public TextMeshProUGUI[] playerNameTexts;
+    public RectTransform currentTurnIndicator;
 
     private int warningStatus = 0; // 0: None, 1: Lobby, 2: Quit
 
@@ -54,6 +61,19 @@ public class SettingCanvasController : MonoBehaviour
         warningNoBtn.onClick.AddListener(OnWarningNoClick);
 
         warningPanel.gameObject.SetActive(false);
+
+        TurnManager.OnTurnActorChanged += HandleTurnActorChanged;
+    }
+
+    private void OnDestroy()
+    {
+        TurnManager.OnTurnActorChanged -= HandleTurnActorChanged;
+    }
+
+    private void HandleTurnActorChanged(int turnActorNumber)
+    {
+        Debug.Log($"[SettingCanvasController] HandleTurnActorChanged() 호출됨. turnActorNumber: {turnActorNumber}");
+        UpdateCurrentTurnIndicator(turnActorNumber);
     }
     
     private void ShowWarningPanel(int status)
@@ -127,27 +147,125 @@ public class SettingCanvasController : MonoBehaviour
     public void ToggleSettingPanel()
     {
         IsSettingPanelOpened = !IsSettingPanelOpened;
-        Background.SetActive(IsSettingPanelOpened);
         if (IsSettingPanelOpened)
         {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            OpenSettingPanel();
         }
         else
         {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            
-            if (OptionManager.Instance.IsOptionMenuActive())
+            CloseSettingPanel();
+        }
+    }
+
+    public void OpenSettingPanel()
+    {
+        IsSettingPanelOpened = true;
+        Background.SetActive(true);
+        
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        if (PlayerManager.Instance != null && PlayerManager.Instance.Players != null && PlayerManager.Instance.Players.Count > 0)
+        {
+            for (int i = 0; i < playerNameTexts.Length; i++)
             {
-                OptionManager.Instance.SetOptionMenu(false);
+                playerNameTexts[i].gameObject.SetActive(false);
+            }
+
+            foreach (var rp in PlayerManager.Instance.Players.Values)
+            {
+                if (rp.turnIdx >= 0 && rp.turnIdx < playerNameTexts.Length)
+                {
+                    playerNameTexts[rp.turnIdx].gameObject.SetActive(true);
+                    playerNameTexts[rp.turnIdx].SetText(rp.playerName);
+                }
             }
         }
+        else
+        {
+            var playerList = PhotonNetwork.PlayerList;
+            for (int i = 0; i < playerNameTexts.Length; i++)
+            {
+                if (i < playerList.Length)
+                {
+                    playerNameTexts[i].gameObject.SetActive(true);
+                    if (string.IsNullOrEmpty(playerList[i].NickName))
+                    {
+                        playerNameTexts[i].SetText("Player {0}", playerList[i].ActorNumber);
+                    }
+                    else
+                    {
+                        playerNameTexts[i].SetText(playerList[i].NickName);
+                    }
+
+                }
+                else
+                {
+                    playerNameTexts[i].gameObject.SetActive(false);
+                }
+            }
+        }
+
+        UpdateCurrentTurnIndicator();
     }
 
     public void CloseSettingPanel()
     {
-        IsSettingPanelOpened = false;
         Background.SetActive(false);
+        
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+            
+        if (OptionManager.Instance.IsOptionMenuActive())
+        {
+            OptionManager.Instance.SetOptionMenu(false);
+        }
+    }
+    
+    void SetCurrentPlayerIndicator(int playerIndex)
+    {
+        if (playerIndex < 0 || playerIndex >= playerNameTexts.Length)
+        {
+            currentTurnIndicator.gameObject.SetActive(false);
+            return;
+        }
+
+        var posTransform = playerNameTexts[playerIndex].transform as RectTransform;
+        currentTurnIndicator.gameObject.SetActive(true);
+        if (posTransform != null)
+            currentTurnIndicator.anchoredPosition = new Vector2(-75, posTransform.anchoredPosition.y);
+    }
+
+    public void UpdateCurrentTurnIndicator()
+    {
+        int turnActorNumber = GameHelper.getCurrentTurnActorNum();
+        UpdateCurrentTurnIndicator(turnActorNumber);
+    }
+
+    public void UpdateCurrentTurnIndicator(int turnActorNumber)
+    {
+        int targetIndex = -1;
+
+        if (PlayerManager.Instance != null && PlayerManager.Instance.Players != null)
+        {
+            if (PlayerManager.Instance.Players.TryGetValue(turnActorNumber, out var info))
+            {
+                targetIndex = info.turnIdx;
+            }
+        }
+        else
+        {
+            var playerList = PhotonNetwork.PlayerList;
+            for (int i = 0; i < playerList.Length; i++)
+            {
+                if (playerList[i].ActorNumber == turnActorNumber)
+                {
+                    targetIndex = i;
+                    break;
+                }
+            }
+        }
+
+        SetCurrentPlayerIndicator(targetIndex);
     }
 }
