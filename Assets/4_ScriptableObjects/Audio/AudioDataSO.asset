@@ -168,3 +168,219 @@ MonoBehaviour:
     useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
+  - id: 1000
+    clip: {fileID: 8300000, guid: edf965d40b1a48f4ab905bcaf05ddc38, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1001
+    clip: {fileID: 8300000, guid: 39ba8db0a743e0941b0363c4546f47be, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1002
+    clip: {fileID: 8300000, guid: c6247109d73ed9f4bbe1c1ebb200a6d7, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1003
+    clip: {fileID: 8300000, guid: 57ff1dbb96d990645af89f770d9a4372, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1004
+    clip: {fileID: 8300000, guid: f60447209871ce44a9c49ba520bf8458, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1005
+    clip: {fileID: 8300000, guid: 9ff5c4da2b9b22f47a44b96f25fe0e01, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1006
+    clip: {fileID: 8300000, guid: a205cfd2ec4a35a40ba5a38c4162015c, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 2000
+    clip: {fileID: 8300000, guid: 5543310da0e3fdc489394cc606a3954a, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 2001
+    clip: {fileID: 8300000, guid: e183b635e2ed96e409a78f1b6376595d, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 2002
+    clip: {fileID: 8300000, guid: cdcbe08ef00c4a244b00bc3d5891ae6b, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 2003
+    clip: {fileID: 8300000, guid: cf208f2ccfabcae4a868b5e8f9bd59a9, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 3000
+    clip: {fileID: 8300000, guid: e1a07f8c79ef7144b8a239eeec1e8f8e, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 3002
+    clip: {fileID: 8300000, guid: 78607329a0f438145b15fd8aea5934e7, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 3003
+    clip: {fileID: 8300000, guid: f1d2e8282dc4a8f4aab92660328bce53, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.7
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4000
+    clip: {fileID: 8300000, guid: 493a59bebf745bf41bad2c27f7246664, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4001
+    clip: {fileID: 8300000, guid: 827bacbd198703a4ca46221806e97d64, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4002
+    clip: {fileID: 8300000, guid: d65d9614242c1dc4db3023e2b1dac97e, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4003
+    clip: {fileID: 8300000, guid: 1af86235e9089ee49ba6f2d22698e69f, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4004
+    clip: {fileID: 8300000, guid: 9ff5c4da2b9b22f47a44b96f25fe0e01, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4005
+    clip: {fileID: 8300000, guid: bd10c5214ead6924bb224c43a93bfa2d, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.7
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4006
+    clip: {fileID: 8300000, guid: f8986d40ebe0a2048b276dfd10177d45, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4007
+    clip: {fileID: 8300000, guid: cdcbe08ef00c4a244b00bc3d5891ae6b, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4008
+    clip: {fileID: 8300000, guid: f163cfd3e4b2e7b4399b722d9cade15b, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4009
+    clip: {fileID: 8300000, guid: e32e70da6c343e74596cf6d1b80643ea, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.8
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0

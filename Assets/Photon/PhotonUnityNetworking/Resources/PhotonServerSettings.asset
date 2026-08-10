@@ -131,6 +131,7 @@ MonoBehaviour:
   - RPC_SetWeatherAsTime
   - RPC_PlayTimeFlow
   - RPC_SetHitReady
+  - PlaySFXToAllPlayer
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

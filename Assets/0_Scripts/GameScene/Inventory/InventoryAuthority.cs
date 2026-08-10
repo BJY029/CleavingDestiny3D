@@ -400,7 +400,15 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		//TODO: 아이템 효과 적용
 		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
 		ItemHandlingSystem.instance.AddItemStatusInstance(requestActor, item, uniqueId);
+		AudioManager.Instance.PlaySfx2D(item.itemId.ToString());
+		photonView.RPC(nameof(PlaySFXToAllPlayer), RpcTarget.All, item.itemId.ToString());
 		NotifyItemUsedForNewDrugMission(requestActor, item);
+	}
+
+	[PunRPC]
+	private void PlaySFXToAllPlayer(string itemId)
+	{
+		AudioManager.Instance.PlaySfx2D(itemId);
 	}
 
 	private void NotifyItemUsedForNewDrugMission(int actorNum, ItemSO usedItem)
