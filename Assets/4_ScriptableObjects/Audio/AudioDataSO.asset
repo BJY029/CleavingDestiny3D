@@ -447,3 +447,30 @@ MonoBehaviour:
     useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
+  - id: Lock_Click
+    clip: {fileID: 8300000, guid: 4442888af8fd38f4c82563ce72a01e64, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 1
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Unlock
+    clip: {fileID: 8300000, guid: 22fa0c9dabb06a94db57eea1ee5669af, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Gear
+    clip: {fileID: 8300000, guid: 048b39e279c871a48bf86d4ddadd9174, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0

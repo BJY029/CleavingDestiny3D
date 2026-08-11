@@ -120,6 +120,8 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
         SpinDirection = 1; // 방향 초기화
         SetRandomTarget(); // 첫 타겟 설정
+
+        AudioManager.Instance.PlayTemporaryBgm("Gear");
     }
 
     //체크 포인트를 랜덤 위치에 생성하는 함수
@@ -143,6 +145,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
         if (angleDiff <= SuccessAngleRange)
         {
             Debug.Log("Hit! Next Stage.");
+            AudioManager.Instance.PlaySfx2D("Lock_Click");
             HandleLocalSuccess();
         }
         else
@@ -189,6 +192,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
             photonView.RPC(nameof(RPC_NotifyUnlockSuccess), RpcTarget.MasterClient, ActNum);
 
             InitGameInfo();
+            AudioManager.Instance.PlaySfx2D("Unlock");
         }
         else
         {
@@ -216,6 +220,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
         IB = null;
         Requester = null;
         TargetBarrierOwnerActNum = -1;
+        AudioManager.Instance.RestorePreviousBgm();
     }
     //MasterClient의 최종 처리(문 열기 처리)
     [PunRPC]
