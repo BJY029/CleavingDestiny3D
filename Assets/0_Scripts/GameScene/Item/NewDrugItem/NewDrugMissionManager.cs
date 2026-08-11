@@ -238,6 +238,7 @@ public class NewDrugMissionManager : MonoBehaviourPun
         runtime.State = NewDrugMissionState.Complete;
 
         Debug.Log("[신약 개발 미션 성공] 신약 아이템 지급");
+        AudioManager.Instance.PlaySfx2D("MissionSuccess");
 
         //TODO: 보상 아이템 인벤토리에 지급
         //TODO : UI 처리
@@ -254,6 +255,7 @@ public class NewDrugMissionManager : MonoBehaviourPun
         runtime.State = NewDrugMissionState.Failed;
 
         Debug.Log("[신약 개발 미션 실패]");
+        AudioManager.Instance.PlaySfx2D("MissionFailed");
 
         //TODO : ui 처리
         Player targetPlayer = PhotonNetwork.CurrentRoom.GetPlayer(runtime.OwnerActorNumber);

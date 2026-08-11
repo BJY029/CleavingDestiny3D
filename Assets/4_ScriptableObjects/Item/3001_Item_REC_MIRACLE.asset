@@ -15,11 +15,11 @@ MonoBehaviour:
   itemId: 3001
   displayName_ID: NAME_REC_MIRACLE
   itemDesc_ID: DESC_REC_MIRACLE
-  itemCost: 5
+  itemCost: 0
   type: 2
   target: 0
   itemClass: 3
-  itemWeight: 1
+  itemWeight: 5999
   oncePerTurn: 0
   oncePerDay: 0
   oncePerGame: 0

@@ -348,15 +348,6 @@ MonoBehaviour:
     useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
-  - id: 4006
-    clip: {fileID: 8300000, guid: f8986d40ebe0a2048b276dfd10177d45, type: 3}
-    randomClips: []
-    useRandomClip: 0
-    volume: 1
-    pitch: 1
-    useRandomPitch: 0
-    pitchRange: {x: 0.9, y: 1.1}
-    is3D: 0
   - id: 4007
     clip: {fileID: 8300000, guid: cdcbe08ef00c4a244b00bc3d5891ae6b, type: 3}
     randomClips: []
@@ -380,6 +371,78 @@ MonoBehaviour:
     randomClips: []
     useRandomClip: 0
     volume: 0.8
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 5000
+    clip: {fileID: 8300000, guid: 78607329a0f438145b15fd8aea5934e7, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 3001
+    clip: {fileID: 8300000, guid: 6283ce3a6be3baf4d861c466359b1825, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: MissionSuccess
+    clip: {fileID: 8300000, guid: 85c0c091e422cde41b5c4fc7da2e9196, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: MissionFailed
+    clip: {fileID: 8300000, guid: 1e975bdb10259fb4ebf28924efebdef3, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: StartRequest
+    clip: {fileID: 8300000, guid: e6b0b8c42a227c64398bc8411743d7ea, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: GetRequest
+    clip: {fileID: 8300000, guid: e5fdf2004c077794ead4364f96252d5a, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: WoodCutting
+    clip: {fileID: 8300000, guid: 27d1c27088b00bd40aa2b52f29ce5a2f, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 1
+    pitchRange: {x: 0.95, y: 1.05}
+    is3D: 0
+  - id: Whoosh
+    clip: {fileID: 8300000, guid: 5a5f16fc5312873478c5a1bb1d795c3f, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
     pitch: 1
     useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}

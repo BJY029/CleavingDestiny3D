@@ -220,6 +220,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(requestActor);
 
 		photonView.RPC(nameof(RPC_OffNewDrug), player);
+		photonView.RPC(nameof(PlayNewDrugSFX), RpcTarget.All);
 
 		PlayerCanvasController.Instance.PopUpItemNotify(item.itemId, player);
 		string InvKey = ItemPropKeys.INV_NEWDRUG(requestActor);
@@ -253,6 +254,12 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		{
 			MyInv.ToggleNewDrugPosition(false);
 		}
+	}
+
+	[PunRPC]
+	private void PlayNewDrugSFX()
+	{
+		AudioManager.Instance.PlaySfx2D("5000");
 	}
 
 	[PunRPC]

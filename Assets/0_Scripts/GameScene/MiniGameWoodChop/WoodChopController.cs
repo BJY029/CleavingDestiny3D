@@ -399,6 +399,7 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         strikeCoroutine = null;
 
         Debug.Log($"장작 쪼개기 성공 / 다음 턴 Player {CurrentTurnActorNumber}");
+        AudioManager.Instance.PlaySfx2D("WoodCutting");
 
         if (PhotonNetwork.IsMasterClient)
         {
@@ -721,6 +722,8 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         if (!isPlaying) return;
 
         isPlaying = false;
+
+        AudioManager.Instance.PlaySfx2D("Whoosh");
 
         int winnerActorNumber = loserActorNumber == playerAActorNumber ? playerBActorNumber : playerAActorNumber;
 

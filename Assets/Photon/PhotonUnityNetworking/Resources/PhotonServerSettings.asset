@@ -132,6 +132,9 @@ MonoBehaviour:
   - RPC_PlayTimeFlow
   - RPC_SetHitReady
   - PlaySFXToAllPlayer
+  - PlayGetRequestSFX
+  - PlayStartBettingSFX
+  - PlayNewDrugSFX
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
