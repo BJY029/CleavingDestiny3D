@@ -27,9 +27,18 @@ public class AudioManager : MonoSingleton<AudioManager>
     }
 
     private readonly Stack<BgmPlaybackState> _bgmHistory = new();
+    public string PreviousBgmId
+    {
+        get
+        {
+            if (_bgmHistory.Count == 0) return null;
+            return _bgmHistory.Peek().id;
+        }
+    }
     private CancellationTokenSource _bgmTransitionCancellationTokenSource;
 
     private string _currentBgmId;
+    public string CurrentBgmId => _currentBgmId;
     private float _currentBgmBaseVolume = 1f;
 
     private readonly List<AudioSource> _audioSourcesPool = new();
@@ -131,6 +140,17 @@ public class AudioManager : MonoSingleton<AudioManager>
             BgmPlaybackState currentState = CaptureCurrentBgmState(resumePreviousPosition);
             _bgmHistory.Push(currentState);
         }
+
+        StartBgmTransition(id, data.clip, data.volume, data.pitch, 0, true, fadeOutDuration, fadeInDuration);
+    }
+
+    public void ChangeBgm(string id, float fadeOutDuration = 0.5f, float fadeInDuration = 0.5f)
+    {
+        if (!TryGetData(id, out AudioData data)) return;
+
+        if (string.Equals(_currentBgmId, id, StringComparison.Ordinal)) return;
+
+        _bgmHistory.Clear();
 
         StartBgmTransition(id, data.clip, data.volume, data.pitch, 0, true, fadeOutDuration, fadeInDuration);
     }

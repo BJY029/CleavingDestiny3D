@@ -114,9 +114,10 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     public void StartVillagePhase()
     {
         _isPhaseActive = true;
-        SetPlayerReady(PhotonNetwork.LocalPlayer.ActorNumber, false);
-        AudioManager.Instance.PlayTemporaryBgm("Village_Peaceful_BGM", 2f, 2f);
+        int localPlayer = PhotonNetwork.LocalPlayer.ActorNumber;
+        SetPlayerReady(localPlayer, false);
 
+        BgmStateController.Instance.EnterVillage();
         // UniTask의 Fire-and-Forget
         LoadVillageSceneAsync().Forget();
     }
@@ -125,7 +126,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     {
         _isPhaseActive = false;
         _endTime = -1.0f;
-        AudioManager.Instance.RestorePreviousBgm(2f, 2f);
+        BgmStateController.Instance.ExitVillage();
 
         UnloadVillageSceneAsync().Forget();
     }

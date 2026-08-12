@@ -474,3 +474,30 @@ MonoBehaviour:
     useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
+  - id: Village_Adversity_BGM
+    clip: {fileID: 8300000, guid: f5fb88c1bfafccd489fe46265759e283, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Village_Nightmare_BGM
+    clip: {fileID: 8300000, guid: 2e6826ac036c497428d671eba62b4898, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Game_Nightmare_BGM
+    clip: {fileID: 8300000, guid: 830ea4c5fee3a90458919968504cbd6f, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0

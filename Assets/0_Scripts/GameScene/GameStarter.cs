@@ -282,8 +282,11 @@ public class GameStarter : MonoBehaviourPunCallbacks
                 EnterTurnResult();
                 break;
             case GameStartPhase.MainGame:
-                AudioManager.Instance.PlayBgmFadeIn("Game_Default_BGM", 2f);
                 EnterMainGame();
+                if (BgmStateController.Instance != null)
+                {
+                    BgmStateController.Instance.RefreshMainBgm();
+                }
                 break;
         }
     }
