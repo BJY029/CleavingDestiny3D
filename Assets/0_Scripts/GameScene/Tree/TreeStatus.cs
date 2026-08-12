@@ -77,7 +77,10 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 	public float getTreeAtkPow()
 	{
 		GetCurrentTreeStatus();
-		return currentTreeAtkPow;
+		int curDay = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentDay);
+
+		float calcTreeAtkPos = currentTreeAtkPow * Mathf.Pow(GameManager.Instance.roomDefaultSetting.poisonGrowthRate, curDay - 1);
+		return calcTreeAtkPos;
 	}
 
 	private bool IsInitializer() => PhotonNetwork.IsMasterClient;
