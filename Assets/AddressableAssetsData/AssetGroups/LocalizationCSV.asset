@@ -33,6 +33,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - Localization
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 45fe1426920af6a42b5a8df67fc79811
+    m_Address: Assets/Localization/GuideBook_CSV.csv
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Localization
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bd33c4977fe08cb40aecb4705e15f86d
     m_Address: Assets/Localization/Item_CSV.csv
     m_ReadOnly: 0

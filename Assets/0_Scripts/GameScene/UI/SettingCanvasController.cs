@@ -37,6 +37,10 @@ public class SettingCanvasController : MonoBehaviour
     public Button OptionBtn;
     public Button QuitGameBtn;
     public Button LobbyBtn;
+    public Button GuideBookBtn;
+
+    [Header("GuideBook")]
+    public GameScene.UI.GuideBook.GuideBookUIController guideBookUIController;
 
     public Button warningYesBtn;
     public Button warningNoBtn;
@@ -56,6 +60,7 @@ public class SettingCanvasController : MonoBehaviour
         LobbyBtn.onClick.AddListener(() => ShowWarningPanel(1));
         QuitGameBtn.onClick.AddListener(() => ShowWarningPanel(2));
         OptionBtn.onClick.AddListener(OnClickOption);
+        if (GuideBookBtn != null) GuideBookBtn.onClick.AddListener(OnClickGuideBook);
         
         warningYesBtn.onClick.AddListener(OnWarningYesClick);
         warningNoBtn.onClick.AddListener(OnWarningNoClick);
@@ -73,6 +78,7 @@ public class SettingCanvasController : MonoBehaviour
     private void HandleTurnActorChanged(int turnActorNumber)
     {
         Debug.Log($"[SettingCanvasController] HandleTurnActorChanged() 호출됨. turnActorNumber: {turnActorNumber}");
+        CloseSettingPanel();
         UpdateCurrentTurnIndicator(turnActorNumber);
     }
     
@@ -141,6 +147,11 @@ public class SettingCanvasController : MonoBehaviour
     private void OnClickOption()
     {
         OptionManager.Instance.SetOptionMenu(true);
+    }
+
+    private void OnClickGuideBook()
+    {
+        guideBookUIController?.ToggleGuideBook(true);
     }
     
 
@@ -211,6 +222,8 @@ public class SettingCanvasController : MonoBehaviour
 
     public void CloseSettingPanel()
     {
+        IsSettingPanelOpened = false;
+        guideBookUIController?.ToggleGuideBook(false);
         Background.SetActive(false);
         
         Cursor.lockState = CursorLockMode.Locked;
