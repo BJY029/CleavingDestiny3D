@@ -250,24 +250,30 @@ public class NewDrugMissionManager : MonoBehaviourPun
         PhotonPropertyHelper.SetRoomProp(ItemPropKeys.INV_NEWDRUG(runtime.OwnerActorNumber), true);
     }
 
+    private void FailMission(NewDrugMissionRuntime runtime)
+    {
+        runtime.State = NewDrugMissionState.Failed;
+
+        Debug.Log("[신약 개발 미션 실패]");
+
+        //TODO : ui 처리
+        Player targetPlayer = PhotonNetwork.CurrentRoom.GetPlayer(runtime.OwnerActorNumber);
+        photonView.RPC(nameof(RPC_PlayMissionFailedSFX), targetPlayer);
+        string MissionName = runtime.CurrentMission.MissionName;
+        string MissionContext = runtime.CurrentMission.MissionDesc;
+        photonView.RPC(nameof(RPC_ShowMissionFailUI), targetPlayer, MissionName, MissionContext);
+    }
+
     [PunRPC]
     private void RPC_PlayMissionSuccesseSFX()
     {
         AudioManager.Instance.PlaySfx2D("MissionSuccess");
     }
 
-    private void FailMission(NewDrugMissionRuntime runtime)
+    [PunRPC]
+    private void RPC_PlayMissionFailedSFX()
     {
-        runtime.State = NewDrugMissionState.Failed;
-
-        Debug.Log("[신약 개발 미션 실패]");
         AudioManager.Instance.PlaySfx2D("MissionFailed");
-
-        //TODO : ui 처리
-        Player targetPlayer = PhotonNetwork.CurrentRoom.GetPlayer(runtime.OwnerActorNumber);
-        string MissionName = runtime.CurrentMission.MissionName;
-        string MissionContext = runtime.CurrentMission.MissionDesc;
-        photonView.RPC(nameof(RPC_ShowMissionFailUI), targetPlayer, MissionName, MissionContext);
     }
 
     public void MaskNewDrugUsed(int actorNum)
