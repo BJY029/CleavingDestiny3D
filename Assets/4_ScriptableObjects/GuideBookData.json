@@ -1,0 +1,74 @@
+{
+  "categories": [
+    {
+      "categoryNameKey": "Guide_Category_Rule",
+      "generateFromItems": false,
+      "showPageIndex": false,
+      "pages": [
+        {
+          "pageTitleKey": "Guide_Rule_Goal_Title",
+          "pageDescriptionKey": "Guide_Rule_Goal_Desc",
+          "imageResourcePath": ""
+        },
+        {
+          "pageTitleKey": "Guide_Rule_Turn_Title",
+          "pageDescriptionKey": "Guide_Rule_Turn_Desc",
+          "imageResourcePath": ""
+        },
+        {
+          "pageTitleKey": "Guide_Rule_Energy_Title",
+          "pageDescriptionKey": "Guide_Rule_Energy_Desc",
+          "imageResourcePath": ""
+        },
+        {
+          "pageTitleKey": "Guide_Rule_Item_Title",
+          "pageDescriptionKey": "Guide_Rule_Item_Desc",
+          "imageResourcePath": ""
+        },
+        {
+          "pageTitleKey": "Guide_Rule_Phase_Title",
+          "pageDescriptionKey": "Guide_Rule_Phase_Desc",
+          "imageResourcePath": ""
+        }
+      ]
+    },
+    {
+      "categoryNameKey": "Guide_Category_Village",
+      "generateFromItems": false,
+      "showPageIndex": true,
+      "pages": [
+        {
+          "pageTitleKey": "Guide_Village_Mine_Title",
+          "pageDescriptionKey": "Guide_Village_Mine_Desc",
+          "imageResourcePath": ""
+        },
+        {
+          "pageTitleKey": "Guide_Village_Forge_Title",
+          "pageDescriptionKey": "Guide_Village_Forge_Desc",
+          "imageResourcePath": ""
+        },
+        {
+          "pageTitleKey": "Guide_Village_Shop_Title",
+          "pageDescriptionKey": "Guide_Village_Shop_Desc",
+          "imageResourcePath": ""
+        },
+        {
+          "pageTitleKey": "Guide_Village_Farm_Title",
+          "pageDescriptionKey": "Guide_Village_Farm_Desc",
+          "imageResourcePath": ""
+        },
+        {
+          "pageTitleKey": "Guide_Village_Barrier_Title",
+          "pageDescriptionKey": "Guide_Village_Barrier_Desc",
+          "imageResourcePath": ""
+        }
+      ]
+    },
+    {
+      "categoryNameKey": "Guide_Category_Item",
+      "generateFromItems": true,
+      "showPageIndex": true,
+      "pages": []
+    }
+  ]
+}

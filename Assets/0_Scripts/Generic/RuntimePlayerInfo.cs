@@ -13,6 +13,10 @@ public class RuntimePlayerInfo
     {
         actorNumber = info.ActorNumber;
         playerName = info.NickName;
+        if (string.IsNullOrEmpty(playerName))
+        {
+            playerName = $"Player_{actorNumber}";
+        }
         turnIdx = turnIndex;
         isAI = false;
     }
@@ -20,7 +24,7 @@ public class RuntimePlayerInfo
     public RuntimePlayerInfo(int aiNumber, int turnIndex)
     {
         actorNumber = aiNumber;
-        playerName = "AI_Player_" + aiNumber;
+        playerName = $"AI_Player_{aiNumber}";
         turnIdx = turnIndex;
         isAI = true;
     }

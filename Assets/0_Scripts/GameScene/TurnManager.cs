@@ -1,4 +1,4 @@
-﻿using ExitGames.Client.Photon;
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
 using System;
@@ -32,6 +32,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	public bool isUpgradePhase;
 
 	public static TurnManager Instance;
+
+	public static event Action<int> OnTurnActorChanged;
 
 	//F키가 눌리면 발생될 이벤트
 	//public event Action OnInteractFKeyDown;
@@ -643,6 +645,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			turnActor = Convert.ToInt32(taObj);
 			TryOpenOfferFromRoomState();
 			StatusUIModel.instance.StatusOnChanged?.Invoke();
+			OnTurnActorChanged?.Invoke(turnActor);
 			//자신의 턴이라면
 			if (me == turnActor)
 			{

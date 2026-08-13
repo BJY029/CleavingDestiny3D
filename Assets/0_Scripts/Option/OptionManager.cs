@@ -47,6 +47,11 @@ namespace Option
             soundSetting.Initialize();
         }
         
+        public bool IsOptionMenuActive()
+        {
+            return optionMenu.activeSelf;
+        }
+        
         /// <summary>
         /// 옵션 메뉴 활성화/비활성화
         /// </summary>
