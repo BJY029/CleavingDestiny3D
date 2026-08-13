@@ -33,5 +33,10 @@ namespace Option.Element
         {
             onValueChanged?.Invoke(value);
         }
+
+        public void SetValueWithoutNotify(bool value)
+        {
+            toggle.SetIsOnWithoutNotify(value);
+        }
     }
 }

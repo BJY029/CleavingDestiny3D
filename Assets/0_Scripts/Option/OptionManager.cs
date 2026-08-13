@@ -41,7 +41,7 @@ namespace Option
         {
             optionMenu = transform.GetChild(0).gameObject;
             optionMenu.SetActive(false);
-            categorySwapper.SwapCategory(0);
+            categorySwapper.SetInitialCategory(0);
 
             gamePlaySetting.Initialize();
             soundSetting.Initialize();

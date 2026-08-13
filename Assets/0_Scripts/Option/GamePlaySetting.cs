@@ -86,7 +86,7 @@ namespace Option
             fpsLimitSetting.AddListener(OnFpsLimitChanged);
 
             // VSync 설정
-            vSyncSetting.SetValue(SettingData.vSync);
+            vSyncSetting.SetValueWithoutNotify(SettingData.vSync);
             vSyncSetting.AddListener(OnVSyncChanged);
 
             // 언어 설정
@@ -109,7 +109,7 @@ namespace Option
             });
 
             // Y축 반전 설정
-            invertYSetting.SetValue(SettingData.invertY);
+            invertYSetting.SetValueWithoutNotify(SettingData.invertY);
             invertYSetting.AddListener(isOn =>
             {
                 OptionManager.Instance.settingData.invertY = isOn;

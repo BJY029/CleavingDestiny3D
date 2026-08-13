@@ -114,8 +114,10 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     public void StartVillagePhase()
     {
         _isPhaseActive = true;
-        SetPlayerReady(PhotonNetwork.LocalPlayer.ActorNumber, false);
+        int localPlayer = PhotonNetwork.LocalPlayer.ActorNumber;
+        SetPlayerReady(localPlayer, false);
 
+        BgmStateController.Instance.EnterVillage();
         // UniTask의 Fire-and-Forget
         LoadVillageSceneAsync().Forget();
     }
@@ -124,6 +126,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     {
         _isPhaseActive = false;
         _endTime = -1.0f;
+        BgmStateController.Instance.ExitVillage();
 
         UnloadVillageSceneAsync().Forget();
     }

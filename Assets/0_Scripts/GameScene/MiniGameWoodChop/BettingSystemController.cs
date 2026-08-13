@@ -97,6 +97,13 @@ public class BettingSystemController : MonoBehaviourPunCallbacks
         photonView.RPC(nameof(RPC_SetTimer), RpcTarget.Others, StartTime, (int)timerState);
 
         betUIController.Master_StartRequestTimer(requestActorNumber, StartTime, SelectTimeValue);
+        photonView.RPC(nameof(PlayStartBettingSFX), RpcTarget.All);
+    }
+
+    [PunRPC]
+    private void PlayStartBettingSFX()
+    {
+        AudioManager.Instance.PlaySfx2D("StartRequest");
     }
 
     //유효한 요청인지 확인하는 함수
@@ -256,6 +263,13 @@ public class BettingSystemController : MonoBehaviourPunCallbacks
         photonView.RPC(nameof(RPC_SetTimer), RpcTarget.Others, StartTime, (int)timerState);
 
         betUIController.Master_StartReceiveTimer(targetActorNumber, StartTime, SelectTimeValue);
+        photonView.RPC(nameof(PlayGetRequestSFX), PhotonNetwork.CurrentRoom.GetPlayer(targetActorNumber));
+    }
+
+    [PunRPC]
+    private void PlayGetRequestSFX()
+    {
+        AudioManager.Instance.PlaySfx2D("GetRequest");
     }
 
     //실제 게임을 시작하는 함수

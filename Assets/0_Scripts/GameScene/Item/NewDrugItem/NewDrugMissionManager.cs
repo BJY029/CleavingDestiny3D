@@ -242,6 +242,7 @@ public class NewDrugMissionManager : MonoBehaviourPun
         //TODO: 보상 아이템 인벤토리에 지급
         //TODO : UI 처리
         Player targetPlayer = PhotonNetwork.CurrentRoom.GetPlayer(runtime.OwnerActorNumber);
+        photonView.RPC(nameof(RPC_PlayMissionSuccesseSFX), targetPlayer);
         string MissionName = runtime.CurrentMission.MissionName;
         string MissionContext = runtime.CurrentMission.MissionDesc;
         photonView.RPC(nameof(RPC_ShowMissionSuccessUI), targetPlayer, MissionName, MissionContext);
@@ -249,11 +250,18 @@ public class NewDrugMissionManager : MonoBehaviourPun
         PhotonPropertyHelper.SetRoomProp(ItemPropKeys.INV_NEWDRUG(runtime.OwnerActorNumber), true);
     }
 
+    [PunRPC]
+    private void RPC_PlayMissionSuccesseSFX()
+    {
+        AudioManager.Instance.PlaySfx2D("MissionSuccess");
+    }
+
     private void FailMission(NewDrugMissionRuntime runtime)
     {
         runtime.State = NewDrugMissionState.Failed;
 
         Debug.Log("[신약 개발 미션 실패]");
+        AudioManager.Instance.PlaySfx2D("MissionFailed");
 
         //TODO : ui 처리
         Player targetPlayer = PhotonNetwork.CurrentRoom.GetPlayer(runtime.OwnerActorNumber);

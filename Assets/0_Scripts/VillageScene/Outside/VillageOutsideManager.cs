@@ -229,7 +229,8 @@ namespace Village.Outside
             float maxHp = PlayerStatus.Instance.GetMaxVillageHp();
             float shield = PlayerStatus.Instance.GetCurrentBarrier();
 
-            float damage = PlayerStatus.Instance.GetExpectedVillageDamage(TreeStatus.Instance.getTreeAtkPow());
+            //float damage = PlayerStatus.Instance.GetExpectedVillageDamage(TreeStatus.Instance.getTreeAtkPow());
+            float damage = PlayerStatus.Instance.GetExpetedTreePoison(TreeStatus.Instance.getTreeAtkPow());
 
             villageHpBar.UpdateStats(currentHp, maxHp, shield, damage);
         }

@@ -15,11 +15,489 @@ MonoBehaviour:
   audioDatas:
   - id: hit_wood
     clip: {fileID: 8300000, guid: df7c7f632d851a54289dc9e9d2ccf738, type: 3}
+    randomClips: []
+    useRandomClip: 0
     volume: 1
     pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.1, y: 0.1}
     is3D: 1
   - id: ui_button
     clip: {fileID: 8300000, guid: d01cf0ef07f3a3f4bb836189cfa75328, type: 3}
+    randomClips: []
+    useRandomClip: 0
     volume: 0.4
     pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
+    is3D: 0
+  - id: UI_Hover
+    clip: {fileID: 8300000, guid: 6b211cd82de849e4b9a82e8f93c20a55, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
+    is3D: 0
+  - id: UI_Toggle
+    clip: {fileID: 8300000, guid: c344ccc28eacc5e4796b30d95f172e25, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
+    is3D: 0
+  - id: Lobby_BGM
+    clip: {fileID: 8300000, guid: bad7bd3f689416e4993291389491271f, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.2
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
+    is3D: 0
+  - id: Match_Con
+    clip: {fileID: 8300000, guid: 54ca0552cb5bbab42939d7f4c71d986c, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
+    is3D: 0
+  - id: Map_Intro
+    clip: {fileID: 8300000, guid: 616f43ca9f2f2b242b11ac7a88f8b767, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
+    is3D: 0
+  - id: Turn_Result
+    clip: {fileID: 8300000, guid: f97a365a2b6e5264597bf624ecf3ccd9, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0, y: 0}
+    is3D: 0
+  - id: Time_Ticks
+    clip: {fileID: 0}
+    randomClips:
+    - {fileID: 8300000, guid: 44a9f0599fee1684a97a490845bc0afa, type: 3}
+    - {fileID: 8300000, guid: 605e9f473581eb5458f332cebfdc2f6e, type: 3}
+    - {fileID: 8300000, guid: 1bb8e394f15023645a84b920bfc01b49, type: 3}
+    useRandomClip: 1
+    volume: 1
+    pitch: 1
+    useRandomPitch: 1
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Time_Onetick
+    clip: {fileID: 8300000, guid: 28ad6c9cb0e6f5b40856e41002956af5, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 1
+    pitchRange: {x: 0.95, y: 1.05}
+    is3D: 0
+  - id: Village_Peaceful_BGM
+    clip: {fileID: 8300000, guid: 76f4074aa3ab5cf4096579a4e81dc9fd, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.2
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Game_Default_BGM
+    clip: {fileID: 8300000, guid: bfc23003d8b99d742a36423f5517d9fc, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.2
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Coins
+    clip: {fileID: 0}
+    randomClips:
+    - {fileID: 8300000, guid: 045880d66ba78634f99c1e8cdc85ae23, type: 3}
+    - {fileID: 8300000, guid: 8633b933bb1813b44a4b160ae0342eb8, type: 3}
+    - {fileID: 8300000, guid: fec458693a5738b44a1c6e105abdeee0, type: 3}
+    - {fileID: 8300000, guid: 881d8007ba72cee429d8cfb9363a8e84, type: 3}
+    useRandomClip: 1
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Branch_Hover
+    clip: {fileID: 8300000, guid: 52ec386dc519f4c4aa048086d2fdd4da, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Branch_Selected
+    clip: {fileID: 8300000, guid: 6dd4c370cf7c8af46a837c8c41405da8, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Hammer
+    clip: {fileID: 0}
+    randomClips:
+    - {fileID: 8300000, guid: 070b89d2c17e37b4c8d2c1c72d92a194, type: 3}
+    - {fileID: 8300000, guid: 1c7ba10a259e3a248913a91cebe30747, type: 3}
+    - {fileID: 8300000, guid: 639ebfb4a5f3d9443b43e0c6cd985858, type: 3}
+    - {fileID: 8300000, guid: 63bb562e73693924e9545ffdb9c105c9, type: 3}
+    useRandomClip: 1
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1000
+    clip: {fileID: 8300000, guid: edf965d40b1a48f4ab905bcaf05ddc38, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1001
+    clip: {fileID: 8300000, guid: 39ba8db0a743e0941b0363c4546f47be, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1002
+    clip: {fileID: 8300000, guid: c6247109d73ed9f4bbe1c1ebb200a6d7, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1003
+    clip: {fileID: 8300000, guid: 57ff1dbb96d990645af89f770d9a4372, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1004
+    clip: {fileID: 8300000, guid: f60447209871ce44a9c49ba520bf8458, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1005
+    clip: {fileID: 8300000, guid: 9ff5c4da2b9b22f47a44b96f25fe0e01, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 1006
+    clip: {fileID: 8300000, guid: a205cfd2ec4a35a40ba5a38c4162015c, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 2000
+    clip: {fileID: 8300000, guid: 5543310da0e3fdc489394cc606a3954a, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 2001
+    clip: {fileID: 8300000, guid: e183b635e2ed96e409a78f1b6376595d, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 2002
+    clip: {fileID: 8300000, guid: cdcbe08ef00c4a244b00bc3d5891ae6b, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 2003
+    clip: {fileID: 8300000, guid: cf208f2ccfabcae4a868b5e8f9bd59a9, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 3000
+    clip: {fileID: 8300000, guid: e1a07f8c79ef7144b8a239eeec1e8f8e, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 3002
+    clip: {fileID: 8300000, guid: 78607329a0f438145b15fd8aea5934e7, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 3003
+    clip: {fileID: 8300000, guid: f1d2e8282dc4a8f4aab92660328bce53, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.7
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4000
+    clip: {fileID: 8300000, guid: 493a59bebf745bf41bad2c27f7246664, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4001
+    clip: {fileID: 8300000, guid: 827bacbd198703a4ca46221806e97d64, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4002
+    clip: {fileID: 8300000, guid: d65d9614242c1dc4db3023e2b1dac97e, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4003
+    clip: {fileID: 8300000, guid: 1af86235e9089ee49ba6f2d22698e69f, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4004
+    clip: {fileID: 8300000, guid: 9ff5c4da2b9b22f47a44b96f25fe0e01, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4005
+    clip: {fileID: 8300000, guid: bd10c5214ead6924bb224c43a93bfa2d, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.7
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4007
+    clip: {fileID: 8300000, guid: cdcbe08ef00c4a244b00bc3d5891ae6b, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4008
+    clip: {fileID: 8300000, guid: f163cfd3e4b2e7b4399b722d9cade15b, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 4009
+    clip: {fileID: 8300000, guid: e32e70da6c343e74596cf6d1b80643ea, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.8
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 5000
+    clip: {fileID: 8300000, guid: 78607329a0f438145b15fd8aea5934e7, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: 3001
+    clip: {fileID: 8300000, guid: 6283ce3a6be3baf4d861c466359b1825, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: MissionSuccess
+    clip: {fileID: 8300000, guid: 85c0c091e422cde41b5c4fc7da2e9196, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: MissionFailed
+    clip: {fileID: 8300000, guid: 1e975bdb10259fb4ebf28924efebdef3, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: StartRequest
+    clip: {fileID: 8300000, guid: e6b0b8c42a227c64398bc8411743d7ea, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: GetRequest
+    clip: {fileID: 8300000, guid: e5fdf2004c077794ead4364f96252d5a, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: WoodCutting
+    clip: {fileID: 8300000, guid: 27d1c27088b00bd40aa2b52f29ce5a2f, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 1
+    pitchRange: {x: 0.95, y: 1.05}
+    is3D: 0
+  - id: Whoosh
+    clip: {fileID: 8300000, guid: 5a5f16fc5312873478c5a1bb1d795c3f, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Lock_Click
+    clip: {fileID: 8300000, guid: 4442888af8fd38f4c82563ce72a01e64, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 1
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Unlock
+    clip: {fileID: 8300000, guid: 22fa0c9dabb06a94db57eea1ee5669af, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Gear
+    clip: {fileID: 8300000, guid: 048b39e279c871a48bf86d4ddadd9174, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Village_Adversity_BGM
+    clip: {fileID: 8300000, guid: f5fb88c1bfafccd489fe46265759e283, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Village_Nightmare_BGM
+    clip: {fileID: 8300000, guid: 2e6826ac036c497428d671eba62b4898, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: Game_Nightmare_BGM
+    clip: {fileID: 8300000, guid: 830ea4c5fee3a90458919968504cbd6f, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
