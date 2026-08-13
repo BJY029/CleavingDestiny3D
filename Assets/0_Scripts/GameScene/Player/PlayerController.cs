@@ -823,6 +823,14 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         velocity.y = -2f;
     }
 
+    public void ResetCameraToForward()
+    {
+        Yaw = transform.eulerAngles.y;
+        Pitch = 0f;
+        lookInput = Vector2.zero;
+        pivotTransform.localRotation = Quaternion.identity;
+    }
+
     //회전 관련 코드 실행
     private void LateUpdate()
     {

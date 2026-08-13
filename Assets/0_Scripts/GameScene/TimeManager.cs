@@ -278,7 +278,10 @@ public class TimeManager : MonoBehaviourPunCallbacks
 
         //플레이어 순간이동
         if (PlayerObj != null)
+        {
             TeleportPlayer(PlayerObj, des, rot);
+            pc?.ResetCameraToForward();
+        }
 
         //FadeOut
         await FadeCanvas.Instance.FadeOutAsync(1f);
@@ -296,6 +299,7 @@ public class TimeManager : MonoBehaviourPunCallbacks
         ItemSelectionController.instance.CloseItemSelection();
         LockpickController.instance.HandleLocalFail();
         ItemOfferCanvasController.instance.Close();
+        SettingCanvasController.instance?.CloseSettingPanel();
     }
 
     //플레이어를 특정 위치로 이동시키는 함수
