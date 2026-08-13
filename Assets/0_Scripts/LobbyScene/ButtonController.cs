@@ -22,21 +22,21 @@ public class ButtonController : MatchController
     protected override void Start()
     {
         Debug.Log("[ButtonController] Start() 시작됨.");
-        
+
         base.Start();
 
         MatchmakingBtn.onClick.AddListener(FindMatch);
         MatchmakingBtn.onClick.AddListener(PlayButtonClickSound);
-        
+
         StopMatching.onClick.AddListener(PlayButtonClickSound);
         StopMatching.onClick.AddListener(CancelMatch);
-        
+
         PlayWithAIBtn.onClick.AddListener(PlayButtonClickSound);
         PlayWithAIBtn.onClick.AddListener(StartSoloplay);
-        
+
         ExitBtn.onClick.AddListener(PlayButtonClickSound);
         ExitBtn.onClick.AddListener(OnClickExitGame);
-        
+
         OptionBtn.onClick.AddListener(PlayButtonClickSound);
         OptionBtn.onClick.AddListener(OnClickOption);
 
@@ -50,6 +50,10 @@ public class ButtonController : MatchController
 
     private void PlayButtonClickSound()
     {
+        Debug.Log(
+        $"[Button Sound] PlayButtonClickSound 호출됨\n" +
+        $"{System.Environment.StackTrace}"
+    );
         AudioManager.Instance.PlaySfx2D("ui_button");
     }
 

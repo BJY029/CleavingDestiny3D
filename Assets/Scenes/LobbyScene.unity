@@ -79307,6 +79307,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: OptionCanvas
       objectReference: {fileID: 0}
+    - target: {fileID: 668629069171123256, guid: 617ac79258257d346afe4e3086f702a3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 668995524766935435, guid: 617ac79258257d346afe4e3086f702a3, type: 3}
       propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.size
       value: 1

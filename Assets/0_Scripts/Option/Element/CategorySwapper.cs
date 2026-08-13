@@ -20,7 +20,17 @@ namespace Option.Element
 
         public void SwapCategory(int index)
         {
+            ApplyCategory(index);
             AudioManager.Instance?.PlaySfx2D("ui_button");
+        }
+
+        public void SetInitialCategory(int index)
+        {
+            ApplyCategory(index);
+        }
+
+        private void ApplyCategory(int index)
+        {
             for (int i = 0; i < categoryObjects.Length; i++)
             {
                 bool isActive = i == index;

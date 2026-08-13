@@ -41,12 +41,12 @@ namespace Option
         {
             optionMenu = transform.GetChild(0).gameObject;
             optionMenu.SetActive(false);
-            categorySwapper.SwapCategory(0);
+            categorySwapper.SetInitialCategory(0);
 
             gamePlaySetting.Initialize();
             soundSetting.Initialize();
         }
-        
+
         /// <summary>
         /// 옵션 메뉴 활성화/비활성화
         /// </summary>
