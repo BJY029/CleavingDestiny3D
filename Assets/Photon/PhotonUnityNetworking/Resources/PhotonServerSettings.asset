@@ -136,6 +136,7 @@ MonoBehaviour:
   - PlayStartBettingSFX
   - PlayNewDrugSFX
   - RPC_PlayMissionSuccesseSFX
+  - RPC_PlayMissionFailedSFX
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

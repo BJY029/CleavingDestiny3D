@@ -26,6 +26,7 @@ public interface IMinigameInteractable
 public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 {
     public int PlayerActNum { get; set; }
+    public PlayerEffectPoints EffectPoints { get; private set; }
     //움직임 관련 파라미터
     [Header("Move")]
     public float walkSpeed = 3.5f;
@@ -162,6 +163,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         // 캐릭터 본체 모델만 숨기고 그림자는 남김 (휴머노이드 손 축에 별도로 붙은 도끼는 렌더링 유지)
         HideCharacterModelBody();
+        EffectPoints = GetComponent<PlayerEffectPoints>();
 
         if (firstPersonObjects != null)
         {

@@ -27,6 +27,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	public IReadOnlyDictionary<int, WorldInventory> PlayersInv => playersInv;
 
 	public Dictionary<int, GameObject> AIPlayerObj = new Dictionary<int, GameObject>();
+	public PlayerController LocalPlayerPC;
 
 	//AI 모드에서 사용되는 AI Actnum 저장용(만약에만약에 AI가 여러명이 된다면 폐기해야 함)
 	public int AIActNum { get; private set; }
@@ -215,6 +216,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		GameObject spawnPlayer = PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
 		PlayerController pc = spawnPlayer.GetComponent<PlayerController>();
+		LocalPlayerPC = pc;
 		pc.PlayerActNum = myActNum;
 		LocalPlayerObj = spawnPlayer;
 
