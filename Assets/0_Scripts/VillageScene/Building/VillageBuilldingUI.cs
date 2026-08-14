@@ -1,4 +1,7 @@
 ﻿using System;
+using ExitGames.Client.Photon;
+using Photon.Pun;
+using Photon.Realtime;
 using Potan.CoreUtils;
 using PrimeTween;
 using TMPro;
@@ -8,7 +11,7 @@ using UnityEngine.UI;
 namespace Village.Building
 {
 
-    public class VillageBuilldingUI : MonoBehaviour
+    public class VillageBuilldingUI : MonoBehaviourPunCallbacks
     {
         [SerializeField] protected CanvasGroup canvasGroup;
 
@@ -106,6 +109,18 @@ namespace Village.Building
             UpdateUpgradeButton(nextUpgradeCost, currentGold);
         }
 
+        public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
+        {
+            if (targetPlayer != PhotonNetwork.LocalPlayer ||
+                !changedProps.ContainsKey(PlayerPropKeys.VillageUpgrades) ||
+                !canvasGroup.gameObject.activeInHierarchy)
+            {
+                return;
+            }
+
+            SetBuildingUI(currentBuildingType);
+        }
+
         private void UpdateUpgradeButton(int nextUpgradeCost, int currentGold)
         {
             if (nextUpgradeCost <= 0)
@@ -159,10 +174,13 @@ namespace Village.Building
 
         private void OnUpgradeButton()
         {
+            int currentLevel = VillageStat.GetVillageLevel(currentBuildingType);
             if (VillageSystem.VillageLogic.TryUpgradeLevel(currentBuildingType))
             {
-                // 성공 시 현재 타입 기준으로 전체 UI를 다시 그려, 텍스트/버튼/이펙트 상태를 일관되게 유지
-                SetBuildingUI(currentBuildingType);
+                string buildingName = LocalizationManager.Instance.GetText(
+                    CSV_Type.Village, $"{currentBuildingType}_Title");
+                BattleLogController.AddLog(BattleLogType.Village_Upgrade, buildingName, currentLevel + 2f);
+
                 switch (currentBuildingType)
                 {
                     case VillageType.Forge:

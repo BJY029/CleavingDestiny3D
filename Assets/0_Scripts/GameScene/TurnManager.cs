@@ -436,6 +436,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//만약 이미 실행중이라면 실행하지 않음
 		bool isAlreadyUpgraded = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
 		if (isAlreadyUpgraded) return;
+		photonView.RPC(nameof(RPC_LogDayPhase), RpcTarget.All, false);
 
 		isVillagePhase = true;
 		//CameraSwitchManager.Instance.TurnOffAllCam();
@@ -619,6 +620,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			{ItemPropKeys.OFFER(nextActor), offerStr ?? "" },
 		};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(ht);
+		photonView.RPC(nameof(RPC_LogDayPhase), RpcTarget.All, true);
 
 		RemoveUsedItem();
 
@@ -631,6 +633,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
 		photonView.RPC(nameof(RPC_SetWeatherAsTime), RpcTarget.All, 12, 0);
 		//photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
+	}
+
+	[PunRPC]
+	private void RPC_LogDayPhase(bool isDayStart)
+	{
+		BattleLogController.AddLog(isDayStart ? BattleLogType.Day_Start : BattleLogType.Day_End);
 	}
 
 	//프로퍼티 변경 감지

@@ -710,6 +710,9 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 		NotifyDefenseChangedForNewDrugMission(cmd.attackerNum, dmg.convertedToBarrier);
 
+		photonView.RPC(nameof(RPC_LogHit), RpcTarget.All,
+			cmd.attackerNum, (float)dmg.finalDamage, dmg.hidden);
+
 		//계산된 결과를 각 클라이언트에게 브로드캐스트하는 함수 호출
 		BroadcastHitResult(cmd.attackerNum, dmg.finalDamage, dmg.convertedToBarrier, dmg.hidden, hp);
 
@@ -829,6 +832,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	{
 		var res = JsonUtility.FromJson<AttackResult>(json);
 		bool isLocalAttacker = res.attackerNum == PhotonNetwork.LocalPlayer.ActorNumber;
+		if (isLocalAttacker && !res.hidden && res.convertedBarrier > 0f)
+			BattleLogController.AddHitBarrierLog(res.convertedBarrier);
 
 		//UI 처리
 		if (res.hidden && res.finalDamage < 0)
@@ -893,6 +898,26 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetPlayerProp(attackerNum, PlayerPropKeys.PDamageProcessCompleted, true);
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.PDamageProcessCompleted, true);
 		TurnManager.Instance.PlayerDamageChecker(attackerNum);
+	}
+
+	[PunRPC]
+	private void RPC_LogHit(int attackerNum, float damage, bool hidden)
+	{
+		string attackerName = GetPlayerName(attackerNum);
+		if (hidden)
+			BattleLogController.AddLog(BattleLogType.Hit, attackerName, "?");
+		else
+			BattleLogController.AddHitLog(attackerName, damage);
+	}
+
+	private static string GetPlayerName(int actorNum)
+	{
+		if (PlayerManager.Instance != null &&
+			PlayerManager.Instance.Players.TryGetValue(actorNum, out RuntimePlayerInfo playerInfo))
+			return playerInfo.playerName;
+
+		Player player = PhotonNetwork.CurrentRoom?.GetPlayer(actorNum);
+		return player == null || string.IsNullOrEmpty(player.NickName) ? $"Player_{actorNum}" : player.NickName;
 	}
 
 	//즉시 적용되는 아이템 실행 함수

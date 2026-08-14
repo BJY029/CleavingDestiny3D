@@ -7,6 +7,7 @@ using Photon.Pun;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class SettingCanvasController : MonoBehaviour
@@ -40,7 +41,7 @@ public class SettingCanvasController : MonoBehaviour
     public Button GuideBookBtn;
 
     [Header("GuideBook")]
-    public GameScene.UI.GuideBook.GuideBookUIController guideBookUIController;
+    public GuideBookUIController guideBookUIController;
 
     public Button warningYesBtn;
     public Button warningNoBtn;
@@ -60,7 +61,7 @@ public class SettingCanvasController : MonoBehaviour
         LobbyBtn.onClick.AddListener(() => ShowWarningPanel(1));
         QuitGameBtn.onClick.AddListener(() => ShowWarningPanel(2));
         OptionBtn.onClick.AddListener(OnClickOption);
-        if (GuideBookBtn != null) GuideBookBtn.onClick.AddListener(OnClickGuideBook);
+        GuideBookBtn.onClick.AddListener(OnClickGuideBook);
         
         warningYesBtn.onClick.AddListener(OnWarningYesClick);
         warningNoBtn.onClick.AddListener(OnWarningNoClick);
@@ -225,14 +226,15 @@ public class SettingCanvasController : MonoBehaviour
         IsSettingPanelOpened = false;
         guideBookUIController?.ToggleGuideBook(false);
         Background.SetActive(false);
-        
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-            
+
         if (OptionManager.Instance.IsOptionMenuActive())
         {
             OptionManager.Instance.SetOptionMenu(false);
         }
+
+        bool isVillageSceneLoaded = SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded;
+        Cursor.lockState = isVillageSceneLoaded ? CursorLockMode.None : CursorLockMode.Locked;
+        Cursor.visible = isVillageSceneLoaded;
     }
     
     void SetCurrentPlayerIndicator(int playerIndex)

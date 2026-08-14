@@ -2134,6 +2134,13 @@ MonoBehaviour:
   upgradeCostText: {fileID: 4292305123187884534}
   upgradeButton: {fileID: 2667004716741910884}
   exitButton: {fileID: 2085944732727252736}
+  npcImage: {fileID: 2039675136854351418}
+  npcSprites:
+  - {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}
+  - {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}
+  - {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}
+  - {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}
+  - {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}
   shopItemPrefab: {fileID: -2094178037640346087, guid: 8b6d88b296be8af43b52f17c3f1ccede, type: 3}
   reloadButton: {fileID: 834263513703505446}
   buyButton: {fileID: 9146965705594673051}

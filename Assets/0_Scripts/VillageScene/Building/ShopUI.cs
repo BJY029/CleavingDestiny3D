@@ -49,8 +49,9 @@ namespace Village.Building
             }
         }
 
-        void OnEnable()
+        public override void OnEnable()
         {
+            base.OnEnable();
             OfferAuthority.Instance.OnShopRerollReceived += OnRandonShopItemReceived;
             VillageSystem.VillageLogic.OnGoldChanged += OnGoldChanged;
         }
@@ -60,12 +61,13 @@ namespace Village.Building
             RefreshStatusUI(); // 골드가 변경될 때마다 상점 UI 상태 갱신
         }
 
-        void OnDisable()
+        public override void OnDisable()
         {
             if (OfferAuthority.Instance != null)
                 OfferAuthority.Instance.OnShopRerollReceived -= OnRandonShopItemReceived;
             if (VillageSystem.VillageLogic != null)
                 VillageSystem.VillageLogic.OnGoldChanged -= OnGoldChanged;
+            base.OnDisable();
         }
 
         void OnRandonShopItemReceived(int targetActor, int shopNonce, string[] itemIds)

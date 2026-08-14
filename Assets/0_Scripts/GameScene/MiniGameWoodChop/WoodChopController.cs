@@ -193,6 +193,8 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         SpawnLocalWood();
         UpdateAxeView();
 
+        BattleLogController.AddLog(BattleLogType.Minigame_Start);
+
         Debug.Log($"나무 쪼개기 시작: Player {actorA} vs Player {actorB}");
     }
 
@@ -745,6 +747,7 @@ public class WoodChopController : MonoBehaviourPunCallbacks, IMinigameInteractab
         ResetAxeRuntimeState();
 
         bool isWin = PhotonNetwork.LocalPlayer.ActorNumber == winnerActorNumber ? true : false;
+        BattleLogController.AddLog(isWin ? BattleLogType.Minigame_Win : BattleLogType.Minigame_Lose);
         if (isWin)
         {
             StartCoroutine(CO_EndDuel(isWin, winnerEarnEnergy, villageDamage));
