@@ -40,6 +40,12 @@ namespace Option
             sfxVolumeSetting.SetValue(SettingData.sfxVolume);
             musicVolumeSetting.SetValue(SettingData.bgmVolume);
             environmentVolumeSetting.SetValue(SettingData.environmentVolume);
+            
+            // 볼륨 믹서 설정
+            SetVolume(SoundType.Master, SettingData.masterVolume);
+            SetVolume(SoundType.SFX, SettingData.sfxVolume);
+            SetVolume(SoundType.BGM, SettingData.bgmVolume);
+            SetVolume(SoundType.Environment, SettingData.environmentVolume);
         }
 
         public void SetVolume(SoundType type, float value)

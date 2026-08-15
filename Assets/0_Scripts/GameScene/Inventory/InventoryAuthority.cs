@@ -183,6 +183,8 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		if (Master_AddItemToInventory(actor, itemId))
 		{
 			MarkSelectedNewDrugItem(actor, itemId);
+			if (player != null)
+				photonView.RPC(nameof(RPC_LogShopPurchase), player, itemId);
 			Debug.Log($"[InventoryAuthority] Actor {actor} bought {itemId} for {price}G (Gold deducted by client)");
 		}
 		else
@@ -190,6 +192,16 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			// 아이템 추가 실패 (인벤토리 가득 참)
 			Debug.LogError("[InventoryAuthority] Item Insertion ERROR (Inventory Full?)");
 		}
+	}
+
+	[PunRPC]
+	private void RPC_LogShopPurchase(string itemId)
+	{
+		ItemSO item = ItemDB.Instance.Get(itemId);
+		if (item == null) return;
+
+		string itemName = LocalizationManager.Instance.GetText(CSV_Type.Item, item.displayName_ID);
+		BattleLogController.AddLog(BattleLogType.Village_Shop_Purchase, itemName);
 	}
 
 	[PunRPC]
@@ -243,6 +255,7 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		//TODO: 아이템 효과 적용
 		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
 		ItemHandlingSystem.instance.AddItemStatusInstance(requestActor, item, -1);
+		photonView.RPC(nameof(RPC_LogItemUsed), RpcTarget.All, requestActor, item.itemId, -1f, 0f);
 		//NotifyItemUsedForNewDrugMission(turnActor, item);
 	}
 
@@ -408,7 +421,33 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		//MasterClient가 효과를 확정하고 Room 프로퍼티 업데이트
 		ItemHandlingSystem.instance.AddItemStatusInstance(requestActor, item, uniqueId);
 		photonView.RPC(nameof(PlaySFXToAllPlayer), RpcTarget.All, item.itemId.ToString());
+		photonView.RPC(nameof(RPC_LogItemUsed), RpcTarget.All, requestActor, item.itemId,
+			(float)item.itemCost, (float)(playerEng - item.itemCost));
 		NotifyItemUsedForNewDrugMission(requestActor, item);
+	}
+
+	[PunRPC]
+	private void RPC_LogItemUsed(int actorNum, string itemId, float energyCost, float remainingEnergy)
+	{
+		ItemSO item = ItemDB.Instance.Get(itemId);
+		if (item == null) return;
+
+		string playerName;
+		if (PlayerManager.Instance != null &&
+			PlayerManager.Instance.Players.TryGetValue(actorNum, out RuntimePlayerInfo playerInfo))
+		{
+			playerName = playerInfo.playerName;
+		}
+		else
+		{
+			Player player = PhotonNetwork.CurrentRoom?.GetPlayer(actorNum);
+			playerName = player == null || string.IsNullOrEmpty(player.NickName) ? $"Player_{actorNum}" : player.NickName;
+		}
+
+		string itemName = LocalizationManager.Instance.GetText(CSV_Type.Item, item.displayName_ID);
+		bool showEnergy = PhotonNetwork.LocalPlayer.ActorNumber == actorNum && energyCost >= 0f;
+		BattleLogController.AddItemLog(playerName, itemName,
+			showEnergy ? energyCost : -1f, showEnergy ? remainingEnergy : 0f);
 	}
 
 	[PunRPC]

@@ -136,6 +136,11 @@ MonoBehaviour:
   - PlayStartBettingSFX
   - PlayNewDrugSFX
   - RPC_PlayMissionSuccesseSFX
+  - RPC_PlayMissionFailedSFX
+  - RPC_LogItemUsed
+  - RPC_LogShopPurchase
+  - RPC_LogDayPhase
+  - RPC_LogHit
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

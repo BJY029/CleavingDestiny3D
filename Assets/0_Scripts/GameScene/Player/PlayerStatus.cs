@@ -269,7 +269,10 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		GetCurrentPlayerStatus();
 		Debug.Log($"Original Tree Damage : {damage}");
 		Debug.Log($"Multiplied value : {currentTreeDmgMulit}");
-		damage = GetExpectedVillageDamageInternal(damage);
+		float adjustedDamage = damage * currentTreeDmgMulit;
+		float blockedDamage = Mathf.Min(adjustedDamage, GetCurrentTotalDefense());
+		damage = Mathf.Max(0f, adjustedDamage - blockedDamage);
+		float hpBefore = currentVillageHP;
 
 		Debug.Log("Final Tree Damage : " + damage);
 
@@ -283,6 +286,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 			// 패배 또는 게임 종료 로직
 			Debug.Log("Game End By VillageHP 0");
 		}
+		BattleLogController.AddVillageAttackLog(adjustedDamage, blockedDamage, hpBefore - currentVillageHP);
 
 		Debug.Log($"Final Village HP : {currentVillageHP}");
 		// 프로퍼티 업데이트

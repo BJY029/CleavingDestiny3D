@@ -69,3 +69,17 @@ UI_Prepare_WaitingMainG,곧 게임이 시작됩니다!,The game will begin short
 UI_Prepare_MGResult,턴 순서 결정!,Turn Order Decided!
 UI_Prepare_MGResult_Win,당신은 선공입니다.\n먼저 행동할 수 있습니다.,You go first.\nYou can take the first action.
 UI_Prepare_MGResult_Lose,당신은 후공입니다.\n상대가 먼저 행동합니다.,You go second.\nYour opponent will act first.
+UI_Log_Hit,<b><color=#FFB86C><noparse><공격></noparse></color></b> {0}이(가) 나무를 {1}의 피해로 베었습니다.,<b><color=#FFB86C><noparse><ATTACK></noparse></color></b> {0} chopped the tree for {1} damage.
+UI_Log_Hit_Barrier,<b><color=#FFB86C><noparse><공격></noparse></color></b> 피해가 {0}만큼 방어막으로 전환되었습니다.,<b><color=#FFB86C><noparse><ATTACK></noparse></color></b> Damage of {0} was converted into barrier.
+UI_Log_Item,<b><color=#8BE9FD><noparse><아이템></noparse></color></b> {0}이(가) {1}을(를) 사용했습니다.,<b><color=#8BE9FD><noparse><ITEM></noparse></color></b> {0} used {1}.
+UI_Log_Item_Energy,<b><color=#8BE9FD><noparse><아이템></noparse></color></b> 기력이 {0}만큼 감소하여 {1}만큼 남았습니다.,"<b><color=#8BE9FD><noparse><ITEM></noparse></color></b> Energy decreased by {0}, leaving {1} remaining."
+UI_Log_Day_End,<b><color=#F1FA8C><noparse><시간></noparse></color></b> 낮이 끝났습니다.,<b><color=#F1FA8C><noparse><DAY></noparse></color></b> The day has ended.
+UI_Log_Day_Start,<b><color=#F1FA8C><noparse><시간></noparse></color></b> 낮이 시작되었습니다.,<b><color=#F1FA8C><noparse><DAY></noparse></color></b> The day has begun.
+UI_Log_Village_Attack,<b><color=#50FA7B><noparse><마을></noparse></color></b> 나무가 마을을 {0}의 피해로 공격했습니다.,<b><color=#50FA7B><noparse><VILLAGE></noparse></color></b> The tree attacked the village for {0} damage.
+UI_Log_Village_Defend,<b><color=#50FA7B><noparse><마을></noparse></color></b> 방어막이 {0}의 피해를 막았습니다.,<b><color=#50FA7B><noparse><VILLAGE></noparse></color></b> The barrier blocked {0} damage.
+UI_Log_Village_LossHp,<b><color=#50FA7B><noparse><마을></noparse></color></b> 마을 체력이 {0}만큼 감소했습니다.,<b><color=#50FA7B><noparse><VILLAGE></noparse></color></b> Village HP decreased by {0}.
+UI_Log_Upgrade,<b><color=#50FA7B><noparse><마을></noparse></color></b> 마을 건물 {0}이(가) {1} 단계로 업그레이드되었습니다.,<b><color=#50FA7B><noparse><VILLAGE></noparse></color></b> Village building {0} has been upgraded to level {1}.
+UI_Log_Shop_Purchase,<b><color=#50FA7B><noparse><마을></noparse></color></b> 상점에서 {0}을(를) 구매했습니다.,<b><color=#50FA7B><noparse><VILLAGE></noparse></color></b> Purchased {0} from the shop.
+UI_Log_Minigame_Start,<b><color=#BD93F9><noparse><미니게임></noparse></color></b> 미니게임이 시작되었습니다.,<b><color=#BD93F9><noparse><MINIGAME></noparse></color></b> The minigame has started.
+UI_Log_Minigame_Win,<b><color=#BD93F9><noparse><미니게임></noparse></color></b> 미니게임에서 승리했습니다!,<b><color=#BD93F9><noparse><MINIGAME></noparse></color></b> You won the minigame!
+UI_Log_Minigame_Lose,<b><color=#BD93F9><noparse><미니게임></noparse></color></b> 미니게임에서 패배했습니다...,<b><color=#BD93F9><noparse><MINIGAME></noparse></color></b> You lost the minigame...
