@@ -1,3 +1,5 @@
+using System;
+using PrimeTween;
 using TMPro;
 using UnityEngine;
 
@@ -5,11 +7,38 @@ namespace Village
 {
     public class VillageStatusUI : MonoBehaviour
     {
-        [Header("Panel")]
-        [SerializeField] private GameObject statusPanel;
+        [Header("Panel & Window")]
+        [SerializeField] private CanvasGroup statusCanvasGroup;
+        [SerializeField] private RectTransform windowContent;
 
         [Header("Text")]
         [SerializeField] private TextMeshProUGUI statusText;
+
+        [Header("Animation Settings")]
+        [SerializeField] private float openDuration = 0.25f;
+        [SerializeField] private float closeDuration = 0.18f;
+        [SerializeField] private float startScale = 0.85f;
+        [SerializeField] private Ease openEase = Ease.OutBack;
+        [SerializeField] private Ease closeEase = Ease.InCubic;
+
+        private Sequence animSequence;
+
+        private void Awake()
+        {
+            if (statusCanvasGroup != null)
+            {
+                statusCanvasGroup.alpha = 0f;
+                statusCanvasGroup.interactable = false;
+                statusCanvasGroup.blocksRaycasts = false;
+                statusCanvasGroup.gameObject.SetActive(false);
+
+                if (windowContent == null)
+                {
+                    // windowContent가 별도 지정되지 않은 경우 CanvasGroup의 RectTransform 사용
+                    windowContent = statusCanvasGroup.GetComponent<RectTransform>();
+                }
+            }
+        }
 
         private void OnEnable()
         {
@@ -22,18 +51,56 @@ namespace Village
             {
                 LocalizationManager.Instance.OnLanguageChanged -= OnLanguageChanged;
             }
+            animSequence.Stop();
         }
 
         public void Open()
         {
+            if (statusCanvasGroup == null) return;
+
             Refresh();
-            statusPanel.SetActive(true);
-            // statusPanel.transform.SetAsLastSibling();
+
+            animSequence.Stop();
+
+            statusCanvasGroup.gameObject.SetActive(true);
+            statusCanvasGroup.alpha = 0f;
+            statusCanvasGroup.interactable = false;
+            statusCanvasGroup.blocksRaycasts = true;
+
+            if (windowContent != null)
+            {
+                windowContent.localScale = Vector3.one * startScale;
+            }
+
+            animSequence = Sequence.Create()
+                .Group(Tween.Alpha(statusCanvasGroup, startValue: 0f, endValue: 1f, duration: openDuration, ease: Ease.OutQuad))
+                .Group(windowContent != null
+                    ? Tween.Scale(windowContent, startValue: startScale, endValue: 1f, duration: openDuration, ease: openEase)
+                    : default)
+                .OnComplete(() =>
+                {
+                    statusCanvasGroup.interactable = true;
+                });
         }
 
         public void Close()
         {
-            statusPanel.SetActive(false);
+            if (statusCanvasGroup == null) return;
+
+            animSequence.Stop();
+
+            statusCanvasGroup.interactable = false;
+
+            animSequence = Sequence.Create()
+                .Group(Tween.Alpha(statusCanvasGroup, startValue: statusCanvasGroup.alpha, endValue: 0f, duration: closeDuration, ease: closeEase))
+                .Group(windowContent != null
+                    ? Tween.Scale(windowContent, endValue: startScale, duration: closeDuration, ease: closeEase)
+                    : default)
+                .OnComplete(() =>
+                {
+                    statusCanvasGroup.blocksRaycasts = false;
+                    statusCanvasGroup.gameObject.SetActive(false);
+                });
         }
 
         public void Refresh()
@@ -67,7 +134,10 @@ namespace Village
 
         private void OnLanguageChanged()
         {
-            if (statusPanel.activeSelf) Refresh();
+            if (statusCanvasGroup != null && statusCanvasGroup.gameObject.activeSelf)
+            {
+                Refresh();
+            }
         }
     }
 }
