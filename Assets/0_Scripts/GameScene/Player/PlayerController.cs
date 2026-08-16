@@ -126,6 +126,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     private void Awake()
     {
+        EffectPoints = GetComponent<PlayerEffectPoints>();
         //애니메이션 컨트롤러 할당
         if (!TryGetComponent(out animationController))
         {
@@ -163,7 +164,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         // 캐릭터 본체 모델만 숨기고 그림자는 남김 (휴머노이드 손 축에 별도로 붙은 도끼는 렌더링 유지)
         HideCharacterModelBody();
-        EffectPoints = GetComponent<PlayerEffectPoints>();
+
 
         if (firstPersonObjects != null)
         {
@@ -255,6 +256,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     private void Start()
     {
+        PlayerObjectRegistry.Register(this);
         if (!photonView.IsMine) return;
         TrySubscribeEvents();
     }
@@ -291,6 +293,11 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
             isSubscribed = false;
         }
+    }
+
+    private void OnDestroy()
+    {
+        PlayerObjectRegistry.Unregister(this);
     }
 
     private bool inputLocked = true;

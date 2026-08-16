@@ -99,24 +99,50 @@ public class TimeManager : MonoBehaviourPunCallbacks
 
         int curTurnNum = GameHelper.getCurrentTurnActorNum();
 
-        //요청자 정보가 있고, 해당 요청자가 현재 턴인 경우
-        if (Requester != null && curTurnNum == Requester.ActorNumber)
+        Debug.Log($"[TimeManager] Timer End / CurrentTurn={curTurnNum}");
+        Player currentTurnPlayer = PhotonNetwork.CurrentRoom.GetPlayer(curTurnNum);
+
+        if (currentTurnPlayer != null)
         {
-            //해당 요청자에게 턴 종료 처리 진행하도록 설정
-            photonView.RPC(nameof(RPC_RequesterTurnEnded), Requester);
+            Debug.Log($"[TimeManager] Auto Turn End → Actor {currentTurnPlayer.ActorNumber}");
+            photonView.RPC(nameof(RPC_RequesterTurnEnded), currentTurnPlayer);
         }
-        //요청자가 현재 턴이 아니고, 싱글 플레이 모드인 경우
         else if (GameManager.Instance.isSoloPlay)
         {
-            //현재 턴에 해당되는 ai 오브젝트를 가져오고
             if (PlayerManager.Instance.AIPlayerObj.TryGetValue(curTurnNum, out GameObject AI))
             {
-                //관련 함수 실행
-                AIController AC = AI.GetComponent<AIController>();
-                AC.ForceStopAndTeleportToHit();
-                AC.TryHit(true);
+                AIController ac = AI.GetComponent<AIController>();
+
+                if (ac != null)
+                {
+                    ac.ForceStopAndTeleportToHit();
+                    ac.TryHit(true);
+                }
             }
         }
+        else
+        {
+            Debug.LogError($"[TimeManager] Current turn player not found. ActorNumber={curTurnNum}");
+        }
+
+        // //요청자 정보가 있고, 해당 요청자가 현재 턴인 경우
+        // if (Requester != null && curTurnNum == Requester.ActorNumber)
+        // {
+        //     //해당 요청자에게 턴 종료 처리 진행하도록 설정
+        //     photonView.RPC(nameof(RPC_RequesterTurnEnded), Requester);
+        // }
+        // //요청자가 현재 턴이 아니고, 싱글 플레이 모드인 경우
+        // else if (GameManager.Instance.isSoloPlay)
+        // {
+        //     //현재 턴에 해당되는 ai 오브젝트를 가져오고
+        //     if (PlayerManager.Instance.AIPlayerObj.TryGetValue(curTurnNum, out GameObject AI))
+        //     {
+        //         //관련 함수 실행
+        //         AIController AC = AI.GetComponent<AIController>();
+        //         AC.ForceStopAndTeleportToHit();
+        //         AC.TryHit(true);
+        //     }
+        // }
 
         _startTime = -1f;
         _endTime = -1f;

@@ -86,24 +86,21 @@ MonoBehaviour:
     pitchRange: {x: 0, y: 0}
     is3D: 0
   - id: Time_Ticks
-    clip: {fileID: 0}
-    randomClips:
-    - {fileID: 8300000, guid: 44a9f0599fee1684a97a490845bc0afa, type: 3}
-    - {fileID: 8300000, guid: 605e9f473581eb5458f332cebfdc2f6e, type: 3}
-    - {fileID: 8300000, guid: 1bb8e394f15023645a84b920bfc01b49, type: 3}
+    clip: {fileID: 8300000, guid: 44a9f0599fee1684a97a490845bc0afa, type: 3}
+    randomClips: []
     useRandomClip: 1
-    volume: 1
+    volume: 0.5
     pitch: 1
-    useRandomPitch: 1
+    useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
   - id: Time_Onetick
     clip: {fileID: 8300000, guid: 28ad6c9cb0e6f5b40856e41002956af5, type: 3}
     randomClips: []
     useRandomClip: 0
-    volume: 1
+    volume: 0.5
     pitch: 1
-    useRandomPitch: 1
+    useRandomPitch: 0
     pitchRange: {x: 0.95, y: 1.05}
     is3D: 0
   - id: Village_Peaceful_BGM
