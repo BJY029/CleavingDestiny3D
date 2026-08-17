@@ -175,23 +175,23 @@ PrefabInstance:
     - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
       propertyPath: 'npcSprites.Array.data[0]'
       value: 
-      objectReference: {fileID: 21300000, guid: d31cdf1cafbc6004ab58c14c779cbe4f, type: 3}
+      objectReference: {fileID: 21300000, guid: b328511331f3b4b489c8389dfa47f717, type: 3}
     - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
       propertyPath: 'npcSprites.Array.data[1]'
       value: 
-      objectReference: {fileID: 21300000, guid: d31cdf1cafbc6004ab58c14c779cbe4f, type: 3}
+      objectReference: {fileID: 21300000, guid: c9caa4eb593111c4aa1cf1d917d3fdd0, type: 3}
     - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
       propertyPath: 'npcSprites.Array.data[2]'
       value: 
-      objectReference: {fileID: 21300000, guid: d31cdf1cafbc6004ab58c14c779cbe4f, type: 3}
+      objectReference: {fileID: 21300000, guid: 9a970bd755062fe48912bc3d3e216e55, type: 3}
     - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
       propertyPath: 'npcSprites.Array.data[3]'
       value: 
-      objectReference: {fileID: 21300000, guid: d31cdf1cafbc6004ab58c14c779cbe4f, type: 3}
+      objectReference: {fileID: 21300000, guid: b7b19aa344c97ea49905ce445350adc2, type: 3}
     - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
       propertyPath: 'npcSprites.Array.data[4]'
       value: 
-      objectReference: {fileID: 21300000, guid: d31cdf1cafbc6004ab58c14c779cbe4f, type: 3}
+      objectReference: {fileID: 21300000, guid: 8e942a725db00f4449e53b6034957548, type: 3}
     - target: {fileID: 8414250416275870679, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
