@@ -27,6 +27,12 @@ public class EffectDataSO : ScriptableObject
     [Header("Follow")]
     [SerializeField] private bool followTarget;
 
+    [Header("Value Color")]
+    [SerializeField] private bool useValueColor;
+    [SerializeField] private float colorMinValue;
+    [SerializeField] private float colorMaxValue = 1f;
+    [SerializeField] private Gradient colorGradient;
+
     public string EffectId => effectId;
     public GameObject Prefab => prefab;
     public EffectLifetimeType LifetimeType => lifetimeType;
@@ -35,4 +41,17 @@ public class EffectDataSO : ScriptableObject
     public Vector3 RotationOffset => rotationOffset;
     public Vector3 Scale => scale;
     public bool FollowTarget => followTarget;
+    public bool UseValueColor => useValueColor;
+
+    public Color GetColor(float value)
+    {
+        if (!useValueColor || colorGradient == null)
+        {
+            return Color.white;
+        }
+
+        float normalized = Mathf.InverseLerp(colorMinValue, colorMaxValue, value);
+
+        return colorGradient.Evaluate(normalized);
+    }
 }

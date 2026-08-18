@@ -315,7 +315,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
         attackRequestSent = true;
 
-        ItemVFXController.Instance.Any_StopItemVFX(VFXType.PowerUP, PlayerActNum);
+        ItemVFXController.Instance.ResetTurnVFX(PlayerActNum);
         TurnManager.Instance.RequestChangeTurn(damage, this);
     }
 

@@ -17,6 +17,8 @@ public class ItemVFXController : MonoBehaviourPun
 
     private readonly Dictionary<(VFXType, int), EffectInstance> activeEffects = new();
 
+    private float dmgMultiplier = 1f;
+
     private void Awake()
     {
         if (Instance == null || Instance == this) Instance = this;
@@ -31,13 +33,17 @@ public class ItemVFXController : MonoBehaviourPun
             return;
         }
 
+        VFXType vfxType;
+        float? colorValue = null;
+
         bool isAITurn = GameManager.Instance.isSoloPlay && actorNumber == PlayerManager.Instance.AIActNum;
         if (!isAITurn)
         {
             switch (item.type)
             {
                 case ItemType.Damage:
-                    photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PowerUP, actorNumber);
+                    CalcDmgMultiplierValue(item);
+                    photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PowerUP, actorNumber, dmgMultiplier);
                     break;
                 default:
                     break;
@@ -48,12 +54,19 @@ public class ItemVFXController : MonoBehaviourPun
             switch (item.type)
             {
                 case ItemType.Damage:
-                    AIMode_PlayItemVFX(VFXType.PowerUP, actorNumber);
+                    CalcDmgMultiplierValue(item);
+                    AIMode_PlayItemVFX(VFXType.PowerUP, actorNumber, dmgMultiplier);
                     break;
                 default:
                     break;
             }
         }
+    }
+
+    public void ResetTurnVFX(int actorNum)
+    {
+        Any_StopItemVFX(VFXType.PowerUP, actorNum);
+        dmgMultiplier = 1f;
     }
 
     public void Any_StopItemVFX(VFXType vfxType, int actorNum)
@@ -70,8 +83,18 @@ public class ItemVFXController : MonoBehaviourPun
         }
     }
 
+    private void CalcDmgMultiplierValue(ItemSO item)
+    {
+        for (int i = 0; i < item.effects.Count; i++)
+        {
+            StatusSpec ss = item.effects[i].statusSpce;
+            if (ss != null) dmgMultiplier *= ss.multiplier;
+        }
+    }
+
+
     [PunRPC]
-    private void Client_PlayItemVFX(VFXType vfxType, int actorNum)
+    private void Client_PlayItemVFX(VFXType vfxType, int actorNum, float colorValue)
     {
         if (!PlayerObjectRegistry.TryGet(actorNum, out PlayerController pc))
         {
@@ -94,14 +117,14 @@ public class ItemVFXController : MonoBehaviourPun
                     return;
                 }
 
-                PlayAndRegister(vfxType, actorNum, "PowerUp", pc.EffectPoints.Axe);
+                PlayOrUpdateVFX(vfxType, actorNum, "PowerUp", pc.EffectPoints.Axe, colorValue);
                 break;
             default:
                 break;
         }
     }
 
-    private void AIMode_PlayItemVFX(VFXType vfxType, int aiNum)
+    private void AIMode_PlayItemVFX(VFXType vfxType, int aiNum, float? colorValue = null)
     {
         if (!PlayerObjectRegistry.TryGet(aiNum, out AIController ac))
         {
@@ -124,7 +147,7 @@ public class ItemVFXController : MonoBehaviourPun
                     return;
                 }
 
-                PlayAndRegister(vfxType, aiNum, "PowerUp", ac.EffectPoints.Axe);
+                PlayOrUpdateVFX(vfxType, aiNum, "PowerUp", ac.EffectPoints.Axe, colorValue);
                 break;
             default:
                 break;
@@ -137,20 +160,28 @@ public class ItemVFXController : MonoBehaviourPun
         StopItemVFX(vfxType, actorNum);
     }
 
-    private void PlayAndRegister(VFXType vfxType, int actorNum, string effectId, Transform target)
+    private void PlayOrUpdateVFX(VFXType vfxType, int actorNum, string effectId, Transform target, float? colorValue = null)
     {
         (VFXType, int) key = (vfxType, actorNum);
 
         if (activeEffects.TryGetValue(key, out EffectInstance currentEffect))
         {
-            if (currentEffect != null) currentEffect.Stop();
-            activeEffects.Remove(key);
+            if (currentEffect != null && colorValue.HasValue)
+            {
+                currentEffect.SetColorByValue(colorValue.Value);
+            }
+
+            return;
         }
 
-        EffectInstance instance = GameVFXManager.Instance.Play(effectId, target);
+        EffectInstance instance = GameVFXManager.Instance.Play(effectId, target, 1f, colorValue);
 
-        if (instance != null) activeEffects[key] = instance;
+        if (instance != null)
+        {
+            activeEffects[key] = instance;
+        }
     }
+
 
     private void StopItemVFX(VFXType vfxType, int actorNum)
     {

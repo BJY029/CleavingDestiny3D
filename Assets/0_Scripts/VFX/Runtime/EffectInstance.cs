@@ -7,6 +7,7 @@ public class EffectInstance : MonoBehaviour
     private GameVFXManager owner;
     private EffectDataSO effectData;
     private ParticleSystem[] particleSystems;
+    private ParticleSystem.MinMaxGradient[] defaultColors;
 
     private bool isPlaying;
     private int playVersion;
@@ -16,6 +17,13 @@ public class EffectInstance : MonoBehaviour
     private void Awake()
     {
         particleSystems = GetComponentsInChildren<ParticleSystem>(true);
+        defaultColors = new ParticleSystem.MinMaxGradient[particleSystems.Length];
+
+        for (int i = 0; i < particleSystems.Length; i++)
+        {
+            ParticleSystem.MainModule main = particleSystems[i].main;
+            defaultColors[i] = main.startColor;
+        }
     }
 
     public void Initialize(GameVFXManager manager, EffectDataSO data)
@@ -24,6 +32,34 @@ public class EffectInstance : MonoBehaviour
         effectData = data;
     }
 
+    public void SetColor(Color color)
+    {
+        foreach (ParticleSystem particleSystem in particleSystems)
+        {
+            ParticleSystem.MainModule main = particleSystem.main;
+            main.startColor = color;
+        }
+    }
+
+    public void SetColorByValue(float value)
+    {
+        if (!effectData.UseValueColor)
+        {
+            return;
+        }
+
+        Color color = effectData.GetColor(value);
+        SetColor(color);
+    }
+
+    public void ResetColor()
+    {
+        for (int i = 0; i < particleSystems.Length; i++)
+        {
+            ParticleSystem.MainModule main = particleSystems[i].main;
+            main.startColor = defaultColors[i];
+        }
+    }
     public void Play()
     {
         isPlaying = true;

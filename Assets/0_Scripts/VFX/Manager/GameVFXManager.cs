@@ -26,7 +26,7 @@ public class GameVFXManager : MonoBehaviour
     /// </summary>
     /// <param name="effectId">effect id</param>
     /// <param name="position">effect position</param>
-    public EffectInstance Play(string effectId, Vector3 position)
+    public EffectInstance Play(string effectId, Vector3 position, float? colorValue = null)
     {
         if (!effectCatalog.TryGetEffect(effectId, out EffectDataSO effectData))
         {
@@ -40,6 +40,15 @@ public class GameVFXManager : MonoBehaviour
         instance.transform.position = position + effectData.PositionOffset;
         instance.transform.rotation = Quaternion.Euler(effectData.RotationOffset);
 
+        if (colorValue.HasValue && effectData.UseValueColor)
+        {
+            instance.SetColor(effectData.GetColor(colorValue.Value));
+        }
+        else
+        {
+            instance.ResetColor();
+        }
+
         instance.Play();
 
         return instance;
@@ -50,7 +59,7 @@ public class GameVFXManager : MonoBehaviour
     /// </summary>
     /// <param name="effectId">effect id</param>
     /// <param name="target">Play target transform</param>
-    public EffectInstance Play(string effectId, Transform target, float scaleMultiplier = 1f)
+    public EffectInstance Play(string effectId, Transform target, float scaleMultiplier = 1f, float? colorValue = null)
     {
         if (target == null) return null;
 
@@ -76,6 +85,16 @@ public class GameVFXManager : MonoBehaviour
         }
 
         instance.transform.localScale = effectData.Scale * scaleMultiplier;
+
+        if (colorValue.HasValue && effectData.UseValueColor)
+        {
+            Color color = effectData.GetColor(colorValue.Value);
+            instance.SetColor(color);
+        }
+        else
+        {
+            instance.ResetColor();
+        }
 
         instance.Play();
 
