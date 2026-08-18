@@ -8,9 +8,14 @@ public class EffectInstance : MonoBehaviour
     private EffectDataSO effectData;
     private ParticleSystem[] particleSystems;
 
+    private bool isPlaying;
+    private int playVersion;
+
+    public bool IsPlaying => isPlaying;
+
     private void Awake()
     {
-        particleSystems = GetComponentsInChildren<ParticleSystem>();
+        particleSystems = GetComponentsInChildren<ParticleSystem>(true);
     }
 
     public void Initialize(GameVFXManager manager, EffectDataSO data)
@@ -19,8 +24,11 @@ public class EffectInstance : MonoBehaviour
         effectData = data;
     }
 
-    public async UniTaskVoid Play()
+    public void Play()
     {
+        isPlaying = true;
+        playVersion++;
+
         gameObject.SetActive(true);
 
         foreach (ParticleSystem particleSystem in particleSystems)
@@ -29,7 +37,32 @@ public class EffectInstance : MonoBehaviour
             particleSystem.Play(true);
         }
 
+        if (effectData.LifetimeType == EffectLifetimeType.Duration)
+        {
+            AutoStop(playVersion).Forget();
+        }
+    }
+
+    public async UniTaskVoid AutoStop(int version)
+    {
         await UniTask.Delay(TimeSpan.FromSeconds(effectData.Duration), cancellationToken: this.GetCancellationTokenOnDestroy());
+
+        if (!isPlaying || version != playVersion) return;
+
+        Stop();
+    }
+
+    public void Stop()
+    {
+        if (!isPlaying) return;
+
+        isPlaying = false;
+        playVersion--;
+
+        foreach (ParticleSystem particleSystem in particleSystems)
+        {
+            particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
 
         owner.Return(effectData.EffectId, this);
     }

@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EffectDataSO
   effectId: PowerUp
   prefab: {fileID: 207745087118991948, guid: e656699b143494148a872961a9feb410, type: 3}
+  lifetimeType: 1
   duration: 2
-  positionOffset: {x: 0, y: 0, z: 0}
+  positionOffset: {x: 0, y: -0.3, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
+  scale: {x: 0.2, y: 0.4, z: 0.2}
   followTarget: 1

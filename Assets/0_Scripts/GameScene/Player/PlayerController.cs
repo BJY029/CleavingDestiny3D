@@ -572,6 +572,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         attackRequestSent = false;
         animationController?.PlayStrikeAnimation();
+        //ItemVFXController.Instance.Any_StopItemVFX(VFXType.PowerUP, PlayerActNum);
     }
 
     // 시간 초과 / 타임아웃 자동 실행용 : 나무베기 준비 후 풀게이지(100%) 타격 자동 진행
@@ -739,6 +740,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         attackRequestSent = true;
 
         TurnManager.Instance.RequestChangeTurn(damage, this);
+        ItemVFXController.Instance.Any_StopItemVFX(VFXType.PowerUP, PlayerActNum);
     }
 
     //HIT 애니메이션이 종료된 후 behaviour에 등록된 NotifyOnAnimExit로 호출되는 함수

@@ -1,5 +1,6 @@
 using Photon.Pun;
 using UnityEngine;
+using System.Collections.Generic;
 
 public enum VFXType : byte
 {
@@ -13,6 +14,8 @@ public enum VFXType : byte
 public class ItemVFXController : MonoBehaviourPun
 {
     public static ItemVFXController Instance;
+
+    private readonly Dictionary<(VFXType, int), EffectInstance> activeEffects = new();
 
     private void Awake()
     {
@@ -28,8 +31,8 @@ public class ItemVFXController : MonoBehaviourPun
             return;
         }
 
-        bool isAIMode = GameManager.Instance.isSoloPlay;
-        if (!isAIMode)
+        bool isAITurn = GameManager.Instance.isSoloPlay && actorNumber == PlayerManager.Instance.AIActNum;
+        if (!isAITurn)
         {
             switch (item.type)
             {
@@ -50,6 +53,20 @@ public class ItemVFXController : MonoBehaviourPun
                 default:
                     break;
             }
+        }
+    }
+
+    public void Any_StopItemVFX(VFXType vfxType, int actorNum)
+    {
+        bool isAIMode = GameManager.Instance.isSoloPlay;
+
+        if (!isAIMode)
+        {
+            photonView.RPC(nameof(Client_StopItemVFX), RpcTarget.All, vfxType, actorNum);
+        }
+        else
+        {
+            StopItemVFX(vfxType, actorNum);
         }
     }
 
@@ -76,7 +93,8 @@ public class ItemVFXController : MonoBehaviourPun
                     Debug.LogWarning($"[ItemVFXController] Axe EffectPoint not found. ActorNumber={actorNum}");
                     return;
                 }
-                GameVFXManager.Instance.Play("PowerUp", pc.EffectPoints.Axe);
+
+                PlayAndRegister(vfxType, actorNum, "PowerUp", pc.EffectPoints.Axe);
                 break;
             default:
                 break;
@@ -105,10 +123,48 @@ public class ItemVFXController : MonoBehaviourPun
                     Debug.LogWarning($"[ItemVFXController] Axe EffectPoint not found. ActorNumber={aiNum}");
                     return;
                 }
-                GameVFXManager.Instance.Play("PowerUp", ac.EffectPoints.Axe);
+
+                PlayAndRegister(vfxType, aiNum, "PowerUp", ac.EffectPoints.Axe);
                 break;
             default:
                 break;
         }
+    }
+
+    [PunRPC]
+    private void Client_StopItemVFX(VFXType vfxType, int actorNum)
+    {
+        StopItemVFX(vfxType, actorNum);
+    }
+
+    private void PlayAndRegister(VFXType vfxType, int actorNum, string effectId, Transform target)
+    {
+        (VFXType, int) key = (vfxType, actorNum);
+
+        if (activeEffects.TryGetValue(key, out EffectInstance currentEffect))
+        {
+            if (currentEffect != null) currentEffect.Stop();
+            activeEffects.Remove(key);
+        }
+
+        EffectInstance instance = GameVFXManager.Instance.Play(effectId, target);
+
+        if (instance != null) activeEffects[key] = instance;
+    }
+
+    private void StopItemVFX(VFXType vfxType, int actorNum)
+    {
+        Debug.LogWarning("Stopping Effect");
+        (VFXType, int) key = (vfxType, actorNum);
+
+        if (!activeEffects.TryGetValue(key, out EffectInstance instance))
+        {
+            Debug.LogWarning($"[ItemVFXController] There is no {vfxType.ToString()} in DIC");
+            return;
+        }
+
+        if (instance != null) instance.Stop();
+
+        activeEffects.Remove(key);
     }
 }

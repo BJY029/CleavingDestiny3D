@@ -1,5 +1,11 @@
 using UnityEngine;
 
+public enum EffectLifetimeType
+{
+    Duration,
+    Manual
+}
+
 [CreateAssetMenu(fileName = "EffectDataSO", menuName = "Scriptable Objects/EffectDataSO")]
 public class EffectDataSO : ScriptableObject
 {
@@ -10,19 +16,23 @@ public class EffectDataSO : ScriptableObject
     [SerializeField] private GameObject prefab;
 
     [Header("Lifetime")]
+    [SerializeField] private EffectLifetimeType lifetimeType = EffectLifetimeType.Duration;
     [SerializeField] private float duration = 2f;
 
     [Header("Transform")]
     [SerializeField] private Vector3 positionOffset;
     [SerializeField] private Vector3 rotationOffset;
+    [SerializeField] private Vector3 scale = Vector3.one;
 
     [Header("Follow")]
     [SerializeField] private bool followTarget;
 
     public string EffectId => effectId;
     public GameObject Prefab => prefab;
+    public EffectLifetimeType LifetimeType => lifetimeType;
     public float Duration => duration;
     public Vector3 PositionOffset => positionOffset;
     public Vector3 RotationOffset => rotationOffset;
+    public Vector3 Scale => scale;
     public bool FollowTarget => followTarget;
 }

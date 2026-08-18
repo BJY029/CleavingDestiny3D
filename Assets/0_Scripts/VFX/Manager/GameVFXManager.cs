@@ -26,12 +26,12 @@ public class GameVFXManager : MonoBehaviour
     /// </summary>
     /// <param name="effectId">effect id</param>
     /// <param name="position">effect position</param>
-    public void Play(string effectId, Vector3 position)
+    public EffectInstance Play(string effectId, Vector3 position)
     {
         if (!effectCatalog.TryGetEffect(effectId, out EffectDataSO effectData))
         {
             Debug.LogWarning($"[GameVFXManager] Effect not found : {effectId}");
-            return;
+            return null;
         }
 
         EffectInstance instance = Get(effectData);
@@ -40,7 +40,9 @@ public class GameVFXManager : MonoBehaviour
         instance.transform.position = position + effectData.PositionOffset;
         instance.transform.rotation = Quaternion.Euler(effectData.RotationOffset);
 
-        instance.Play().Forget();
+        instance.Play();
+
+        return instance;
     }
 
     /// <summary>
@@ -48,14 +50,14 @@ public class GameVFXManager : MonoBehaviour
     /// </summary>
     /// <param name="effectId">effect id</param>
     /// <param name="target">Play target transform</param>
-    public void Play(string effectId, Transform target)
+    public EffectInstance Play(string effectId, Transform target, float scaleMultiplier = 1f)
     {
-        if (target == null) return;
+        if (target == null) return null;
 
         if (!effectCatalog.TryGetEffect(effectId, out EffectDataSO effectData))
         {
             Debug.LogWarning($"[GameVFXManager] Effect not found : {effectId}");
-            return;
+            return null;
         }
 
         EffectInstance instance = Get(effectData);
@@ -73,7 +75,11 @@ public class GameVFXManager : MonoBehaviour
             instance.transform.rotation = Quaternion.Euler(effectData.RotationOffset);
         }
 
-        instance.Play().Forget();
+        instance.transform.localScale = effectData.Scale * scaleMultiplier;
+
+        instance.Play();
+
+        return instance;
     }
 
     private EffectInstance Get(EffectDataSO effectData)
