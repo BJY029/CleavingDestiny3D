@@ -139,6 +139,7 @@ MonoBehaviour:
   - RPC_PlayMissionFailedSFX
   - Client_PlayItemVFX
   - Client_StopItemVFX
+  - RPC_Master_ResetTurnVFX
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

@@ -740,7 +740,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         attackRequestSent = true;
 
         TurnManager.Instance.RequestChangeTurn(damage, this);
-        ItemVFXController.Instance.ResetTurnVFX(PlayerActNum);
+        ItemVFXController.Instance.Master_ResetTurnVFX(PlayerActNum);
     }
 
     //HIT 애니메이션이 종료된 후 behaviour에 등록된 NotifyOnAnimExit로 호출되는 함수

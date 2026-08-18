@@ -16,8 +16,7 @@ public class ItemVFXController : MonoBehaviourPun
     public static ItemVFXController Instance;
 
     private readonly Dictionary<(VFXType, int), EffectInstance> activeEffects = new();
-
-    private float dmgMultiplier = 1f;
+    private readonly Dictionary<int, float> dmgMultipliers = new();
 
     private void Awake()
     {
@@ -33,43 +32,78 @@ public class ItemVFXController : MonoBehaviourPun
             return;
         }
 
-        VFXType vfxType;
-        float? colorValue = null;
-
         bool isAITurn = GameManager.Instance.isSoloPlay && actorNumber == PlayerManager.Instance.AIActNum;
-        if (!isAITurn)
+
+        switch (item.type)
         {
-            switch (item.type)
-            {
-                case ItemType.Damage:
-                    CalcDmgMultiplierValue(item);
-                    photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PowerUP, actorNumber, dmgMultiplier);
+            case ItemType.Damage:
+                {
+                    float dmgMultiplier = CalcDmgMultiplierValue(item, actorNumber);
+
+                    if (isAITurn)
+                        AIMode_PlayItemVFX(VFXType.PowerUP, actorNumber, dmgMultiplier);
+                    else
+                        photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PowerUP, actorNumber, dmgMultiplier);
+
                     break;
-                default:
-                    break;
-            }
-        }
-        else
-        {
-            switch (item.type)
-            {
-                case ItemType.Damage:
-                    CalcDmgMultiplierValue(item);
-                    AIMode_PlayItemVFX(VFXType.PowerUP, actorNumber, dmgMultiplier);
-                    break;
-                default:
-                    break;
-            }
+                }
         }
     }
 
-    public void ResetTurnVFX(int actorNum)
+    public void Master_ResetTurnVFX(int actorNum)
     {
-        Any_StopItemVFX(VFXType.PowerUP, actorNum);
-        dmgMultiplier = 1f;
+        photonView.RPC(nameof(RPC_Master_ResetTurnVFX), RpcTarget.MasterClient, actorNum);
     }
 
-    public void Any_StopItemVFX(VFXType vfxType, int actorNum)
+    [PunRPC]
+    public void RPC_Master_ResetTurnVFX(int actorNum)
+    {
+        if (!GameManager.Instance.isSoloPlay && !PhotonNetwork.IsMasterClient)
+        {
+            return;
+        }
+
+        Master_StopItemVFX(VFXType.PowerUP, actorNum);
+
+        ResetDmgMultiplier(actorNum);
+    }
+
+    private float CalcDmgMultiplierValue(ItemSO item, int actorNum)
+    {
+        float multiplier = GetDmgMultiplier(actorNum);
+
+        for (int i = 0; i < item.effects.Count; i++)
+        {
+            StatusSpec ss = item.effects[i].statusSpce;
+
+            if (ss != null)
+            {
+                multiplier *= ss.multiplier;
+            }
+        }
+
+        dmgMultipliers[actorNum] = multiplier;
+
+        return multiplier;
+    }
+
+    private float GetDmgMultiplier(int actorNum)
+    {
+        if (!dmgMultipliers.TryGetValue(actorNum, out float multiplier))
+        {
+            multiplier = 1f;
+            dmgMultipliers.Add(actorNum, multiplier);
+        }
+
+        return multiplier;
+    }
+
+    private void ResetDmgMultiplier(int actorNum)
+    {
+        dmgMultipliers[actorNum] = 1f;
+    }
+
+    public void Master_StopItemVFX(VFXType vfxType, int actorNum)
     {
         bool isAIMode = GameManager.Instance.isSoloPlay;
 
@@ -80,15 +114,6 @@ public class ItemVFXController : MonoBehaviourPun
         else
         {
             StopItemVFX(vfxType, actorNum);
-        }
-    }
-
-    private void CalcDmgMultiplierValue(ItemSO item)
-    {
-        for (int i = 0; i < item.effects.Count; i++)
-        {
-            StatusSpec ss = item.effects[i].statusSpce;
-            if (ss != null) dmgMultiplier *= ss.multiplier;
         }
     }
 
