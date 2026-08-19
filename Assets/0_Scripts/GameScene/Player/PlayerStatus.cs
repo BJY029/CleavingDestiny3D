@@ -3,6 +3,7 @@ using Photon.Realtime;
 using System.Linq;
 using UnityEngine;
 using ExitGames.Client.Photon;
+using System.Collections.Generic;
 
 public class PlayerStatus : MonoBehaviourPunCallbacks
 {
@@ -17,6 +18,9 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		}
 		Instance = this;
 	}
+
+	public readonly Dictionary<int, Transform> playerVillageVFXBases = new();
+	[SerializeField] private Transform[] VillageVFXBase;
 
 	//플레이어의 인벤토리
 	private GameObject myInventory;
@@ -56,6 +60,15 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	{
 		if (inv == null) return;
 		AIInventory = inv;
+	}
+
+	public void ApplyVillageVFXBase()
+	{
+		int[] turnList = PhotonPropertyHelper.GetRoomProp<int[]>("TurnInfo");
+		for (int i = 0; i < turnList.Length; i++)
+		{
+			playerVillageVFXBases[turnList[i]] = VillageVFXBase[i];
+		}
 	}
 
 	public GameObject GetPlayerInventory()
@@ -137,11 +150,31 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	}
 
 	// UI 업데이트
-	public void SetPlayerStatusUI()
+	public void SetPlayerStatusUIVFX()
 	{
 		GetCurrentPlayerStatus();
 		PlayerCanvasController.Instance.updatePlayerStatus(
 			currentEnergy.ToString(), currentVillageHP.ToString(), currentTotalDamage.ToString(), GetCurrentTotalDefense().ToString(), currentTreeDmgMulit.ToString());
+
+		photonView.RPC(nameof(RPC_SetVillageShieldVFX), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, currentBarrier + currentBarrierArmor);
+	}
+
+	[PunRPC]
+	public void RPC_SetVillageShieldVFX(int actorNum, float barrier)
+	{
+		if (!playerVillageVFXBases.TryGetValue(actorNum, out Transform VFXbase))
+		{
+			Debug.LogError($"[PlayerStatus] There is no VillageVFXBase. ActorNumber={actorNum}");
+			return;
+		}
+
+		if (barrier <= 0f)
+		{
+			GameVFXManager.Instance.StopPersistent("VillageShield", actorNum);
+			return;
+		}
+
+		GameVFXManager.Instance.PlayOrUpdatePersistent("VillageShield", actorNum, VFXbase, 1f, barrier);
 	}
 
 	// 턴 전환 시 플레이어 상태 초기화
@@ -156,7 +189,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	{
 		ApplyInitStatus(PhotonNetwork.LocalPlayer.ActorNumber, true);
 
-		SetPlayerStatusUI();
+		SetPlayerStatusUIVFX();
 
 		if (PhotonNetwork.IsMasterClient && IsSinglePlayer)
 		{
@@ -237,7 +270,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 			changedProps.ContainsKey(PlayerPropKeys.BarrierArmor) ||
 			changedProps.ContainsKey(PlayerPropKeys.TreeAtkMulti))
 		{
-			SetPlayerStatusUI();
+			SetPlayerStatusUIVFX();
 		}
 	}
 

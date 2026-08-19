@@ -207,6 +207,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		InitPlayerProps();
 		if (IsInitializer()) InitAIProps();
+		PlayerStatus.Instance.ApplyVillageVFXBase();
 
 		yield return curtainCoroutine;
 

@@ -1,6 +1,6 @@
 using UnityEngine;
 using Photon.Pun;
-using Cysharp.Threading.Tasks;
+using Photon.Realtime;
 
 public struct AIContext
 {
@@ -37,7 +37,7 @@ public abstract class AILogicModule : MonoBehaviour
 }
 
 //AI 중심 컨트롤러
-public class AIBrain : MonoBehaviour
+public class AIBrain : MonoBehaviourPunCallbacks
 {
     //AI 고유 번호
     public int MyActorNum { get; set; }
@@ -122,6 +122,64 @@ public class AIBrain : MonoBehaviour
         context.curOppVillageHp = PhotonPropertyHelper.GetPlayerProp<float>(OppActNum, PlayerPropKeys.VillageHP);
         context.OppLockCnt = GetValue<int>(props, ItemPropKeys.LOCKCNT(OppActNum));
         return context;
+    }
+
+    public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable Changed)
+    {
+        string attachedKey = $"_{MyActorNum}";
+
+        bool hasEnergy = Changed.TryGetValue(PlayerPropKeys.Energy + attachedKey, out var eng);
+        bool hasMaxEnergy = Changed.TryGetValue(PlayerPropKeys.MaxEnergy + attachedKey, out var Meng);
+
+        if (hasEnergy || hasMaxEnergy)
+        {
+            int currentEnergy = hasEnergy ? (int)eng : PhotonPropertyHelper.GetPlayerProp<int>(MyActorNum, PlayerPropKeys.Energy);
+            int currentMaxEnergy = hasMaxEnergy ? (int)Meng : PhotonPropertyHelper.GetPlayerProp<int>(MyActorNum, PlayerPropKeys.MaxEnergy);
+        }
+
+        bool hasBarrier = Changed.TryGetValue(PlayerPropKeys.VillageBarrier + attachedKey, out var bar);
+        bool hasArmor = Changed.TryGetValue(PlayerPropKeys.BarrierArmor + attachedKey, out var amo);
+
+        if (hasBarrier || hasArmor)
+        {
+            float currentBarrier = hasBarrier ? (float)bar : PhotonPropertyHelper.GetPlayerProp<float>(MyActorNum, PlayerPropKeys.VillageBarrier);
+            float currentArmor = hasArmor ? (float)amo : PhotonPropertyHelper.GetPlayerProp<float>(MyActorNum, PlayerPropKeys.BarrierArmor);
+
+            AI_SetVillageShieldVFX(MyActorNum, currentArmor + currentBarrier);
+        }
+
+
+        if (Changed.TryGetValue(PlayerPropKeys.TotalDamage + attachedKey, out var dmg))
+        {
+
+        }
+
+        if (Changed.TryGetValue(PlayerPropKeys.VillageHP + attachedKey, out var hp))
+        {
+
+        }
+
+        if (Changed.TryGetValue(PlayerPropKeys.TreeAtkMulti + attachedKey, out var mult))
+        {
+
+        }
+    }
+
+    public void AI_SetVillageShieldVFX(int actorNum, float barrier)
+    {
+        if (!PlayerStatus.Instance.playerVillageVFXBases.TryGetValue(actorNum, out Transform VFXbase))
+        {
+            Debug.LogError($"[PlayerStatus] There is no VillageVFXBase. ActorNumber={actorNum}");
+            return;
+        }
+
+        if (barrier <= 0f)
+        {
+            GameVFXManager.Instance.StopPersistent("VillageShield", actorNum);
+            return;
+        }
+
+        GameVFXManager.Instance.PlayOrUpdatePersistent("VillageShield", actorNum, VFXbase, 1f, barrier);
     }
 
     private T GetValue<T>(ExitGames.Client.Photon.Hashtable prop, string key)

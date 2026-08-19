@@ -8,6 +8,7 @@ public class GameVFXManager : MonoBehaviour
     [SerializeField] private EffectCatalogSO effectCatalog;
 
     private readonly Dictionary<string, Queue<EffectInstance>> pools = new();
+    private readonly Dictionary<(string effectId, int owenrId), EffectInstance> persistentEffects = new();
 
     private void Awake()
     {
@@ -99,6 +100,84 @@ public class GameVFXManager : MonoBehaviour
         instance.Play();
 
         return instance;
+    }
+
+    public EffectInstance PlayOrUpdatePersistent(string effectId, int ownerId, Transform target, float scaleMultiplier = 1f, float? colorValue = null)
+    {
+        if (target == null) return null;
+
+        if (!effectCatalog.TryGetEffect(effectId, out EffectDataSO effectData))
+        {
+            Debug.LogWarning($"[GameVFXManager] Effect not found : {effectId}");
+            return null;
+        }
+
+        (string effectId, int ownerId) key = (effectId, ownerId);
+
+        if (persistentEffects.TryGetValue(key, out EffectInstance currentInstance))
+        {
+            if (currentInstance != null)
+            {
+                if (colorValue.HasValue && effectData.UseValueColor)
+                {
+                    currentInstance.SetColorByValue(colorValue.Value);
+                }
+                else
+                {
+                    currentInstance.ResetColor();
+                }
+
+                return currentInstance;
+            }
+
+            persistentEffects.Remove(key);
+        }
+
+        EffectInstance instance = Get(effectData);
+
+        if (effectData.FollowTarget)
+        {
+            instance.transform.SetParent(target);
+            instance.transform.localPosition = effectData.PositionOffset;
+            instance.transform.localRotation = Quaternion.Euler(effectData.RotationOffset);
+        }
+        else
+        {
+            instance.transform.SetParent(null);
+            instance.transform.position = target.position + effectData.PositionOffset;
+            instance.transform.rotation = Quaternion.Euler(effectData.RotationOffset);
+        }
+
+        instance.transform.localScale = effectData.Scale * scaleMultiplier;
+
+        if (colorValue.HasValue && effectData.UseValueColor)
+        {
+            instance.SetColor(effectData.GetColor(colorValue.Value));
+        }
+        else
+        {
+            instance.ResetColor();
+        }
+
+        instance.Play();
+
+        persistentEffects[key] = instance;
+
+        return instance;
+    }
+
+    public void StopPersistent(string effectId, int ownerId)
+    {
+        (string effectId, int ownerId) key = (effectId, ownerId);
+
+        if (!persistentEffects.TryGetValue(key, out EffectInstance instance))
+        {
+            return;
+        }
+
+        if (instance != null) instance.Stop();
+
+        persistentEffects.Remove(key);
     }
 
     private EffectInstance Get(EffectDataSO effectData)
