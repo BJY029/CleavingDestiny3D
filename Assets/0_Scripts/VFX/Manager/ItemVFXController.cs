@@ -16,7 +16,6 @@ public class ItemVFXController : MonoBehaviourPun
     public static ItemVFXController Instance;
 
     private readonly Dictionary<(VFXType, int), EffectInstance> activeEffects = new();
-    private readonly Dictionary<int, float> dmgMultipliers = new();
 
     private void Awake()
     {
@@ -38,7 +37,8 @@ public class ItemVFXController : MonoBehaviourPun
         {
             case ItemType.Damage:
                 {
-                    float dmgMultiplier = CalcDmgMultiplierValue(item, actorNumber);
+                    if (item.target != ItemTarget.Tree) break;
+                    float dmgMultiplier = ItemHandlingSystem.instance.GetCurrentDamageMultiplier(actorNumber);
 
                     if (isAITurn)
                         AIMode_PlayItemVFX(VFXType.PowerUP, actorNumber, dmgMultiplier);
@@ -47,6 +47,20 @@ public class ItemVFXController : MonoBehaviourPun
 
                     break;
                 }
+            case ItemType.Defence:
+                {
+                    if (item.target == ItemTarget.Tree)
+                    {
+                        float dmgMultiplier = ItemHandlingSystem.instance.GetCurrentDamageMultiplier(actorNumber);
+
+                        if (isAITurn)
+                            AIMode_PlayItemVFX(VFXType.PowerUP, actorNumber, dmgMultiplier);
+                        else
+                            photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PowerUP, actorNumber, dmgMultiplier);
+                    }
+                    break;
+                }
+
         }
     }
 
@@ -64,43 +78,6 @@ public class ItemVFXController : MonoBehaviourPun
         }
 
         Master_StopItemVFX(VFXType.PowerUP, actorNum);
-
-        ResetDmgMultiplier(actorNum);
-    }
-
-    private float CalcDmgMultiplierValue(ItemSO item, int actorNum)
-    {
-        float multiplier = GetDmgMultiplier(actorNum);
-
-        for (int i = 0; i < item.effects.Count; i++)
-        {
-            StatusSpec ss = item.effects[i].statusSpce;
-
-            if (ss != null)
-            {
-                multiplier *= ss.multiplier;
-            }
-        }
-
-        dmgMultipliers[actorNum] = multiplier;
-
-        return multiplier;
-    }
-
-    private float GetDmgMultiplier(int actorNum)
-    {
-        if (!dmgMultipliers.TryGetValue(actorNum, out float multiplier))
-        {
-            multiplier = 1f;
-            dmgMultipliers.Add(actorNum, multiplier);
-        }
-
-        return multiplier;
-    }
-
-    private void ResetDmgMultiplier(int actorNum)
-    {
-        dmgMultipliers[actorNum] = 1f;
     }
 
     public void Master_StopItemVFX(VFXType vfxType, int actorNum)

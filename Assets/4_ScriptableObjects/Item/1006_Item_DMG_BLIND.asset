@@ -40,7 +40,8 @@ MonoBehaviour:
       convertRate: 0
       flatValue: 0
       randMin: 20
-      randMax: 200
+      randMax: 2000
       bypassConversion: 1
       basicOnly: 1
       consumeOnTrigger: 0
+    targetTags: 0

@@ -15,11 +15,11 @@ MonoBehaviour:
   itemId: 1005
   displayName_ID: NAME_DMG_TERMITE
   itemDesc_ID: DESC_DMG_TERMITE
-  itemCost: 6
-  type: 0
+  itemCost: 1
+  type: 3
   target: 2
   itemClass: 2
-  itemWeight: 1
+  itemWeight: 9999
   oncePerTurn: 0
   oncePerDay: 1
   oncePerGame: 0

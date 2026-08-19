@@ -618,6 +618,26 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		ClearUsedDayItem();
 		ClearUsedTurnItem();
 	}
+
+	public float GetCurrentDamageMultiplier(int actorNum, bool isBasicAttack = true)
+	{
+		var ctx = new EffectContext(_rng, Debug.Log);
+
+		var dmg = new DamagePacket
+		{
+			attackerNum = actorNum,
+			isBasicAttack = isBasicAttack,
+			baseDamage = 0,
+			multiplier = 1f,
+			overrideDamage = -1,
+			convertRateOverride = -1f
+		};
+
+		var result = _damageResolver.ResolveRatio(dmg, ctx);
+
+		return result.dmgMultiRate;
+	}
+
 	// public void OnTreeDamage()
 	// {
 	// 	if (!PhotonNetwork.IsMasterClient) return;
