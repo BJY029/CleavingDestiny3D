@@ -152,11 +152,15 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	// UI 업데이트
 	public void SetPlayerStatusUIVFX()
 	{
+		int prvEng = currentEnergy;
 		GetCurrentPlayerStatus();
 		PlayerCanvasController.Instance.updatePlayerStatus(
 			currentEnergy.ToString(), currentVillageHP.ToString(), currentTotalDamage.ToString(), GetCurrentTotalDefense().ToString(), currentTreeDmgMulit.ToString());
 
 		photonView.RPC(nameof(RPC_SetVillageShieldVFX), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, currentBarrier + currentBarrierArmor);
+
+		if (GameStarter.instance.CurrentPhase == GameStartPhase.MainGame)
+			photonView.RPC(nameof(RPC_SetEnergyVFX), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, currentEnergy - prvEng);
 	}
 
 	[PunRPC]
@@ -175,6 +179,23 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		}
 
 		GameVFXManager.Instance.PlayOrUpdatePersistent("VillageShield", actorNum, VFXbase, 1f, barrier);
+	}
+
+	[PunRPC]
+	public void RPC_SetEnergyVFX(int actorNum, int value)
+	{
+		if (!PlayerObjectRegistry.TryGet(actorNum, out PlayerController pc))
+		{
+			Debug.LogError($"[PlayerStatus] Can't find PlayerController. ActorNumber={actorNum}");
+			return;
+		}
+
+		if (value <= 0)
+		{
+			return;
+		}
+
+		GameVFXManager.Instance.Play("EnergyUp", pc.EffectPoints.Foot);
 	}
 
 	// 턴 전환 시 플레이어 상태 초기화

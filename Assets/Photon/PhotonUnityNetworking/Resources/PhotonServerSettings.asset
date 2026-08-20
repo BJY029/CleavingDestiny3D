@@ -142,6 +142,7 @@ MonoBehaviour:
   - RPC_Master_ResetTurnVFX
   - RPC_PlayTreeHealVFX
   - RPC_SetVillageShieldVFX
+  - RPC_SetEnergyVFX
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

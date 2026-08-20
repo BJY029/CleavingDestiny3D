@@ -35,7 +35,8 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 		float prevTreeHp = currentTreeHP;
 		GetCurrentTreeStatus();
 
-		if (prevTreeHp < currentTreeHP) photonView.RPC(nameof(RPC_PlayTreeHealVFX), RpcTarget.All);
+		if (GameStarter.instance.CurrentPhase == GameStartPhase.MainGame)
+			if (prevTreeHp < currentTreeHP) photonView.RPC(nameof(RPC_PlayTreeHealVFX), RpcTarget.All);
 		TreeCanvasController.Instance.UpdateTreeHP(currentTreeHP);
 	}
 

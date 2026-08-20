@@ -55,10 +55,16 @@ public class AIBrain : MonoBehaviourPunCallbacks
 
     public AIItemActionManager ItemActionManager { get; private set; }
 
+    private int prevEnergy;
+    private int prevMaxEnergy;
+
     //각 모듈 찾아서 연결 후 초기화
     public void InitializeBrain(int actorNum)
     {
         MyActorNum = actorNum;
+
+        prevEnergy = PhotonPropertyHelper.GetPlayerProp<int>(MyActorNum, PlayerPropKeys.Energy);
+        prevMaxEnergy = PhotonPropertyHelper.GetPlayerProp<int>(MyActorNum, PlayerPropKeys.MaxEnergy);
 
         ItemSelector = GetComponent<AIItemSelector>();
         ItemSelector?.Initialize(this);
@@ -135,6 +141,13 @@ public class AIBrain : MonoBehaviourPunCallbacks
         {
             int currentEnergy = hasEnergy ? (int)eng : PhotonPropertyHelper.GetPlayerProp<int>(MyActorNum, PlayerPropKeys.Energy);
             int currentMaxEnergy = hasMaxEnergy ? (int)Meng : PhotonPropertyHelper.GetPlayerProp<int>(MyActorNum, PlayerPropKeys.MaxEnergy);
+
+            int energyDiff = currentEnergy - prevEnergy;
+
+            if (energyDiff > 0) AI_SetEnergyVFX(MyActorNum);
+
+            prevEnergy = currentEnergy;
+            prevMaxEnergy = currentMaxEnergy;
         }
 
         bool hasBarrier = Changed.TryGetValue(PlayerPropKeys.VillageBarrier + attachedKey, out var bar);
@@ -180,6 +193,17 @@ public class AIBrain : MonoBehaviourPunCallbacks
         }
 
         GameVFXManager.Instance.PlayOrUpdatePersistent("VillageShield", actorNum, VFXbase, 1f, barrier);
+    }
+
+    public void AI_SetEnergyVFX(int aiNum)
+    {
+        if (!PlayerObjectRegistry.TryGet(aiNum, out AIController ac))
+        {
+            Debug.LogWarning($"[ItemVFXController] AIController not found. ActorNumber={aiNum}");
+            return;
+        }
+
+        GameVFXManager.Instance.Play("EnergyUp", ac.EffectPoints.Foot);
     }
 
     private T GetValue<T>(ExitGames.Client.Photon.Hashtable prop, string key)
