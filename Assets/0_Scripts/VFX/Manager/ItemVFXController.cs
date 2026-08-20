@@ -37,14 +37,22 @@ public class ItemVFXController : MonoBehaviourPun
         {
             case ItemType.Damage:
                 {
-                    if (item.target != ItemTarget.Tree) break;
-                    float dmgMultiplier = ItemHandlingSystem.instance.GetCurrentDamageMultiplier(actorNumber);
+                    if (item.target == ItemTarget.Tree || item.target == ItemTarget.OpponentTree)
+                    {
+                        int targetActNum = actorNumber;
+                        if (item.target == ItemTarget.OpponentTree)
+                        {
+                            targetActNum = PlayerManager.Instance.GetOppActNum(actorNumber);
+                            isAITurn = !isAITurn;
+                        }
 
-                    if (isAITurn)
-                        AIMode_PlayItemVFX(VFXType.PowerUP, actorNumber, dmgMultiplier);
-                    else
-                        photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PowerUP, actorNumber, dmgMultiplier);
+                        float dmgMultiplier = ItemHandlingSystem.instance.GetCurrentDamageMultiplier(targetActNum);
 
+                        if (isAITurn)
+                            AIMode_PlayItemVFX(VFXType.PowerUP, targetActNum, dmgMultiplier);
+                        else
+                            photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PowerUP, targetActNum, dmgMultiplier);
+                    }
                     break;
                 }
             case ItemType.Defence:

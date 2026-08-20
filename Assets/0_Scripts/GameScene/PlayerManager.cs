@@ -641,4 +641,23 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		return true;
 	}
 
+	public int GetOppActNum(int myActNum, bool isAIMode = false)
+	{
+		if (!isAIMode)
+		{
+			foreach (var kvp in Players)
+			{
+				int actNum = kvp.Value.actorNumber;
+				if (myActNum != actNum) return actNum;
+			}
+		}
+		else
+		{
+			bool isAITurn = GameManager.Instance.isSoloPlay && myActNum == AIActNum;
+			if (isAITurn) return PhotonNetwork.LocalPlayer.ActorNumber;
+			return AIActNum;
+		}
+
+		return -1;
+	}
 }
