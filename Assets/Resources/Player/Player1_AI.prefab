@@ -227,8 +227,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIController
   aiBrain: {fileID: 0}
-  walkSpeed: 3.5
-  sprintSpeed: 6
+  walkSpeed: 15
+  sprintSpeed: 20
   rotationSmoothTime: 0.08
   accelation: 12
   deceleration: 12

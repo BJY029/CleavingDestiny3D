@@ -1596,8 +1596,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIController
   aiBrain: {fileID: 0}
-  walkSpeed: 3.5
-  sprintSpeed: 6
+  walkSpeed: 15
+  sprintSpeed: 20
   rotationSmoothTime: 0.08
   accelation: 12
   deceleration: 12
@@ -1613,8 +1613,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ef407429edc75841aa65b8b44e4db47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AINevMeshController
-  wayPointData: {fileID: 11400000, guid: 04a6ec45e289ce04ab46b084ff95ffff, type: 2}
+  moveSpeed: 8
+  acceleration: 30
+  angularSpeed: 360
   rotationSpeed: 10
+  wayPointData: {fileID: 11400000, guid: 04a6ec45e289ce04ab46b084ff95ffff, type: 2}
   agent: {fileID: -9051022522488421207}
 --- !u!114 &919099234606160331
 MonoBehaviour:

@@ -15,6 +15,8 @@ public class ItemVFXController : MonoBehaviourPun
 {
     public static ItemVFXController Instance;
 
+    public GameObject[] bonfires;
+
     private readonly Dictionary<(VFXType, int), EffectInstance> activeEffects = new();
 
     private void Awake()
@@ -28,6 +30,12 @@ public class ItemVFXController : MonoBehaviourPun
         if (item == null)
         {
             Debug.LogWarning("[ItemVFXController]Item is NULL");
+            return;
+        }
+
+        if (item.itemId == "4002")
+        {
+            photonView.RPC(nameof(RPC_ActiveBonFireVFX), RpcTarget.All);
             return;
         }
 
@@ -207,5 +215,29 @@ public class ItemVFXController : MonoBehaviourPun
         if (instance != null) instance.Stop();
 
         activeEffects.Remove(key);
+    }
+
+    public void StopBonFireVFX()
+    {
+        photonView.RPC(nameof(RPC_UnActiveBonFireVFX), RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void RPC_ActiveBonFireVFX()
+    {
+        foreach (GameObject go in bonfires)
+        {
+            if (!go.activeSelf)
+                go.SetActive(true);
+        }
+    }
+
+    [PunRPC]
+    public void RPC_UnActiveBonFireVFX()
+    {
+        foreach (GameObject go in bonfires)
+        {
+            go.SetActive(false);
+        }
     }
 }
