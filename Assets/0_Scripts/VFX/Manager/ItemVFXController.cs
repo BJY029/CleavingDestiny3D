@@ -75,21 +75,22 @@ public class ItemVFXController : MonoBehaviourPun
         {
             case ItemType.Damage:
                 {
-                    if (item.target == ItemTarget.Tree || item.target == ItemTarget.OpponentTree)
+                    if (item.target == ItemTarget.Tree)
                     {
-                        int targetActNum = actorNumber;
-                        if (item.target == ItemTarget.OpponentTree)
-                        {
-                            targetActNum = PlayerManager.Instance.GetOppActNum(actorNumber);
-                            isAITurn = !isAITurn;
-                        }
-
-                        float dmgMultiplier = ItemHandlingSystem.instance.GetCurrentDamageMultiplier(targetActNum);
+                        float dmgMultiplier = ItemHandlingSystem.instance.GetCurrentDamageMultiplier(actorNumber);
 
                         if (isAITurn)
-                            AIMode_PlayItemVFX(VFXType.PowerUP, targetActNum, dmgMultiplier);
+                            AIMode_PlayItemVFX(VFXType.PowerUP, actorNumber, dmgMultiplier);
                         else
-                            photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PowerUP, targetActNum, dmgMultiplier);
+                            photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PowerUP, actorNumber, dmgMultiplier);
+                    }
+                    else if (item.target == ItemTarget.OpponentTree)
+                    {
+                        int oppNum = PlayerManager.Instance.GetOppActNum(actorNumber);
+                        bool isOppisAI = GameManager.Instance.isSoloPlay && oppNum == PlayerManager.Instance.AIActNum;
+
+                        if (isOppisAI) AIMode_PlayItemVFX(VFXType.PowerUP, oppNum);
+                        else photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PowerUP, oppNum, 1f);
                     }
                     break;
                 }
