@@ -36,14 +36,8 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 		GetCurrentTreeStatus();
 
 		if (GameStarter.instance.CurrentPhase == GameStartPhase.MainGame)
-			if (prevTreeHp < currentTreeHP) photonView.RPC(nameof(RPC_PlayTreeHealVFX), RpcTarget.All);
+			if (prevTreeHp < currentTreeHP) GameVFXManager.Instance.Play("TreeHeal", TreeTransform);
 		TreeCanvasController.Instance.UpdateTreeHP(currentTreeHP);
-	}
-
-	[PunRPC]
-	private void RPC_PlayTreeHealVFX()
-	{
-		GameVFXManager.Instance.Play("TreeHeal", TreeTransform);
 	}
 
 	//���� ������Ƽ ����Ǹ� UI�� �ݿ��ϱ�
