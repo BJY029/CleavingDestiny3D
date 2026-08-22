@@ -7,6 +7,7 @@ using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Village.Building;
 
 namespace Village
 {
@@ -16,10 +17,17 @@ namespace Village
 
         [Header("UIs")]
         public Slider TimeSlider;
-        public Button OpenVillageBtn;
-        public Button CloseVillageBtn;
         public GameObject VillagePanel;
         private CanvasGroup canvasGroup;
+
+        public CanvasGroup villageNamePanel;
+        private RectTransform villageNameTextRect;
+        public TextMeshProUGUI villageNameText;
+        
+        [Header("References")]
+        public VillageBuildingManager buildingManager;
+
+        public Camera villageCam;
 
         private float startTime;
         private float endTime;
@@ -31,9 +39,39 @@ namespace Village
             canvasGroup = GetComponent<CanvasGroup>();
             // 씬 로드 시 초기 상태 설정
             SetCanvasState(true);
+            villageNameTextRect = villageNamePanel.GetComponent<RectTransform>();
+
+            foreach (var building in buildingManager.villageBuildings)
+            {
+                building.OnVillagePointerEnterExit += OnVillagePointerEnterExit;
+            }
+            
+            villageNamePanel.alpha = 0f;
 
             // OpenVillageBtn.onClick.AddListener(OnClickOpenVillage);
             // CloseVillageBtn.onClick.AddListener(OnClickCloseVillage);
+        }
+
+        private void OnVillagePointerEnterExit(VillageBuilding building, bool isEnter)
+        {
+            if (isEnter)
+            {
+                int level = VillageSystem.VillageStat.GetVillageLevel(building.buildingType);
+                int upgradeCost = VillageSystem.VillageStat.GetLevelUpgradedCost(building.buildingType, level);
+                int currentGold = VillageSystem.VillageLogic.GetMyGold();
+                bool canUpgrade = upgradeCost <= 0 || currentGold >= upgradeCost;
+
+                villageNameText.SetText(
+                    canUpgrade ? building.HoverTextFormat : building.NotEnoughGoldHoverTextFormat,
+                    level + 1,
+                    upgradeCost);
+                villageNameTextRect.anchoredPosition = villageCam.WorldToScreenPoint(building.transform.position);
+                villageNamePanel.alpha = 1f;
+            }
+            else
+            {
+                villageNamePanel.alpha = 0f;
+            }
         }
 
         private void Update()
@@ -44,25 +82,6 @@ namespace Village
             float remain = endTime - now;
             TimeSlider.value = remain / duration;
         }
-
-
-        public void OnClickAddGoldButton()
-        {
-            VillageSystem.VillageLogic.AddGold(100);
-        }
-
-        public void OnClickOpenVillage()
-        {
-            VillagePanel.SetActive(true);
-            OpenVillageBtn.gameObject.SetActive(false);
-        }
-
-        public void OnClickCloseVillage()
-        {
-            VillagePanel.SetActive(false);
-            OpenVillageBtn.gameObject.SetActive(true);
-        }
-
 
         // 기존 SetActiveCanvas와 RPC를 하나로 통합 및 단순화
         public void SetCanvasState(bool active)
@@ -80,7 +99,6 @@ namespace Village
             {
                 // 마을 페이즈 종료 시 (씬 언로드 전) 호출될 수도 있음
                 VillagePanel.SetActive(false);
-                OpenVillageBtn.gameObject.SetActive(true);
 
                 canvasGroup.alpha = 0f;
                 canvasGroup.interactable = false;

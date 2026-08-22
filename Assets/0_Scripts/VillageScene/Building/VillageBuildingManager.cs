@@ -9,7 +9,7 @@ namespace Village.Building
 
     public class VillageBuildingManager : MonoBehaviour
     {
-        [SerializeField] VillageBuilding[] villageBuildings;
+        public VillageBuilding[] villageBuildings;
         [SerializeField] CinemachineCamera cinemachineCamera;
         [SerializeField] Canvas builidingUICanvas;
 
@@ -19,7 +19,7 @@ namespace Village.Building
         // 프리팹(Key)과 생성된 인스턴스(Value)를 매핑하여 관리하는 캐시
         private Dictionary<VillageBuilldingUI, VillageBuilldingUI> _uiInstanceCache = new Dictionary<VillageBuilldingUI, VillageBuilldingUI>();
 
-        void Start()
+        private void Start()
         {
             // buildingUI.OnExitButtonClicked += ExitBuilding;
 
@@ -40,13 +40,13 @@ namespace Village.Building
             }
 
             // 해당 건물의 UI 프리팹이 이미 생성된 적 있는지 확인
-            if (!_uiInstanceCache.TryGetValue(building.villageBuilldingUIPrefab, out currentBuildingUI))
+            if (!_uiInstanceCache.TryGetValue(building.villageBuildingUIPrefab, out currentBuildingUI))
             {
                 // 없다면 새로 생성하고 캐시에 등록
-                currentBuildingUI = Instantiate(building.villageBuilldingUIPrefab, builidingUICanvas.transform);
+                currentBuildingUI = Instantiate(building.villageBuildingUIPrefab, builidingUICanvas.transform);
                 currentBuildingUI.OnExitButtonClicked += ExitBuilding;
 
-                _uiInstanceCache.Add(building.villageBuilldingUIPrefab, currentBuildingUI);
+                _uiInstanceCache.Add(building.villageBuildingUIPrefab, currentBuildingUI);
             }
 
             // 재사용되는 UI이므로 비활성화 상태일 수 있음

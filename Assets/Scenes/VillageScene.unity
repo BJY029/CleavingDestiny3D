@@ -332,9 +332,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TownButtonManager
   goldText: {fileID: 0}
   TimeSlider: {fileID: 123722891}
-  OpenVillageBtn: {fileID: 0}
-  CloseVillageBtn: {fileID: 0}
   VillagePanel: {fileID: 0}
+  villageNamePanel: {fileID: 1706777762}
+  villageNameText: {fileID: 1984760940}
+  buildingManager: {fileID: 280255638}
+  villageCam: {fileID: 1604331327}
 --- !u!114 &108371423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -413,6 +415,7 @@ RectTransform:
   - {fileID: 123722892}
   - {fileID: 2143294634}
   - {fileID: 719778423}
+  - {fileID: 1706777759}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1080,7 +1083,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.Building.VillageBuilding
   buildingType: 5
   cameraFocusPoint: {fileID: 0}
-  villageBuilldingUIPrefab: {fileID: 0}
+  villageBuildingUIPrefab: {fileID: 0}
   isScaleOnPointer: 0
 --- !u!61 &250321127
 BoxCollider2D:
@@ -2569,7 +2572,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.Building.VillageBuilding
   buildingType: 5
   cameraFocusPoint: {fileID: 0}
-  villageBuilldingUIPrefab: {fileID: 0}
+  villageBuildingUIPrefab: {fileID: 0}
   isScaleOnPointer: 1
 --- !u!1 &869542022
 GameObject:
@@ -2746,7 +2749,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.VillageBuilding
   buildingType: 4
   cameraFocusPoint: {fileID: 1980063388}
-  villageBuilldingUIPrefab: {fileID: 478455841805853409, guid: 10f259e24343f814582476f903fca66a, type: 3}
+  villageBuildingUIPrefab: {fileID: 478455841805853409, guid: 10f259e24343f814582476f903fca66a, type: 3}
   isScaleOnPointer: 1
 --- !u!61 &970171184
 BoxCollider2D:
@@ -3544,7 +3547,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.VillageBuilding
   buildingType: 2
   cameraFocusPoint: {fileID: 1468239964}
-  villageBuilldingUIPrefab: {fileID: 7043246237621689270, guid: 36eff93f2a38c96498fbdf1701964d4e, type: 3}
+  villageBuildingUIPrefab: {fileID: 7043246237621689270, guid: 36eff93f2a38c96498fbdf1701964d4e, type: 3}
   isScaleOnPointer: 1
 --- !u!61 &1468239967
 BoxCollider2D:
@@ -3699,7 +3702,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.VillageBuilding
   buildingType: 1
   cameraFocusPoint: {fileID: 1581392569}
-  villageBuilldingUIPrefab: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
+  villageBuildingUIPrefab: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
   isScaleOnPointer: 1
 --- !u!61 &1581392572
 BoxCollider2D:
@@ -4378,6 +4381,95 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &1706777758
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1706777759}
+  - component: {fileID: 1706777761}
+  - component: {fileID: 1706777760}
+  - component: {fileID: 1706777762}
+  m_Layer: 5
+  m_Name: BuildingName
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1706777759
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1706777758}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1984760939}
+  m_Father: {fileID: 108371426}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 960, y: 540}
+  m_SizeDelta: {x: 250, y: 50}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1706777760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1706777758}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 6506973db4264fe47904221f49c81b31, type: 3}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 5
+--- !u!222 &1706777761
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1706777758}
+  m_CullTransparentMesh: 1
+--- !u!225 &1706777762
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1706777758}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1726262165
 GameObject:
   m_ObjectHideFlags: 0
@@ -4887,7 +4979,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.VillageBuilding
   buildingType: 0
   cameraFocusPoint: {fileID: 916929002}
-  villageBuilldingUIPrefab: {fileID: 478455841805853409, guid: c00d30bdd5c386d49973b283f2d322e1, type: 3}
+  villageBuildingUIPrefab: {fileID: 478455841805853409, guid: c00d30bdd5c386d49973b283f2d322e1, type: 3}
   isScaleOnPointer: 1
 --- !u!61 &1895752042
 BoxCollider2D:
@@ -5057,6 +5149,143 @@ Transform:
   m_Children: []
   m_Father: {fileID: 970171181}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1984760938
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1984760939}
+  - component: {fileID: 1984760941}
+  - component: {fileID: 1984760940}
+  m_Layer: 5
+  m_Name: Text
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1984760939
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984760938}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1706777759}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -30, y: -30}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1984760940
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984760938}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: New Text
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 0ab4251e83d7ea34ea4f5c5b4714cf19, type: 2}
+  m_sharedMaterial: {fileID: 1439586140742323569, guid: 0ab4251e83d7ea34ea4f5c5b4714cf19, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 16
+  m_fontSizeBase: 30
+  m_fontWeight: 400
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 16
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &1984760941
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984760938}
+  m_CullTransparentMesh: 1
 --- !u!1 &2049716383
 GameObject:
   m_ObjectHideFlags: 0
@@ -5164,7 +5393,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.VillageBuilding
   buildingType: 3
   cameraFocusPoint: {fileID: 2049716384}
-  villageBuilldingUIPrefab: {fileID: 23766341800506947, guid: 3b00634a94ede534fadb90ca4b3cd15d, type: 3}
+  villageBuildingUIPrefab: {fileID: 23766341800506947, guid: 3b00634a94ede534fadb90ca4b3cd15d, type: 3}
   isScaleOnPointer: 1
 --- !u!61 &2049716387
 BoxCollider2D:
