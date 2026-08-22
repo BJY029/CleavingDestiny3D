@@ -71,6 +71,12 @@ public enum DurationType
     UntilWaveEnd,//오늘
 }
 
+public enum TriggerScope : byte
+{
+    OwnerOnly,
+    AnyActor
+}
+
 [CreateAssetMenu(fileName = "ItemSO", menuName = "Scriptable Objects/ItemSO")]
 public class ItemSO : ScriptableObject
 {
@@ -121,6 +127,7 @@ public class EffectSpec
     public TagMask targetTags;
 }
 
+
 [System.Serializable]
 public class StatusSpec
 {
@@ -128,6 +135,7 @@ public class StatusSpec
     public DurationType durationType;   //아이템 적용 기간
     public int durationTurns;           //durationType이 Turns인 경우, 해당 Turns 값
     public TriggerMask triggers;        //아이템 발동 시점
+    public TriggerScope triggerScope = TriggerScope.OwnerOnly; //발동 범위
     public TagMask tags;                //아이템 태그
 
     public int priority;                //데미지 파이프라인 우선 순위

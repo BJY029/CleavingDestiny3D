@@ -51,6 +51,7 @@ public class DamageTextWorld : MonoBehaviour
             ))
             .OnComplete(() =>
             {
+                ItemVFXController.Instance.StopBonFireVFX();
                 Destroy(gameObject);
             });
     }

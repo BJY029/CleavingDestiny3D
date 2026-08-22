@@ -8,9 +8,14 @@ using System;
 [RequireComponent(typeof(NavMeshAgent))]
 public class AINevMeshController : AILogicModule
 {
+    [Header("이동 설정")]
+    [SerializeField] private float moveSpeed = 8f;
+    [SerializeField] private float acceleration = 30f;
+    [SerializeField] private float angularSpeed = 360f;
+    [SerializeField] private float rotationSpeed = 10f;
+
     //위치 데이터 스크립터블 오브젝트
     public WayPointSO wayPointData;
-    public float rotationSpeed = 10f;
 
     //AI 움직임 처리용 NavMeshAgent
     public NavMeshAgent agent;
@@ -29,6 +34,12 @@ public class AINevMeshController : AILogicModule
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+
+        agent.speed = moveSpeed;
+        agent.acceleration = acceleration;
+        agent.angularSpeed = angularSpeed;
+
+
         InitWayPoints();
     }
 

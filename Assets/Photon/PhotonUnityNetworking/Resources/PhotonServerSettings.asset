@@ -141,6 +141,15 @@ MonoBehaviour:
   - RPC_LogShopPurchase
   - RPC_LogDayPhase
   - RPC_LogHit
+  - Client_PlayItemVFX
+  - Client_StopItemVFX
+  - RPC_Master_ResetTurnVFX
+  - RPC_PlayTreeHealVFX
+  - RPC_SetVillageShieldVFX
+  - RPC_SetEnergyVFX
+  - RPC_ActiveBonFireVFX
+  - RPC_UnActiveBonFireVFX
+  - RPC_ActiveAcidRain
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

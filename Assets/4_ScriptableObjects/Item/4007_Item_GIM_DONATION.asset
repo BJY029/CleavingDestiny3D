@@ -44,6 +44,7 @@ MonoBehaviour:
       bypassConversion: 0
       basicOnly: 0
       consumeOnTrigger: 0
+    targetTags: 0
   - effectType: 1
     intValue1: 0
     intValue2: 0
@@ -64,3 +65,4 @@ MonoBehaviour:
       bypassConversion: 0
       basicOnly: 0
       consumeOnTrigger: 0
+    targetTags: 0

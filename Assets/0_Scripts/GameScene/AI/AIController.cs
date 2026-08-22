@@ -14,6 +14,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     public int PlayerActNum { get; set; }
 
     [HideInInspector] public AIBrain aiBrain;
+    public PlayerEffectPoints EffectPoints { get; private set; }
 
     //움직임 관련 파라미터
     [Header("Move")]
@@ -74,6 +75,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
     private void Awake()
     {
+        EffectPoints = GetComponent<PlayerEffectPoints>();
         //애니메이션 컨트롤러 할당
         if (TryGetComponent(out PlayerAnimationController pac))
         {
@@ -83,6 +85,16 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         {
             DevLog.LogError($"AIController: PlayerAnimationController not found", this);
         }
+    }
+
+    private void Start()
+    {
+        PlayerObjectRegistry.Register(this);
+    }
+
+    private void OnDestroy()
+    {
+        PlayerObjectRegistry.Unregister(this);
     }
 
     private void Update()
@@ -303,6 +315,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
         attackRequestSent = true;
 
+        ItemVFXController.Instance.Master_ResetTurnVFX(PlayerActNum);
         TurnManager.Instance.RequestChangeTurn(damage, this);
     }
 
