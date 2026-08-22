@@ -22,6 +22,7 @@ namespace Village
         [SerializeField] private Ease closeEase = Ease.InCubic;
 
         private Sequence animSequence;
+        public bool IsOpen => statusCanvasGroup.gameObject.activeSelf;
 
         private void Awake()
         {

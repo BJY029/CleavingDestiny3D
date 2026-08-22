@@ -10,7 +10,7 @@ namespace Village.Outside
         /*
             1. 체력, 쉴드, 독성 3개의 수치가 있음
             2. 체력 -> 쉴드 순서대로 배치
-            3. 독성은 쉴드 끝부터 시작해 오른쪽으로 덮어씌움
+            3. 독성은 현재 내구도 오른쪽 끝부터 왼쪽으로 덮어씌움
             4. 독성 데미지 바는 깜빡거리게
             5. 체력이 최대치일 경우 쉴드가 체력을 밀어내며 오른쪽에 붙음
             6. 체력이 감소한 상태일 경우 감소한 빈칸에 쉴드를 채우며 감소한 수치보다 쉴드가 많을 경우 5번처럼 체력을 밀어냄
@@ -91,18 +91,22 @@ namespace Village.Outside
                 poisonWidth = currentVisibleBarWidth;
             }
 
-            // Apply calculated widths (Pos는 건드리지 않음)
-            SetWidth(hpBar.rectTransform, hpWidth);
-            SetWidth(shieldBar.rectTransform, shieldWidth);
-            SetWidth(poisonBar.rectTransform, poisonWidth);
+            // 체력과 방벽은 왼쪽부터, 들어올 피해는 현재 총 내구도의 오른쪽부터 표시
+            SetBar(hpBar.rectTransform, 0f, hpWidth);
+            SetBar(shieldBar.rectTransform, hpWidth, shieldWidth);
+            SetBar(poisonBar.rectTransform, hpWidth + shieldWidth, poisonWidth);
 
             // Visibility
             shieldBar.gameObject.SetActive(shieldWidth > 0);
             poisonBar.gameObject.SetActive(poisonWidth > 0);
         }
 
-        private void SetWidth(RectTransform rt, float width)
+        private void SetBar(RectTransform rt, float x, float width)
         {
+            Vector2 position = rt.anchoredPosition;
+            position.x = x;
+            rt.anchoredPosition = position;
+
             Vector2 size = rt.sizeDelta;
             size.x = width;
             rt.sizeDelta = size;

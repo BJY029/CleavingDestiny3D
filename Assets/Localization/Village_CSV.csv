@@ -6,7 +6,7 @@ Upgrade_Cost_Not_Enough,<color=red>비용 부족: {0}</color>,<color=red>Not Eno
 Upgrade_Max_Level,최대 레벨 달성,Max Level
 Current_Gold,현재 골드:,Current Gold:
 Building_Upgrade,강화하기,Upgrade
-Building_Quit,나가기,Quit
+Building_Quit,나가기 (ESC),Quit (ESC)
 Mine_Title,광산,Mine
 Mine_Desc,광산에서 골드를 채굴합니다.,Mine gold in the mine.
 Mine_Effect,일일 골드 수입: <color=#FFD700>{0}</color>,Daily Gold Income: <color=#FFD700>{0}</color>
@@ -24,7 +24,7 @@ Shop_Desc,상점에서 아이템을 구매합니다.,Buy items in the shop.
 Shop_Effect,레어 아이템: {0}%\n에픽 아이템: {1}%\n레전드 아이템: {2}%,Rare Items: {0}%\nEpic Items: {1}%\nLegendary Items: {2}%
 Shop_Reload, 새로고침 ({0} <color=yellow>G</color>), Reload ({0} <color=yellow>G</color>)
 Shop_Buy,구매,Buy
-Status_Open,마을 현황,Village Status
+Status_Open,마을 현황 (Tab),Village Status (Tab)
 Status_Close,닫기,Close
 Status_Content,<align=center><size=120%><b>마을 현황</b></size></align>\n<color=#C2A047>보유 골드</color>  <b>{0:N0}</b>\n\n<color=#C2A047><b>광산</b></color>  Lv. {1}\n<color=#A8A8A8>일일 골드</color>  <b>+{2:N0}</b>\n\n<color=#C2A047><b>대장간</b></color>  Lv. {3}\n<color=#A8A8A8>공격력</color>  <b>{4:N0} ~ {5:N0}</b>\n\n<color=#C2A047><b>상점</b></color>  Lv. {6}\n\n<color=#C2A047><b>농장</b></color>  Lv. {7}\n<color=#A8A8A8>최대 기력</color>  <b>{8:N0}</b>\n<color=#A8A8A8>일일 회복</color>  <b>+{9:N0}</b>\n\n<color=#C2A047><b>마법사의 탑</b></color>  Lv. {10}\n<color=#A8A8A8>방어력</color>  <b>{11:N0}</b>,<align=center><size=120%><b>Village Status</b></size></align>\n<color=#C2A047>Gold</color>  <b>{0:N0}</b>\n\n<color=#C2A047><b>Mine</b></color>  Lv. {1}\n<color=#A8A8A8>Daily Gold</color>  <b>+{2:N0}</b>\n\n<color=#C2A047><b>Forge</b></color>  Lv. {3}\n<color=#A8A8A8>Attack</color>  <b>{4:N0} ~ {5:N0}</b>\n\n<color=#C2A047><b>Shop</b></color>  Lv. {6}\n\n<color=#C2A047><b>Farm</b></color>  Lv. {7}\n<color=#A8A8A8>Max Energy</color>  <b>{8:N0}</b>\n<color=#A8A8A8>Daily Recovery</color>  <b>+{9:N0}</b>\n\n<color=#C2A047><b>Wizard's Tower</b></color>  Lv. {10}\n<color=#A8A8A8>Barrier Defense</color>  <b>{11:N0}</b>
 

@@ -24,16 +24,8 @@ namespace Village.Building
         private void Start()
         {
             BuildingName = GetBuildingName(buildingType);
-            if (buildingType == VillageType.Shop)
-            {
-                HoverTextFormat = $"{BuildingName}  Lv. {{0}}";
-                NotEnoughGoldHoverTextFormat = $"{BuildingName}  <color=#FF0000>Lv. {{0}}</color>";
-            }
-            else
-            {
-                HoverTextFormat = $"{BuildingName}  Lv. {{0}}  {{1}} Gold";
-                NotEnoughGoldHoverTextFormat = $"{BuildingName}  Lv. {{0}}  <color=#FF0000>{{1}} Gold</color>";
-            }
+            HoverTextFormat = $"{BuildingName}  Lv. {{0}}  {{1}} Gold";
+            NotEnoughGoldHoverTextFormat = $"{BuildingName}  Lv. {{0}}  <color=#FF0000>{{1}} Gold</color>";
         }
 
         public void OnPointerClick(PointerEventData eventData)
@@ -57,6 +49,28 @@ namespace Village.Building
                 transform.localScale = Vector3.one;
             }
             OnVillagePointerEnterExit?.Invoke(this, false);
+        }
+
+        public void SetInteractionEnabled(bool enabled)
+        {
+            if (!enabled)
+            {
+                transform.localScale = Vector3.one;
+                OnVillagePointerEnterExit?.Invoke(this, false);
+            }
+
+            this.enabled = enabled;
+        }
+
+        public void RestoreHover()
+        {
+            if (!isActiveAndEnabled) return;
+
+            if (isScaleOnPointer)
+            {
+                transform.localScale = Vector3.one * 1.1f;
+            }
+            OnVillagePointerEnterExit?.Invoke(this, true);
         }
 
         public static string GetBuildingName(VillageType type)

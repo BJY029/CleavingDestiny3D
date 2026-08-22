@@ -1,4 +1,4 @@
-﻿using ExitGames.Client.Photon;
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
 using System;
@@ -26,6 +26,7 @@ namespace Village
         
         [Header("References")]
         public VillageBuildingManager buildingManager;
+        [SerializeField] private VillageStatusUI villageStatusUI;
 
         public Camera villageCam;
 
@@ -33,6 +34,42 @@ namespace Village
         private float endTime;
         private float duration;
         private bool isUpgradePhase;
+
+        public override void OnEnable()
+        {
+            base.OnEnable();
+
+            if (KeyInteractManager.Instance != null)
+            {
+                KeyInteractManager.Instance.OnTabKeyDown += ToggleVillageStatusPanel;
+            }
+
+            SyncRoomProperties();
+        }
+
+        public override void OnDisable()
+        {
+            if (KeyInteractManager.Instance != null)
+            {
+                KeyInteractManager.Instance.OnTabKeyDown -= ToggleVillageStatusPanel;
+            }
+
+            base.OnDisable();
+        }
+
+        private void ToggleVillageStatusPanel()
+        {
+            if (buildingManager.IsBuildingOpen) return;
+
+            if (villageStatusUI.IsOpen)
+            {
+                villageStatusUI.Close();
+            }
+            else
+            {
+                villageStatusUI.Open();
+            }
+        }
 
         public void Init()
         {
@@ -47,6 +84,9 @@ namespace Village
             }
             
             villageNamePanel.alpha = 0f;
+
+            // 씬 로드 시점에 이미 설정된 RoomProperties를 동기화
+            SyncRoomProperties();
 
             // OpenVillageBtn.onClick.AddListener(OnClickOpenVillage);
             // CloseVillageBtn.onClick.AddListener(OnClickCloseVillage);
@@ -76,11 +116,11 @@ namespace Village
 
         private void Update()
         {
-            if (!isUpgradePhase) return;
+            if (!isUpgradePhase || duration <= 0f) return;
 
             float now = (float)PhotonNetwork.Time;
-            float remain = endTime - now;
-            TimeSlider.value = remain / duration;
+            float remain = Mathf.Max(0f, endTime - now);
+            TimeSlider.value = Mathf.Clamp01(remain / duration);
         }
 
         // 기존 SetActiveCanvas와 RPC를 하나로 통합 및 단순화
@@ -111,17 +151,27 @@ namespace Village
 
         public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
         {
-            if (propertiesThatChanged.TryGetValue(RoomPropKeys.VillageUpgradeStartEndTime, out object value)
+            SyncRoomProperties(propertiesThatChanged);
+        }
+
+        private void SyncRoomProperties(Hashtable properties = null)
+        {
+            if (!PhotonNetwork.InRoom) return;
+
+            var roomProps = properties ?? PhotonNetwork.CurrentRoom.CustomProperties;
+
+            if (roomProps.TryGetValue(RoomPropKeys.VillageUpgradeStartEndTime, out object value)
                 && value is Vector2 times)
             {
                 startTime = times.x;
                 endTime = times.y;
-                duration = endTime - startTime;
+                duration = Mathf.Max(0.001f, endTime - startTime);
             }
 
-            if (propertiesThatChanged.ContainsKey(RoomPropKeys.IsVillageUpgradePhase))
+            if (roomProps.TryGetValue(RoomPropKeys.IsVillageUpgradePhase, out object isPhaseObj)
+                && isPhaseObj is bool isPhase)
             {
-                isUpgradePhase = PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase);
+                isUpgradePhase = isPhase;
             }
         }
     }
