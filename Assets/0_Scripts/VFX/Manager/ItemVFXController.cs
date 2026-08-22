@@ -8,7 +8,9 @@ public enum VFXType : byte
     PowerDown,
     PlayerShield,
     PlayerEngUp,
-
+    PlayerPurifying,
+    PlayerCurse,
+    PlayerSilver,
 }
 
 public class ItemVFXController : MonoBehaviourPun
@@ -38,8 +40,36 @@ public class ItemVFXController : MonoBehaviourPun
             photonView.RPC(nameof(RPC_ActiveBonFireVFX), RpcTarget.All);
             return;
         }
+        else if (item.itemId == "4008")
+        {
+            int oppNum = PlayerManager.Instance.GetOppActNum(actorNumber);
+            photonView.RPC(nameof(RPC_ActiveAcidRain), RpcTarget.All, oppNum);
+            return;
+        }
+        else if (item.itemId == "4005")
+        {
+            int oppNum = PlayerManager.Instance.GetOppActNum(actorNumber);
+            bool isOppisAI = GameManager.Instance.isSoloPlay && oppNum == PlayerManager.Instance.AIActNum;
+
+            if (isOppisAI) AIMode_PlayItemVFX(VFXType.PlayerCurse, oppNum);
+            else photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PlayerCurse, oppNum, 1f);
+            return;
+        }
 
         bool isAITurn = GameManager.Instance.isSoloPlay && actorNumber == PlayerManager.Instance.AIActNum;
+
+        if (item.itemId == "4009")
+        {
+            if (isAITurn) AIMode_PlayItemVFX(VFXType.PlayerPurifying, actorNumber);
+            else photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PlayerPurifying, actorNumber, 1f);
+            return;
+        }
+        else if (item.itemId == "2001")
+        {
+            if (isAITurn) AIMode_PlayItemVFX(VFXType.PlayerSilver, actorNumber);
+            else photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PlayerSilver, actorNumber, 1f);
+            return;
+        }
 
         switch (item.type)
         {
@@ -69,6 +99,7 @@ public class ItemVFXController : MonoBehaviourPun
                     {
                         float dmgMultiplier = ItemHandlingSystem.instance.GetCurrentDamageMultiplier(actorNumber);
 
+
                         if (isAITurn)
                             AIMode_PlayItemVFX(VFXType.PowerUP, actorNumber, dmgMultiplier);
                         else
@@ -76,7 +107,6 @@ public class ItemVFXController : MonoBehaviourPun
                     }
                     break;
                 }
-
         }
     }
 
@@ -94,6 +124,8 @@ public class ItemVFXController : MonoBehaviourPun
         }
 
         Master_StopItemVFX(VFXType.PowerUP, actorNum);
+        Master_StopItemVFX(VFXType.PlayerCurse, actorNum);
+        Master_StopItemVFX(VFXType.PlayerSilver, actorNum);
     }
 
     public void Master_StopItemVFX(VFXType vfxType, int actorNum)
@@ -137,6 +169,33 @@ public class ItemVFXController : MonoBehaviourPun
 
                 PlayOrUpdateVFX(vfxType, actorNum, "PowerUp", pc.EffectPoints.Axe, colorValue);
                 break;
+            case VFXType.PlayerPurifying:
+                if (pc.EffectPoints.Foot == null)
+                {
+                    Debug.LogWarning($"[ItemVFXController] Foot EffectPoint not found. ActorNumber={actorNum}");
+                    return;
+                }
+
+                GameVFXManager.Instance.Play("Purifying", pc.EffectPoints.Foot, 1);
+                break;
+            case VFXType.PlayerCurse:
+                if (pc.EffectPoints.Foot == null)
+                {
+                    Debug.LogWarning($"[ItemVFXController] Foot EffectPoint not found. ActorNumber={actorNum}");
+                    return;
+                }
+
+                PlayOrUpdateVFX(vfxType, actorNum, "Curse", pc.EffectPoints.Foot);
+                break;
+            case VFXType.PlayerSilver:
+                if (pc.EffectPoints.Foot == null)
+                {
+                    Debug.LogWarning($"[ItemVFXController] Foot EffectPoint not found. ActorNumber={actorNum}");
+                    return;
+                }
+
+                PlayOrUpdateVFX(vfxType, actorNum, "Silver", pc.EffectPoints.Foot);
+                break;
             default:
                 break;
         }
@@ -166,6 +225,33 @@ public class ItemVFXController : MonoBehaviourPun
                 }
 
                 PlayOrUpdateVFX(vfxType, aiNum, "PowerUp", ac.EffectPoints.Axe, colorValue);
+                break;
+            case VFXType.PlayerPurifying:
+                if (ac.EffectPoints.Foot == null)
+                {
+                    Debug.LogWarning($"[ItemVFXController] Foot EffectPoint not found. ActorNumber={aiNum}");
+                    return;
+                }
+
+                GameVFXManager.Instance.Play("Purifying", ac.EffectPoints.Foot, 1);
+                break;
+            case VFXType.PlayerCurse:
+                if (ac.EffectPoints.Foot == null)
+                {
+                    Debug.LogWarning($"[ItemVFXController] Foot EffectPoint not found. ActorNumber={aiNum}");
+                    return;
+                }
+
+                PlayOrUpdateVFX(vfxType, aiNum, "Curse", ac.EffectPoints.Foot);
+                break;
+            case VFXType.PlayerSilver:
+                if (ac.EffectPoints.Foot == null)
+                {
+                    Debug.LogWarning($"[ItemVFXController] Foot EffectPoint not found. ActorNumber={aiNum}");
+                    return;
+                }
+
+                PlayOrUpdateVFX(vfxType, aiNum, "Silver", ac.EffectPoints.Foot);
                 break;
             default:
                 break;
@@ -220,6 +306,18 @@ public class ItemVFXController : MonoBehaviourPun
     public void StopBonFireVFX()
     {
         photonView.RPC(nameof(RPC_UnActiveBonFireVFX), RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void RPC_ActiveAcidRain(int actorNum)
+    {
+        if (!PlayerStatus.Instance.playerVillageVFXBases.TryGetValue(actorNum, out Transform target))
+        {
+            Debug.LogWarning($"[ItemVFXController] Can't find {actorNum}'s VillageBaseTransform");
+            return;
+        }
+
+        GameVFXManager.Instance.Play("AcidRain", target, 1);
     }
 
     [PunRPC]

@@ -15,7 +15,7 @@ MonoBehaviour:
   itemId: 1004
   displayName_ID: NAME_DMG_GREASED
   itemDesc_ID: DESC_DMG_GREASED
-  itemCost: 4
+  itemCost: 6
   type: 1
   target: 2
   itemClass: 1
@@ -34,6 +34,7 @@ MonoBehaviour:
       durationType: 0
       durationTurns: 0
       triggers: 2
+      triggerScope: 0
       tags: 0
       priority: 10
       multiplier: 0
@@ -44,3 +45,4 @@ MonoBehaviour:
       bypassConversion: 0
       basicOnly: 1
       consumeOnTrigger: 0
+    targetTags: 0

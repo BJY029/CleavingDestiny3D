@@ -145,6 +145,7 @@ MonoBehaviour:
   - RPC_SetEnergyVFX
   - RPC_ActiveBonFireVFX
   - RPC_UnActiveBonFireVFX
+  - RPC_ActiveAcidRain
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

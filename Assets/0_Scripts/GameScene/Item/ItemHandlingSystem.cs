@@ -634,6 +634,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		};
 
 		var result = _damageResolver.ResolveRatio(dmg, ctx);
+		if (result.dmgOverrideDmg == 0) return 0;
 
 		return result.dmgMultiRate;
 	}
