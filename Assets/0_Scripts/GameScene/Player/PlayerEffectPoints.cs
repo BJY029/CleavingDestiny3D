@@ -13,6 +13,6 @@ public class PlayerEffectPoints : MonoBehaviour
     public Transform Body => body;
     public Transform Foot => foot;
     public Transform RightHand => rightHand;
-    public Transform LeftHand => LeftHand;
+    public Transform LeftHand => leftHand;
     public Transform Axe => axe;
 }
