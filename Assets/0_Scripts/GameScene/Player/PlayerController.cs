@@ -26,6 +26,7 @@ public interface IMinigameInteractable
 public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 {
     public int PlayerActNum { get; set; }
+    public PlayerEffectPoints EffectPoints { get; private set; }
     //움직임 관련 파라미터
     [Header("Move")]
     public float walkSpeed = 3.5f;
@@ -125,6 +126,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     private void Awake()
     {
+        EffectPoints = GetComponent<PlayerEffectPoints>();
         //애니메이션 컨트롤러 할당
         if (!TryGetComponent(out animationController))
         {
@@ -162,6 +164,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         // 캐릭터 본체 모델만 숨기고 그림자는 남김 (휴머노이드 손 축에 별도로 붙은 도끼는 렌더링 유지)
         HideCharacterModelBody();
+
 
         if (firstPersonObjects != null)
         {
@@ -253,6 +256,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     private void Start()
     {
+        PlayerObjectRegistry.Register(this);
         if (!photonView.IsMine) return;
         TrySubscribeEvents();
     }
@@ -289,6 +293,11 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
             isSubscribed = false;
         }
+    }
+
+    private void OnDestroy()
+    {
+        PlayerObjectRegistry.Unregister(this);
     }
 
     private bool inputLocked = true;
@@ -563,6 +572,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         attackRequestSent = false;
         animationController?.PlayStrikeAnimation();
+        //ItemVFXController.Instance.Any_StopItemVFX(VFXType.PowerUP, PlayerActNum);
     }
 
     // 시간 초과 / 타임아웃 자동 실행용 : 나무베기 준비 후 풀게이지(100%) 타격 자동 진행
@@ -730,6 +740,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         attackRequestSent = true;
 
         TurnManager.Instance.RequestChangeTurn(damage, this);
+        ItemVFXController.Instance.Master_ResetTurnVFX(PlayerActNum);
     }
 
     //HIT 애니메이션이 종료된 후 behaviour에 등록된 NotifyOnAnimExit로 호출되는 함수

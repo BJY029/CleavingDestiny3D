@@ -17,6 +17,7 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 		Instance = this;
 	}
 
+	[SerializeField] private Transform TreeTransform;
 	//���� ���� ����
 	private float currentTreeHP;
 	private float currentTreeAtkPow;
@@ -31,7 +32,11 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 	//UI ������Ʈ
 	public void SetTreeStatusUI()
 	{
+		float prevTreeHp = currentTreeHP;
 		GetCurrentTreeStatus();
+
+		if (GameStarter.instance.CurrentPhase == GameStartPhase.MainGame)
+			if (prevTreeHp < currentTreeHP) GameVFXManager.Instance.Play("TreeHeal", TreeTransform);
 		TreeCanvasController.Instance.UpdateTreeHP(currentTreeHP);
 	}
 

@@ -43,7 +43,6 @@ public class AICanvasController : MonoBehaviourPunCallbacks
         {
             float currentBarrier = hasBarrier ? (float)bar : PhotonPropertyHelper.GetPlayerProp<float>(PlayerActNum, PlayerPropKeys.VillageBarrier);
             float currentArmor = hasArmor ? (float)amo : PhotonPropertyHelper.GetPlayerProp<float>(PlayerActNum, PlayerPropKeys.BarrierArmor);
-
             BarrierValue.text = $"{currentBarrier + currentArmor}";
         }
 
@@ -83,6 +82,8 @@ public class AICanvasController : MonoBehaviourPunCallbacks
         VillageHP.text = $"{vilHp}";
         TreeMultValue.text = $"{mulit}";
     }
+
+
 
     private T GetValue<T>(ExitGames.Client.Photon.Hashtable prop, string key)
     {

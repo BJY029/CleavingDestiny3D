@@ -21,7 +21,7 @@ MonoBehaviour:
   itemClass: 3
   itemWeight: 1
   oncePerTurn: 0
-  oncePerDay: 0
+  oncePerDay: 1
   oncePerGame: 0
   effects:
   - effectType: 5
@@ -34,6 +34,7 @@ MonoBehaviour:
       durationType: 0
       durationTurns: 0
       triggers: 0
+      triggerScope: 0
       tags: 0
       priority: 0
       multiplier: 0
@@ -44,3 +45,4 @@ MonoBehaviour:
       bypassConversion: 0
       basicOnly: 0
       consumeOnTrigger: 0
+    targetTags: 0

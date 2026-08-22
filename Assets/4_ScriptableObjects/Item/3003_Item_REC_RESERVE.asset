@@ -34,6 +34,7 @@ MonoBehaviour:
       durationType: 3
       durationTurns: 0
       triggers: 32
+      triggerScope: 1
       tags: 1
       priority: 0
       multiplier: 0
@@ -44,3 +45,4 @@ MonoBehaviour:
       bypassConversion: 0
       basicOnly: 0
       consumeOnTrigger: 0
+    targetTags: 0
