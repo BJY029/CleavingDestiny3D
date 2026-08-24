@@ -16,9 +16,10 @@ namespace Village
         public TextMeshProUGUI goldText;
 
         [Header("UIs")]
-        public Slider TimeSlider;
-        public GameObject VillagePanel;
         private CanvasGroup canvasGroup;
+
+        public Image villageTimer;
+        public Image outsideTimer;
 
         public CanvasGroup villageNamePanel;
         private RectTransform villageNameTextRect;
@@ -26,6 +27,8 @@ namespace Village
         
         [Header("References")]
         public VillageBuildingManager buildingManager;
+        [SerializeField] private VillageBuilding compassBuilding;
+        [SerializeField] private VillageBuilding outsideVillageBuilding;
         [SerializeField] private VillageStatusUI villageStatusUI;
 
         public Camera villageCam;
@@ -57,7 +60,7 @@ namespace Village
             base.OnDisable();
         }
 
-        private void ToggleVillageStatusPanel()
+        public void ToggleVillageStatusPanel()
         {
             if (buildingManager.IsBuildingOpen) return;
 
@@ -82,6 +85,8 @@ namespace Village
             {
                 building.OnVillagePointerEnterExit += OnVillagePointerEnterExit;
             }
+            compassBuilding.OnVillagePointerEnterExit += OnVillagePointerEnterExit;
+            outsideVillageBuilding.OnVillagePointerEnterExit += OnVillagePointerEnterExit;
             
             villageNamePanel.alpha = 0f;
 
@@ -96,6 +101,15 @@ namespace Village
         {
             if (isEnter)
             {
+                if (building == compassBuilding || building == outsideVillageBuilding)
+                {
+                    string textId = building == compassBuilding ? "Compass_Title" : "Village_Enter_Title";
+                    villageNameText.SetText(LocalizationManager.Instance.GetText(CSV_Type.Village, textId));
+                    villageNameTextRect.anchoredPosition = villageCam.WorldToScreenPoint(building.transform.position);
+                    villageNamePanel.alpha = 1f;
+                    return;
+                }
+
                 int level = VillageSystem.VillageStat.GetVillageLevel(building.buildingType);
                 int upgradeCost = VillageSystem.VillageStat.GetLevelUpgradedCost(building.buildingType, level);
                 int currentGold = VillageSystem.VillageLogic.GetMyGold();
@@ -120,7 +134,9 @@ namespace Village
 
             float now = (float)PhotonNetwork.Time;
             float remain = Mathf.Max(0f, endTime - now);
-            TimeSlider.value = Mathf.Clamp01(remain / duration);
+            
+            villageTimer.fillAmount = Mathf.Clamp01(remain / duration);
+            outsideTimer.fillAmount = Mathf.Clamp01(remain / duration);
         }
 
         // 기존 SetActiveCanvas와 RPC를 하나로 통합 및 단순화
@@ -138,8 +154,6 @@ namespace Village
             else
             {
                 // 마을 페이즈 종료 시 (씬 언로드 전) 호출될 수도 있음
-                VillagePanel.SetActive(false);
-
                 canvasGroup.alpha = 0f;
                 canvasGroup.interactable = false;
                 canvasGroup.blocksRaycasts = false;

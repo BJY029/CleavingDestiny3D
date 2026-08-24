@@ -181,5 +181,8 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
 
         // 4. 화면 밝히기
         await FadeCanvas.Instance.FadeOutAsync(1f);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 }
