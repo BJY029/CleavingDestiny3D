@@ -3,6 +3,7 @@ using Photon.Pun;
 using Potan.CoreUtils;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum BattleLogType
 {
@@ -46,6 +47,7 @@ public class BattleLogController : MonoSceneSingleton<BattleLogController>
     };
 
     public TextMeshProUGUI battleLogText;
+    [SerializeField] private ScrollRect battleLogScrollRect;
 
     private readonly StringBuilder battleLogBuilder = new(4096);
     private bool textDirty;
@@ -63,6 +65,22 @@ public class BattleLogController : MonoSceneSingleton<BattleLogController>
         if (!textDirty || battleLogText == null) return;
         battleLogText.SetText(battleLogBuilder);
         textDirty = false;
+    }
+
+    public void ScrollToLatest()
+    {
+        if (battleLogText == null || battleLogScrollRect == null) return;
+
+        if (textDirty)
+        {
+            battleLogText.SetText(battleLogBuilder);
+            textDirty = false;
+        }
+
+        battleLogText.ForceMeshUpdate();
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(battleLogScrollRect.content);
+        battleLogScrollRect.verticalNormalizedPosition = 0f;
     }
 
     public static void AddLog(BattleLogType type) => Instance.Append(type);

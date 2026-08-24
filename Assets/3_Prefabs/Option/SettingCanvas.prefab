@@ -5484,6 +5484,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleLogController
   battleLogText: {fileID: 3641224443748395472}
+  battleLogScrollRect: {fileID: 220781865467461982}
 --- !u!1 &7825802325316476132
 GameObject:
   m_ObjectHideFlags: 0

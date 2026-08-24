@@ -173,6 +173,7 @@ public class SettingCanvasController : MonoBehaviour
     {
         IsSettingPanelOpened = true;
         Background.SetActive(true);
+        BattleLogController.Instance.ScrollToLatest();
         
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;

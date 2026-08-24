@@ -15,6 +15,11 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
     public event Action OnInteractKeyDown;
     public event Action OnInteractKeyUp;
     public event Action OnInteractSpaceKeyDown;
+    public event Action OnTabKeyDown;
+    public event Func<bool> OnMenuKeyDown;
+    
+    private bool _isPlayerActionsEnabled = true;
+    private bool _isMenuInputEnabled = true;
 
     protected override void Awake()
     {
@@ -34,6 +39,7 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         _inputActions.Player.Interact.started += HandleInteract; // Interact 액션이 시작될 때 (키 누름)
         _inputActions.Player.Interact.canceled += HandleInteract; // Interact 액션이 취소될 때 (키 뗌)
         _inputActions.Player.Jump.performed += HandleInteractSpace; // Jump 액션을 미니게임 키로 사용
+        _inputActions.Player.Tab.performed += HandleTab;
         _inputActions.UI.Menu.performed += HandleMenu; // UI 메뉴 액션
         _inputActions.Player.Sprint.performed += HandleSprint; // 달리기 시작
         _inputActions.Player.Sprint.canceled += HandleSprint; // 달리기 종료
@@ -46,11 +52,14 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
 
     private void HandleSprint(InputAction.CallbackContext context)
     {
+        if (!_isPlayerActionsEnabled) return; // 플레이어 액션이 비활성화된 경우 무시
         OnRunInput?.Invoke(context.performed);
     }
 
     private void HandleMousePosition(InputAction.CallbackContext context)
     {
+        if (!_isPlayerActionsEnabled) return; // 플레이어 액션이 비활성화된 경우 무시
+        
         Vector2 mousePosition = context.ReadValue<Vector2>();
         OnMousePositionInput?.Invoke(mousePosition);
     }
@@ -58,7 +67,15 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
     // ESC 키를 누른 경우
     private void HandleMenu(InputAction.CallbackContext context)
     {
-        SettingCanvasController.instance.ToggleSettingPanel();
+        if (!_isMenuInputEnabled) return;
+        if (OnMenuKeyDown?.Invoke() == true) return;
+
+        SettingCanvasController.instance?.ToggleSettingPanel();
+    }
+
+    private void HandleTab(InputAction.CallbackContext context)
+    {
+        OnTabKeyDown?.Invoke();
     }
 
     // 점프 키를 누른 경우 (미니게임 인터랙트)
@@ -83,6 +100,8 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
     // 이동 입력
     private void HandleMove(InputAction.CallbackContext context)
     {
+        if (!_isPlayerActionsEnabled) return; // 플레이어 액션이 비활성화된 경우 무시
+        
         Vector2 inputVector = context.ReadValue<Vector2>();
         OnMoveInput?.Invoke(inputVector);
     }
@@ -99,6 +118,7 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         _inputActions.Player.Interact.started -= HandleInteract;
         _inputActions.Player.Interact.canceled -= HandleInteract;
         _inputActions.Player.Jump.performed -= HandleInteractSpace;
+        _inputActions.Player.Tab.performed -= HandleTab;
         _inputActions.UI.Menu.performed -= HandleMenu;
         _inputActions.Player.Sprint.performed -= HandleSprint;
         _inputActions.Player.Sprint.canceled -= HandleSprint;
@@ -114,21 +134,22 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
 
         if (enabled)
         {
-            _inputActions.Player.Move.Enable();
-            _inputActions.Player.Look.Enable();
-            _inputActions.Player.Sprint.Enable();
+            _isPlayerActionsEnabled = true;
         }
         else
         {
-            _inputActions.Player.Move.Disable();
-            _inputActions.Player.Look.Disable();
-            _inputActions.Player.Sprint.Disable();
-
+            _isPlayerActionsEnabled = false;
+            
             // 해제 시 잔여 입력에 대한 안전 이벤트 강제 클리어 전송
             OnMoveInput?.Invoke(Vector2.zero);
             OnMousePositionInput?.Invoke(Vector2.zero);
             OnRunInput?.Invoke(false);
         }
+    }
+
+    public void SetMenuInputEnabled(bool enabled)
+    {
+        _isMenuInputEnabled = enabled;
     }
 
 #if UNITY_EDITOR
