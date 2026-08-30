@@ -16,6 +16,8 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     private float _startTime = -1.0f;
     private float _endTime = -1.0f;
     private bool _isPhaseActive = false;
+    private bool _isLoading = false;
+    private bool _isUnloading = false;
 
     //싱글 플레이 모드 확인용 플래그
     private bool IsSinglePlayer => !PhotonNetwork.IsConnectedAndReady || !PhotonNetwork.InRoom || PhotonNetwork.OfflineMode;
@@ -117,7 +119,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
         int localPlayer = PhotonNetwork.LocalPlayer.ActorNumber;
         SetPlayerReady(localPlayer, false);
 
-        BgmStateController.Instance.EnterVillage();
+        BgmStateController.Instance?.EnterVillage();
         // UniTask의 Fire-and-Forget
         LoadVillageSceneAsync().Forget();
     }
@@ -126,7 +128,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     {
         _isPhaseActive = false;
         _endTime = -1.0f;
-        BgmStateController.Instance.ExitVillage();
+        BgmStateController.Instance?.ExitVillage();
 
         UnloadVillageSceneAsync().Forget();
     }
@@ -136,27 +138,58 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     /// </summary>
     public async UniTask LoadVillageSceneAsync()
     {
-        if (SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded) return;
+        if (_isLoading || _isUnloading || SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded) return;
+        _isLoading = true;
 
-        // 1. 미리 로딩 시작 (활성화 대기)
-        var loadOp = SceneManager.LoadSceneAsync(CommonDefine.VILLAGESCENE, LoadSceneMode.Additive);
-        loadOp.allowSceneActivation = false;
+        try
+        {
+            // 1. 미리 로딩 시작 (활성화 대기)
+            var loadOp = SceneManager.LoadSceneAsync(CommonDefine.VILLAGESCENE, LoadSceneMode.Additive);
+            if (loadOp == null) return;
+            loadOp.allowSceneActivation = false;
 
-        // 2. 로딩 중에 페이드 인 동시 진행
-        await FadeCanvas.Instance.FadeInAsync(1f);
+            // 2. 로딩 중에 페이드 인 동시 진행
+            if (FadeCanvas.Instance != null)
+            {
+                await FadeCanvas.Instance.FadeInAsync(1f);
+            }
 
-        GameCanvasController.Instance.SetActiveCanvas(false);
-        PlayerCanvasController.Instance.SetActiveCanvas(false);
+            GameCanvasController.Instance?.SetActiveCanvas(false);
+            PlayerCanvasController.Instance?.SetActiveCanvas(false);
 
-        await UniTask.Delay(300, cancellationToken: destroyCancellationToken); // 0.3초 대기
+            await UniTask.Delay(300, cancellationToken: destroyCancellationToken); // 0.3초 대기
 
-        // 3. 씬 활성화
-        loadOp.allowSceneActivation = true;
-        await loadOp.ToUniTask(cancellationToken: destroyCancellationToken); // 로딩 완료 대기
+            // 3. 씬 활성화
+            loadOp.allowSceneActivation = true;
+            await loadOp.ToUniTask(cancellationToken: destroyCancellationToken); // 로딩 완료 대기
 
-        await FadeCanvas.Instance.FadeOutAsync(1f);
+            if (FadeCanvas.Instance != null)
+            {
+                await FadeCanvas.Instance.FadeOutAsync(1f);
+            }
 
-        OnVillagePhaseStarted?.Invoke();
+            OnVillagePhaseStarted?.Invoke();
+        }
+        catch (OperationCanceledException)
+        {
+            // 작업 취소 시(씬 전환 또는 앱 종료) 화면 복구
+            if (FadeCanvas.Instance != null)
+            {
+                await FadeCanvas.Instance.FadeOutAsync(0.5f);
+            }
+        }
+        catch (Exception ex)
+        {
+            DevLog.LogError($"[VillageSceneManager] 마을 씬 로드 중 예외 발생: {ex.Message}", this);
+            if (FadeCanvas.Instance != null)
+            {
+                await FadeCanvas.Instance.FadeOutAsync(0.5f);
+            }
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     /// <summary>
@@ -164,25 +197,45 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     /// </summary>
     public async UniTask UnloadVillageSceneAsync()
     {
-        if (!SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded) return;
+        if (_isUnloading || !SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded) return;
+        _isUnloading = true;
 
-        // 1. 화면 가리기 (완료될 때까지 대기)
-        await FadeCanvas.Instance.FadeInAsync(1f);
+        try
+        {
+            // 1. 화면 가리기 (완료될 때까지 대기)
+            if (FadeCanvas.Instance != null)
+            {
+                await FadeCanvas.Instance.FadeInAsync(1f);
+            }
 
-        await UniTask.Delay(300, cancellationToken: destroyCancellationToken);
+            await UniTask.Delay(300, cancellationToken: destroyCancellationToken);
 
-        // 2. 화면이 가려진 상태에서 언로드
-        // ToUniTask()는 작업 완료를 보장합니다.
-        await SceneManager.UnloadSceneAsync(CommonDefine.VILLAGESCENE).ToUniTask(cancellationToken: destroyCancellationToken);
+            // 2. 화면이 가려진 상태에서 언로드
+            await SceneManager.UnloadSceneAsync(CommonDefine.VILLAGESCENE).ToUniTask(cancellationToken: destroyCancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // 취소 시에도 finally에서 UI 복구 진행
+        }
+        catch (Exception ex)
+        {
+            DevLog.LogError($"[VillageSceneManager] 마을 씬 언로드 중 예외 발생: {ex.Message}", this);
+        }
+        finally
+        {
+            // 3. UI 복구 보장
+            GameCanvasController.Instance?.SetActiveCanvas(true);
+            PlayerCanvasController.Instance?.SetActiveCanvas(true);
 
-        // 3. UI 복구
-        GameCanvasController.Instance.SetActiveCanvas(true);
-        PlayerCanvasController.Instance.SetActiveCanvas(true);
+            // 4. 화면 밝히기
+            if (FadeCanvas.Instance != null)
+            {
+                await FadeCanvas.Instance.FadeOutAsync(1f);
+            }
 
-        // 4. 화면 밝히기
-        await FadeCanvas.Instance.FadeOutAsync(1f);
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            _isUnloading = false;
+        }
     }
 }

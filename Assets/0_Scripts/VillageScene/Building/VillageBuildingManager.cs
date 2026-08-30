@@ -4,6 +4,7 @@ using Potan.CoreUtils;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 
 namespace Village.Building
 {
@@ -16,18 +17,18 @@ namespace Village.Building
 
         public VillageBuilding[] villageBuildings;
         [SerializeField] CinemachineCamera cinemachineCamera;
-        [SerializeField] Canvas builidingUICanvas;
+        [FormerlySerializedAs("builidingUICanvas")] [SerializeField] Canvas buildingUICanvas;
         private CinemachineBrain brain;
         private readonly List<RaycastResult> _raycastResults = new();
 
         // 현재 활성화된 UI
-        VillageBuilldingUI currentBuildingUI;
+        VillageBuildingUI currentBuildingUI;
         private bool _isExiting;
 
         public bool IsBuildingOpen => currentBuildingUI != null;
 
         // 프리팹(Key)과 생성된 인스턴스(Value)를 매핑하여 관리하는 캐시
-        private Dictionary<VillageBuilldingUI, VillageBuilldingUI> _uiInstanceCache = new Dictionary<VillageBuilldingUI, VillageBuilldingUI>();
+        private Dictionary<VillageBuildingUI, VillageBuildingUI> _uiInstanceCache = new Dictionary<VillageBuildingUI, VillageBuildingUI>();
 
         private void Start()
         {
@@ -72,7 +73,7 @@ namespace Village.Building
             if (!_uiInstanceCache.TryGetValue(building.villageBuildingUIPrefab, out currentBuildingUI))
             {
                 // 없다면 새로 생성하고 캐시에 등록
-                currentBuildingUI = Instantiate(building.villageBuildingUIPrefab, builidingUICanvas.transform);
+                currentBuildingUI = Instantiate(building.villageBuildingUIPrefab, buildingUICanvas.transform);
                 currentBuildingUI.OnExitButtonClicked += ExitBuilding;
 
                 _uiInstanceCache.Add(building.villageBuildingUIPrefab, currentBuildingUI);

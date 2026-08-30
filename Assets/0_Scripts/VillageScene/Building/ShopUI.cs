@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace Village.Building
 {
-    public class ShopUI : VillageBuilldingUI
+    public class ShopUI : VillageBuildingUI
     {
         int shopNonceCounter = 0; // 상점 리롤 시마다 증가하는 nonce 카운터
         private int lastSentNonce = -1; // 내가 보낸 마지막 nonce 추적
@@ -20,6 +20,7 @@ namespace Village.Building
         [SerializeField] private Button buyButton;
 
         [Header("Shop Item UI Elements")]
+        [SerializeField] private ShopInventory shopInventory;
         [SerializeField] private TextMeshProUGUI reloadCostText;
         [SerializeField] private TextMeshProUGUI itemDescriptionText;
         [SerializeField] private TextMeshProUGUI shopEffectText;
@@ -157,6 +158,7 @@ namespace Village.Building
         public override void RefreshStatusUI()
         {
             base.RefreshStatusUI();
+            shopInventory?.RefreshInventory();
 
             int currentLevel = VillageStat.GetVillageLevel(currentBuildingType) + 1; // 레벨은 0부터 시작하므로 +1
 

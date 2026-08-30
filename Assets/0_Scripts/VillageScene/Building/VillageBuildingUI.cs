@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
@@ -11,7 +11,7 @@ using UnityEngine.UI;
 namespace Village.Building
 {
 
-    public class VillageBuilldingUI : MonoBehaviourPunCallbacks
+    public class VillageBuildingUI : MonoBehaviourPunCallbacks
     {
         [SerializeField] protected CanvasGroup canvasGroup;
 
