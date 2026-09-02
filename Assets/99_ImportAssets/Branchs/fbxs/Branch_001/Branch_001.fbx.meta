@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: cb30e772044a6f64fb3582e88431f8f8
+guid: 963ebd70048822047a8af53039fa9ff8
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
@@ -8,22 +8,22 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: Material.001
-    second: {fileID: 2100000, guid: 0649e743a237b3b41af148a61c8ba964, type: 2}
+    second: {fileID: 2100000, guid: 598b91501b6adf64086fc19ee795628c, type: 2}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: Baked_BaseColor
-    second: {fileID: 2800000, guid: 21f5eb4195482c24f8afe281eb4e7c12, type: 3}
+    second: {fileID: 2800000, guid: ced3fc5092e0072449664bdf9d61f13c, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: texture_0_metallic
-    second: {fileID: 2800000, guid: 459b6ceadde290444bc84f2f2cc97718, type: 3}
+    second: {fileID: 2800000, guid: 6b440177016829046a7876b4034b2919, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: texture_0_roughness
-    second: {fileID: 2800000, guid: 0cbbac0c0d051cd40a050b8125aeb959, type: 3}
+    second: {fileID: 2800000, guid: b1ff3ccc91f83a6449dc74b824c8b3e0, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -53,7 +53,7 @@ ModelImporter:
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 0.5
+    globalScale: 1
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
@@ -88,7 +88,7 @@ ModelImporter:
     secondaryUVMinLightmapResolution: 40
     secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
-    useFileScale: 1
+    useFileScale: 0
     strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
@@ -111,7 +111,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 0.005
+    globalScale: 1
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0

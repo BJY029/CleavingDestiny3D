@@ -2,8 +2,18 @@ using UnityEngine;
 
 public class BranchPickUp : MonoBehaviour, ITurnIndependentInteractable
 {
+    private BranchPool ownerPool;
     private bool isCollected;
 
+    public void Initialize(BranchPool pool)
+    {
+        ownerPool = pool;
+    }
+
+    public void PrepareForSpawn()
+    {
+        isCollected = false;
+    }
 
     public void OnInteract(IPlayerAction pc)
     {
@@ -19,7 +29,7 @@ public class BranchPickUp : MonoBehaviour, ITurnIndependentInteractable
 
         Debug.Log($"[BranchPickup] 나뭇가지 획득 / 이번 판: {GameSessionData.CollectedBranchCount}");
 
-        Destroy(gameObject);
+        ownerPool.Return(this);
     }
 
     public void OnLookEnter(IPlayerAction pc)
