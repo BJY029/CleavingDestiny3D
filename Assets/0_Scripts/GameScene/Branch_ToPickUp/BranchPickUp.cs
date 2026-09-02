@@ -3,48 +3,61 @@ using UnityEngine;
 public class BranchPickUp : MonoBehaviour, ITurnIndependentInteractable
 {
     private BranchPool ownerPool;
-    private bool isCollected;
 
-    public void Initialize(BranchPool pool)
+    private bool isCollected;
+    private bool isPickUpRequested;
+
+    public int BranchId { get; private set; } = -1;
+    public int PrefabIndex { get; private set; }
+
+    public void Initialize(BranchPool pool, int prefabIndex)
     {
         ownerPool = pool;
+        PrefabIndex = prefabIndex;
     }
 
-    public void PrepareForSpawn()
+    public void PrepareForSpawn(int branchId)
     {
+        BranchId = branchId;
         isCollected = false;
+        isPickUpRequested = false;
+    }
+
+    public void ResetForPool()
+    {
+        BranchId = -1;
+        isCollected = false;
+        isPickUpRequested = false;
     }
 
     public void OnInteract(IPlayerAction pc)
     {
-        if (isCollected) return;
+        if (isCollected || isPickUpRequested) return;
 
-        PlayerController playerCtrl = pc as PlayerController;
+        if (pc is not PlayerController) return;
 
-        if (playerCtrl == null) return;
+        if (BranchId < 0) return;
 
-        isCollected = true;
+        isPickUpRequested = true;
 
-        GameSessionData.AddBranch();
-
-        Debug.Log($"[BranchPickup] 나뭇가지 획득 / 이번 판: {GameSessionData.CollectedBranchCount}");
-
-        ownerPool.Return(this);
+        BranchNetworkManager.Instance.RequestPickUp(BranchId);
     }
 
     public void OnLookEnter(IPlayerAction pc)
     {
-        Debug.Log("감지");
-        PlayerController playerCtrl = pc as PlayerController;
+        if (pc is not PlayerController)
+            return;
 
-        if (playerCtrl == null) return;
+        Debug.Log($"나뭇가지 감지 : {BranchId}");
 
-        //나뭇가지 줍기 UI 표시
+        // [F] 나뭇가지 줍기 UI 표시
     }
 
     public void OnLookExit(IPlayerAction pc)
     {
-        Debug.Log("감지해제");
-        //상호작용 UI 숨김
+        if (pc is not PlayerController)
+            return;
+
+        // 상호작용 UI 숨김
     }
 }

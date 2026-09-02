@@ -1,9 +1,10 @@
 using UnityEngine;
 using System.Collections;
+using Photon.Pun;
+using Photon.Realtime;
 
-public class PickUpBranchSpawner : MonoBehaviour
+public class PickUpBranchSpawner : MonoBehaviourPunCallbacks
 {
-    [SerializeField] private BranchPool branchPool;
     [SerializeField] private BranchSpawnArea[] spawnAreas;
 
     [Header("Spawn Count")]
@@ -18,21 +19,38 @@ public class PickUpBranchSpawner : MonoBehaviour
 
     private void Start()
     {
-        SpawnInitialBranchs();
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        StartSpawnLoop(true);
+    }
+
+    public override void OnMasterClientSwitched(Player newMasterClient)
+    {
+        base.OnMasterClientSwitched(newMasterClient);
+
+        if (newMasterClient.IsLocal) StartSpawnLoop(false);
+        else StopSpawnLoop();
+    }
+
+    private void StartSpawnLoop(bool spawnInitialBranches)
+    {
+        StopSpawnLoop();
+
+        if (spawnInitialBranches) SpawnInitialBranches();
 
         spawnCoroutine = StartCoroutine(SpawnRoutine());
     }
 
-    private void OnDisable()
+    private void StopSpawnLoop()
     {
-        if (spawnCoroutine != null)
-        {
-            StopCoroutine(spawnCoroutine);
-            spawnCoroutine = null;
-        }
+        if (spawnCoroutine == null) return;
+
+        StopCoroutine(spawnCoroutine);
+        spawnCoroutine = null;
     }
 
-    private void SpawnInitialBranchs()
+
+    private void SpawnInitialBranches()
     {
         int spawnCount = Mathf.Min(initialSpawnCount, maxActiveBranchCount);
 
@@ -50,17 +68,23 @@ public class PickUpBranchSpawner : MonoBehaviour
 
             yield return new WaitForSeconds(delay);
 
-            if (branchPool.ActiveCount >= maxActiveBranchCount) continue;
-
             TrySpawnBranch();
         }
     }
 
     private bool TrySpawnBranch()
     {
-        if (branchPool.ActiveCount >= maxActiveBranchCount) return false;
+        if (!PhotonNetwork.IsMasterClient) return false;
+
+        BranchNetworkManager networkManager = BranchNetworkManager.Instance;
+
+        if (networkManager == null) return false;
+
+        if (networkManager.ActiveCount >= maxActiveBranchCount) return false;
 
         if (spawnAreas == null || spawnAreas.Length == 0) return false;
+
+        if (networkManager.PrefabCount <= 0) return false;
 
         //랜덤 구역 설정
         int startIndex = Random.Range(0, spawnAreas.Length);
@@ -75,9 +99,11 @@ public class PickUpBranchSpawner : MonoBehaviour
 
             if (!area.TryGetSpawnPose(out Vector3 position, out Quaternion rotation)) continue;
 
-            BranchPickUp branch = branchPool.Get(position, rotation);
+            int prefabIndex = Random.Range(0, networkManager.PrefabCount);
 
-            return branch != null;
+            networkManager.MasterSpawnBranch(prefabIndex, position, rotation);
+
+            return true;
         }
 
         return false;
