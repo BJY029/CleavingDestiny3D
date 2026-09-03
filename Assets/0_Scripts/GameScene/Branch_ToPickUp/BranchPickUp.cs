@@ -51,6 +51,7 @@ public class BranchPickUp : MonoBehaviour, ITurnIndependentInteractable
         Debug.Log($"나뭇가지 감지 : {BranchId}");
 
         // [F] 나뭇가지 줍기 UI 표시
+        PlayerCanvasController.Instance.BranchInteractObj.SetActive(true);
     }
 
     public void OnLookExit(IPlayerAction pc)
@@ -59,5 +60,6 @@ public class BranchPickUp : MonoBehaviour, ITurnIndependentInteractable
             return;
 
         // 상호작용 UI 숨김
+        PlayerCanvasController.Instance.BranchInteractObj.SetActive(false);
     }
 }
