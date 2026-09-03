@@ -18,10 +18,10 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
     private MatchResultReason _lastResaon = MatchResultReason.None;
     private float delay = 3.0f;
     private string aiAttachedKey;
-    
+
     [SerializeField] private GameEndedCanvasController gameEndedCanvasController;
-    
-    
+
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -201,6 +201,9 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         _isResultResolved = true;
         _lastResaon = reason;
 
+        //주운 나뭇가지 저장(중간 탈주시 인정안함)
+        GameSessionRewardManager.ConfirmRewards();
+
         ShowEndGameUI(LoserActorNum, reason, resolveTurnIndex);
     }
 
@@ -224,6 +227,9 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         _lastResaon = reason;
         _isResultResolved = true;
 
+        //주운 나뭇가지 저장(중간 탈주시 인정안함)
+        GameSessionRewardManager.ConfirmRewards();
+
         ShowEndGameUI(LoserActor, reason, resolvedTurn);
     }
 
@@ -246,15 +252,15 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         DevLog.Log($"<color=green>[MatchResult]</color> State : {result}, Loser : Player{LoserActorNum}, Reason : {reason}, TurnCnt : {turnIndex}");
     }
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     private void Update()
     {
         if (!IsInitializer()) return;
-        
+
         if (Keyboard.current.digit1Key.wasPressedThisFrame)
         {
             DevLog.Log("<color=red>DEBUG: 플레이어 나무 승리</color>", this);
-            
+
             foreach (var kvp in PlayerManager.Instance.Players)
             {
                 int actNum = kvp.Value.actorNumber;
@@ -270,14 +276,14 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         if (Keyboard.current.digit2Key.wasPressedThisFrame)
         {
             DevLog.Log("<color=red>DEBUG: 플레이어 나무 패배</color>", this);
-            
+
             TrySetMatchResult(PhotonNetwork.LocalPlayer.ActorNumber, MatchResultReason.TreeDestroyed);
         }
 
         if (Keyboard.current.digit3Key.wasPressedThisFrame)
         {
             DevLog.Log("<color=red>DEBUG: 플레이어 마을 승리</color>", this);
-            
+
             foreach (var kvp in PlayerManager.Instance.Players)
             {
                 int actNum = kvp.Value.actorNumber;
@@ -289,22 +295,22 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
                 }
             }
         }
-        
+
         if (Keyboard.current.digit4Key.wasPressedThisFrame)
         {
             DevLog.Log("<color=red>DEBUG: 플레이어 마을 패배</color>", this);
-            
+
             //패배 처리 설정 
             TrySetMatchResult(PhotonNetwork.LocalPlayer.ActorNumber, MatchResultReason.VillageDestroyed);
         }
-        
+
         if (Keyboard.current.digit5Key.wasPressedThisFrame)
         {
             DevLog.Log("<color=red>DEBUG: 플레이어 무승부</color>", this);
-            
+
             // 무승부 처리
             TrySetMatchResult(-1, MatchResultReason.Draw);
         }
     }
-    #endif
+#endif
 }

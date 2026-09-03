@@ -46,6 +46,9 @@ public class GameStarter : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom == null) yield break;
 
+        GameSessionData.Initialize();
+        GameSessionRewardManager.Initialize();
+
         bool hasTheme = PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey(GameStartRoomKeys.ThemeID);
         bool hasPhase = PhotonNetwork.CurrentRoom.CustomProperties.ContainsKey(GameStartRoomKeys.Phase);
 
