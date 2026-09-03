@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,6 +7,7 @@ public static class PlayerProfile
     public static int BranchCount { get; private set; }
     public static IReadOnlyList<string> OwnedAxeSkinIds => ownedAxeSkinIds;
     public static string EquippedAxeSkinId { get; private set; }
+    public static event Action<int> OnBranchCountChanged;
     private static readonly List<string> ownedAxeSkinIds = new();
 
     public static void Initialize(PlayerSaveData saveData)
@@ -16,6 +18,8 @@ public static class PlayerProfile
         ownedAxeSkinIds.AddRange(saveData.ownedAxeSkinIdx);
 
         EquippedAxeSkinId = saveData.equippedAxeSkinId;
+
+        OnBranchCountChanged?.Invoke(BranchCount);
     }
 
     public static PlayerSaveData CreateSaveData()
@@ -33,6 +37,8 @@ public static class PlayerProfile
         if (amount <= 0) return;
 
         BranchCount += amount;
+
+        OnBranchCountChanged?.Invoke(BranchCount);
     }
 
     public static bool TrySpendBranch(int amount)
@@ -42,6 +48,8 @@ public static class PlayerProfile
         if (BranchCount < amount) return false;
 
         BranchCount -= amount;
+
+        OnBranchCountChanged?.Invoke(BranchCount);
         return true;
     }
 
