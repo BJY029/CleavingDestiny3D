@@ -3434,7 +3434,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Option
+  m_text: "\uC635\uC158"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 0ab4251e83d7ea34ea4f5c5b4714cf19, type: 2}
   m_sharedMaterial: {fileID: 1439586140742323569, guid: 0ab4251e83d7ea34ea4f5c5b4714cf19, type: 2}
@@ -7090,6 +7090,7 @@ MonoBehaviour:
   masterVolumeSetting: {fileID: 2908331599784510235}
   sfxVolumeSetting: {fileID: 612945982700285935}
   musicVolumeSetting: {fileID: 8029037317018113348}
+  environmentVolumeSetting: {fileID: 0}
 --- !u!1 &6466702188103959159
 GameObject:
   m_ObjectHideFlags: 0
@@ -7891,7 +7892,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Y\uCD95 \uBC18\uC804"
+  m_text: "\uB9C8\uC6B0\uC2A4 Y\uCD95 \uBC18\uC804"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 0ab4251e83d7ea34ea4f5c5b4714cf19, type: 2}
   m_sharedMaterial: {fileID: 1439586140742323569, guid: 0ab4251e83d7ea34ea4f5c5b4714cf19, type: 2}
@@ -9484,7 +9485,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1841047094778721982, guid: fbef58fbdab01b4478810d75b6a4e91a, type: 3}
       propertyPath: m_text
-      value: "\uC804\uCCB4"
+      value: "\uB9C8\uC2A4\uD130 \uBCFC\uB968"
       objectReference: {fileID: 0}
     - target: {fileID: 1841047094778721982, guid: fbef58fbdab01b4478810d75b6a4e91a, type: 3}
       propertyPath: m_fontAsset
@@ -9768,6 +9769,10 @@ PrefabInstance:
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 6727389051985878275, guid: c856593eab1c4b84c8eb16e78916fb02, type: 3}
+      propertyPath: m_text
+      value: "\uB098\uAC00\uAE30"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6727389051985878275, guid: c856593eab1c4b84c8eb16e78916fb02, type: 3}
       propertyPath: m_fontAsset
       value: 
       objectReference: {fileID: 11400000, guid: f2d4a60f9197e3a499f1eee5bd984a53, type: 2}
@@ -9948,7 +9953,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1841047094778721982, guid: fbef58fbdab01b4478810d75b6a4e91a, type: 3}
       propertyPath: m_text
-      value: "\uD6A8\uACFC\uC74C"
+      value: "\uD6A8\uACFC\uC74C \uBCFC\uB968"
       objectReference: {fileID: 0}
     - target: {fileID: 1841047094778721982, guid: fbef58fbdab01b4478810d75b6a4e91a, type: 3}
       propertyPath: m_fontAsset
@@ -10204,6 +10209,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6727389051985878275, guid: c856593eab1c4b84c8eb16e78916fb02, type: 3}
+      propertyPath: m_text
+      value: "\uAC8C\uC784 \uD50C\uB808\uC774"
+      objectReference: {fileID: 0}
+    - target: {fileID: 6727389051985878275, guid: c856593eab1c4b84c8eb16e78916fb02, type: 3}
       propertyPath: m_fontAsset
       value: 
       objectReference: {fileID: 11400000, guid: f2d4a60f9197e3a499f1eee5bd984a53, type: 2}
@@ -10330,7 +10339,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6727389051985878275, guid: c856593eab1c4b84c8eb16e78916fb02, type: 3}
       propertyPath: m_text
-      value: Sound
+      value: "\uC0AC\uC6B4\uB4DC"
       objectReference: {fileID: 0}
     - target: {fileID: 6727389051985878275, guid: c856593eab1c4b84c8eb16e78916fb02, type: 3}
       propertyPath: m_fontAsset
@@ -10425,7 +10434,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1841047094778721982, guid: fbef58fbdab01b4478810d75b6a4e91a, type: 3}
       propertyPath: m_text
-      value: "\uBC30\uACBD\uC74C"
+      value: "\uC74C\uC545 \uBCFC\uB968"
       objectReference: {fileID: 0}
     - target: {fileID: 1841047094778721982, guid: fbef58fbdab01b4478810d75b6a4e91a, type: 3}
       propertyPath: m_fontAsset
@@ -10686,7 +10695,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6727389051985878275, guid: c856593eab1c4b84c8eb16e78916fb02, type: 3}
       propertyPath: m_text
-      value: "\uC801\uC6A9"
+      value: "\uD655\uC778"
       objectReference: {fileID: 0}
     - target: {fileID: 6727389051985878275, guid: c856593eab1c4b84c8eb16e78916fb02, type: 3}
       propertyPath: m_fontAsset
@@ -10815,9 +10824,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6727389051985878275, guid: c856593eab1c4b84c8eb16e78916fb02, type: 3}
       propertyPath: m_text
-      value: 'Key Bind
-
-'
+      value: "\uAC8C\uC784 \uD50C\uB808\uC774"
       objectReference: {fileID: 0}
     - target: {fileID: 6727389051985878275, guid: c856593eab1c4b84c8eb16e78916fb02, type: 3}
       propertyPath: m_fontAsset

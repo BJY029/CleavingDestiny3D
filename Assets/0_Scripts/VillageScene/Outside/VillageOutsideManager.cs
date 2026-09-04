@@ -25,19 +25,62 @@ namespace Village.Outside
 
         [SerializeField] ReadyChecker readyChecker;
 
-        private const float insideSizeOrigin = 5.4f;    // 마을 원래 사이즈
-        private const float outsideSizeOrigin = 10f;  // 지도 전체 사이즈 (프레임 보임)
-        private const float outsideSizeZoomed = 8f;     // 지도 확대 사이즈 (프레임 안 보임)
+        [Header("Outside Transition Timings (Seconds)")]
+        [Tooltip("화면 스위칭 순간의 초고속 페이드 시간 (물리적 오브젝트 겹침 방지)")]
+        [SerializeField] private float dipFadeDuration = 0.15f;
+        [Tooltip("외곽 지도가 펼쳐지는 줌아웃 연출 시간")]
+        [SerializeField] private float outsideRevealDuration = 0.35f;
+        [Tooltip("외곽에서 마을 아이콘으로 파고드는 줌인 시간")]
+        [SerializeField] private float villageDiveDuration = 0.2f;
+        [Tooltip("마을로 착륙하는 줌인 시간")]
+        [SerializeField] private float villageLandingDuration = 0.3f;
+
+        [Header("Camera Sizes")]
+        [SerializeField] private float insideSizeOrigin = 5.4f;    // 마을 원래 사이즈
+        [SerializeField] private float outsideSizeOrigin = 10f;    // 지도 전체 사이즈 (프레임 보임)
+        [SerializeField] private float outsideSizeZoomed = 8f;     // 지도 확대 사이즈 (프레임 안 보임)
+        [SerializeField] private float outsideSizeDive = 7.2f;     // 지도 상 마을로 파고들 때 사이즈
 
         private CinemachineBrain brain;
-
-        [SerializeField] Button readyButton;
+        private bool _isTransitioning = false;
+        public bool IsOutsideActive { get; private set; } = false;
+        private System.Action _returnToVillageAction;
+        [SerializeField] private VillageBuildingManager villageBuildingManager;
+        [SerializeField] private Button readyButton;
         LocalizedText readyButtonText;
         private VillageSceneManager villageSceneManager;
         bool isReady = false;
 
         const string readyText = "UI_Ready";
         const string notReadyText = "UI_NotReady";
+
+        private void Awake()
+        {
+            _returnToVillageAction = ReturnToVillageFromEsc;
+        }
+
+        private void OnEnable()
+        {
+            if (KeyInteractManager.Instance != null)
+            {
+                KeyInteractManager.Instance.OnInteractSpaceKeyDown -= HandleSpaceKey;
+                KeyInteractManager.Instance.OnInteractSpaceKeyDown += HandleSpaceKey;
+            }
+        }
+
+        private void ReturnToVillageFromEsc()
+        {
+            _ = ReturnToVillage();
+        }
+
+        private void OnDisable()
+        {
+            if (KeyInteractManager.Instance != null)
+            {
+                KeyInteractManager.Instance.OnInteractSpaceKeyDown -= HandleSpaceKey;
+                KeyInteractManager.Instance.RemoveMenuAction(_returnToVillageAction);
+            }
+        }
 
         void Start()
         {
@@ -46,6 +89,16 @@ namespace Village.Outside
 
             outsideUI.SetActive(false);
             villageSceneManager = FindFirstObjectByType<VillageSceneManager>();
+            if (villageBuildingManager == null)
+            {
+                villageBuildingManager = FindFirstObjectByType<VillageBuildingManager>();
+            }
+
+            if (KeyInteractManager.Instance != null)
+            {
+                KeyInteractManager.Instance.OnInteractSpaceKeyDown -= HandleSpaceKey;
+                KeyInteractManager.Instance.OnInteractSpaceKeyDown += HandleSpaceKey;
+            }
 
             compassBuilding.OnVillageClicked += CompassBuildingClicked;
             villageBuilding.OnVillageClicked += VillageBuildingClicked;
@@ -70,6 +123,11 @@ namespace Village.Outside
         // 이벤트 구독 해제
         private void OnDestroy()
         {
+            if (KeyInteractManager.Instance != null)
+            {
+                KeyInteractManager.Instance.OnInteractSpaceKeyDown -= HandleSpaceKey;
+            }
+
             compassBuilding.OnVillageClicked -= CompassBuildingClicked;
             villageBuilding.OnVillageClicked -= VillageBuildingClicked;
 
@@ -124,69 +182,82 @@ namespace Village.Outside
 
         public async Awaitable GotoOutside()
         {
-            // 줌아웃 시동
-            _ = insideCam.TweenOrthoSize(insideSizeOrigin * 1.2f, 1.0f, Ease.OutQuad);
+            if (_isTransitioning || IsOutsideActive) return;
+            _isTransitioning = true;
 
-            await FadeCanvas.Instance.FadeInAsync(0.4f);
-
-            // 2. 오브젝트/카메라 교체 + 강제 컷
-            villageInsideObject.SetActive(false);
-
-            foreach (var obj in outsideObjectsToEnable)
+            try
             {
-                obj.SetActive(true);
+                // 1. 마을 카메라가 뒤로 살짝 물러나는 전조 모션 (Zoom-out)
+                _ = insideCam.TweenOrthoSize(insideSizeOrigin * 1.15f, dipFadeDuration, Ease.OutQuad);
+
+                // 2. 초고속 디졸브 페이드인 (0.15초)
+                await FadeCanvas.Instance.FadeInAsync(dipFadeDuration);
+
+                // 3. 오브젝트 및 카메라 스위칭
+                villageInsideObject.SetActive(false);
+                foreach (var obj in outsideObjectsToEnable)
+                {
+                    obj.SetActive(true);
+                }
+
+                await CutToCamera(outsideCam);
+                outsideCam.Lens.OrthographicSize = outsideSizeZoomed;
+
+                outsideUI.SetActive(true);
+                UpdateVillageHpBar();
+
+                // 4. 초고속 페이드아웃과 동시에 지도가 시원하게 펼쳐지는 줌아웃 연출
+                var fadeTask = FadeCanvas.Instance.FadeOutAsync(dipFadeDuration);
+                _ = outsideCam.TweenOrthoSize(outsideSizeOrigin, outsideRevealDuration, Ease.OutCubic);
+
+                await fadeTask;
+                IsOutsideActive = true;
+                KeyInteractManager.Instance?.PushMenuAction(_returnToVillageAction);
             }
-
-
-            // 즉시 전환 (블렌드 스킵)
-            await CutToCamera(outsideCam);
-
-            // 3. 바깥 카메라 초기값 설정 (이미 Cut 되었으므로 즉시 적용됨)
-            outsideCam.Lens.OrthographicSize = outsideSizeZoomed;
-
-            outsideUI.SetActive(true);
-            UpdateVillageHpBar();
-
-            // 4. 즉시 밝아짐 (딜레이 삭제됨)
-            var fadeTask = FadeCanvas.Instance.FadeOutAsync(0.5f);
-
-            // 5. [연출] Reveal 효과
-            _ = outsideCam.TweenOrthoSize(outsideSizeOrigin, 0.8f, Ease.OutCubic);
-
-            await fadeTask;
+            finally
+            {
+                _isTransitioning = false;
+            }
         }
 
         public async Awaitable ReturnToVillage()
         {
-            // 빨려들어가는 느낌
-            _ = outsideCam.TweenOrthoSize(outsideSizeZoomed, 0.5f, Ease.InCubic);
+            if (_isTransitioning || !IsOutsideActive) return;
+            _isTransitioning = true;
+            IsOutsideActive = false;
+            KeyInteractManager.Instance?.RemoveMenuAction(_returnToVillageAction);
 
-            await FadeCanvas.Instance.FadeInAsync(0.5f, endDelay: 0.1f);
-
-            outsideUI.SetActive(false);
-
-            // 2. 오브젝트/카메라 교체 + 강제 컷(Cut)
-            outsideCam.gameObject.SetActive(false);
-            villageInsideObject.SetActive(true);
-
-            foreach (var obj in outsideObjectsToEnable)
+            try
             {
-                obj.SetActive(false);
+                // 1. 지도 상의 마을 그림을 향해 스우욱 파고드는 줌인 연출
+                _ = outsideCam.TweenOrthoSize(outsideSizeDive, villageDiveDuration, Ease.InCubic);
+
+                // 2. 초고속 디졸브 페이드인 (0.15초)
+                await FadeCanvas.Instance.FadeInAsync(dipFadeDuration, delay: villageDiveDuration * 0.4f);
+
+                outsideUI.SetActive(false);
+                outsideCam.gameObject.SetActive(false);
+                villageInsideObject.SetActive(true);
+
+                foreach (var obj in outsideObjectsToEnable)
+                {
+                    obj.SetActive(false);
+                }
+
+                // 3. 마을 카메라로 즉시 컷 및 착륙 초기값 설정
+                await CutToCamera(insideCam);
+                insideCam.Lens.OrthographicSize = insideSizeOrigin * 1.18f;
+
+                // 4. 초고속 페이드아웃과 동시에 마을 전경으로 부드럽게 착륙
+                var fadeTask = FadeCanvas.Instance.FadeOutAsync(dipFadeDuration);
+                _ = insideCam.TweenOrthoSize(insideSizeOrigin, villageLandingDuration, Ease.OutCubic);
+
+                await fadeTask;
             }
-
-            // 즉시 전환 (블렌드 스킵)
-            await CutToCamera(insideCam);
-
-            // 내부 카메라 초기값 설정 (이미 Cut 되었으므로 튀지 않음)
-            insideCam.Lens.OrthographicSize = insideSizeOrigin * 1.3f;
-
-            // 즉시 밝아짐 (딜레이 삭제됨)
-            var fadeTask = FadeCanvas.Instance.FadeOutAsync(0.5f);
-
-            // 착륙
-            _ = insideCam.TweenOrthoSize(insideSizeOrigin, 0.8f, Ease.OutCubic);
-
-            await fadeTask;
+            finally
+            {
+                _isTransitioning = false;
+            }
         }
 
         /// <summary>
@@ -240,6 +311,45 @@ namespace Village.Outside
             isReady = !isReady;
             readyButtonText.TextID = isReady ? readyText : notReadyText;
             villageSceneManager.SetPlayerReady(PhotonNetwork.LocalPlayer.ActorNumber, isReady);
+        }
+
+        private void HandleSpaceKey()
+        {
+            if (_isTransitioning) return;
+
+            // 1. 이미 외곽 뷰인 경우: Space로 준비 토글
+            if (IsOutsideActive)
+            {
+                ToggleReadyButton();
+                return;
+            }
+
+            // 2. 마을 현황(Tab UI) 등 풀스크린 메뉴가 열려있으면 무시
+            var statusUI = FindFirstObjectByType<VillageStatusUI>();
+            if (statusUI != null && statusUI.IsOpen) return;
+
+            // 3. 건물 UI가 열려있는 경우: 건물 닫고 외곽으로 전환
+            if (villageBuildingManager != null && villageBuildingManager.IsBuildingOpen)
+            {
+                _ = SwitchFromBuildingToOutside();
+                return;
+            }
+
+            // 4. 마을 전경인 경우: 외곽으로 나가기
+            _ = GotoOutside();
+        }
+
+        private async Awaitable SwitchFromBuildingToOutside()
+        {
+            if (villageBuildingManager != null && villageBuildingManager.IsBuildingOpen)
+            {
+                villageBuildingManager.ExitBuilding();
+                while (villageBuildingManager.IsBuildingOpen)
+                {
+                    await Awaitable.NextFrameAsync();
+                }
+            }
+            await GotoOutside();
         }
     }
 }

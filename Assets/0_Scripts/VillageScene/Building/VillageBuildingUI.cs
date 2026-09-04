@@ -151,19 +151,32 @@ namespace Village.Building
             };
         }
 
-        public async Awaitable ShowBuildingUI(float duration = 0.5f)
+        public async Awaitable ShowBuildingUI(float duration = 0.3f, float startScale = 0.92f)
         {
             canvasGroup.gameObject.SetActive(true);
             canvasGroup.blocksRaycasts = true;
-            await Tween.Alpha(canvasGroup, 1f, duration, ease: Easing.Standard(Ease.InCubic));
+            canvasGroup.transform.localScale = Vector3.one * startScale;
+
+            var alphaTween = Tween.Alpha(canvasGroup, 1f, duration, ease: Ease.OutCubic);
+            var scaleTween = Tween.Scale(canvasGroup.transform, 1f, duration, ease: Ease.OutCubic);
+
+            await alphaTween;
+            await scaleTween;
+
             canvasGroup.interactable = true;
         }
 
-        public async Awaitable HideBuildingUI(float duration = 0.5f)
+        public async Awaitable HideBuildingUI(float duration = 0.25f, float endScale = 0.95f)
         {
-            await Tween.Alpha(canvasGroup, 0f, duration, ease: Easing.Standard(Ease.OutCubic));
-            canvasGroup.blocksRaycasts = false;
             canvasGroup.interactable = false;
+
+            var alphaTween = Tween.Alpha(canvasGroup, 0f, duration, ease: Ease.InCubic);
+            var scaleTween = Tween.Scale(canvasGroup.transform, endScale, duration, ease: Ease.InCubic);
+
+            await alphaTween;
+            await scaleTween;
+
+            canvasGroup.blocksRaycasts = false;
             canvasGroup.gameObject.SetActive(false);
         }
 

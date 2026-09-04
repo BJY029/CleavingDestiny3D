@@ -22,10 +22,13 @@ namespace Village
         [SerializeField] private Ease closeEase = Ease.InCubic;
 
         private Sequence animSequence;
+        private System.Action _closeAction;
         public bool IsOpen => statusCanvasGroup.gameObject.activeSelf;
 
         private void Awake()
         {
+            _closeAction = Close;
+
             if (statusCanvasGroup != null)
             {
                 statusCanvasGroup.alpha = 0f;
@@ -48,6 +51,8 @@ namespace Village
 
         private void OnDisable()
         {
+            KeyInteractManager.Instance?.RemoveMenuAction(_closeAction);
+
             if (LocalizationManager.Instance != null)
             {
                 LocalizationManager.Instance.OnLanguageChanged -= OnLanguageChanged;
@@ -58,6 +63,8 @@ namespace Village
         public void Open()
         {
             if (statusCanvasGroup == null) return;
+
+            KeyInteractManager.Instance?.PushMenuAction(_closeAction);
 
             Refresh();
 
@@ -87,6 +94,8 @@ namespace Village
         public void Close()
         {
             if (statusCanvasGroup == null) return;
+
+            KeyInteractManager.Instance?.RemoveMenuAction(_closeAction);
 
             animSequence.Stop();
 
