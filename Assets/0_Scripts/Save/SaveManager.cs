@@ -65,8 +65,8 @@ public static class SaveManager
         return new PlayerSaveData
         {
             branchCount = 0,
-            ownedAxeSkinIdx = new() { "axe_default" },
-            equippedAxeSkinId = "axe_default"
+            ownedAxeSkinIdx = new() { "axe_basic" },
+            equippedAxeSkinId = "axe_basic"
         };
     }
 
