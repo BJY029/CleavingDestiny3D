@@ -13,4 +13,9 @@ public class ForTestBranchSystem : MonoBehaviour
         PlayerProfile.InitBranch();
         SaveManager.Save();
     }
+
+    public void ResetSaveData()
+    {
+        SaveManager.ResetSaveForTest();
+    }
 }

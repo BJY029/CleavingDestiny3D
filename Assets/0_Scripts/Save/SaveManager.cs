@@ -78,4 +78,25 @@ public static class SaveManager
 
         Debug.Log($"[SaveManager] 기본 저장 데이터 생성 완료 : {SavePath}");
     }
+
+    public static void ResetSaveForTest()
+    {
+        if (File.Exists(SavePath))
+        {
+            File.Delete(SavePath);
+            Debug.Log($"[SaveManager] 테스트용 Save 삭제 완료 : {SavePath}");
+        }
+
+        PlayerSaveData defaultData = CreateDefaultData();
+
+        PlayerProfile.Initialize(defaultData);
+
+        SaveData(defaultData);
+
+        Debug.Log(
+            $"[SaveManager] Save 초기화 완료 / " +
+            $"Branch={PlayerProfile.BranchCount} / " +
+            $"Axe={PlayerProfile.EquippedAxeSkinId}"
+        );
+    }
 }
