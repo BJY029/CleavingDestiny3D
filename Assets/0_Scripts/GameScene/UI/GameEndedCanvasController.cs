@@ -25,6 +25,9 @@ public class GameEndedCanvasController : MonoBehaviour
     public TextMeshProUGUI LeftPlayerStatsText;  // 로컬 플레이어 (나)
     public TextMeshProUGUI RightPlayerStatsText; // 상대 플레이어 (적 또는 AI)
 
+    [Header("Earned Branchs")]
+    public TextMeshProUGUI EarnedBranchCountText;
+
     //게임 종료 UI 출력
     public void SetGameEndedCanvas(MatchResultType state, MatchResultReason reason)
     {
@@ -64,6 +67,7 @@ public class GameEndedCanvasController : MonoBehaviour
         if (LeftPlayerStatsText != null) LeftPlayerStatsText.text = leftStats;
         if (RightPlayerStatsText != null) RightPlayerStatsText.text = rightStats;
         if (StatsText != null) StatsText.text = matchHeader;
+        if (EarnedBranchCountText != null) EarnedBranchCountText.text = GameSessionRewardManager.LastEarnedBranchCount.ToString();
 
         // 플레이어 입력 비활성화 (움직임 및 카메라 회전 방지)
         if (KeyInteractManager.Instance != null)

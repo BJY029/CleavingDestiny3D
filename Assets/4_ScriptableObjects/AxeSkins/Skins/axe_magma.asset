@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7fa59d1501ffc6478fd88ef1f57f083, type: 3}
+  m_Name: axe_magma
+  m_EditorClassIdentifier: Assembly-CSharp::AxeSkinSO
+  skinId: axe_magma
+  displayName: Magma Axe
+  price: 500
+  icon: {fileID: 21300000, guid: 98d86cdf4022f124297e1202d6d21089, type: 3}
+  description: 
+  axePrefab: {fileID: 4633191031699000694, guid: fc4d05b15d22c5c40916e577bbfffe5e, type: 3}

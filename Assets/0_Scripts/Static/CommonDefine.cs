@@ -197,6 +197,9 @@ public static class PlayerPropKeys
     public const string CumulativeDamageReceived = "CumulativeDamageReceived"; //float
     public const string ItemsUsedCount = "ItemsUsedCount"; //int
     public const string CumulativeGoldSpent = "CumulativeGoldSpent"; //int
+
+    //AxeSkin
+    public const string AxeSkinId = "AxeSkinId"; //string
 }
 
 public static class ItemPropKeys

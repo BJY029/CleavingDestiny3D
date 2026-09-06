@@ -11,6 +11,7 @@ public class ButtonController : MatchController
     [Header("Button Elements")]
     public Button MatchmakingBtn;
     public Button PlayWithAIBtn;
+    public Button ShopBtn;
     public Button ExitBtn;
     public Button OptionBtn;
 
@@ -33,6 +34,9 @@ public class ButtonController : MatchController
 
         PlayWithAIBtn.onClick.AddListener(PlayButtonClickSound);
         PlayWithAIBtn.onClick.AddListener(StartSoloplay);
+
+        ShopBtn.onClick.AddListener(PlayButtonClickSound);
+        ShopBtn.onClick.AddListener(OnClickShop);
 
         ExitBtn.onClick.AddListener(PlayButtonClickSound);
         ExitBtn.onClick.AddListener(OnClickExitGame);
@@ -75,5 +79,10 @@ public class ButtonController : MatchController
     private void OnClickOption()
     {
         OptionManager.Instance.SetOptionMenu(true);
+    }
+
+    private void OnClickShop()
+    {
+        ShopUIManager.Instance.EnterShopUI();
     }
 }
