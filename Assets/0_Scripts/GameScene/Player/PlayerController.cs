@@ -15,6 +15,8 @@ public interface ILookInteractable
     void OnInteract(IPlayerAction pc);
 }
 
+public interface ITurnIndependentInteractable : ILookInteractable { }
+
 //미니게임 상호작용 인터페이스
 public interface IMinigameInteractable
 {
@@ -524,13 +526,25 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private void HandleInteractFKeyDown()
     {
         if (!photonView.IsMine) return;
-        if (!GameHelper.IsMyTurn()) return;
+
 
         if (isPreparingTreeCut)
         {
+            if (!GameHelper.IsMyTurn()) return;
+
             TriggerTreeStrike();
+            return;
         }
-        else if (isLookingAtTree && !WhileAnimation)
+
+        if (currentInteractable is ITurnIndependentInteractable)
+        {
+            currentInteractable.OnInteract(this);
+            return;
+        }
+
+        if (!GameHelper.IsMyTurn()) return;
+
+        if (isLookingAtTree && !WhileAnimation)
         {
             isPreparingTreeCut = true;
             WhileAnimation = true; // 차징 중 움직임 잠금
@@ -542,11 +556,12 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             PlayerCanvasController.Instance.OpenGauge();
 
             animationController?.PlayReadyAnimation();
+
+            return;
         }
-        else
-        {
-            currentInteractable?.OnInteract(this);
-        }
+
+        currentInteractable?.OnInteract(this);
+
     }
 
     // F 키를 뗐을 때 (Release Up) - 토글형으로 변경으로 인해 아무 작업도 수행하지 않음

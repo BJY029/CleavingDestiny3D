@@ -38,6 +38,10 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public GameObject TimerObj;
 	public TextMeshProUGUI TimerText;
 
+	[Header("Branch")]
+	public TextMeshProUGUI BranchCount;
+	public GameObject BranchInteractObj;
+
 	[Header("Prefabs")]
 	public GameObject ItemNotifyPrefab;
 	public GameObject ItemStolenNotifyPrefab;
@@ -83,11 +87,28 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		HitTextObj.SetActive(false);
 		WarningObj.SetActive(false);
 		MissionPanel.SetActive(false);
+		BranchInteractObj.SetActive(false);
 		CloseGauge();
 		HitText.text = "";
 		WarningText.text = "";
 		InitTimer();
 	}
+
+	public override void OnEnable()
+	{
+		base.OnEnable();
+
+		GameSessionData.OnBranchCountChanged += UpdateBranchCount;
+		UpdateBranchCount(GameSessionData.CollectedBranchCount);
+	}
+
+	public override void OnDisable()
+	{
+		base.OnDisable();
+
+		GameSessionData.OnBranchCountChanged -= UpdateBranchCount;
+	}
+
 
 	//만약, 현재 타이머가 설정되었고, 시작 시간 또한 초기화 된 경우
 	private void Update()
@@ -111,6 +132,11 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		TimerText.text = "";
 		_startTime = -1f;
 		_endTime = -1f;
+	}
+
+	private void UpdateBranchCount(int count)
+	{
+		BranchCount.text = count.ToString();
 	}
 
 	//타이머가 설정되면, 시작, 끝 시간을 받아와서 저장한다.

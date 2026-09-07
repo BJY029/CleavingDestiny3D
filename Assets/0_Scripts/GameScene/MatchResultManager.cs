@@ -18,10 +18,10 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
     private MatchResultReason _lastResaon = MatchResultReason.None;
     private float delay = 3.0f;
     private string aiAttachedKey;
-    
+
     [SerializeField] private GameEndedCanvasController gameEndedCanvasController;
-    
-    
+
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -201,6 +201,9 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         _isResultResolved = true;
         _lastResaon = reason;
 
+        //주운 나뭇가지 저장(중간 탈주시 인정안함)
+        GameSessionRewardManager.ConfirmRewards();
+
         ShowEndGameUI(LoserActorNum, reason, resolveTurnIndex);
     }
 
@@ -223,6 +226,9 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
 
         _lastResaon = reason;
         _isResultResolved = true;
+
+        //주운 나뭇가지 저장(중간 탈주시 인정안함)
+        GameSessionRewardManager.ConfirmRewards();
 
         ShowEndGameUI(LoserActor, reason, resolvedTurn);
     }

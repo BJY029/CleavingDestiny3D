@@ -45,6 +45,7 @@ public class GameExitHandler : MonoBehaviourPunCallbacks
         //방 안에 있으면
         if (PhotonNetwork.InRoom)
         {
+            GameSessionRewardManager.DiscardReward();
             //씬 이동 동기화 해제
             PhotonNetwork.AutomaticallySyncScene = false;
             //룸 떠나기
@@ -55,7 +56,7 @@ public class GameExitHandler : MonoBehaviourPunCallbacks
             GoToLobby();
         }
     }
-    
+
     //로비로 씬 변경
     private void GoToLobby()
     {
