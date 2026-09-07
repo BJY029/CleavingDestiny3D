@@ -1,14 +1,17 @@
 using Photon.Pun;
 using Photon.Realtime;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
+using Village;
 
 public class InventoryAuthority : MonoBehaviourPunCallbacks
 {
 	public static InventoryAuthority Instance;
+	public event Action<int, int, string, bool> OnShopPurchaseResult;
 	private WorldInventorySlot wis;
 
 	private void Awake()
@@ -38,9 +41,17 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_TakeOffer), RpcTarget.MasterClient, PhotonNetwork.LocalPlayer.ActorNumber, itemId);
 	}
 
-	public void RequestBuyShopItem(int actor, string itemId, int price)
+	public void RequestBuyShopItem(int actor, string itemId, int requestId, int shopNonce)
 	{
-		photonView.RPC(nameof(RPC_BuyShopItem), RpcTarget.MasterClient, actor, itemId, price);
+		photonView.RPC(nameof(RPC_BuyShopItem), RpcTarget.MasterClient, actor, itemId, requestId, shopNonce);
+	}
+
+	public bool TryBuyShopItemForAI(int actor, string itemId)
+	{
+		if (!PhotonNetwork.IsMasterClient || !GameManager.Instance.isSoloPlay || PhotonNetwork.CurrentRoom.GetPlayer(actor) != null)
+			return false;
+
+		return Master_TryBuyShopItem(actor, itemId, -1, false);
 	}
 
 	public void RequestUseItem(int slotIdx, int ActNum, WorldInventorySlot wi)
@@ -172,26 +183,45 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		Debug.Log($"Player{actor} took offer: {itemId}");
 	}
 
-	[PunRPC]
-	void RPC_BuyShopItem(int actor, string itemId, int price, PhotonMessageInfo info)
+	private bool Master_TryBuyShopItem(int actor, string itemId, int shopNonce, bool validateShopOffer)
 	{
-		if (!PhotonNetwork.IsMasterClient) return;
+		ItemSO item = ItemDB.Instance.Get(itemId);
+		if (item == null || (validateShopOffer && !OfferAuthority.Instance.IsCurrentShopOfferItem(actor, shopNonce, itemId))) return false;
 
-		// 클라이언트가 이미 가격을 지불하고 호출했다고 가정하고, 인벤토리에 아이템만 추가합니다.
+		int price = VillageSystem.VillageStat.VillageBalance.GetItemPrice(item.itemClass);
+		int gold = PhotonPropertyHelper.GetPlayerProp<int>(actor, PlayerPropKeys.Gold, 0);
+		if (gold < price || !Master_AddItemToInventory(actor, itemId)) return false;
+
+		int spent = PhotonPropertyHelper.GetPlayerProp<int>(actor, PlayerPropKeys.CumulativeGoldSpent, 0);
+		PhotonPropertyHelper.SetPlayerProps(actor, new ExitGames.Client.Photon.Hashtable
+		{
+			{ PlayerPropKeys.Gold, gold - price },
+			{ PlayerPropKeys.CumulativeGoldSpent, spent + price }
+		});
+		if (validateShopOffer)
+			OfferAuthority.Instance.RemoveCurrentShopOfferItem(actor, shopNonce, itemId);
+		MarkSelectedNewDrugItem(actor, itemId);
+		Debug.Log($"[InventoryAuthority] Actor {actor} bought {itemId} for {price}G");
+		return true;
+	}
+
+	[PunRPC]
+	void RPC_BuyShopItem(int actor, string itemId, int requestId, int shopNonce, PhotonMessageInfo info)
+	{
+		if (!PhotonNetwork.IsMasterClient || info.Sender == null || info.Sender.ActorNumber != actor) return;
+
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(actor);
+		bool succeeded = player != null && Master_TryBuyShopItem(actor, itemId, shopNonce, true);
+		if (succeeded)
+			photonView.RPC(nameof(RPC_LogShopPurchase), player, itemId);
+		if (player != null)
+			photonView.RPC(nameof(RPC_ReceiveShopPurchaseResult), player, actor, requestId, itemId, succeeded);
+	}
 
-		if (Master_AddItemToInventory(actor, itemId))
-		{
-			MarkSelectedNewDrugItem(actor, itemId);
-			if (player != null)
-				photonView.RPC(nameof(RPC_LogShopPurchase), player, itemId);
-			Debug.Log($"[InventoryAuthority] Actor {actor} bought {itemId} for {price}G (Gold deducted by client)");
-		}
-		else
-		{
-			// 아이템 추가 실패 (인벤토리 가득 참)
-			Debug.LogError("[InventoryAuthority] Item Insertion ERROR (Inventory Full?)");
-		}
+	[PunRPC]
+	void RPC_ReceiveShopPurchaseResult(int actor, int requestId, string itemId, bool succeeded)
+	{
+		OnShopPurchaseResult?.Invoke(actor, requestId, itemId, succeeded);
 	}
 
 	[PunRPC]

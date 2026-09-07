@@ -13,11 +13,16 @@ namespace Village.Building
         int shopNonceCounter = 0; // 상점 리롤 시마다 증가하는 nonce 카운터
         private int lastSentNonce = -1; // 내가 보낸 마지막 nonce 추적
         private bool isWaitingForResult = false; // 서버 응답 대기 상태
+        private int purchaseRequestCounter;
+        private int pendingPurchaseRequestId = -1;
+        private bool isPurchasePending;
+        private bool isPurchaseResultSubscribed;
 
         [SerializeField] ShopItem shopItemPrefab;
 
         [SerializeField] private Button reloadButton;
         [SerializeField] private Button buyButton;
+        [SerializeField] private TextMeshProUGUI buyDisableReasonText;
 
         [Header("Shop Item UI Elements")]
         [SerializeField] private ShopInventory shopInventory;
@@ -53,8 +58,10 @@ namespace Village.Building
         public override void OnEnable()
         {
             base.OnEnable();
-            OfferAuthority.Instance.OnShopRerollReceived += OnRandonShopItemReceived;
+            OfferAuthority.Instance.OnShopRerollReceived += OnRandomShopItemReceived;
             VillageSystem.VillageLogic.OnGoldChanged += OnGoldChanged;
+            LocalizationManager.Instance.OnLanguageChanged += RefreshStatusUI;
+            SubscribePurchaseResults();
         }
 
         private void OnGoldChanged(int gold)
@@ -65,13 +72,46 @@ namespace Village.Building
         public override void OnDisable()
         {
             if (OfferAuthority.Instance != null)
-                OfferAuthority.Instance.OnShopRerollReceived -= OnRandonShopItemReceived;
+                OfferAuthority.Instance.OnShopRerollReceived -= OnRandomShopItemReceived;
             if (VillageSystem.VillageLogic != null)
                 VillageSystem.VillageLogic.OnGoldChanged -= OnGoldChanged;
+            if (LocalizationManager.Instance != null)
+                LocalizationManager.Instance.OnLanguageChanged -= RefreshStatusUI;
             base.OnDisable();
         }
 
-        void OnRandonShopItemReceived(int targetActor, int shopNonce, string[] itemIds)
+        private void OnDestroy()
+        {
+            if (isPurchaseResultSubscribed && InventoryAuthority.Instance != null)
+                InventoryAuthority.Instance.OnShopPurchaseResult -= OnShopPurchaseResult;
+        }
+
+        private void SubscribePurchaseResults()
+        {
+            if (isPurchaseResultSubscribed || InventoryAuthority.Instance == null) return;
+
+            InventoryAuthority.Instance.OnShopPurchaseResult += OnShopPurchaseResult;
+            isPurchaseResultSubscribed = true;
+        }
+
+        private void OnShopPurchaseResult(int actor, int requestId, string itemId, bool succeeded)
+        {
+            if (actor != PhotonNetwork.LocalPlayer.ActorNumber || requestId != pendingPurchaseRequestId) return;
+
+            isPurchasePending = false;
+            pendingPurchaseRequestId = -1;
+            if (succeeded && selectedItemIndex >= 0 && selectedItemIndex < shopItems.Length &&
+                shopItems[selectedItemIndex].ItemData?.itemId == itemId)
+            {
+                shopItems[selectedItemIndex].SetShopItem(null);
+                ShopItemSelect(null);
+                return;
+            }
+
+            RefreshStatusUI();
+        }
+
+        void OnRandomShopItemReceived(int targetActor, int shopNonce, string[] itemIds)
         {
             // 내 ActorNumber에 대한 응답인지 확인
             if (targetActor != PhotonNetwork.LocalPlayer.ActorNumber) return;
@@ -119,7 +159,7 @@ namespace Village.Building
 
         public void OnClickReloadButton()
         {
-            if (isWaitingForResult) return;
+            if (isWaitingForResult || isPurchasePending) return;
 
             int reloadCost = VillageStat.VillageBalance.GetShopReloadCost(reloadCount);
             if (VillageSystem.VillageLogic.GetMyGold() < reloadCost)
@@ -142,8 +182,7 @@ namespace Village.Building
             isWaitingForResult = true;
             lastSentNonce = ++shopNonceCounter;
 
-            int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) + 1;
-            OfferAuthority.Instance.RequestShopReroll(PhotonNetwork.LocalPlayer.ActorNumber, turnIndex, lastSentNonce);
+            OfferAuthority.Instance.RequestShopReroll(PhotonNetwork.LocalPlayer.ActorNumber, lastSentNonce);
 
             // 로딩 중 효과 표시
             foreach (var item in shopItems)
@@ -193,13 +232,14 @@ namespace Village.Building
             reloadCostText.SetText(LocalizationManager.Instance.GetText(CSV_Type.Village, "Shop_Reload"), reloadCost);
 
             // 대기 중이 아니고 돈이 충분할 때만 버튼 활성화
-            reloadButton.interactable = !isWaitingForResult && currentGold >= reloadCost;
+            reloadButton.interactable = !isWaitingForResult && !isPurchasePending && currentGold >= reloadCost;
 
             // 선택된 아이템이 있을 때만 설명과 구매 버튼 활성화
             if (selectedItemIndex < 0 || selectedItemIndex >= shopItems.Length)
             {
                 itemDescriptionText.SetText(string.Empty);
                 buyButton.interactable = false;
+                buyDisableReasonText.SetText(string.Empty);
             }
             else
             {
@@ -209,13 +249,31 @@ namespace Village.Building
                     itemDescriptionText.SetText(selectedItem.GetItemDescription());
                     // 구매 버튼은 대기 중이 아니고, 아이템 가격보다 골드가 충분할 때만 활성화
 
-                    buyButton.interactable = !isWaitingForResult && !isInventoryFull && currentGold >= selectedItem.Price;
+                    bool enoughGold = currentGold >= selectedItem.Price;
+                    buyButton.interactable = !isWaitingForResult && !isPurchasePending && !isInventoryFull && enoughGold;
+                    if (isPurchasePending)
+                    {
+                        buyDisableReasonText.SetText(string.Empty);
+                    }
+                    else if (!enoughGold)
+                    {
+                        buyDisableReasonText.SetText(LocalizationManager.Instance.GetText(CSV_Type.Village, "Shop_NoGold"));
+                    }
+                    else if (isInventoryFull)
+                    {
+                        buyDisableReasonText.SetText(LocalizationManager.Instance.GetText(CSV_Type.Village, "Shop_Inventory_Full"));
+                    }
+                    else
+                    {
+                        buyDisableReasonText.SetText(string.Empty);
+                    }
                 }
                 else
                 {
                     // 선택된 아이템이 null인 경우 설명 초기화 및 구매 버튼 비활성화
                     itemDescriptionText.SetText(string.Empty);
                     buyButton.interactable = false;
+                    buyDisableReasonText.SetText(string.Empty);
                 }
             }
         }
@@ -224,7 +282,7 @@ namespace Village.Building
         private void OnClickBuyButton()
         {
             // 1. 현재 선택된 아이템이 유효한지 검사합니다.
-            if (selectedItemIndex < 0 || selectedItemIndex >= shopItems.Length) return;
+            if (isPurchasePending || selectedItemIndex < 0 || selectedItemIndex >= shopItems.Length) return;
 
             // 인벤토리가 가득 찼다면 구매를 막습니다.
             if (IsMyInventoryFull())
@@ -247,22 +305,17 @@ namespace Village.Building
                 return;
             }
 
-            // 골드 제거
-            VillageSystem.VillageLogic.AddGold(-price);
-
-            // 4. [서버 요청] 인벤토리 권한을 관리하는 Singleton 인스턴스에 구매를 요청합니다.
-            // 이 요청은 RPC를 통해 MasterClient에서 최종 검증 및 처리가 이루어집니다.
+            // 4. 가격 차감과 아이템 지급은 MasterClient가 함께 검증해 처리합니다.
             if (InventoryAuthority.Instance != null)
             {
+                pendingPurchaseRequestId = ++purchaseRequestCounter;
+                isPurchasePending = true;
                 InventoryAuthority.Instance.RequestBuyShopItem(
                     PhotonNetwork.LocalPlayer.ActorNumber,
                     itemId,
-                    price
+                    pendingPurchaseRequestId,
+                    lastSentNonce
                 );
-
-                // 5. [UI 처리] 구매 요청을 보낸 후 즉시 아이템 선택을 해제하여 중복 클릭을 방지합니다.
-                shopItems[selectedItemIndex].SetShopItem(null); // 선택된 아이템 UI 초기화
-                ShopItemSelect(null);
                 RefreshStatusUI();
             }
             else

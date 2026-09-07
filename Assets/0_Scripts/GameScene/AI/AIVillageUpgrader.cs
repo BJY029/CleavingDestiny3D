@@ -150,13 +150,12 @@ public class AIVillageUpgrader : AILogicModule
             {
                 Debug.Log($"[AI {brain.MyActorNum}] Buying item: {itemId} for {price}G");
 
-                // 골드 차감 및 구매 요청
-                villageManager.AddGold(-price, brain.MyActorNum);
-                InventoryAuthority.Instance.RequestBuyShopItem(brain.MyActorNum, itemId, price);
-
-                // 목록에서 제거
-                currentShopOffer[i] = null;
-                boughtAny = true;
+                // AI도 MasterClient가 골드와 인벤토리를 함께 검증해 처리합니다.
+                if (InventoryAuthority.Instance.TryBuyShopItemForAI(brain.MyActorNum, itemId))
+                {
+                    currentShopOffer[i] = null;
+                    boughtAny = true;
+                }
 
                 await UniTask.Delay(100); // 약간의 대기
                 break;

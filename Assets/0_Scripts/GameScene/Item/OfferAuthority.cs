@@ -14,6 +14,7 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 
 	// 상점 리롤 결과 수신 시 발생하는 이벤트 (대상ActorNum, nonce, 아이템ID배열)
 	public event Action<int, int, string[]> OnShopRerollReceived;
+	private readonly Dictionary<int, (int nonce, List<string> itemIds)> shopOffers = new();
 
 	private static readonly HashSet<string> AI_MODE_BANNED_ITEM_IDS = new HashSet<string>
 	{
@@ -76,19 +77,32 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 	}
 
 	// 클라이언트 요청에 응답
-	public void RequestShopReroll(int turnActor, int turnIndex, int shopNonce)
+	public void RequestShopReroll(int turnActor, int shopNonce)
 	{
-		int shopLevel = VillageSystem.VillageStat.GetVillageLevel(VillageType.Shop);
-		photonView.RPC(nameof(RPC_RequestShopReroll), RpcTarget.MasterClient, turnActor, turnIndex, shopNonce, shopLevel);
+		photonView.RPC(nameof(RPC_RequestShopReroll), RpcTarget.MasterClient, turnActor, shopNonce);
 	}
 
 	[PunRPC]
-	void RPC_RequestShopReroll(int turnActor, int turnIndex, int shopNonce, int shopLevel)
+	void RPC_RequestShopReroll(int turnActor, int shopNonce, PhotonMessageInfo info)
 	{
-		if (!PhotonNetwork.IsMasterClient) return;
+		if (!PhotonNetwork.IsMasterClient || info.Sender == null || info.Sender.ActorNumber != turnActor) return;
 
+		int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) + 1;
+		int shopLevel = VillageSystem.VillageStat.GetVillageLevel(VillageType.Shop, turnActor);
 		string[] resultOffer = GetShopOffer(turnActor, turnIndex, shopNonce, shopLevel);
+		shopOffers[turnActor] = (shopNonce, resultOffer.ToList());
 		SendShopRerollResult(turnActor, shopNonce, resultOffer);
+	}
+
+	public bool IsCurrentShopOfferItem(int actor, int shopNonce, string itemId)
+	{
+		return shopOffers.TryGetValue(actor, out var offer) && offer.nonce == shopNonce && offer.itemIds.Contains(itemId);
+	}
+
+	public void RemoveCurrentShopOfferItem(int actor, int shopNonce, string itemId)
+	{
+		if (shopOffers.TryGetValue(actor, out var offer) && offer.nonce == shopNonce)
+			offer.itemIds.Remove(itemId);
 	}
 
 	/// <summary>
