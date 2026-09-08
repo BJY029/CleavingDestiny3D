@@ -16,10 +16,12 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
     public event Action OnInteractKeyUp;
     public event Action OnInteractSpaceKeyDown;
     public event Action OnTabKeyDown;
+    public event Action<int> OnQuickSlotKeyDown; // 1~5 퀵슬롯/건물 단축키 (리바인딩 지원)
     public event Func<bool> OnMenuKeyDown;
     
     private bool _isPlayerActionsEnabled = true;
     private bool _isMenuInputEnabled = true;
+    private bool _isQuickSlotEnabled = true;
 
     protected override void Awake()
     {
@@ -43,7 +45,16 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         _inputActions.UI.Menu.performed += HandleMenu; // UI 메뉴 액션
         _inputActions.Player.Sprint.performed += HandleSprint; // 달리기 시작
         _inputActions.Player.Sprint.canceled += HandleSprint; // 달리기 종료
-
+        _inputActions.Player.QuickSlot1.started += HandleQuickSlot1;
+        _inputActions.Player.QuickSlot1.performed += HandleQuickSlot1;
+        _inputActions.Player.QuickSlot2.started += HandleQuickSlot2;
+        _inputActions.Player.QuickSlot2.performed += HandleQuickSlot2;
+        _inputActions.Player.QuickSlot3.started += HandleQuickSlot3;
+        _inputActions.Player.QuickSlot3.performed += HandleQuickSlot3;
+        _inputActions.Player.QuickSlot4.started += HandleQuickSlot4;
+        _inputActions.Player.QuickSlot4.performed += HandleQuickSlot4;
+        _inputActions.Player.QuickSlot5.started += HandleQuickSlot5;
+        _inputActions.Player.QuickSlot5.performed += HandleQuickSlot5;
 
         // 액션 맵 활성화
         _inputActions.Player.Enable();
@@ -64,12 +75,68 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         OnMousePositionInput?.Invoke(mousePosition);
     }
 
+    private readonly System.Collections.Generic.List<Action> _menuActionStack = new();
+
+    /// <summary>
+    /// ESC 키를 눌렀을 때 실행될 닫기/취소 Action을 스택 최상단에 추가합니다.
+    /// 중복 추가를 방지하기 위해 이미 포함되어 있다면 맨 위로 끌어올립니다.
+    /// </summary>
+    public void PushMenuAction(Action action)
+    {
+        if (action == null) return;
+        _menuActionStack.Remove(action);
+        _menuActionStack.Add(action);
+    }
+
+    /// <summary>
+    /// 버튼 클릭 등으로 메뉴가 먼저 닫혔을 때 스택에서 해당 Action을 안전하게 제거합니다.
+    /// </summary>
+    public void RemoveMenuAction(Action action)
+    {
+        if (action == null) return;
+        _menuActionStack.Remove(action);
+    }
+
+    /// <summary>
+    /// 스택의 최상단 Action을 꺼내어 실행합니다. 실행된 Action이 있다면 true를 반환합니다.
+    /// </summary>
+    public bool PopAndExecuteMenuAction()
+    {
+        while (_menuActionStack.Count > 0)
+        {
+            int lastIndex = _menuActionStack.Count - 1;
+            Action action = _menuActionStack[lastIndex];
+            _menuActionStack.RemoveAt(lastIndex);
+
+            if (action != null)
+            {
+                action.Invoke();
+                return true;
+            }
+        }
+        return false;
+    }
+
     // ESC 키를 누른 경우
     private void HandleMenu(InputAction.CallbackContext context)
     {
         if (!_isMenuInputEnabled) return;
-        if (OnMenuKeyDown?.Invoke() == true) return;
 
+        // 1. ESC 스택에 등록된 메뉴 닫기 액션 우선 실행
+        if (PopAndExecuteMenuAction()) return;
+
+        // 2. 레거시 OnMenuKeyDown 이벤트 호환
+        if (OnMenuKeyDown != null)
+        {
+            var invocationList = OnMenuKeyDown.GetInvocationList();
+            for (int i = invocationList.Length - 1; i >= 0; i--)
+            {
+                var handler = (Func<bool>)invocationList[i];
+                if (handler.Invoke()) return;
+            }
+        }
+
+        // 3. 닫을 창이 없으면 환경설정창 토글
         SettingCanvasController.instance?.ToggleSettingPanel();
     }
 
@@ -122,10 +189,45 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         _inputActions.UI.Menu.performed -= HandleMenu;
         _inputActions.Player.Sprint.performed -= HandleSprint;
         _inputActions.Player.Sprint.canceled -= HandleSprint;
+        _inputActions.Player.QuickSlot1.started -= HandleQuickSlot1;
+        _inputActions.Player.QuickSlot1.performed -= HandleQuickSlot1;
+        _inputActions.Player.QuickSlot2.started -= HandleQuickSlot2;
+        _inputActions.Player.QuickSlot2.performed -= HandleQuickSlot2;
+        _inputActions.Player.QuickSlot3.started -= HandleQuickSlot3;
+        _inputActions.Player.QuickSlot3.performed -= HandleQuickSlot3;
+        _inputActions.Player.QuickSlot4.started -= HandleQuickSlot4;
+        _inputActions.Player.QuickSlot4.performed -= HandleQuickSlot4;
+        _inputActions.Player.QuickSlot5.started -= HandleQuickSlot5;
+        _inputActions.Player.QuickSlot5.performed -= HandleQuickSlot5;
 
         // 액션 맵 비활성화
         _inputActions.Player.Disable();
         _inputActions.UI.Disable();
+    }
+
+    private void HandleQuickSlot1(InputAction.CallbackContext context) => TriggerQuickSlot(1);
+    private void HandleQuickSlot2(InputAction.CallbackContext context) => TriggerQuickSlot(2);
+    private void HandleQuickSlot3(InputAction.CallbackContext context) => TriggerQuickSlot(3);
+    private void HandleQuickSlot4(InputAction.CallbackContext context) => TriggerQuickSlot(4);
+    private void HandleQuickSlot5(InputAction.CallbackContext context) => TriggerQuickSlot(5);
+
+    private int _lastQuickSlotFrame = -1;
+    private int _lastQuickSlotIndex = -1;
+
+    private void TriggerQuickSlot(int slotIndex)
+    {
+        if (!_isQuickSlotEnabled) return;
+
+        if (Time.frameCount == _lastQuickSlotFrame && _lastQuickSlotIndex == slotIndex) return;
+        _lastQuickSlotFrame = Time.frameCount;
+        _lastQuickSlotIndex = slotIndex;
+
+        OnQuickSlotKeyDown?.Invoke(slotIndex);
+    }
+
+    public void SetQuickSlotEnabled(bool enabled)
+    {
+        _isQuickSlotEnabled = enabled;
     }
 
     public void SetPlayerActionsEnabled(bool enabled)

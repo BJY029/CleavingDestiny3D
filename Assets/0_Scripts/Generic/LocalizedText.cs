@@ -45,7 +45,10 @@ public class LocalizedText : MonoBehaviour
     {
         UpdateText();
         // 활성화될 때만 이벤트 구독
-        LocalizationManager.Instance.OnLanguageChanged += UpdateText;
+        if (LocalizationManager.Instance != null)
+        {
+            LocalizationManager.Instance.OnLanguageChanged += UpdateText;
+        }
     }
 
     private void OnDisable()
@@ -57,9 +60,19 @@ public class LocalizedText : MonoBehaviour
         }
     }
 
-    private void UpdateText()
+    public void UpdateText()
     {
-        if (textComponent != null)
+        if (!Application.isPlaying) return;
+
+        if (textComponent == null)
+        {
+            textComponent = GetComponent<TextMeshProUGUI>();
+            if (textComponent == null) return;
+        }
+
+        if (string.IsNullOrEmpty(textID)) return;
+
+        if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsLoaded)
         {
             textComponent.SetText(LocalizationManager.Instance.GetText(tableType, textID));
         }

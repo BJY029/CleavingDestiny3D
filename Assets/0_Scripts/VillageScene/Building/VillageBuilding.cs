@@ -17,7 +17,7 @@ namespace Village.Building
         public Action<VillageBuilding> OnVillageClicked;
         public Action<VillageBuilding, bool> OnVillagePointerEnterExit;
 
-        [FormerlySerializedAs("villageBuilldingUIPrefab")] public VillageBuilldingUI villageBuildingUIPrefab;
+        [FormerlySerializedAs("villageBuilldingUIPrefab")] public VillageBuildingUI villageBuildingUIPrefab;
 
         public bool isScaleOnPointer = true;
 

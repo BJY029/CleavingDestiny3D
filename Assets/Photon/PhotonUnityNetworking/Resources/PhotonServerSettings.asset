@@ -153,6 +153,7 @@ MonoBehaviour:
   - RPC_ConfirmPickUp
   - RPC_RequestPickUp
   - RPC_SpawnBranch
+  - RPC_ReceiveShopPurchaseResult
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
