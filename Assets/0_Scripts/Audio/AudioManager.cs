@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Potan.CoreUtils;
 using UnityEngine;
-using System;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.Serialization;
 
 public class AudioManager : MonoSingleton<AudioManager>
 {
@@ -13,8 +16,18 @@ public class AudioManager : MonoSingleton<AudioManager>
     [SerializeField] private AudioSource sfx3DSourcePrefab;
     [SerializeField] private AudioSource ambient3DSourcePrefab;
 
-    [Header("Audio Clips")]
-    [SerializeField] private AudioDataSO audioDataSO;
+    [Header("Audio Clips - Preload (Game Start)")]
+    [FormerlySerializedAs("audioDataSO")]
+    [SerializeField] private AudioDataSO preloadAudioDataSO;
+
+    [Header("Audio Clips - Addressables")]
+    [SerializeField] private string audioDataLabel = "AudioData";
+
+    private readonly Dictionary<string, AudioData> _audioRegistry = new();
+    private AsyncOperationHandle<IList<AudioDataSO>> _addressableHandle;
+
+    public bool IsAddressablesLoaded { get; private set; }
+    public event Action OnAudioDataLoaded;
 
     private struct BgmPlaybackState
     {
@@ -49,21 +62,25 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     protected override void OnAwake()
     {
-        if (audioDataSO == null)
+        _audioRegistry.Clear();
+
+        // 1. 게임 시작 즉시 재생되어야 하는 Preload SO 동기 로드
+        if (preloadAudioDataSO != null)
         {
-            Debug.LogError("AudioDataSO가 할당되지 않았습니다.", this);
-            return;
+            RegisterAudioDataSO(preloadAudioDataSO);
+        }
+        else
+        {
+            Debug.LogWarning("[AudioManager] Preload AudioDataSO가 할당되지 않았습니다.", this);
         }
 
-        audioDataSO.Initialize();
+        // 2. 동일한 라벨을 가진 모든 AudioDataSO 비동기 로드
+        LoadAddressableAudioDataAsync().Forget();
     }
 
     public AudioData GetData(string id)
     {
-        return audioDataSO != null &&
-               audioDataSO.TryGetAudioData(id, out var data)
-            ? data
-            : default;
+        return TryGetData(id, out var data) ? data : default;
     }
 
     public void PlaySfx2D(string id)
@@ -477,26 +494,87 @@ public class AudioManager : MonoSingleton<AudioManager>
         _audioSourcesPool.Add(source);
     }
 
+    private void RegisterAudioDataSO(AudioDataSO so)
+    {
+        if (so == null) return;
+        so.Initialize();
+
+        foreach (var data in so.audioDatas)
+        {
+            if (string.IsNullOrWhiteSpace(data.id)) continue;
+
+            if (_audioRegistry.ContainsKey(data.id))
+            {
+                Debug.LogWarning($"[AudioManager] 중복된 오디오 ID 발견: '{data.id}' (SO: {so.name})", this);
+                continue;
+            }
+
+            _audioRegistry.Add(data.id, data);
+        }
+    }
+
+    private async UniTaskVoid LoadAddressableAudioDataAsync()
+    {
+        IsAddressablesLoaded = false;
+        try
+        {
+            _addressableHandle = Addressables.LoadAssetsAsync<AudioDataSO>(audioDataLabel, null);
+            var loadedSOs = await _addressableHandle;
+
+            if (loadedSOs != null)
+            {
+                foreach (var so in loadedSOs)
+                {
+                    if (so == null || so == preloadAudioDataSO) continue;
+                    RegisterAudioDataSO(so);
+                }
+            }
+
+            IsAddressablesLoaded = true;
+            OnAudioDataLoaded?.Invoke();
+            Debug.Log($"[AudioManager] Addressable AudioDataSO 로드 완료 (라벨: '{audioDataLabel}', 총 등록된 사운드 수: {_audioRegistry.Count})");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[AudioManager] Addressable AudioDataSO 로드 중 오류 발생: {ex.Message}", this);
+        }
+    }
+
+    protected override void OnDestroy()
+    {
+        if (_addressableHandle.IsValid())
+        {
+            Addressables.Release(_addressableHandle);
+        }
+
+        base.OnDestroy();
+    }
+
     private bool TryGetData(string id, out AudioData data)
     {
         data = default;
 
-        if (audioDataSO == null)
+        if (string.IsNullOrWhiteSpace(id))
+            return false;
+
+        if (!_audioRegistry.TryGetValue(id, out AudioData rawData))
         {
-            Debug.LogError("[AudioManager] AudioDataSO가 할당되지 않았습니다.");
+            if (!IsAddressablesLoaded)
+            {
+                Debug.LogWarning($"[AudioManager] ID를 찾을 수 없거나 아직 Addressables 로딩 중입니다: {id}");
+            }
+            else
+            {
+                Debug.LogWarning($"[AudioManager] ID를 찾을 수 없습니다: {id}");
+            }
             return false;
         }
 
-        if (!audioDataSO.TryGetAudioData(id, out data))
-        {
-            Debug.LogWarning($"[AudioManager] ID를 찾을 수 없습니다: {id}");
-            return false;
-        }
+        data = rawData.GetRandomizedData();
 
         if (data.clip == null)
         {
-            Debug.LogWarning(
-                $"[AudioManager] {id}에 매핑된 AudioClip이 없습니다.");
+            Debug.LogWarning($"[AudioManager] {id}에 매핑된 AudioClip이 없습니다.");
             return false;
         }
 
