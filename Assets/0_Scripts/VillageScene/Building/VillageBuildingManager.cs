@@ -22,9 +22,9 @@ namespace Village.Building
         [Tooltip("건물에서 나갈 때 카메라 및 UI 퇴장 시간")]
         [SerializeField] private float exitDuration = 0.3f;
         [Tooltip("건물 간 다이렉트 전환 시 카메라 글라이딩 시간")]
-        [SerializeField] private float switchDuration = 0.28f;
+        [SerializeField] private float switchDuration = 0.45f;
         [Tooltip("건물 간 다이렉트 전환 시 이전 UI 퇴장 시간")]
-        [SerializeField] private float switchUiDuration = 0.15f;
+        [SerializeField] private float switchUiDuration = 0.2f;
         [Tooltip("건물 포커스 시 카메라 정사영 크기 (작을수록 줌인)")]
         [SerializeField] private float focusOrthoSize = 3.8f;
 
@@ -203,6 +203,8 @@ namespace Village.Building
                     // 카메라 글라이딩 이동
                     await Tween.Position(cinemachineCamera.transform, targetCameraPos, switchDuration, Ease.InOutCubic);
 
+                    targetBuilding.PlayEnterSound();
+
                     if (cg != null)
                     {
                         await Tween.Alpha(cg, 1f, 0.15f);
@@ -217,6 +219,8 @@ namespace Village.Building
                     }
 
                     await Tween.Position(cinemachineCamera.transform, targetCameraPos, switchDuration, Ease.InOutCubic);
+
+                    targetBuilding.PlayEnterSound();
 
                     nextUI.SetBuildingUI(targetBuilding.buildingType);
                     await nextUI.ShowBuildingUI(uiShowDuration * 0.8f);
@@ -237,6 +241,8 @@ namespace Village.Building
                 DevLog.Log("A building UI is already open or exiting. Ignoring click.");
                 return;
             }
+
+            building.PlayEnterSound();
 
             // 해당 건물의 UI 프리팹이 이미 생성된 적 있는지 확인
             if (!_uiInstanceCache.TryGetValue(building.villageBuildingUIPrefab, out currentBuildingUI))
@@ -278,6 +284,7 @@ namespace Village.Building
             if (currentBuildingUI == null || _isExiting || _isSwitching) return;
 
             _isExiting = true;
+            _currentBuilding?.PlayExitSound();
             _currentBuilding = null;
             OnActiveBuildingChanged?.Invoke(null);
             KeyInteractManager.Instance?.RemoveMenuAction(_exitBuildingAction);

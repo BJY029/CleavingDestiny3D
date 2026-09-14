@@ -1,4 +1,5 @@
 using System;
+using PrimeTween;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
@@ -21,6 +22,46 @@ namespace Village.Building
 
         public bool isScaleOnPointer = true;
 
+        [Header("Hover Tween Settings")]
+        [SerializeField] private float hoverScaleRatio = 1.08f;
+        [SerializeField] private float scaleDuration = 0.15f;
+        [SerializeField] private Ease hoverEase = Ease.OutQuad;
+        [SerializeField] private Ease exitEase = Ease.OutQuad;
+
+        private Vector3 _originalScale = Vector3.one;
+        private Tween _scaleTween;
+
+        [Header("Sounds")]
+        [SerializeField] private string enterSound = "village_doorbell";
+        [SerializeField] private string exitSound = "village_doorbell";
+
+        public void PlayEnterSound()
+        {
+            if (!string.IsNullOrEmpty(enterSound) && AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySfx2D(enterSound);
+            }
+        }
+
+        public void PlayExitSound()
+        {
+            if (!string.IsNullOrEmpty(exitSound) && AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySfx2D(exitSound);
+            }
+        }
+
+        private void Awake()
+        {
+            _originalScale = transform.localScale;
+        }
+
+        private void OnDisable()
+        {
+            _scaleTween.Stop();
+            transform.localScale = _originalScale;
+        }
+
         private void Start()
         {
             BuildingName = GetBuildingName(buildingType);
@@ -37,7 +78,7 @@ namespace Village.Building
         {
             if (isScaleOnPointer)
             {
-                transform.localScale = Vector3.one * 1.1f;
+                AnimateScale(_originalScale * hoverScaleRatio, hoverEase);
             }
             OnVillagePointerEnterExit?.Invoke(this, true);
         }
@@ -46,7 +87,7 @@ namespace Village.Building
         {
             if (isScaleOnPointer)
             {
-                transform.localScale = Vector3.one;
+                AnimateScale(_originalScale, exitEase);
             }
             OnVillagePointerEnterExit?.Invoke(this, false);
         }
@@ -55,7 +96,8 @@ namespace Village.Building
         {
             if (!enabled)
             {
-                transform.localScale = Vector3.one;
+                _scaleTween.Stop();
+                transform.localScale = _originalScale;
                 OnVillagePointerEnterExit?.Invoke(this, false);
             }
 
@@ -68,9 +110,15 @@ namespace Village.Building
 
             if (isScaleOnPointer)
             {
-                transform.localScale = Vector3.one * 1.1f;
+                AnimateScale(_originalScale * hoverScaleRatio, hoverEase);
             }
             OnVillagePointerEnterExit?.Invoke(this, true);
+        }
+
+        private void AnimateScale(Vector3 targetScale, Ease ease)
+        {
+            _scaleTween.Stop();
+            _scaleTween = Tween.Scale(transform, targetScale, scaleDuration, ease, useUnscaledTime: true);
         }
 
         public static string GetBuildingName(VillageType type)

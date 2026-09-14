@@ -173,6 +173,14 @@ PrefabInstance:
       value: Farm
       objectReference: {fileID: 0}
     - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
+      propertyPath: openSound
+      value: village_door_walk
+      objectReference: {fileID: 0}
+    - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
+      propertyPath: upgradeSound
+      value: Coins
+      objectReference: {fileID: 0}
+    - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
       propertyPath: 'npcSprites.Array.data[0]'
       value: 
       objectReference: {fileID: 21300000, guid: b328511331f3b4b489c8389dfa47f717, type: 3}

@@ -20,6 +20,10 @@ namespace Village
         [SerializeField] private float startScale = 0.85f;
         [SerializeField] private Ease openEase = Ease.OutBack;
         [SerializeField] private Ease closeEase = Ease.InCubic;
+        
+        [Header("Sounds")]
+        [SerializeField] private string openSound = "UI_Toggle";
+        [SerializeField] private string closeSound = "UI_Toggle";
 
         private Sequence animSequence;
         private System.Action _closeAction;
@@ -89,6 +93,8 @@ namespace Village
                 {
                     statusCanvasGroup.interactable = true;
                 });
+            
+            AudioManager.Instance.PlaySfx2D(openSound);
         }
 
         public void Close()
@@ -111,6 +117,7 @@ namespace Village
                     statusCanvasGroup.blocksRaycasts = false;
                     statusCanvasGroup.gameObject.SetActive(false);
                 });
+            AudioManager.Instance.PlaySfx2D(closeSound);
         }
 
         public void Refresh()

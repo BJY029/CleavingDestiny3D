@@ -185,6 +185,14 @@ PrefabInstance:
       value: Mine
       objectReference: {fileID: 0}
     - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
+      propertyPath: openSound
+      value: village_door_walk
+      objectReference: {fileID: 0}
+    - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
+      propertyPath: upgradeSound
+      value: Coins
+      objectReference: {fileID: 0}
+    - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
       propertyPath: 'npcSprites.Array.data[0]'
       value: 
       objectReference: {fileID: 21300000, guid: 480ed55c96ee710498d9e76b0e15e1c7, type: 3}

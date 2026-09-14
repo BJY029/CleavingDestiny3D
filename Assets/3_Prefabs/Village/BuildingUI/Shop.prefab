@@ -149,6 +149,7 @@ GameObject:
   - component: {fileID: 8554739826510406279}
   - component: {fileID: 6020634076773253931}
   - component: {fileID: 9146965705594673051}
+  - component: {fileID: 2248524537040663665}
   m_Layer: 5
   m_Name: BuyButton
   m_TagString: Untagged
@@ -259,6 +260,30 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2248524537040663665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 381722040681382823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a106564c5bbd894f8c042e24cb47696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFeedback
+  targetTransform: {fileID: 0}
+  useScaleEffect: 1
+  hoverScale: 1.06
+  pressedScale: 0.96
+  duration: 0.12
+  hoverEase: 6
+  exitEase: 6
+  useClickSound: 1
+  clickSound: ui_button
+  useHoverSound: 0
+  hoverSound: UI_Hover
+  hoverSoundCooldown: 0.05
 --- !u!1 &548532590091336635
 GameObject:
   m_ObjectHideFlags: 0
@@ -821,6 +846,7 @@ GameObject:
   - component: {fileID: 3493584668779042241}
   - component: {fileID: 2667004716741910884}
   - component: {fileID: 2552399199008671569}
+  - component: {fileID: 2701541503647940608}
   m_Layer: 5
   m_Name: UpgradeButton
   m_TagString: Untagged
@@ -957,6 +983,30 @@ MonoBehaviour:
   m_ChildScaleWidth: 1
   m_ChildScaleHeight: 1
   m_ReverseArrangement: 0
+--- !u!114 &2701541503647940608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1026647448284362424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a106564c5bbd894f8c042e24cb47696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFeedback
+  targetTransform: {fileID: 0}
+  useScaleEffect: 1
+  hoverScale: 1.06
+  pressedScale: 0.96
+  duration: 0.12
+  hoverEase: 6
+  exitEase: 6
+  useClickSound: 1
+  clickSound: ui_button
+  useHoverSound: 0
+  hoverSound: UI_Hover
+  hoverSoundCooldown: 0.05
 --- !u!1 &1145155475393114068
 GameObject:
   m_ObjectHideFlags: 0
@@ -2075,6 +2125,7 @@ GameObject:
   - component: {fileID: 8395088419339197732}
   - component: {fileID: 834263513703505446}
   - component: {fileID: 2405308564456565264}
+  - component: {fileID: 8094470506735120640}
   m_Layer: 5
   m_Name: ReloadButton
   m_TagString: Untagged
@@ -2210,6 +2261,30 @@ MonoBehaviour:
   m_ChildScaleWidth: 1
   m_ChildScaleHeight: 1
   m_ReverseArrangement: 0
+--- !u!114 &8094470506735120640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5013217616776056609}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a106564c5bbd894f8c042e24cb47696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFeedback
+  targetTransform: {fileID: 0}
+  useScaleEffect: 1
+  hoverScale: 1.06
+  pressedScale: 0.96
+  duration: 0.12
+  hoverEase: 6
+  exitEase: 6
+  useClickSound: 1
+  clickSound: ui_button
+  useHoverSound: 0
+  hoverSound: UI_Hover
+  hoverSoundCooldown: 0.05
 --- !u!1 &5458861098953968019
 GameObject:
   m_ObjectHideFlags: 0
@@ -2421,6 +2496,7 @@ GameObject:
   - component: {fileID: 6175523469864208632}
   - component: {fileID: 9121255484310243439}
   - component: {fileID: 2085944732727252736}
+  - component: {fileID: 679304063337868294}
   m_Layer: 5
   m_Name: ExitButton
   m_TagString: Untagged
@@ -2530,6 +2606,30 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &679304063337868294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6166802888582263356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a106564c5bbd894f8c042e24cb47696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFeedback
+  targetTransform: {fileID: 0}
+  useScaleEffect: 1
+  hoverScale: 1.06
+  pressedScale: 0.96
+  duration: 0.12
+  hoverEase: 6
+  exitEase: 6
+  useClickSound: 1
+  clickSound: ui_button
+  useHoverSound: 0
+  hoverSound: UI_Hover
+  hoverSoundCooldown: 0.05
 --- !u!1 &6173809181867089001
 GameObject:
   m_ObjectHideFlags: 0
@@ -2587,6 +2687,7 @@ MonoBehaviour:
   upgradeCostText: {fileID: 4292305123187884534}
   upgradeButton: {fileID: 2667004716741910884}
   exitButton: {fileID: 2085944732727252736}
+  upgradeSound: Coins
   npcImage: {fileID: 2039675136854351418}
   npcSprites:
   - {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}

@@ -201,6 +201,10 @@ PrefabInstance:
       value: Magic
       objectReference: {fileID: 0}
     - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
+      propertyPath: upgradeSound
+      value: Coins
+      objectReference: {fileID: 0}
+    - target: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
       propertyPath: 'npcSprites.Array.data[0]'
       value: 
       objectReference: {fileID: 21300000, guid: 057e604d96a9b214c9e8f42baa4fc932, type: 3}

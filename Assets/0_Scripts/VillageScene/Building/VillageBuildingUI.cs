@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
@@ -29,6 +30,9 @@ namespace Village.Building
         [Header("Buttons")]
         [SerializeField] protected Button upgradeButton;
         [SerializeField] protected Button exitButton;
+        
+        [Header("Sounds")]
+        [SerializeField] private string upgradeSound = "Coins";
 
         protected VillageType currentBuildingType;
 
@@ -151,7 +155,7 @@ namespace Village.Building
             };
         }
 
-        public async Awaitable ShowBuildingUI(float duration = 0.3f, float startScale = 0.92f)
+        public async UniTask ShowBuildingUI(float duration = 0.3f, float startScale = 0.92f)
         {
             canvasGroup.gameObject.SetActive(true);
             canvasGroup.blocksRaycasts = true;
@@ -166,7 +170,7 @@ namespace Village.Building
             canvasGroup.interactable = true;
         }
 
-        public async Awaitable HideBuildingUI(float duration = 0.25f, float endScale = 0.95f)
+        public async UniTask HideBuildingUI(float duration = 0.25f, float endScale = 0.95f)
         {
             canvasGroup.interactable = false;
 
@@ -194,15 +198,17 @@ namespace Village.Building
                     CSV_Type.Village, $"{currentBuildingType}_Title");
                 BattleLogController.AddLog(BattleLogType.Village_Upgrade, buildingName, currentLevel + 2f);
 
-                switch (currentBuildingType)
-                {
-                    case VillageType.Forge:
-                        AudioManager.Instance.PlaySfx2D("Hammer");
-                        break;
-                    default:
-                        AudioManager.Instance.PlaySfx2D("Coins");
-                        break;
-                }
+                AudioManager.Instance.PlaySfx2D(upgradeSound);
+                
+                // switch (currentBuildingType)
+                // {
+                //     case VillageType.Forge:
+                //         AudioManager.Instance.PlaySfx2D("Hammer");
+                //         break;
+                //     default:
+                //         AudioManager.Instance.PlaySfx2D("Coins");
+                //         break;
+                // }
             }
         }
 

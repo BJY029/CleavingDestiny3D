@@ -13,12 +13,34 @@ MonoBehaviour:
   m_Name: AudioData_Village
   m_EditorClassIdentifier: Assembly-CSharp::CD3D.Audio.AudioDataSO
   audioDatas:
-  - id: UI_Click
-    clip: {fileID: 8300000, guid: d01cf0ef07f3a3f4bb836189cfa75328, type: 3}
-    randomClips: []
-    useRandomClip: 0
-    volume: 0.4
+  - id: village_doorbell
+    clip: {fileID: 8300000, guid: c55b187cad931a84ca5ec4a6773aaa44, type: 3}
+    randomClips:
+    - {fileID: 8300000, guid: c55b187cad931a84ca5ec4a6773aaa44, type: 3}
+    - {fileID: 8300000, guid: c70ede493ccf5a34794bffd5c4ef760d, type: 3}
+    - {fileID: 8300000, guid: 98712ab01256a9e44a2c9e5441ae45a6, type: 3}
+    - {fileID: 8300000, guid: 9a40bf69facf3ca44acb98c4f6a9011f, type: 3}
+    useRandomClip: 1
+    volume: 1
     pitch: 1
     useRandomPitch: 0
-    pitchRange: {x: 0, y: 0}
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: village_door_walk
+    clip: {fileID: 8300000, guid: 38f215430f40fb7408206d68adfe9e4d, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: viilage_compass_move
+    clip: {fileID: 8300000, guid: 158bcd8f1d5db764c878f62c516414e3, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
     is3D: 0

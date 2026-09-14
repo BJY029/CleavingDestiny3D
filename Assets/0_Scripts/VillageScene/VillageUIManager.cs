@@ -36,6 +36,9 @@ namespace Village
         [SerializeField] private VillageStatusUI villageStatusUI;
 
         public Camera villageCam;
+        
+        [Header("Sounds")]
+        [SerializeField] private string villageHoverSound = "UI_Hover";
 
         private float startTime;
         private float endTime;
@@ -134,6 +137,8 @@ namespace Village
                     upgradeCost);
                 PositionVillageName(building);
                 villageNamePanel.alpha = 1f;
+                
+                AudioManager.Instance.PlaySfx2D(villageHoverSound);
             }
             else
             {

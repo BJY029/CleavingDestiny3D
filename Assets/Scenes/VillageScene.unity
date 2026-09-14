@@ -343,6 +343,7 @@ MonoBehaviour:
   outsideVillageBuilding: {fileID: 250321126}
   villageStatusUI: {fileID: 719778424}
   villageCam: {fileID: 1604331327}
+  villageHoverSound: UI_Hover
 --- !u!114 &108371423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -653,6 +654,7 @@ GameObject:
   - component: {fileID: 183547712}
   - component: {fileID: 183547711}
   - component: {fileID: 183547710}
+  - component: {fileID: 183547713}
   m_Layer: 5
   m_Name: ReadyButton
   m_TagString: Untagged
@@ -762,6 +764,30 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 183547708}
   m_CullTransparentMesh: 1
+--- !u!114 &183547713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 183547708}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a106564c5bbd894f8c042e24cb47696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonFeedback
+  targetTransform: {fileID: 0}
+  useScaleEffect: 1
+  hoverScale: 1.06
+  pressedScale: 0.96
+  duration: 0.12
+  hoverEase: 6
+  exitEase: 6
+  useClickSound: 1
+  clickSound: ui_button
+  useHoverSound: 0
+  hoverSound: UI_Hover
+  hoverSoundCooldown: 0.05
 --- !u!1 &246993510
 GameObject:
   m_ObjectHideFlags: 0
@@ -935,6 +961,8 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 0}
   villageBuildingUIPrefab: {fileID: 0}
   isScaleOnPointer: 0
+  enterSound: village_doorbell
+  exitSound: village_doorbell
 --- !u!61 &250321127
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1333,8 +1361,8 @@ MonoBehaviour:
   uiDelay: 0.1
   uiShowDuration: 0.28
   exitDuration: 0.3
-  switchDuration: 0.28
-  switchUiDuration: 0.15
+  switchDuration: 0.45
+  switchUiDuration: 0.2
   focusOrthoSize: 3.8
   villageBuildings:
   - {fileID: 2049716386}
@@ -2744,6 +2772,8 @@ MonoBehaviour:
   startScale: 0.85
   openEase: 27
   closeEase: 8
+  openSound: UI_Toggle
+  closeSound: UI_Toggle
 --- !u!1 &734559589
 GameObject:
   m_ObjectHideFlags: 0
@@ -2899,6 +2929,8 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 0}
   villageBuildingUIPrefab: {fileID: 0}
   isScaleOnPointer: 1
+  enterSound: viilage_compass_move
+  exitSound: viilage_compass_move
 --- !u!1 &895349892
 GameObject:
   m_ObjectHideFlags: 0
@@ -3115,6 +3147,8 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 1980063388}
   villageBuildingUIPrefab: {fileID: 478455841805853409, guid: 10f259e24343f814582476f903fca66a, type: 3}
   isScaleOnPointer: 1
+  enterSound: village_doorbell
+  exitSound: village_doorbell
 --- !u!61 &970171184
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -4342,6 +4376,8 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 1468239964}
   villageBuildingUIPrefab: {fileID: 7043246237621689270, guid: 36eff93f2a38c96498fbdf1701964d4e, type: 3}
   isScaleOnPointer: 1
+  enterSound: village_doorbell
+  exitSound: village_doorbell
 --- !u!61 &1468239967
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -4634,6 +4670,8 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 1581392569}
   villageBuildingUIPrefab: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
   isScaleOnPointer: 1
+  enterSound: village_doorbell
+  exitSound: village_doorbell
 --- !u!61 &1581392572
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -5436,7 +5474,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -6, y: -6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1726262167
 MonoBehaviour:
@@ -5485,12 +5523,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
+  m_fontSize: 18.65
   m_fontSizeBase: 24
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 10
+  m_fontSizeMax: 20
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -5837,6 +5875,8 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 916929002}
   villageBuildingUIPrefab: {fileID: 478455841805853409, guid: c00d30bdd5c386d49973b283f2d322e1, type: 3}
   isScaleOnPointer: 1
+  enterSound: village_door_walk
+  exitSound: village_door_walk
 --- !u!61 &1895752042
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -6395,6 +6435,8 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 2049716384}
   villageBuildingUIPrefab: {fileID: 23766341800506947, guid: 3b00634a94ede534fadb90ca4b3cd15d, type: 3}
   isScaleOnPointer: 1
+  enterSound: village_door_walk
+  exitSound: village_door_walk
 --- !u!61 &2049716387
 BoxCollider2D:
   m_ObjectHideFlags: 0
