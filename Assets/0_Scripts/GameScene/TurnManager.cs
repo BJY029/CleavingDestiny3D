@@ -22,6 +22,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	private float timeChangeDelay = 2f;
 
 	public VillageSceneManager villageSceneManager;
+	public PickUpBranchSpawner pickUpBranchSpawner;
 
 	//private int _villageActionId = 0;
 	private bool _isTreeActionRunning = false;
@@ -30,6 +31,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	public bool isVillagePhase = false;
 	public bool isUpgradePhase;
+	private bool firstHitHappened = false;
 
 	public static TurnManager Instance;
 
@@ -264,6 +266,12 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	private void ChangeToNextTurn()
 	{
 		if (!IsInitializer()) return;
+
+		if (!firstHitHappened)
+		{
+			firstHitHappened = true;
+			pickUpBranchSpawner.StartSpawnLoop(false);
+		}
 
 		//턴 정보를 담은 리스트를 불러온다.
 		int[] TurnOrder = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
@@ -661,14 +669,22 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				//턴 타이머 시작
 				TimeManager.instance.StartTurnTimer();
 			}
-			//MasterClient이면서, 현재 턴이 AI 턴인 경우
-			else if (PhotonNetwork.IsMasterClient && GameHelper.IsCurrentTurnAI())
+			//MasterClient이면서
+			if (PhotonNetwork.IsMasterClient)
 			{
-				//만약 현재 마을 페이즈라면, AI 턴은 수행하지 않는다.
-				if (isVillagePhase) return;
-				//AI 턴 비동기 함수 호출
-				AI_PlayTurnAsync(turnActor).Forget();
-				ItemOfferCanvasController.instance.Close();
+				//현재 턴이 AI 턴인 경우
+				if (GameHelper.IsCurrentTurnAI())
+				{
+					//만약 현재 마을 페이즈라면, AI 턴은 수행하지 않는다.
+					if (isVillagePhase) return;
+					//AI 턴 비동기 함수 호출
+					AI_PlayTurnAsync(turnActor).Forget();
+					ItemOfferCanvasController.instance.Close();
+				}
+				else
+				{
+					AI_PlayNotTurnAsync(turnActor).Forget();
+				}
 			}
 			else
 			{
@@ -805,6 +821,37 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		finally
 		{
 			_isAIWorking = false;
+		}
+	}
+
+	private async UniTaskVoid AI_PlayNotTurnAsync(int aiActorNum)
+	{
+		if (isVillagePhase) return;
+		try
+		{
+			CancellationToken token = this.GetCancellationTokenOnDestroy();
+			await UniTask.WaitUntil(() => PlayerManager.Instance.succeedToPreapreGame, cancellationToken: token);
+
+			foreach (var pair in PlayerManager.Instance.AIPlayerObj)
+			{
+				GameObject aiObject = pair.Value;
+
+				if (aiObject == null)
+					continue;
+
+				AIController ac = aiObject.GetComponent<AIController>();
+
+				if (ac == null)
+					continue;
+
+				Debug.Log($"[AI Branch] 비턴 수집 시작 / AI Actor : {pair.Key}");
+
+				ac.aiBrain.BranchCollector.StartCollecting();
+			}
+		}
+		catch (OperationCanceledException)
+		{
+
 		}
 	}
 

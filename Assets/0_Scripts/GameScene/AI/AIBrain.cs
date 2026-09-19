@@ -55,6 +55,8 @@ public class AIBrain : MonoBehaviourPunCallbacks
 
     public AIItemActionManager ItemActionManager { get; private set; }
 
+    public AIBranchCollector BranchCollector { get; private set; }
+
     private int prevEnergy;
     private int prevMaxEnergy;
 
@@ -83,6 +85,9 @@ public class AIBrain : MonoBehaviourPunCallbacks
 
         ItemActionManager = GetComponent<AIItemActionManager>();
         ItemActionManager?.Initialize(this);
+
+        BranchCollector = GetComponent<AIBranchCollector>();
+        BranchCollector?.Initialize(this);
     }
 
     //ActNum의 인벤토리 내 아이템 개수 반환

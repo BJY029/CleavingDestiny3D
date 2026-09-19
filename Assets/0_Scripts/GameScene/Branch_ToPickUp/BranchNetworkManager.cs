@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Photon.Pun;
+using System;
 
 public class BranchNetworkManager : MonoBehaviourPunCallbacks
 {
@@ -8,7 +9,14 @@ public class BranchNetworkManager : MonoBehaviourPunCallbacks
 
     [SerializeField] private BranchPool branchPool;
 
-    private readonly HashSet<int> activeBranchIds = new();
+    private readonly Dictionary<int, Vector3> activeBranchIds = new();
+
+    public Dictionary<int, Vector3> GetActiveBranchSnapshot()
+    {
+        return new Dictionary<int, Vector3>(activeBranchIds);
+    }
+
+    public event Action<int> OnBranchRemoved;
 
     private int nextBranchId;
 
@@ -35,11 +43,33 @@ public class BranchNetworkManager : MonoBehaviourPunCallbacks
         photonView.RPC(nameof(RPC_SpawnBranch), RpcTarget.All, branchId, prefabIndex, position, rotation);
     }
 
+    public bool TryCollectBranchByAI(int branchId, Vector3 aiPos)
+    {
+        if (!activeBranchIds.TryGetValue(branchId, out Vector3 branchPosition))
+            return false;
+
+        float distance = Vector3.Distance(aiPos, branchPosition);
+
+        if (distance > 3f) return false;
+
+        if (!TryConsumeBranch(branchId)) return false;
+
+        RemoveBranchByAI(branchId);
+
+        return true;
+    }
+
     public void RequestPickUp(int branchId)
     {
         if (branchId < 0) return;
 
+
         photonView.RPC(nameof(RPC_RequestPickUp), RpcTarget.MasterClient, branchId);
+    }
+
+    private void RemoveBranchByAI(int branchId)
+    {
+        branchPool.Return(branchId);
     }
 
     [PunRPC]
@@ -47,7 +77,8 @@ public class BranchNetworkManager : MonoBehaviourPunCallbacks
     {
         nextBranchId = Mathf.Max(nextBranchId, branchId + 1);
 
-        if (!activeBranchIds.Add(branchId)) return;
+        if (activeBranchIds.ContainsKey(branchId)) return;
+        activeBranchIds.Add(branchId, position);
 
         BranchPickUp branch = branchPool.Get(branchId, prefabIndex, position, rotation);
 
@@ -62,9 +93,9 @@ public class BranchNetworkManager : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
-        if (!activeBranchIds.Remove(branchId)) return;
-
         int winnerActorNumber = info.Sender.ActorNumber;
+
+        if (!TryConsumeBranch(branchId)) return;
 
         photonView.RPC(nameof(RPC_ConfirmPickUp), RpcTarget.All, branchId, winnerActorNumber);
     }
@@ -80,7 +111,19 @@ public class BranchNetworkManager : MonoBehaviourPunCallbacks
         {
             GameSessionData.AddBranch();
 
+            AudioManager.Instance.PlaySfx2D("PickupBranch");
+
             Debug.Log($"[Branch] 획득 성공 / 이번 판: {GameSessionData.CollectedBranchCount}");
         }
+    }
+
+    private bool TryConsumeBranch(int branchId)
+    {
+        if (!activeBranchIds.Remove(branchId))
+            return false;
+
+        OnBranchRemoved?.Invoke(branchId);
+
+        return true;
     }
 }

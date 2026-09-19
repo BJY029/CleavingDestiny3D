@@ -21,7 +21,7 @@ public class PickUpBranchSpawner : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
-        StartSpawnLoop(true);
+        //StartSpawnLoop(true);
     }
 
     public override void OnMasterClientSwitched(Player newMasterClient)
@@ -32,7 +32,7 @@ public class PickUpBranchSpawner : MonoBehaviourPunCallbacks
         else StopSpawnLoop();
     }
 
-    private void StartSpawnLoop(bool spawnInitialBranches)
+    public void StartSpawnLoop(bool spawnInitialBranches)
     {
         StopSpawnLoop();
 

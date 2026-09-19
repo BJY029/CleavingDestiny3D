@@ -96,6 +96,7 @@ public class AxeShopController : MonoBehaviour
             case AxePurchaseResult.Success:
                 SaveManager.Save();
                 Debug.Log($"[AxeShop] 구매 성공 : {skin.DisplayName}");
+                AudioManager.Instance.PlaySfx2D("WoodPurchase");
                 break;
             case AxePurchaseResult.NotEnoughBranch:
                 Debug.Log("[AxeShop] 나뭇가지가 부족합니다.");
@@ -118,6 +119,7 @@ public class AxeShopController : MonoBehaviour
 
         SaveManager.Save();
 
+        AudioManager.Instance.PlaySfx2D("EquipItem");
         Debug.Log($"[AxeShop] 장착 : {skin.DisplayName}");
     }
 
