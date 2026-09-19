@@ -279,8 +279,8 @@ MonoBehaviour:
   duration: 0.12
   hoverEase: 6
   exitEase: 6
-  useClickSound: 1
-  clickSound: ui_button
+  useClickSound: 0
+  clickSound: village_buy
   useHoverSound: 0
   hoverSound: UI_Hover
   hoverSoundCooldown: 0.05
@@ -2280,8 +2280,8 @@ MonoBehaviour:
   duration: 0.12
   hoverEase: 6
   exitEase: 6
-  useClickSound: 1
-  clickSound: ui_button
+  useClickSound: 0
+  clickSound: village_reroll
   useHoverSound: 0
   hoverSound: UI_Hover
   hoverSoundCooldown: 0.05
@@ -2704,6 +2704,8 @@ MonoBehaviour:
   itemDescriptionText: {fileID: 4455177476222227892}
   shopEffectText: {fileID: 8161382995535249534}
   shopItemContainer: {fileID: 5270488083543136772}
+  buySound: village_buy
+  reloadSound: village_reroll
 --- !u!1 &6551609642809071284
 GameObject:
   m_ObjectHideFlags: 0

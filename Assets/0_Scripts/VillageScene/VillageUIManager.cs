@@ -39,6 +39,7 @@ namespace Village
         
         [Header("Sounds")]
         [SerializeField] private string villageHoverSound = "UI_Hover";
+        [SerializeField] private string urgentTimerSound = "Time_Onetick";
 
         private float startTime;
         private float endTime;
@@ -48,6 +49,7 @@ namespace Village
         private Color outsideTimerDefaultColor;
         private Color outsideTimerTextDefaultColor;
         private int lastOutsideTimerSecond = -1;
+        private int lastUrgentTickSecond = -1;
 
         public override void OnEnable()
         {
@@ -182,6 +184,15 @@ namespace Village
                 outsideTimerText.SetText($"{remainingSeconds / 60:00}:{remainingSeconds % 60:00}");
                 lastOutsideTimerSecond = remainingSeconds;
             }
+
+            if (isUrgent && remain > 0f && remainingSeconds != lastUrgentTickSecond)
+            {
+                lastUrgentTickSecond = remainingSeconds;
+                if (!string.IsNullOrEmpty(urgentTimerSound) && AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlaySfx2D(urgentTimerSound);
+                }
+            }
         }
 
         // 기존 SetActiveCanvas와 RPC를 하나로 통합 및 단순화
@@ -225,12 +236,19 @@ namespace Village
                 startTime = times.x;
                 endTime = times.y;
                 duration = Mathf.Max(0.001f, endTime - startTime);
+                lastOutsideTimerSecond = -1;
+                lastUrgentTickSecond = -1;
             }
 
             if (roomProps.TryGetValue(RoomPropKeys.IsVillageUpgradePhase, out object isPhaseObj)
                 && isPhaseObj is bool isPhase)
             {
                 isUpgradePhase = isPhase;
+                if (!isPhase)
+                {
+                    lastOutsideTimerSecond = -1;
+                    lastUrgentTickSecond = -1;
+                }
             }
         }
     }

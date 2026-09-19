@@ -35,8 +35,30 @@ MonoBehaviour:
     useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
-  - id: viilage_compass_move
+  - id: village_compass_move
     clip: {fileID: 8300000, guid: 158bcd8f1d5db764c878f62c516414e3, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: village_buy
+    clip: {fileID: 0}
+    randomClips:
+    - {fileID: 8300000, guid: 045880d66ba78634f99c1e8cdc85ae23, type: 3}
+    - {fileID: 8300000, guid: 8633b933bb1813b44a4b160ae0342eb8, type: 3}
+    - {fileID: 8300000, guid: fec458693a5738b44a1c6e105abdeee0, type: 3}
+    - {fileID: 8300000, guid: 881d8007ba72cee429d8cfb9363a8e84, type: 3}
+    useRandomClip: 1
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: village_reroll
+    clip: {fileID: 8300000, guid: 40f9c6bf9f852a14ab5aa49b1f3bfc9f, type: 3}
     randomClips: []
     useRandomClip: 0
     volume: 1

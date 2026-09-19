@@ -961,6 +961,10 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 0}
   villageBuildingUIPrefab: {fileID: 0}
   isScaleOnPointer: 0
+  hoverScaleRatio: 1.08
+  scaleDuration: 0.15
+  hoverEase: 6
+  exitEase: 6
   enterSound: village_doorbell
   exitSound: village_doorbell
 --- !u!61 &250321127
@@ -2929,8 +2933,12 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 0}
   villageBuildingUIPrefab: {fileID: 0}
   isScaleOnPointer: 1
-  enterSound: viilage_compass_move
-  exitSound: viilage_compass_move
+  hoverScaleRatio: 1.08
+  scaleDuration: 0.15
+  hoverEase: 6
+  exitEase: 6
+  enterSound: village_compass_move
+  exitSound: village_compass_move
 --- !u!1 &895349892
 GameObject:
   m_ObjectHideFlags: 0
@@ -3147,6 +3155,10 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 1980063388}
   villageBuildingUIPrefab: {fileID: 478455841805853409, guid: 10f259e24343f814582476f903fca66a, type: 3}
   isScaleOnPointer: 1
+  hoverScaleRatio: 1.08
+  scaleDuration: 0.15
+  hoverEase: 6
+  exitEase: 6
   enterSound: village_doorbell
   exitSound: village_doorbell
 --- !u!61 &970171184
@@ -4376,6 +4388,10 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 1468239964}
   villageBuildingUIPrefab: {fileID: 7043246237621689270, guid: 36eff93f2a38c96498fbdf1701964d4e, type: 3}
   isScaleOnPointer: 1
+  hoverScaleRatio: 1.08
+  scaleDuration: 0.15
+  hoverEase: 6
+  exitEase: 6
   enterSound: village_doorbell
   exitSound: village_doorbell
 --- !u!61 &1468239967
@@ -4670,6 +4686,10 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 1581392569}
   villageBuildingUIPrefab: {fileID: 8245506448683302557, guid: 48a69d520920c6a4fa01affd0018a50d, type: 3}
   isScaleOnPointer: 1
+  hoverScaleRatio: 1.08
+  scaleDuration: 0.15
+  hoverEase: 6
+  exitEase: 6
   enterSound: village_doorbell
   exitSound: village_doorbell
 --- !u!61 &1581392572
@@ -5875,6 +5895,10 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 916929002}
   villageBuildingUIPrefab: {fileID: 478455841805853409, guid: c00d30bdd5c386d49973b283f2d322e1, type: 3}
   isScaleOnPointer: 1
+  hoverScaleRatio: 1.08
+  scaleDuration: 0.15
+  hoverEase: 6
+  exitEase: 6
   enterSound: village_door_walk
   exitSound: village_door_walk
 --- !u!61 &1895752042
@@ -6435,6 +6459,10 @@ MonoBehaviour:
   cameraFocusPoint: {fileID: 2049716384}
   villageBuildingUIPrefab: {fileID: 23766341800506947, guid: 3b00634a94ede534fadb90ca4b3cd15d, type: 3}
   isScaleOnPointer: 1
+  hoverScaleRatio: 1.08
+  scaleDuration: 0.15
+  hoverEase: 6
+  exitEase: 6
   enterSound: village_door_walk
   exitSound: village_door_walk
 --- !u!61 &2049716387
