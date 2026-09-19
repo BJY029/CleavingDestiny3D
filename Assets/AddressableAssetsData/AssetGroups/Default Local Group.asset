@@ -349,6 +349,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - ItemTexture
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 96543ac4637e42059fd53a11912f3616
+    m_Address: Assets/4_ScriptableObjects/Audio/AudioData_Village.asset
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - AudioData
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: b7e19af14bd691c4f9ce34edfc3b5880, type: 2}
   m_SchemaSet:

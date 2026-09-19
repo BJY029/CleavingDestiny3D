@@ -185,6 +185,8 @@ namespace Village.Outside
             if (_isTransitioning || IsOutsideActive) return;
             _isTransitioning = true;
 
+            compassBuilding?.PlayEnterSound();
+
             try
             {
                 // 1. 마을 카메라가 뒤로 살짝 물러나는 전조 모션 (Zoom-out)
@@ -226,6 +228,8 @@ namespace Village.Outside
             _isTransitioning = true;
             IsOutsideActive = false;
             KeyInteractManager.Instance?.RemoveMenuAction(_returnToVillageAction);
+
+            compassBuilding?.PlayExitSound();
 
             try
             {

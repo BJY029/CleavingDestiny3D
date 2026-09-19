@@ -47,37 +47,28 @@ public struct AudioData
 
     private AudioClip GetRandomClip()
     {
-        int vaildClipCount = clip != null ? 1 : 0;
-
-        if (randomClips != null)
+        if (randomClips != null && randomClips.Length > 0)
         {
+            int validClipCount = 0;
             foreach (AudioClip randomClip in randomClips)
             {
                 if (randomClip != null)
-                    vaildClipCount++;
+                    validClipCount++;
             }
-        }
 
-        if (vaildClipCount == 0) return null;
-
-        int targetIndex = Random.Range(0, vaildClipCount);
-        int curIdx = 0;
-
-        if (clip != null)
-        {
-            if (curIdx == targetIndex) return clip;
-            curIdx++;
-        }
-
-        if (randomClips != null)
-        {
-            foreach (AudioClip randomClip in randomClips)
+            if (validClipCount > 0)
             {
-                if (randomClip == null) continue;
-                if (curIdx == targetIndex) return randomClip;
-                curIdx++;
+                int targetIndex = Random.Range(0, validClipCount);
+                int curIdx = 0;
+                foreach (AudioClip randomClip in randomClips)
+                {
+                    if (randomClip == null) continue;
+                    if (curIdx == targetIndex) return randomClip;
+                    curIdx++;
+                }
             }
         }
+
         return clip;
     }
 

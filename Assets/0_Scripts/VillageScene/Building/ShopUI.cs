@@ -31,6 +31,10 @@ namespace Village.Building
         [SerializeField] private TextMeshProUGUI shopEffectText;
         [SerializeField] private Transform shopItemContainer;
 
+        [Header("Shop Sounds")]
+        [SerializeField] private string buySound = "village_buy";
+        [SerializeField] private string reloadSound = "village_reroll";
+
         private bool IsFirstShopOpen = true;
         ShopItem[] shopItems;
         int selectedItemIndex = -1;
@@ -167,6 +171,8 @@ namespace Village.Building
                 RefreshStatusUI();
                 return;
             }
+
+            PlayShopSound(reloadSound, "ui_button");
 
             VillageSystem.VillageLogic.AddGold(-reloadCost);
             reloadCount++;
@@ -306,6 +312,8 @@ namespace Village.Building
             }
 
             // 4. 가격 차감과 아이템 지급은 MasterClient가 함께 검증해 처리합니다.
+            PlayShopSound(buySound, "Coins");
+
             if (InventoryAuthority.Instance != null)
             {
                 pendingPurchaseRequestId = ++purchaseRequestCounter;
@@ -343,6 +351,20 @@ namespace Village.Building
                 if (isSelectedItem) selectedItemIndex = i;
             }
             RefreshStatusUI();
+        }
+
+        private void PlayShopSound(string soundId, string fallbackSoundId = null)
+        {
+            if (AudioManager.Instance == null || string.IsNullOrEmpty(soundId)) return;
+
+            if (AudioManager.Instance.GetData(soundId).clip != null)
+            {
+                AudioManager.Instance.PlaySfx2D(soundId);
+            }
+            else if (!string.IsNullOrEmpty(fallbackSoundId))
+            {
+                AudioManager.Instance.PlaySfx2D(fallbackSoundId);
+            }
         }
     }
 }

@@ -154,19 +154,25 @@ public class AudioDataSOEditor : Editor
     {
         EditorGUILayout.LabelField("Audio Clip", EditorStyles.boldLabel);
 
-        EditorGUILayout.PropertyField(clipProp, new GUIContent("Default Clip"));
         EditorGUILayout.PropertyField(useRandomClipProp, new GUIContent("Use Random Clip"));
 
-        using (new EditorGUI.DisabledScope(!useRandomClipProp.boolValue))
+        if (useRandomClipProp.boolValue)
         {
             EditorGUILayout.PropertyField(randomClipsProp, new GUIContent("Random Clips"), true);
-        }
 
-        if (useRandomClipProp.boolValue &&
-            clipProp.objectReferenceValue == null &&
-            randomClipsProp.arraySize == 0)
+            if (randomClipsProp.arraySize == 0)
+            {
+                EditorGUILayout.HelpBox("랜덤 재생을 사용하려면 Random Clips에 최소 1개 이상의 오디오 클립을 등록해야 합니다.", MessageType.Warning);
+            }
+        }
+        else
         {
-            EditorGUILayout.HelpBox("랜덤 재생을 사용하려면 기본 클립 또는 Random Clips를 등록해야 합니다.", MessageType.Warning);
+            EditorGUILayout.PropertyField(clipProp, new GUIContent("Default Clip"));
+
+            if (clipProp.objectReferenceValue == null)
+            {
+                EditorGUILayout.HelpBox("재생할 Default Clip을 등록해주세요.", MessageType.Warning);
+            }
         }
     }
 

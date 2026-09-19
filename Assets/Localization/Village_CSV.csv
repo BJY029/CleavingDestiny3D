@@ -1,6 +1,6 @@
 ID,KR,EN
-UI_Ready,준비 완료(ESC),Ready(ESC)
-UI_NotReady,준비 안됨(ESC),Not Ready(ESC)
+UI_Ready,준비 완료(Space),Ready(Space)
+UI_NotReady,준비 안됨(Space),Not Ready(Space)
 Upgrade_Cost,{0} <color=yellow>G</color> 필요,Cost: {0} <color=yellow>G</color>
 Upgrade_Cost_Not_Enough,<color=red>비용 부족: {0}</color>,<color=red>Not Enough: {0}</color>
 Upgrade_Max_Level,최대 레벨 달성,Max Level

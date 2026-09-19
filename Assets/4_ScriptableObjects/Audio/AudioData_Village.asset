@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c67735834906a224ab92e5ddaeedf568, type: 3}
+  m_Name: AudioData_Village
+  m_EditorClassIdentifier: Assembly-CSharp::CD3D.Audio.AudioDataSO
+  audioDatas:
+  - id: village_doorbell
+    clip: {fileID: 8300000, guid: c55b187cad931a84ca5ec4a6773aaa44, type: 3}
+    randomClips:
+    - {fileID: 8300000, guid: c55b187cad931a84ca5ec4a6773aaa44, type: 3}
+    - {fileID: 8300000, guid: c70ede493ccf5a34794bffd5c4ef760d, type: 3}
+    - {fileID: 8300000, guid: 98712ab01256a9e44a2c9e5441ae45a6, type: 3}
+    - {fileID: 8300000, guid: 9a40bf69facf3ca44acb98c4f6a9011f, type: 3}
+    useRandomClip: 1
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: village_door_walk
+    clip: {fileID: 8300000, guid: 38f215430f40fb7408206d68adfe9e4d, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: village_compass_move
+    clip: {fileID: 8300000, guid: 158bcd8f1d5db764c878f62c516414e3, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: village_buy
+    clip: {fileID: 0}
+    randomClips:
+    - {fileID: 8300000, guid: 045880d66ba78634f99c1e8cdc85ae23, type: 3}
+    - {fileID: 8300000, guid: 8633b933bb1813b44a4b160ae0342eb8, type: 3}
+    - {fileID: 8300000, guid: fec458693a5738b44a1c6e105abdeee0, type: 3}
+    - {fileID: 8300000, guid: 881d8007ba72cee429d8cfb9363a8e84, type: 3}
+    useRandomClip: 1
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: village_reroll
+    clip: {fileID: 8300000, guid: 40f9c6bf9f852a14ab5aa49b1f3bfc9f, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
