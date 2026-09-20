@@ -155,7 +155,7 @@ public class BranchSpawner : MonoBehaviourPunCallbacks
 
         Vector3 originalScale = target.localScale;
 
-        Vector3 selectedScale = new Vector3(originalScale.x * 2.5f, originalScale.y, originalScale.z * 2.5f);
+        Vector3 selectedScale = new Vector3(originalScale.x * 1.5f, originalScale.y, originalScale.z * 1.5f);
 
         Vector3 enalrgedScale = new Vector3(originalScale.x * selectedScaleMultiplier,
         originalScale.y, originalScale.z * selectedScaleMultiplier);
@@ -194,5 +194,19 @@ public class BranchSpawner : MonoBehaviourPunCallbacks
         }
 
         target.localScale = selectedScale;
+    }
+
+    // public void CleanBranchsInAllPlayers()
+    // {
+    //     photonView.RPC(nameof(DestroyBranchs), RpcTarget.All);
+    // }
+
+    // [PunRPC]
+    public void DestroyBranchs()
+    {
+        foreach (GameObject branch in branchs)
+        {
+            if (branch != null) Destroy(branch);
+        }
     }
 }

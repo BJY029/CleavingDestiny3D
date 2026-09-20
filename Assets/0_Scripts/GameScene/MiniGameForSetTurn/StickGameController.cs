@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using Potan.CoreUtils;
 using System;
+using TMPro;
 
 public class StickGameController : MonoBehaviourPunCallbacks
 {
@@ -27,7 +28,8 @@ public class StickGameController : MonoBehaviourPunCallbacks
     private int playerCount;
 
     public Canvas BranchGameCanvas;
-    public Slider Timer;
+    //public Slider Timer;
+    public TextMeshProUGUI TimerText;
 
 
 
@@ -48,7 +50,8 @@ public class StickGameController : MonoBehaviourPunCallbacks
     {
         BranchGameCanvas.enabled = false;
 
-        Timer.value = 1f;
+        //Timer.value = 1f;
+        TimerText.text = ((int)SelectDurationDefault).ToString();
         playerCount = PhotonNetwork.PlayerList.Length;
     }
 
@@ -64,7 +67,8 @@ public class StickGameController : MonoBehaviourPunCallbacks
         playerCount = PhotonNetwork.PlayerList.Length;
 
         BranchGameCanvas.enabled = true;
-        Timer.value = 1f;
+        TimerText.text = ((int)SelectDurationDefault).ToString();
+        //Timer.value = 1f;
 
         //이미 초기화 된 상태가 존재하면 읽는다.
         if (TryLoadRoundFromRoom()) return;
@@ -142,13 +146,14 @@ public class StickGameController : MonoBehaviourPunCallbacks
         double now = PhotonNetwork.Time;
         //double endTime = selectStartTime + selectDuration;
         double remain = endTime - now;
-        Timer.value = Mathf.Clamp01((float)(remain / selectDuration));
+        //Timer.value = Mathf.Clamp01((float)(remain / selectDuration));
 
         int remainSec = Mathf.Max(0, Mathf.CeilToInt((float)remain));
 
         if (remainSec > 0 && remainSec != _lastTickSec)
         {
             _lastTickSec = remainSec;
+            TimerText.text = remainSec.ToString();
             if (remainSec > 5)
                 AudioManager.Instance.PlaySfx2D("Time_Onetick");
             else
@@ -159,6 +164,7 @@ public class StickGameController : MonoBehaviourPunCallbacks
 
         if ((remain <= 0.0 || allPlayerSelected) && PhotonNetwork.IsMasterClient)
         {
+            TimerText.text = remainSec.ToString();
             ResolveSelection();
         }
     }

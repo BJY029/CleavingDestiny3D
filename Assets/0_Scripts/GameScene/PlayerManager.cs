@@ -211,6 +211,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		yield return curtainCoroutine;
 
+		BranchSpawner.Instance.DestroyBranchs();
 		CameraSwitchManager.Instance.MainCameraOn();
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;

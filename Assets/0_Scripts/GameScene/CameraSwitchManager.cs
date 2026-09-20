@@ -15,7 +15,7 @@ public class CameraSwitchManager : MonoBehaviour
 
     private void Start()
     {
-        SetOnly(branchCamera);
+        SetOnly(mainCamera);
     }
 
     public Camera mainCamera;
