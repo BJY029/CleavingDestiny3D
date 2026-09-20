@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7fa59d1501ffc6478fd88ef1f57f083, type: 3}
+  m_Name: axe_gold
+  m_EditorClassIdentifier: Assembly-CSharp::AxeSkinSO
+  skinId: axe_gold
+  displayName: Gold Axe
+  price: 350
+  icon: {fileID: 21300000, guid: 3bd007d978e653a4ebd7600af9e40c22, type: 3}
+  description: 
+  axePrefab: {fileID: 5564375324611474777, guid: aab96ac65edc4fb4bb9c006828d299ae, type: 3}
