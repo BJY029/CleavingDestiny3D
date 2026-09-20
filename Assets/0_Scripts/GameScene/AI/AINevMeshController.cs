@@ -29,7 +29,6 @@ public class AINevMeshController : AILogicModule
     private Vector3 oppHitPos;
 
     //현재 실행 중인 비동기 이동 작업을 통제(취소)하기 위한 토큰 소스
-    private CancellationTokenSource moveCts;
 
     private void Start()
     {
@@ -52,20 +51,7 @@ public class AINevMeshController : AILogicModule
         (myHitPos, oppHitPos) = isMaster ? (wayPointData.Hit_2, wayPointData.Hit_1) : (wayPointData.Hit_1, wayPointData.Hit_2);
     }
 
-    public void CommandMoveTo(LocationCommand command)
-    {
-        if (moveCts != null)
-        {
-            moveCts.Cancel();
-            moveCts.Dispose();
-        }
 
-        moveCts = new CancellationTokenSource();
-
-        Vector3 targetPos = GetPositionFromCommand(command);
-
-        ExecuteMoveAsync(targetPos, moveCts.Token).Forget();
-    }
 
     private Vector3 GetPositionFromCommand(LocationCommand cmd)
     {
@@ -95,23 +81,7 @@ public class AINevMeshController : AILogicModule
         }
     }
 
-    private async UniTaskVoid ExecuteMoveAsync(Vector3 destination, CancellationToken token)
-    {
-        try
-        {
-            agent.SetDestination(destination);
 
-            await UniTask.WaitWhile(() => agent.pathPending, cancellationToken: token);
-            await UniTask.WaitUntil(() => agent.remainingDistance <= agent.stoppingDistance, cancellationToken: token);
-
-            agent.velocity = Vector3.zero;
-            Debug.Log($"[{destination}] 목적지 도착 완료");
-        }
-        catch (OperationCanceledException)
-        {
-            Debug.Log("이전 이동 명령 취소 됨. 새로운 경로 탐색");
-        }
-    }
 
     // 이동 전담 스크립트 
     public async UniTask MoveToLocationAsync(LocationCommand command, CancellationToken token)
@@ -136,36 +106,107 @@ public class AINevMeshController : AILogicModule
         await LookAtTargetAsync(targetRotPos, token);
     }
 
+    public async UniTask<bool> MoveToPosition(Vector3 destination, CancellationToken token, float stoppingDistance = 1.5f)
+    {
+        if (agent == null || !agent.isOnNavMesh) return false;
+
+        if (!NavMesh.SamplePosition(destination, out NavMeshHit navHit, 2f, NavMesh.AllAreas))
+        {
+            Debug.LogWarning($"[AINavMesh] NavMesh 위치를 찾을 수 없음 : {destination}");
+            return false;
+        }
+
+        NavMeshPath path = new();
+
+        if (!agent.CalculatePath(navHit.position, path)) return false;
+
+        if (path.status != NavMeshPathStatus.PathComplete)
+        {
+            Debug.LogWarning($"[AINavMesh] 도달 불가능한 위치 : {destination}");
+            return false;
+        }
+
+        float originalStoppingDistance = agent.stoppingDistance;
+
+        try
+        {
+            agent.stoppingDistance = stoppingDistance;
+            agent.SetDestination(navHit.position);
+
+            await UniTask.WaitWhile(
+                () => agent.pathPending, cancellationToken: token
+            );
+
+            await UniTask.WaitUntil(
+                () =>
+                    !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance &&
+                    (!agent.hasPath || agent.velocity.sqrMagnitude <= 0.01f),
+                cancellationToken: token
+            );
+
+            agent.velocity = Vector3.zero;
+
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            if (agent != null && agent.isOnNavMesh)
+            {
+                agent.ResetPath();
+                agent.velocity = Vector3.zero;
+            }
+
+            return false;
+        }
+        finally
+        {
+            if (agent != null)
+            {
+                agent.stoppingDistance = originalStoppingDistance;
+            }
+        }
+    }
+
     //특정 방향으로 AI를 부드럽게 회전시키는 함수
     public async UniTask LookAtTargetAsync(Vector3 targetPosition, CancellationToken token)
     {
         //agent 자동 회전 끄기
         agent.updateRotation = false;
 
-        //목표 방향 구하기
-        Vector3 direction = (targetPosition - transform.position).normalized;
-
-        //y축은 0으로 고정(위아래 회전 방지)
-        direction.y = 0;
-
-        //이미 목표 회전 값이면 실행 안함
-        if (direction == Vector3.zero) return;
-
-        //목표 회전 값 구하기
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
-
-        //회전 수행(각도 차이가 1 이하가 될 때 까지)
-        while (Quaternion.Angle(transform.rotation, targetRotation) > 1f)
+        try
         {
-            //보간을 통한 부드로운 회전
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
-            //다음 프레임 까지 대기
-            await UniTask.Yield(PlayerLoopTiming.Update, token);
+            //목표 방향 구하기
+            Vector3 direction = (targetPosition - transform.position).normalized;
+
+            //y축은 0으로 고정(위아래 회전 방지)
+            direction.y = 0;
+
+            //이미 목표 회전 값이면 실행 안함
+            if (direction == Vector3.zero) return;
+
+            //목표 회전 값 구하기
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+
+            //회전 수행(각도 차이가 1 이하가 될 때 까지)
+            while (Quaternion.Angle(transform.rotation, targetRotation) > 1f)
+            {
+                //보간을 통한 부드로운 회전
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+                //다음 프레임 까지 대기
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+            }
+            //최종 회전값으로 고정
+            transform.rotation = targetRotation;
         }
-        //최종 회전값으로 고정
-        transform.rotation = targetRotation;
-        //agent 자동 회전 켜기
-        agent.updateRotation = true;
+        finally
+        {
+            if (agent != null)
+            {
+                //agent 자동 회전 켜기
+                agent.updateRotation = true;
+            }
+        }
+
     }
 
     //특정 방향으로 AI 플레이어를 스냅 회전 시키는 함수

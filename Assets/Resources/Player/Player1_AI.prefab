@@ -120,6 +120,7 @@ GameObject:
   - component: {fileID: -9106697140285719882}
   - component: {fileID: 2169078213238885499}
   - component: {fileID: 3630900598691098007}
+  - component: {fileID: 6822695620749732862}
   - component: {fileID: -7706094444651068393}
   - component: {fileID: -1081810206017964554}
   - component: {fileID: -4189926361347790040}
@@ -244,8 +245,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ef407429edc75841aa65b8b44e4db47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AINevMeshController
-  wayPointData: {fileID: 11400000, guid: 04a6ec45e289ce04ab46b084ff95ffff, type: 2}
+  moveSpeed: 8
+  acceleration: 30
+  angularSpeed: 360
   rotationSpeed: 10
+  wayPointData: {fileID: 11400000, guid: 04a6ec45e289ce04ab46b084ff95ffff, type: 2}
   agent: {fileID: -4189926361347790040}
 --- !u!114 &-6125655930517416145
 MonoBehaviour:
@@ -333,6 +337,21 @@ MonoBehaviour:
   baseLockPassRate: 0.8
   baseLockDuration: 1
   usageThreshold: 50
+--- !u!114 &6822695620749732862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 171133721816373843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2ff371a063e978429016467337d8a93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIBranchCollector
+  searchRadius: 30
+  collectDistance: 2
+  navMeshSampleDistance: 2
 --- !u!114 &-7706094444651068393
 MonoBehaviour:
   m_ObjectHideFlags: 0

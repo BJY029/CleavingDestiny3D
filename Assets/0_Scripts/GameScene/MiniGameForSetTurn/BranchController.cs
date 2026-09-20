@@ -40,7 +40,7 @@ public class BranchController : MonoBehaviourPunCallbacks, IPointerEnterHandler,
 	{
 		myLength = length;
 
-		transform.localScale = new Vector3(5f, 5f * myLength, 5f);
+		transform.localScale = new Vector3(16f, 5f * myLength, 8f);
 		transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z - myLength);
 	}
 

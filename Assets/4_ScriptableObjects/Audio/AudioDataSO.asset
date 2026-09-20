@@ -498,3 +498,30 @@ MonoBehaviour:
     useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
+  - id: PickupBranch
+    clip: {fileID: 8300000, guid: 020811c08e69b02499de61c6cf0c0c78, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 0.7
+    pitch: 1
+    useRandomPitch: 1
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: EquipItem
+    clip: {fileID: 8300000, guid: b4b0ae2f2c24d814eb7bb6066fbf2127, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: WoodPurchase
+    clip: {fileID: 8300000, guid: 965276313ffc8f548a0ec6384e6df0f2, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0

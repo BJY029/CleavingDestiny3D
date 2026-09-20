@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.VisualScripting;
 
 public class BranchUIController : MonoBehaviour
 {
@@ -20,7 +21,7 @@ public class BranchUIController : MonoBehaviour
 	public Canvas BranchCanvas;
 	public TextMeshProUGUI Desc1;
 	public TextMeshProUGUI Desc2;
-	public Image Curtain;
+	public GameObject WoodCurtain;
 
 	private float offDuration = 2f;
 	private float waitDuration = 2f;
@@ -34,22 +35,20 @@ public class BranchUIController : MonoBehaviour
 
 	public IEnumerator FadeoutCurtain_GameStart()
 	{
-		Color c = Curtain.color;
-		float startAlpha = c.a;
 		float time = 0f;
 
 		while (time < offDuration)
 		{
 			time += Time.deltaTime;
-			float alpha = Mathf.Lerp(startAlpha, 0f, time / offDuration);
+			float moveAmount = 6f * Time.deltaTime;
 
-			Curtain.color = new Color(c.r, c.g, c.b, alpha);
+			WoodCurtain.transform.position += Vector3.back * moveAmount;
+
 			yield return null;
 		}
 
-		Curtain.color = new Color(c.r, c.g, c.b, 0f);
-
 		//yield return new WaitForSeconds(waitDuration);
 		BranchCanvas.gameObject.SetActive(false);
+		Destroy(WoodCurtain);
 	}
 }

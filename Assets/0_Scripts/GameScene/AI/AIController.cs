@@ -179,6 +179,8 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
+        aiBrain.BranchCollector.StopCollecting();
+
         //기존에 실행하고 있는 UniTask 가 있으면 즉시 중단
         if (turnCts != null)
         {

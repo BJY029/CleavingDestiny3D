@@ -24,6 +24,11 @@ public class GamePrepareCanvasController : MonoBehaviour
 
     [SerializeField] private float showGameResultDuration = 3.0f;
 
+    private void Start()
+    {
+        PrepareCanvasObj.SetActive(false);
+    }
+
     public void SetUnActive()
     {
         PrepareCanvasObj.SetActive(false);
