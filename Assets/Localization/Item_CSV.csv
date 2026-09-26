@@ -7,7 +7,7 @@ NAME_DMG_GREASED,기름 바른 도끼,Greased Axe
 NAME_DMG_TERMITE,흰개미 소환,Termite Swarm
 NAME_DMG_BLIND,눈 가리고 때리기,Blind Strike
 NAME_DMG_COMBO,콤보 수행,Combo Master
-NAME_DEF_RESIN,수액 코팅,Resin Coating
+NAME_DEF_RESIN,마을 축제 개시,Village Festival
 NAME_DEF_SILVER,은빛 가호,Silver Grace
 NAME_DEF_SACRIFICE,제물 바치기,Sacrificial Rite
 NAME_DEF_SIPHON,교란기 작동,Defense Siphon
@@ -34,7 +34,7 @@ DESC_DMG_GREASED,이번 턴의 기본 공격 데미지가 0이 됩니다.,Sets b
 DESC_DMG_TERMITE,오늘 하루 동안 매 턴마다 나무에게 20~150의 방어 무시 피해를 입힙니다.,Deals 20-150 true damage to the Tree every turn for the duration of the day.
 DESC_DMG_BLIND,이번 턴에 나무에게 20 또는 2000의 랜덤 데미지를 입힙니다.,Deals a random amount of damage (20 or 2000) to the Tree this turn.
 DESC_DMG_COMBO,콤보를 수행하여 성공시 250%의 데미지를 나무에게 입힙니다.,Perform a combo to deal 250% damage to the tree upon success."
-DESC_DEF_RESIN,마을 방어력이 50 증가합니다.,Increases Village Defense by 50.
+DESC_DEF_RESIN,마을 축제를 열어 마을 방어력을 50 증가시킵니다.,Hold a village festival to increase Village Defense by 50.
 DESC_DEF_SILVER,이번 턴에 나무에게 입힌 데미지의 100%를 방어력으로 전환합니다.,Converts 100% of damage dealt to the Tree into Defense this turn.
 DESC_DEF_SACRIFICE,"아이템을 희생하여 나무의 공격력을 감소시킵니다. (등급에 따라 감소율 상이, 웨이브당 1회)","Sacrifices an item to reduce the Tree's Attack Power. (Effect varies by rarity, once per wave)"
 DESC_DEF_SIPHON,상대 마을 방어력의 30%를 즉시 강탈하여 내 마을 방어력에 추가합니다.,Immediately steals 30% of the enemy village's defense and adds it to your own defense.
