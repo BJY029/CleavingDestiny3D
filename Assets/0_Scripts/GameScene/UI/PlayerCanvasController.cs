@@ -18,6 +18,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public TextMeshProUGUI DamageValue;
 	public TextMeshProUGUI BarrierValue;
 	public TextMeshProUGUI TreeMultValue;
+	public TextMeshProUGUI MyTurnText;
 	public GameObject HitTextObj;
 
 	[SerializeField] private GameObject gaugeRoot;
@@ -88,6 +89,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		WarningObj.SetActive(false);
 		MissionPanel.SetActive(false);
 		BranchInteractObj.SetActive(false);
+		MyTurnText.gameObject.SetActive(false);
 		CloseGauge();
 		HitText.text = "";
 		WarningText.text = "";
@@ -125,6 +127,12 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		}
 
 		TimerText.text = remainTime.ToString("F0");
+	}
+
+	public void MyTurnActive()
+	{
+		MyTurnText.gameObject.SetActive(true);
+		AudioManager.Instance.PlaySfx2D("MyTurn");
 	}
 
 	private void InitTimer()

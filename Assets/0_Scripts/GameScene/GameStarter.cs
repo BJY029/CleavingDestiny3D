@@ -356,6 +356,11 @@ public class GameStarter : MonoBehaviourPunCallbacks
         CameraSwitchManager.Instance.PlayerCameraOn();
         CameraSwitchManager.Instance.GameCameraToggle(false);
         TimeManager.instance.StartTurnTimer();
+
+        int me = PhotonNetwork.LocalPlayer.ActorNumber;
+        int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
+        if (me == turnActor)
+            PlayerCanvasController.Instance.MyTurnActive();
     }
 
     private void CheckTurnSelectionFinished(double now)
