@@ -7,8 +7,8 @@ namespace Option.Element
     public class SliderWithToggleSetting : BaseSliderSetting
     {
         [SerializeField] Toggle toggle;
-        public Action<bool> onToggleChanged;
-
+        float cachedSliderValue = 1f;
+        
         void Start()
         {
             if (toggle == null)
@@ -17,14 +17,6 @@ namespace Option.Element
             }
             toggle.onValueChanged.AddListener(OnToggleValueChanged);
         }
-
-        public void AddToggleListener(Action<bool> listener)
-        {
-            onToggleChanged -= listener;
-            onToggleChanged += listener;
-        }
-
-        float cachedSliderValue = 1f;
 
         void OnToggleValueChanged(bool isOn)
         {
@@ -36,9 +28,9 @@ namespace Option.Element
             else
             {
                 cachedSliderValue = slider.value;
+                slider.value = slider.minValue;
                 slider.interactable = false;
             }
-            onToggleChanged?.Invoke(isOn);
         }
 
         public override void SetValue(float value)

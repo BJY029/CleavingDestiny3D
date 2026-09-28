@@ -71,6 +71,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 
 	private float _startTime = -1f;
 	private float _endTime = -1f;
+	private int _lastTimerSec = -1;
 
 	private void Awake()
 	{
@@ -124,7 +125,13 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 			InitTimer();
 		}
 
-		TimerText.text = remainTime.ToString("F0");
+		// TimerText.text = remainTime.ToString("F0");
+		int curSecond = Mathf.CeilToInt(remainTime);
+		if (curSecond != _lastTimerSec)
+		{
+			TimerText.SetText("{0}", curSecond);
+			_lastTimerSec = curSecond;
+		}
 	}
 
 	private void InitTimer()

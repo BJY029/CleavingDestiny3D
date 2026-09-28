@@ -79,6 +79,7 @@ public class CheckPanel : MonoBehaviour
     void OnAccept()
     {
         waitTime = 0;
+        KeyInteractManager.Instance?.RemoveMenuAction(OnCancel);
         OnAceeptClicked?.Invoke();
         gameObject.SetActive(false);
     }
@@ -86,6 +87,7 @@ public class CheckPanel : MonoBehaviour
     void OnCancel()
     {
         waitTime = -1;
+        KeyInteractManager.Instance?.RemoveMenuAction(OnCancel);
         OnCancelClicked?.Invoke();
         gameObject.SetActive(false);
     }
@@ -95,6 +97,12 @@ public class CheckPanel : MonoBehaviour
         OnAceeptClicked = onAccept;
         OnCancelClicked = onCancel;
         gameObject.SetActive(true);
+        KeyInteractManager.Instance?.PushMenuAction(OnCancel);
         waitTime = -1;
+    }
+
+    private void OnDisable()
+    {
+        KeyInteractManager.Instance?.RemoveMenuAction(OnCancel);
     }
 }

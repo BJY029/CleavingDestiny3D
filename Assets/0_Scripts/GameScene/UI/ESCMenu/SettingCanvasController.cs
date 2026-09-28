@@ -55,8 +55,13 @@ public class SettingCanvasController : MonoBehaviour
 
     public bool IsSettingPanelOpened { get; private set; } = false;
 
+    private Action _closeSettingAction;
+    private Action _closeWarningAction;
+
     private void Start()
     {
+        _closeSettingAction = CloseSettingPanel;
+        _closeWarningAction = HideWarningPanel;
         CloseBtn.onClick.AddListener(ToggleSettingPanel);
         LobbyBtn.onClick.AddListener(() => ShowWarningPanel(1));
         QuitGameBtn.onClick.AddListener(() => ShowWarningPanel(2));
@@ -74,6 +79,8 @@ public class SettingCanvasController : MonoBehaviour
     private void OnDestroy()
     {
         TurnManager.OnTurnActorChanged -= HandleTurnActorChanged;
+        KeyInteractManager.Instance?.RemoveMenuAction(_closeSettingAction);
+        KeyInteractManager.Instance?.RemoveMenuAction(_closeWarningAction);
     }
 
     private void HandleTurnActorChanged(int turnActorNumber)
@@ -89,6 +96,8 @@ public class SettingCanvasController : MonoBehaviour
         warningPanel.gameObject.SetActive(true);
         warningPanel.interactable = false;
 
+        KeyInteractManager.Instance?.PushMenuAction(_closeWarningAction);
+
         Tween.ScaleX(warningPanel.transform, 0f, 1f, 0.5f)
             .Group(Tween.Alpha(warningPanel, 0f, 1f, 0.5f))
             .OnComplete(this, (con) => 
@@ -102,6 +111,8 @@ public class SettingCanvasController : MonoBehaviour
     {
         warningStatus = 0;
         warningPanel.interactable = false;
+        KeyInteractManager.Instance?.RemoveMenuAction(_closeWarningAction);
+
         Tween.ScaleX(warningPanel.transform, 1f, 0f, 0.5f)
             .Group(Tween.Alpha(warningPanel, 1f, 0f, 0.5f))
             .OnComplete(warningPanel, (panel) => panel.gameObject.SetActive(false));
@@ -173,6 +184,7 @@ public class SettingCanvasController : MonoBehaviour
     {
         IsSettingPanelOpened = true;
         Background.SetActive(true);
+        KeyInteractManager.Instance?.PushMenuAction(_closeSettingAction);
         BattleLogController.Instance.ScrollToLatest();
         
         Cursor.lockState = CursorLockMode.None;
@@ -225,10 +237,20 @@ public class SettingCanvasController : MonoBehaviour
     public void CloseSettingPanel()
     {
         IsSettingPanelOpened = false;
+        KeyInteractManager.Instance?.RemoveMenuAction(_closeSettingAction);
+        KeyInteractManager.Instance?.RemoveMenuAction(_closeWarningAction);
+
+        if (warningStatus > 0)
+        {
+            warningStatus = 0;
+            warningPanel.interactable = false;
+            warningPanel.gameObject.SetActive(false);
+        }
+
         guideBookUIController?.ToggleGuideBook(false);
         Background.SetActive(false);
 
-        if (OptionManager.Instance.IsOptionMenuActive())
+        if (OptionManager.Instance != null && OptionManager.Instance.IsOptionMenuActive())
         {
             OptionManager.Instance.SetOptionMenu(false);
         }

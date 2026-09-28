@@ -2,6 +2,8 @@ using UnityEngine;
 using TMPro;
 using System;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using Option;
 
 public class ShopUIManager : MonoBehaviour
 {
@@ -15,6 +17,8 @@ public class ShopUIManager : MonoBehaviour
 
     [Header("Exit")]
     [SerializeField] private Button ExitBtn;
+
+    public bool IsShopOpen => BackGround != null && BackGround.activeSelf;
 
     private void OnEnable()
     {
@@ -38,8 +42,35 @@ public class ShopUIManager : MonoBehaviour
 
         Instance = this;
 
-
         ExitBtn.onClick.AddListener(ExitShopUI);
+    }
+
+    private void OnDestroy()
+    {
+        KeyInteractManager.Instance?.RemoveMenuAction(ExitShopUI);
+    }
+
+    private void Update()
+    {
+        // 옵션창이 활성화되어 있다면 옵션창에 우선권 양보
+        if (OptionManager.Instance != null && OptionManager.Instance.IsOptionMenuActive())
+            return;
+
+        if (IsShopOpen && WasEscapePressed())
+        {
+            ExitShopUI();
+        }
+    }
+
+    private bool WasEscapePressed()
+    {
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            return true;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+            return true;
+
+        return false;
     }
 
     private void UpdateBranchCount(int count)
@@ -50,10 +81,16 @@ public class ShopUIManager : MonoBehaviour
     public void EnterShopUI()
     {
         BackGround.SetActive(true);
+        KeyInteractManager.Instance?.PushMenuAction(ExitShopUI);
     }
 
-    private void ExitShopUI()
+    public void ExitShopUI()
     {
-        BackGround.SetActive(false);
+        if (BackGround != null)
+        {
+            BackGround.SetActive(false);
+        }
+        AudioManager.Instance?.PlaySfx2D("ui_button");
+        KeyInteractManager.Instance?.RemoveMenuAction(ExitShopUI);
     }
 }

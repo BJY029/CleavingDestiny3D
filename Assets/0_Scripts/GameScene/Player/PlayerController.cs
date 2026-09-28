@@ -1,6 +1,5 @@
 using System;
 using Cysharp.Threading.Tasks;
-using NUnit.Framework;
 using Photon.Pun;
 using Potan.CoreUtils;
 using UnityEngine;
@@ -666,6 +665,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         {
             //미니 게임 관련 인터페이스 상호작용 수행
             currentMinigame?.OnInteract(this);
+            return;
         }
 
         //내 턴이 아니면 return

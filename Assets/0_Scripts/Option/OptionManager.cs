@@ -1,3 +1,5 @@
+using UnityEngine.InputSystem;
+using System;
 using System.IO;
 using Cysharp.Threading.Tasks;
 using Option.Element;
@@ -21,9 +23,12 @@ namespace Option
         [SerializeField] private SoundSetting soundSetting;
 
         private string settingPath;
+        private Action _closeAction;
 
         private void Awake()
         {
+            _closeAction = () => SetOptionMenu(false);
+
             if (Instance == null || Instance == this)
             {
                 Instance = this;
@@ -37,6 +42,11 @@ namespace Option
             }
         }
 
+        private void OnDestroy()
+        {
+            KeyInteractManager.Instance?.RemoveMenuAction(_closeAction);
+        }
+
         private void Start()
         {
             optionMenu = transform.GetChild(0).gameObject;
@@ -47,6 +57,29 @@ namespace Option
             soundSetting.Initialize();
         }
         
+        private void Update()
+        {
+            // KeyInteractManager가 없는 씬(예: LobbyScene)에서 옵션창이 활성화되어 있을 때 ESC로 닫기 지원
+            if (KeyInteractManager.Instance == null && IsOptionMenuActive())
+            {
+                if (WasEscapePressed())
+                {
+                    SetOptionMenu(false);
+                }
+            }
+        }
+
+        private bool WasEscapePressed()
+        {
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+                return true;
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+                return true;
+
+            return false;
+        }
+
         public bool IsOptionMenuActive()
         {
             return optionMenu.activeSelf;
@@ -60,8 +93,13 @@ namespace Option
         {
             optionMenu.SetActive(isActive);
 
-            if (!isActive)
+            if (isActive)
             {
+                KeyInteractManager.Instance?.PushMenuAction(_closeAction);
+            }
+            else
+            {
+                KeyInteractManager.Instance?.RemoveMenuAction(_closeAction);
                 AudioManager.Instance?.PlaySfx2D("ui_button");
                 SaveSetting().Forget();
             }
@@ -78,9 +116,18 @@ namespace Option
         {
             if (File.Exists(settingPath))
             {
-                string json = File.ReadAllText(settingPath);
-                settingData = JsonUtility.FromJson<SettingData>(json);
-                isInitialized = true;
+                try
+                {
+                    string json = File.ReadAllText(settingPath);
+                    settingData = JsonUtility.FromJson<SettingData>(json);
+                    isInitialized = true;
+                }
+                catch (Exception e)
+                {
+                    DevLog.LogError($"Error loading settings: {e.Message}", this);
+                    isInitialized = false;
+                    settingData = new SettingData(); // 기본 설정으로 초기화
+                }
             }
             else
             {

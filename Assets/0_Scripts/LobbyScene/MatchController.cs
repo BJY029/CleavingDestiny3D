@@ -244,10 +244,11 @@ public class MatchController : MonoBehaviourPunCallbacks
 
 		string originText = texts.text;
 		int curDot = 0;
+		var destroyToken = destroyCancellationToken;
 
 		try
 		{
-			while (!token.IsCancellationRequested && spining && !destroyCancellationToken.IsCancellationRequested)
+			while (!token.IsCancellationRequested && spining && !destroyToken.IsCancellationRequested)
 			{
 				texts.text = originText + dots[curDot];
 				curDot = (curDot + 1) % 4;

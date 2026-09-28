@@ -76,9 +76,17 @@ public class GuideBookUIController : MonoBehaviour
     private List<Button> spawnedCategoryButtons = new List<Button>();
     private List<Button> spawnedPageIndexButtons = new List<Button>();
 
+    private Action _closeAction;
+
     private void Awake()
     {
+        _closeAction = () => ToggleGuideBook(false);
         guideBookPanel?.SetActive(false);
+    }
+
+    private void OnDestroy()
+    {
+        KeyInteractManager.Instance?.RemoveMenuAction(_closeAction);
     }
 
     private async UniTaskVoid Start()
@@ -223,11 +231,16 @@ public class GuideBookUIController : MonoBehaviour
         
         if (isOn)
         {
+            KeyInteractManager.Instance?.PushMenuAction(_closeAction);
             // 가이드북을 열 때 항상 첫 번째 카테고리의 첫 번째 페이지 표시
             if (categories.Count > 0)
             {
                 OnCategorySelected(0);
             }
+        }
+        else
+        {
+            KeyInteractManager.Instance?.RemoveMenuAction(_closeAction);
         }
     }
 

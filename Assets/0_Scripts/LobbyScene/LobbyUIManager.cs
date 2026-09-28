@@ -3,7 +3,7 @@ using TMPro;
 
 public class LobbyUIManager : MonoBehaviour
 {
-	//½Ì±ÛÅÏ
+	//ï¿½Ì±ï¿½ï¿½ï¿½
 	public static LobbyUIManager instance;
 
 	private void Awake()
@@ -12,24 +12,38 @@ public class LobbyUIManager : MonoBehaviour
 			instance = this;
 	}
 
-	//´Ð³×ÀÓ°ú ¿¬°á Á¤º¸¸¦ Ç¥½ÃÇÏ±â
+	//ï¿½Ð³ï¿½ï¿½Ó°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ï¿½Ï±ï¿½
 	[Header("UI Elements")]
 	public GameObject isConnectedUI;
 	public GameObject NicknameUI;
+	
+	TextMeshProUGUI isConnectedText;
+	TextMeshProUGUI NicknameText;
 
 	private void Start()
 	{
-		isConnectedUI.GetComponentInChildren<TextMeshProUGUI>().text = "Disconnected";
-		NicknameUI.GetComponentInChildren<TextMeshProUGUI>().text = "Nickname : ";
+		isConnectedText = isConnectedUI.GetComponentInChildren<TextMeshProUGUI>();
+		NicknameText = NicknameUI.GetComponentInChildren<TextMeshProUGUI>();
+		
+		setConnectedText("Disconnected");
+		setNickname(string.Empty);
 	}
 
 	public void setConnectedText(string text)
 	{
-		isConnectedUI.GetComponentInChildren<TextMeshProUGUI>().text = text;
+		if (isConnectedText == null)
+		{
+			isConnectedText = isConnectedUI.GetComponentInChildren<TextMeshProUGUI>();
+		}
+		isConnectedText.text = text;
 	}
 
 	public void setNickname(string name)
 	{
-		NicknameUI.GetComponentInChildren<TextMeshProUGUI>().text = "Nickname : " + name;
+		if (NicknameText == null)
+		{
+			NicknameText = NicknameUI.GetComponentInChildren<TextMeshProUGUI>();
+		}
+		NicknameText.text = "Nickname : " + name;
 	}	
 }
