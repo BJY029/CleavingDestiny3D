@@ -155,7 +155,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		int prvEng = currentEnergy;
 		GetCurrentPlayerStatus();
 		PlayerCanvasController.Instance.updatePlayerStatus(
-			currentEnergy.ToString(), currentVillageHP.ToString(), currentTotalDamage.ToString(), GetCurrentTotalDefense().ToString(), currentTreeDmgMulit.ToString());
+			currentEnergy, currentVillageHP, currentTotalDamage, GetCurrentTotalDefense(), currentTreeDmgMulit, maxVillageHp);
 
 		photonView.RPC(nameof(RPC_SetVillageShieldVFX), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, currentBarrier + currentBarrierArmor);
 
@@ -289,7 +289,8 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 			changedProps.ContainsKey(PlayerPropKeys.TotalDamage) ||
 			changedProps.ContainsKey(PlayerPropKeys.VillageBarrier) ||
 			changedProps.ContainsKey(PlayerPropKeys.BarrierArmor) ||
-			changedProps.ContainsKey(PlayerPropKeys.TreeAtkMulti))
+			changedProps.ContainsKey(PlayerPropKeys.TreeAtkMulti) ||
+			changedProps.ContainsKey(PlayerPropKeys.MaxVillageHP))
 		{
 			SetPlayerStatusUIVFX();
 		}

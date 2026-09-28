@@ -19,12 +19,14 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 
 	[SerializeField] private Transform TreeTransform;
 	//���� ���� ����
+	private float maxTreeHP;
 	private float currentTreeHP;
 	private float currentTreeAtkPow;
 
 	//���� ������Ƽ ���� ��������
 	public void GetCurrentTreeStatus()
 	{
+		maxTreeHP = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeMaxHP);
 		currentTreeHP = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeHP);
 		currentTreeAtkPow = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeAtkPow);
 	}
@@ -37,7 +39,7 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 
 		if (GameStarter.instance.CurrentPhase == GameStartPhase.MainGame)
 			if (prevTreeHp < currentTreeHP) GameVFXManager.Instance.Play("TreeHeal", TreeTransform);
-		TreeCanvasController.Instance.UpdateTreeHP(currentTreeHP);
+		TreeCanvasController.Instance.UpdateTreeHP(maxTreeHP, currentTreeHP);
 	}
 
 	//���� ������Ƽ ����Ǹ� UI�� �ݿ��ϱ�

@@ -525,3 +525,12 @@ MonoBehaviour:
     useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
+  - id: MyTurn
+    clip: {fileID: 8300000, guid: 6f2be561bad14784689ffa7e4942c56b, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0

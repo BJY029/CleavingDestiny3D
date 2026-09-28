@@ -15,6 +15,9 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	[Header("UI")]
 	public TextMeshProUGUI EnergyValue;
 	public TextMeshProUGUI VillageHP;
+	public Slider VillageHPSlider;
+	public Slider ShieldValueSlider;
+	public Slider AddShieldValueSlider;
 	public TextMeshProUGUI DamageValue;
 	public TextMeshProUGUI BarrierValue;
 	public TextMeshProUGUI TreeMultValue;
@@ -38,6 +41,8 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	[Header("Timer")]
 	public GameObject TimerObj;
 	public TextMeshProUGUI TimerText;
+	public Image ProgressRing;
+	public float duration;
 
 	[Header("Branch")]
 	public TextMeshProUGUI BranchCount;
@@ -96,6 +101,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		InitTimer();
 	}
 
+
 	public override void OnEnable()
 	{
 		base.OnEnable();
@@ -110,6 +116,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 
 		GameSessionData.OnBranchCountChanged -= UpdateBranchCount;
 	}
+
 
 
 	//만약, 현재 타이머가 설정되었고, 시작 시간 또한 초기화 된 경우
@@ -127,6 +134,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		}
 
 		TimerText.text = remainTime.ToString("F0");
+		ProgressRing.fillAmount = remainTime / duration;
 	}
 
 	public void MyTurnActive()
@@ -157,6 +165,11 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 				_startTime = times.x;
 				_endTime = times.y;
 			}
+		}
+
+		if (propertiesThatChanged.TryGetValue(RoomPropKeys.TurnTime, out var time))
+		{
+			duration = (float)time;
 		}
 	}
 
@@ -299,15 +312,33 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	}
 
 	//현재 플레이어 상태 UI를 업데이트 하는 함수
-	public void updatePlayerStatus(string Energy, string HP, string Damage, string Barrier, string TreeMult)
+	public void updatePlayerStatus(float Energy, float HP, float Damage, float Barrier, float TreeMult, float maxVillageHP)
 	{
 		//if (!photonView.IsMine) return;
 
-		EnergyValue.text = Energy;
-		VillageHP.text = HP;
-		DamageValue.text = Damage;
-		BarrierValue.text = Barrier;
-		TreeMultValue.text = TreeMult;
+		EnergyValue.text = Energy.ToString();
+		VillageHP.text = HP.ToString();
+		if (Barrier > 0.0f) VillageHP.text += "\n+ " + Barrier.ToString();
+		DamageValue.text = Damage.ToString();
+		//BarrierValue.text = Barrier.ToString();
+		TreeMultValue.text = TreeMult.ToString();
+		SetVillageShileldSlider(HP, Barrier, maxVillageHP);
+	}
+
+	public void SetVillageShileldSlider(float villageHP, float shiledValue, float maxVillageHP)
+	{
+		float shownHP = Mathf.Clamp(villageHP, 0f, maxVillageHP);
+		float shownShield = Mathf.Max(0f, shiledValue);
+		float totalValue = shownHP + shownShield;
+		float overflow = Mathf.Max(0f, totalValue - maxVillageHP);
+
+		AddShieldValueSlider.maxValue = 3000;
+		ShieldValueSlider.maxValue = maxVillageHP;
+		VillageHPSlider.maxValue = maxVillageHP;
+
+		ShieldValueSlider.value = Mathf.Min(totalValue, maxVillageHP);
+		VillageHPSlider.value = shownHP;
+		AddShieldValueSlider.value = overflow;
 	}
 
 	//캔버스를 켜고 끄는 RPC 함수를 실행할 함수
@@ -376,3 +407,4 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		// }
 	}
 }
+
