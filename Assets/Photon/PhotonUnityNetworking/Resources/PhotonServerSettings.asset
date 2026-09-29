@@ -154,6 +154,7 @@ MonoBehaviour:
   - RPC_RequestPickUp
   - RPC_SpawnBranch
   - RPC_ReceiveShopPurchaseResult
+  - RPC_UpdateDmgMultiValue
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

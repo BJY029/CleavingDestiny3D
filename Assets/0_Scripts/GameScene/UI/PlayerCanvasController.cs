@@ -312,17 +312,29 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	}
 
 	//현재 플레이어 상태 UI를 업데이트 하는 함수
-	public void updatePlayerStatus(float Energy, float HP, float Damage, float Barrier, float TreeMult, float maxVillageHP)
+	public void updatePlayerStatus(float Energy, float MaxEnergy, float HP, float Damage, float Barrier, float maxVillageHP)
 	{
 		//if (!photonView.IsMine) return;
 
-		EnergyValue.text = Energy.ToString();
+		EnergyValue.text = Energy.ToString() + " / " + MaxEnergy.ToString();
 		VillageHP.text = HP.ToString();
 		if (Barrier > 0.0f) VillageHP.text += "\n+ " + Barrier.ToString();
 		DamageValue.text = Damage.ToString();
 		//BarrierValue.text = Barrier.ToString();
-		TreeMultValue.text = TreeMult.ToString();
+		//TreeMultValue.text = "X " + TreeMult.ToString();
 		SetVillageShileldSlider(HP, Barrier, maxVillageHP);
+	}
+
+	public void UpdateDmgMulitValue(float value, int actNum)
+	{
+		Player target = PhotonNetwork.CurrentRoom.GetPlayer(actNum);
+		photonView.RPC(nameof(RPC_UpdateDmgMultiValue), target, value);
+	}
+
+	[PunRPC]
+	private void RPC_UpdateDmgMultiValue(float value)
+	{
+		TreeMultValue.text = "X " + value.ToString();
 	}
 
 	public void SetVillageShileldSlider(float villageHP, float shiledValue, float maxVillageHP)

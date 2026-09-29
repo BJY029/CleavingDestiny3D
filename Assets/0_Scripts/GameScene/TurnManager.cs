@@ -83,6 +83,13 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		if (!PhotonNetwork.IsMasterClient) return;
 		ItemHandlingSystem.instance.InitRandomSystem();
 		ItemHandlingSystem.instance.OnTurnStart();
+
+		foreach (Player player in PhotonNetwork.CurrentRoom.Players.Values)
+		{
+			float dmgMultiplier = ItemHandlingSystem.instance.GetCurrentDamageMultiplier(player.ActorNumber);
+			PlayerCanvasController.Instance.UpdateDmgMulitValue(dmgMultiplier, player.ActorNumber);
+		}
+
 	}
 
 	public void WaveEnd()
