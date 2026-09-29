@@ -21,15 +21,18 @@ namespace Option
         [Header("Check Panel")]
         [SerializeField] CheckPanel checkPanel;
 
-        private SettingData SettingData => OptionManager.Instance.settingData;
-
+        // private SettingData SettingData => OptionManager.Instance.settingData;
+        private SettingData settingData;
+        
         List<Resolution> resolutions;
         FullScreenMode fullScreenMode;
 
         LocalizedString checkResolutionMessage = new LocalizedString(CSV_Type.Option, "Button_CheckResol");
 
-        public void Initialize()
+        public void Initialize(SettingData newSettingData)
         {
+            settingData = newSettingData;
+            
             double maxFps = 0;
 
             // 해상도 설정
@@ -76,17 +79,17 @@ namespace Option
                 SetDefaultValues();
             }
 
-            resoulutionSetting.SetSelectedIndex(SettingData.resolutionIndex);
+            resoulutionSetting.SetSelectedIndex(settingData.resolutionIndex);
             resoulutionSetting.AddListener(OnResolutionChanged);
 
-            screenModeSetting.SetSelectedIndex(SettingData.screenModeIndex);
+            screenModeSetting.SetSelectedIndex(settingData.screenModeIndex);
             screenModeSetting.AddListener(OnScreenModeChanged);
 
-            fpsLimitSetting.SetSelectedIndex(SettingData.fpsLimitIndex);
+            fpsLimitSetting.SetSelectedIndex(settingData.fpsLimitIndex);
             fpsLimitSetting.AddListener(OnFpsLimitChanged);
 
             // VSync 설정
-            vSyncSetting.SetValueWithoutNotify(SettingData.vSync);
+            vSyncSetting.SetValueWithoutNotify(settingData.vSync);
             vSyncSetting.AddListener(OnVSyncChanged);
 
             // 언어 설정
@@ -101,27 +104,27 @@ namespace Option
 
             //  FOV 설정    
             fovSetting.SetMinMax(60, 90);
-            fovSetting.SetValue(SettingData.fov);
+            fovSetting.SetValue(settingData.fov);
             fovSetting.AddListener(value =>
             {
-                OptionManager.Instance.settingData.fov = value;
+                settingData.fov = value;
                 // 게임 씬에서 카메라에 적용해야함.
             });
 
             // Y축 반전 설정
-            invertYSetting.SetValueWithoutNotify(SettingData.invertY);
+            invertYSetting.SetValueWithoutNotify(settingData.invertY);
             invertYSetting.AddListener(isOn =>
             {
-                OptionManager.Instance.settingData.invertY = isOn;
+                settingData.invertY = isOn;
                 // 게임 씬에서 입력 처리 시 적용해야함.
             });
 
             // 마우스 감도 설정
             mouseSensitivitySetting.SetMinMax(0.1f, 10f);
-            mouseSensitivitySetting.SetValue(SettingData.mouseSensitivity);
+            mouseSensitivitySetting.SetValue(settingData.mouseSensitivity);
             mouseSensitivitySetting.AddListener(value =>
             {
-                OptionManager.Instance.settingData.mouseSensitivity = value;
+                settingData.mouseSensitivity = value;
                 // 게임 씬에서 입력 처리 시 적용해야함.
             });
 
@@ -134,15 +137,15 @@ namespace Option
             // 해상도 초기값: 현재 화면 해상도 찾기
             string currentRes = Screen.currentResolution.width + " x " + Screen.currentResolution.height;
             int foundIndex = resolutions.FindIndex(r => (r.width + " x " + r.height) == currentRes);
-            SettingData.resolutionIndex = (foundIndex != -1) ? foundIndex : resolutions.Count - 1;
+            settingData.resolutionIndex = (foundIndex != -1) ? foundIndex : resolutions.Count - 1;
 
             // 화면 모드 초기값 (FullScreenMode 기준)
-            if (Screen.fullScreenMode == FullScreenMode.Windowed) SettingData.screenModeIndex = 2;
-            else if (Screen.fullScreenMode == FullScreenMode.FullScreenWindow) SettingData.screenModeIndex = 1;
-            else SettingData.screenModeIndex = 0;
+            if (Screen.fullScreenMode == FullScreenMode.Windowed) settingData.screenModeIndex = 2;
+            else if (Screen.fullScreenMode == FullScreenMode.FullScreenWindow) settingData.screenModeIndex = 1;
+            else settingData.screenModeIndex = 0;
 
             // FPS 제한: Unlimited
-            SettingData.fpsLimitIndex = fpsLimitSetting.OptionsCount - 1;
+            settingData.fpsLimitIndex = fpsLimitSetting.OptionsCount - 1;
 
             // VSync 등은 SettingData 기본값을 따름
         }
@@ -151,15 +154,15 @@ namespace Option
         {
             // 1. 화면 모드 적용
             // 인덱스 유효성 검사 (0, 1, 2)
-            if (SettingData.screenModeIndex < 0 || SettingData.screenModeIndex > 2)
+            if (settingData.screenModeIndex < 0 || settingData.screenModeIndex > 2)
             {
-                SettingData.screenModeIndex = 0; // Default: FullScreen
+                settingData.screenModeIndex = 0; // Default: FullScreen
             }
-            OnScreenModeChanged(SettingData.screenModeIndex);
+            OnScreenModeChanged(settingData.screenModeIndex);
 
             // 2. 해상도 적용
             // 해상도 인덱스가 유효하지 않다면 현재 해상도로 재설정
-            if (SettingData.resolutionIndex < 0 || SettingData.resolutionIndex >= resolutions.Count)
+            if (settingData.resolutionIndex < 0 || settingData.resolutionIndex >= resolutions.Count)
             {
                 // 현재 화면 해상도와 일치하는 인덱스 찾기
                 string currentRes = Screen.currentResolution.width + " x " + Screen.currentResolution.height;
@@ -172,19 +175,19 @@ namespace Option
                         break;
                     }
                 }
-                SettingData.resolutionIndex = (foundIndex != -1) ? foundIndex : resolutions.Count - 1;
+                settingData.resolutionIndex = (foundIndex != -1) ? foundIndex : resolutions.Count - 1;
             }
-            SetResolution(SettingData.resolutionIndex);
+            SetResolution(settingData.resolutionIndex);
 
             // 3. FPS 제한 적용
-            if (SettingData.fpsLimitIndex < 0 || SettingData.fpsLimitIndex >= fpsLimitSetting.OptionsCount)
+            if (settingData.fpsLimitIndex < 0 || settingData.fpsLimitIndex >= fpsLimitSetting.OptionsCount)
             {
-                SettingData.fpsLimitIndex = fpsLimitSetting.OptionsCount - 1; // Default: Unlimited
+                settingData.fpsLimitIndex = fpsLimitSetting.OptionsCount - 1; // Default: Unlimited
             }
-            OnFpsLimitChanged(SettingData.fpsLimitIndex);
+            OnFpsLimitChanged(settingData.fpsLimitIndex);
 
             // 4. VSync 적용
-            OnVSyncChanged(SettingData.vSync);
+            OnVSyncChanged(settingData.vSync);
 
         }
 
@@ -199,7 +202,7 @@ namespace Option
                 () =>
                 {
                     // 취소 시 이전 해상도로 되돌리기
-                    int prevIndex = SettingData.resolutionIndex;
+                    int prevIndex = settingData.resolutionIndex;
                     var prevReso = resolutions[prevIndex];
                     Screen.SetResolution(prevReso.width, prevReso.height, fullScreenMode);
                     resoulutionSetting.SetSelectedIndex(prevIndex);
@@ -210,21 +213,21 @@ namespace Option
 
         private void SetResolution(int index)
         {
-            SettingData.resolutionIndex = index;
+            settingData.resolutionIndex = index;
             var reso = resolutions[index];
             Screen.SetResolution(reso.width, reso.height, fullScreenMode);
         }
 
         private void OnScreenModeChanged(int index)
         {
-            SettingData.screenModeIndex = index;
+            settingData.screenModeIndex = index;
             fullScreenMode = (FullScreenMode)(index + 1); // FullScreenMode.ExclusiveFullScreen을 건너뛰기 위해 +1
             Screen.fullScreenMode = fullScreenMode;
         }
 
         private void OnFpsLimitChanged(int index)
         {
-            SettingData.fpsLimitIndex = index;
+            settingData.fpsLimitIndex = index;
             if (index == fpsLimitSetting.OptionsCount - 1) // "Unlimited" 선택 시
             {
                 Application.targetFrameRate = -1; // FPS 제한 해제
@@ -238,7 +241,7 @@ namespace Option
 
         private void OnVSyncChanged(bool isOn)
         {
-            SettingData.vSync = isOn;
+            settingData.vSync = isOn;
             QualitySettings.vSyncCount = isOn ? 1 : 0;
         }
 

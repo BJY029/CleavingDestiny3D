@@ -21,6 +21,11 @@ namespace Option
         public float sfxVolume = 0.5f;
         public float bgmVolume = 0.5f;
         public float environmentVolume = 0.5f;
+        
+        public bool isMasterEnabled = true;
+        public bool isSfxEnabled = true;
+        public bool isBGMEnabled = true;
+        public bool isEnvironmentEnabled = true;
 
         // keybindings
         // TODO

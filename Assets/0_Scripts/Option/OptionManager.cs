@@ -1,4 +1,3 @@
-using UnityEngine.InputSystem;
 using System;
 using System.IO;
 using Cysharp.Threading.Tasks;
@@ -23,11 +22,11 @@ namespace Option
         [SerializeField] private SoundSetting soundSetting;
 
         private string settingPath;
-        private Action _closeAction;
+        private Action closeAction;
 
         private void Awake()
         {
-            _closeAction = () => SetOptionMenu(false);
+            closeAction = () => SetOptionMenu(false);
 
             if (Instance == null || Instance == this)
             {
@@ -44,7 +43,7 @@ namespace Option
 
         private void OnDestroy()
         {
-            KeyInteractManager.Instance?.RemoveMenuAction(_closeAction);
+            KeyInteractManager.Instance?.RemoveMenuAction(closeAction);
         }
 
         private void Start()
@@ -53,31 +52,8 @@ namespace Option
             optionMenu.SetActive(false);
             categorySwapper.SetInitialCategory(0);
 
-            gamePlaySetting.Initialize();
-            soundSetting.Initialize();
-        }
-        
-        private void Update()
-        {
-            // KeyInteractManager가 없는 씬(예: LobbyScene)에서 옵션창이 활성화되어 있을 때 ESC로 닫기 지원
-            if (KeyInteractManager.Instance == null && IsOptionMenuActive())
-            {
-                if (WasEscapePressed())
-                {
-                    SetOptionMenu(false);
-                }
-            }
-        }
-
-        private bool WasEscapePressed()
-        {
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-                return true;
-
-            if (Input.GetKeyDown(KeyCode.Escape))
-                return true;
-
-            return false;
+            gamePlaySetting.Initialize(settingData);
+            soundSetting.Initialize(settingData);
         }
 
         public bool IsOptionMenuActive()
@@ -95,11 +71,11 @@ namespace Option
 
             if (isActive)
             {
-                KeyInteractManager.Instance?.PushMenuAction(_closeAction);
+                KeyInteractManager.Instance?.PushMenuAction(closeAction);
             }
             else
             {
-                KeyInteractManager.Instance?.RemoveMenuAction(_closeAction);
+                KeyInteractManager.Instance?.RemoveMenuAction(closeAction);
                 AudioManager.Instance?.PlaySfx2D("ui_button");
                 SaveSetting().Forget();
             }
