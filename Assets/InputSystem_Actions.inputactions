@@ -39,7 +39,7 @@
                     "id": "852140f2-7766-474d-8707-702459ba45f3",
                     "expectedControlType": "",
                     "processors": "",
-                    "interactions": "Hold",
+                    "interactions": "",
                     "initialStateCheck": false
                 },
                 {
@@ -136,6 +136,15 @@
                     "name": "QuickSlot5",
                     "type": "Button",
                     "id": "a77df833-832b-477d-ab58-70f73d5ad654",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "GuideBook",
+                    "type": "Button",
+                    "id": "42ad995f-89f9-4c5a-841c-31f3bdc02cc0",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -646,6 +655,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "QuickSlot5",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "70e9d0b6-6f98-4454-94b8-cefa284aea7f",
+                    "path": "<Keyboard>/g",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "GuideBook",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

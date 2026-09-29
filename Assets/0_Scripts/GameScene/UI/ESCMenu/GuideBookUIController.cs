@@ -44,6 +44,8 @@ public class GuideBookData
 
 public class GuideBookUIController : MonoBehaviour
 {
+    public static GuideBookUIController Instance { get; private set; }
+
     private const string GuideDataAddress = "GuideBookData";
 
     [Header("Data (다국어 Key와 이미지 등록)")]
@@ -51,6 +53,8 @@ public class GuideBookUIController : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] private GameObject guideBookPanel;
+    
+    public bool IsOpen => guideBookPanel != null && guideBookPanel.activeSelf;
     
     [Header("Category (목차)")]
     [SerializeField] private Transform categoryButtonContainer;
@@ -80,23 +84,48 @@ public class GuideBookUIController : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
         _closeAction = () => ToggleGuideBook(false);
         guideBookPanel?.SetActive(false);
     }
 
     private void OnDestroy()
     {
+        if (Instance == this) Instance = null;
+        if (KeyInteractManager.Instance != null)
+        {
+            KeyInteractManager.Instance.OnGuideBookKeyDown -= HandleGuideBookShortcut;
+        }
         KeyInteractManager.Instance?.RemoveMenuAction(_closeAction);
     }
 
     private async UniTaskVoid Start()
     {
+        if (KeyInteractManager.Instance != null)
+        {
+            KeyInteractManager.Instance.OnGuideBookKeyDown += HandleGuideBookShortcut;
+        }
+
         prevPageBtn.onClick.AddListener(OnPrevPage);
         nextPageBtn.onClick.AddListener(OnNextPage);
         closeBtn.onClick.AddListener(() => ToggleGuideBook(false));
 
         await LoadGuideData();
         InitializeCategories();
+    }
+
+    private void HandleGuideBookShortcut()
+    {
+        if (Option.OptionManager.Instance != null && Option.OptionManager.Instance.IsOptionMenuActive())
+            return;
+
+        ToggleGuideBook(!IsOpen);
     }
 
     private async UniTask LoadGuideData()
@@ -232,6 +261,9 @@ public class GuideBookUIController : MonoBehaviour
         if (isOn)
         {
             KeyInteractManager.Instance?.PushMenuAction(_closeAction);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
             // 가이드북을 열 때 항상 첫 번째 카테고리의 첫 번째 페이지 표시
             if (categories.Count > 0)
             {
@@ -241,6 +273,14 @@ public class GuideBookUIController : MonoBehaviour
         else
         {
             KeyInteractManager.Instance?.RemoveMenuAction(_closeAction);
+
+            bool isSettingOpen = SettingCanvasController.instance != null && SettingCanvasController.instance.IsSettingPanelOpened;
+            if (!isSettingOpen)
+            {
+                bool isVillageSceneLoaded = UnityEngine.SceneManagement.SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded;
+                Cursor.lockState = isVillageSceneLoaded ? CursorLockMode.None : CursorLockMode.Locked;
+                Cursor.visible = isVillageSceneLoaded;
+            }
         }
     }
 

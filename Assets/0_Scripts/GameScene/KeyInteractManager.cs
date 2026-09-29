@@ -5,9 +5,12 @@ using System.Collections;
 using Photon.Pun;
 using Potan.CoreUtils;
 
+using Option;
+
 public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
 {
     private InputSystem_Actions _inputActions;
+    public InputSystem_Actions InputActions => _inputActions;
 
     public event Action<Vector2> OnMoveInput; // 이동 입력 이벤트
     public event Action<Vector2> OnMousePositionInput; // 마우스 위치 입력 이벤트
@@ -16,6 +19,7 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
     public event Action OnInteractKeyUp;
     public event Action OnInteractSpaceKeyDown;
     public event Action OnTabKeyDown;
+    public event Action OnGuideBookKeyDown;
     public event Action<int> OnQuickSlotKeyDown; // 1~5 퀵슬롯/건물 단축키 (리바인딩 지원)
     public event Func<bool> OnMenuKeyDown;
     
@@ -28,6 +32,27 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         base.Awake();
 
         _inputActions = new InputSystem_Actions();
+
+        if (OptionManager.Instance != null && OptionManager.Instance.settingData != null)
+        {
+            LoadBindingOverrides(OptionManager.Instance.settingData.keyRebinds);
+        }
+    }
+
+    public void LoadBindingOverrides(string json)
+    {
+        if (string.IsNullOrEmpty(json) || _inputActions == null) return;
+        _inputActions.LoadBindingOverridesFromJson(json);
+    }
+
+    public string SaveBindingOverrides()
+    {
+        return _inputActions != null ? _inputActions.SaveBindingOverridesAsJson() : string.Empty;
+    }
+
+    public void ResetAllBindingOverrides()
+    {
+        _inputActions?.RemoveAllBindingOverrides();
     }
 
     private void OnEnable()
@@ -55,6 +80,7 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         _inputActions.Player.QuickSlot4.performed += HandleQuickSlot4;
         _inputActions.Player.QuickSlot5.started += HandleQuickSlot5;
         _inputActions.Player.QuickSlot5.performed += HandleQuickSlot5;
+        _inputActions.Player.GuideBook.performed += HandleGuideBook;
 
         // 액션 맵 활성화
         _inputActions.Player.Enable();
@@ -145,6 +171,11 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         OnTabKeyDown?.Invoke();
     }
 
+    private void HandleGuideBook(InputAction.CallbackContext context)
+    {
+        OnGuideBookKeyDown?.Invoke();
+    }
+
     // 점프 키를 누른 경우 (미니게임 인터랙트)
     private void HandleInteractSpace(InputAction.CallbackContext context)
     {
@@ -199,6 +230,7 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         _inputActions.Player.QuickSlot4.performed -= HandleQuickSlot4;
         _inputActions.Player.QuickSlot5.started -= HandleQuickSlot5;
         _inputActions.Player.QuickSlot5.performed -= HandleQuickSlot5;
+        _inputActions.Player.GuideBook.performed -= HandleGuideBook;
 
         // 액션 맵 비활성화
         _inputActions.Player.Disable();

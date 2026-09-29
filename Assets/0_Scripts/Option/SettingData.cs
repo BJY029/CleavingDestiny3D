@@ -28,6 +28,6 @@ namespace Option
         public bool isEnvironmentEnabled = true;
 
         // keybindings
-        // TODO
+        public string keyRebinds = "";
     }
 }

@@ -5,32 +5,59 @@ namespace Option.Element
 {
     public class SliderWithTextSetting : BaseSliderSetting
     {
-        [SerializeField] TextMeshProUGUI valueText;
+        [SerializeField] private TextMeshProUGUI valueText;
+        [SerializeField] private int decimalPlaces = 0;
 
-        void Start()
+        protected override void Awake()
         {
-            if (valueText != null)
+            base.Awake();
+            if (valueText == null)
             {
-                valueText.SetText("{0}", Mathf.RoundToInt(slider.value));
+                valueText = GetComponentInChildren<TextMeshProUGUI>();
+            }
+        }
+
+        private void Start()
+        {
+            if (slider != null)
+            {
+                UpdateText(slider.value);
+            }
+        }
+
+        public void SetDecimalPlaces(int places)
+        {
+            decimalPlaces = Mathf.Max(0, places);
+            if (slider != null)
+            {
+                UpdateText(slider.value);
             }
         }
 
         public override void SetValue(float value)
         {
             base.SetValue(value);
-            if (valueText != null)
-            {
-                valueText.SetText("{0}", Mathf.RoundToInt(value));
-            }
+            UpdateText(value);
         }
 
         protected override void OnSliderValueChangedInternal(float value)
         {
-            if (valueText != null)
+            UpdateText(value);
+            base.OnSliderValueChangedInternal(value);
+        }
+
+        private void UpdateText(float value)
+        {
+            if (valueText == null) return;
+
+            if (decimalPlaces <= 0)
             {
                 valueText.SetText("{0}", Mathf.RoundToInt(value));
             }
-            base.OnSliderValueChangedInternal(value);
+            else
+            {
+                valueText.text = value.ToString($"F{decimalPlaces}");
+            }
         }
     }
 }

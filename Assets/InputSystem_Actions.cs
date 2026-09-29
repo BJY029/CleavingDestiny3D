@@ -125,7 +125,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""id"": ""852140f2-7766-474d-8707-702459ba45f3"",
                     ""expectedControlType"": """",
                     ""processors"": """",
-                    ""interactions"": ""Hold"",
+                    ""interactions"": """",
                     ""initialStateCheck"": false
                 },
                 {
@@ -222,6 +222,15 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""name"": ""QuickSlot5"",
                     ""type"": ""Button"",
                     ""id"": ""a77df833-832b-477d-ab58-70f73d5ad654"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""GuideBook"",
+                    ""type"": ""Button"",
+                    ""id"": ""42ad995f-89f9-4c5a-841c-31f3bdc02cc0"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -732,6 +741,17 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""QuickSlot5"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""70e9d0b6-6f98-4454-94b8-cefa284aea7f"",
+                    ""path"": ""<Keyboard>/g"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""GuideBook"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1354,6 +1374,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_QuickSlot3 = m_Player.FindAction("QuickSlot3", throwIfNotFound: true);
         m_Player_QuickSlot4 = m_Player.FindAction("QuickSlot4", throwIfNotFound: true);
         m_Player_QuickSlot5 = m_Player.FindAction("QuickSlot5", throwIfNotFound: true);
+        m_Player_GuideBook = m_Player.FindAction("GuideBook", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1463,6 +1484,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_QuickSlot3;
     private readonly InputAction m_Player_QuickSlot4;
     private readonly InputAction m_Player_QuickSlot5;
+    private readonly InputAction m_Player_GuideBook;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -1535,6 +1557,10 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @QuickSlot5 => m_Wrapper.m_Player_QuickSlot5;
         /// <summary>
+        /// Provides access to the underlying input action "Player/GuideBook".
+        /// </summary>
+        public InputAction @GuideBook => m_Wrapper.m_Player_GuideBook;
+        /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
         public InputActionMap Get() { return m_Wrapper.m_Player; }
@@ -1605,6 +1631,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @QuickSlot5.started += instance.OnQuickSlot5;
             @QuickSlot5.performed += instance.OnQuickSlot5;
             @QuickSlot5.canceled += instance.OnQuickSlot5;
+            @GuideBook.started += instance.OnGuideBook;
+            @GuideBook.performed += instance.OnGuideBook;
+            @GuideBook.canceled += instance.OnGuideBook;
         }
 
         /// <summary>
@@ -1661,6 +1690,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @QuickSlot5.started -= instance.OnQuickSlot5;
             @QuickSlot5.performed -= instance.OnQuickSlot5;
             @QuickSlot5.canceled -= instance.OnQuickSlot5;
+            @GuideBook.started -= instance.OnGuideBook;
+            @GuideBook.performed -= instance.OnGuideBook;
+            @GuideBook.canceled -= instance.OnGuideBook;
         }
 
         /// <summary>
@@ -2077,6 +2109,13 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnQuickSlot5(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "GuideBook" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnGuideBook(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

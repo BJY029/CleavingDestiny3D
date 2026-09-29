@@ -11,7 +11,7 @@ namespace Option
     {
         public static OptionManager Instance { get; private set; }
 
-        internal SettingData settingData;
+        public SettingData settingData;
         // 설정 데이터가 최초 생성인지 저장 데이터 로드인지 구분하기 위한 변수
         internal bool isInitialized = false;
 
@@ -20,6 +20,12 @@ namespace Option
         [SerializeField] private CategorySwapper categorySwapper;
         [SerializeField] private GamePlaySetting gamePlaySetting;
         [SerializeField] private SoundSetting soundSetting;
+        [SerializeField] private KeyBindOption keyBindOption;
+        public KeyBindOption KeyBindOption
+        {
+            get => keyBindOption;
+            set => keyBindOption = value;
+        }
 
         private string settingPath;
         private Action closeAction;
@@ -52,8 +58,17 @@ namespace Option
             optionMenu.SetActive(false);
             categorySwapper.SetInitialCategory(0);
 
+            if (keyBindOption == null)
+            {
+                keyBindOption = GetComponentInChildren<KeyBindOption>(true);
+            }
+
             gamePlaySetting.Initialize(settingData);
             soundSetting.Initialize(settingData);
+            if (keyBindOption != null)
+            {
+                keyBindOption.Initialize(settingData);
+            }
         }
 
         public bool IsOptionMenuActive()
@@ -81,7 +96,7 @@ namespace Option
             }
         }
 
-        private async UniTask SaveSetting()
+        public async UniTask SaveSetting()
         {
             string json = JsonUtility.ToJson(settingData);
             await File.WriteAllTextAsync(settingPath, json);

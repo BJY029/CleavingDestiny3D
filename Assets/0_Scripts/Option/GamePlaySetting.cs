@@ -120,12 +120,12 @@ namespace Option
             });
 
             // 마우스 감도 설정
-            mouseSensitivitySetting.SetMinMax(0.1f, 10f);
+            mouseSensitivitySetting.SetMinMax(0.2f, 3f);
+            mouseSensitivitySetting.SetDecimalPlaces(1);
             mouseSensitivitySetting.SetValue(settingData.mouseSensitivity);
             mouseSensitivitySetting.AddListener(value =>
             {
                 settingData.mouseSensitivity = value;
-                // 게임 씬에서 입력 처리 시 적용해야함.
             });
 
             // 저장된 설정(해상도,FPS제한 등)을 이번 실행에 적용
@@ -194,6 +194,7 @@ namespace Option
 
         private void OnResolutionChanged(int index)
         {
+            int prevIndex = settingData.resolutionIndex;
             SetResolution(index);
 
             checkPanel.ShowWithTimeout(
@@ -202,9 +203,7 @@ namespace Option
                 () =>
                 {
                     // 취소 시 이전 해상도로 되돌리기
-                    int prevIndex = settingData.resolutionIndex;
-                    var prevReso = resolutions[prevIndex];
-                    Screen.SetResolution(prevReso.width, prevReso.height, fullScreenMode);
+                    SetResolution(prevIndex);
                     resoulutionSetting.SetSelectedIndex(prevIndex);
                 },
                 15 // 15초 타임아웃
