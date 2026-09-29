@@ -19,27 +19,33 @@ namespace Option
         [SerializeField] private SliderWithToggleSetting environmentVolumeSetting;
 
         private SettingData settingData;
+        private bool _isInitialized = false;
 
         public void Initialize(SettingData newSettingData)
         {
             settingData = newSettingData;
 
-            masterVolumeSetting.SetMinMax(MinVolume, MaxVolume);
-            sfxVolumeSetting.SetMinMax(MinVolume, MaxVolume);
-            musicVolumeSetting.SetMinMax(MinVolume, MaxVolume);
-            environmentVolumeSetting.SetMinMax(MinVolume, MaxVolume);
+            if (!_isInitialized)
+            {
+                _isInitialized = true;
 
-            // 볼륨 슬라이더 리스너 등록
-            masterVolumeSetting.AddListener(value => SetVolume(SoundType.Master, value));
-            sfxVolumeSetting.AddListener(value => SetVolume(SoundType.SFX, value));
-            musicVolumeSetting.AddListener(value => SetVolume(SoundType.BGM, value));
-            environmentVolumeSetting.AddListener(value => SetVolume(SoundType.Environment, value));
+                masterVolumeSetting.SetMinMax(MinVolume, MaxVolume);
+                sfxVolumeSetting.SetMinMax(MinVolume, MaxVolume);
+                musicVolumeSetting.SetMinMax(MinVolume, MaxVolume);
+                environmentVolumeSetting.SetMinMax(MinVolume, MaxVolume);
 
-            // 토글 리스너 등록 (음소거 상태 저장 및 오디오 믹서 적용)
-            masterVolumeSetting.AddToggleListener(isOn => SetSoundEnabled(SoundType.Master, isOn));
-            sfxVolumeSetting.AddToggleListener(isOn => SetSoundEnabled(SoundType.SFX, isOn));
-            musicVolumeSetting.AddToggleListener(isOn => SetSoundEnabled(SoundType.BGM, isOn));
-            environmentVolumeSetting.AddToggleListener(isOn => SetSoundEnabled(SoundType.Environment, isOn));
+                // 볼륨 슬라이더 리스너 등록
+                masterVolumeSetting.AddListener(value => SetVolume(SoundType.Master, value));
+                sfxVolumeSetting.AddListener(value => SetVolume(SoundType.SFX, value));
+                musicVolumeSetting.AddListener(value => SetVolume(SoundType.BGM, value));
+                environmentVolumeSetting.AddListener(value => SetVolume(SoundType.Environment, value));
+
+                // 토글 리스너 등록 (음소거 상태 저장 및 오디오 믹서 적용)
+                masterVolumeSetting.AddToggleListener(isOn => SetSoundEnabled(SoundType.Master, isOn));
+                sfxVolumeSetting.AddToggleListener(isOn => SetSoundEnabled(SoundType.SFX, isOn));
+                musicVolumeSetting.AddToggleListener(isOn => SetSoundEnabled(SoundType.BGM, isOn));
+                environmentVolumeSetting.AddToggleListener(isOn => SetSoundEnabled(SoundType.Environment, isOn));
+            }
 
             // 초기 토글 상태 설정
             masterVolumeSetting.SetToggleValue(settingData.isMasterEnabled);
@@ -58,6 +64,46 @@ namespace Option
             ApplyMixerVolume(SoundType.SFX, settingData.isSfxEnabled ? settingData.sfxVolume : MinVolume);
             ApplyMixerVolume(SoundType.BGM, settingData.isBGMEnabled ? settingData.bgmVolume : MinVolume);
             ApplyMixerVolume(SoundType.Environment, settingData.isEnvironmentEnabled ? settingData.environmentVolume : MinVolume);
+        }
+
+        /// <summary>
+        /// 모든 사운드 설정을 최적 기본값(마스터/SFX 0.8, BGM/Env 0.6, 음소거 해제)으로 초기화하고 즉시 적용합니다.
+        /// </summary>
+        public void ResetToDefault(SettingData targetData = null)
+        {
+            if (targetData != null)
+            {
+                settingData = targetData;
+            }
+
+            if (settingData == null) return;
+
+            settingData.isMasterEnabled = true;
+            settingData.isSfxEnabled = true;
+            settingData.isBGMEnabled = true;
+            settingData.isEnvironmentEnabled = true;
+
+            settingData.masterVolume = 0.8f;
+            settingData.sfxVolume = 0.8f;
+            settingData.bgmVolume = 0.6f;
+            settingData.environmentVolume = 0.6f;
+
+            // UI 갱신
+            masterVolumeSetting.SetToggleValue(true);
+            sfxVolumeSetting.SetToggleValue(true);
+            musicVolumeSetting.SetToggleValue(true);
+            environmentVolumeSetting.SetToggleValue(true);
+
+            masterVolumeSetting.SetValue(settingData.masterVolume);
+            sfxVolumeSetting.SetValue(settingData.sfxVolume);
+            musicVolumeSetting.SetValue(settingData.bgmVolume);
+            environmentVolumeSetting.SetValue(settingData.environmentVolume);
+
+            // 오디오 믹서 적용
+            ApplyMixerVolume(SoundType.Master, settingData.masterVolume);
+            ApplyMixerVolume(SoundType.SFX, settingData.sfxVolume);
+            ApplyMixerVolume(SoundType.BGM, settingData.bgmVolume);
+            ApplyMixerVolume(SoundType.Environment, settingData.environmentVolume);
         }
 
         public void SetSoundEnabled(SoundType type, bool isEnabled)

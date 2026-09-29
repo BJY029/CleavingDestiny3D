@@ -92,6 +92,22 @@ public class CheckPanel : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    /// <summary>
+    /// 콜백 호출 없이 대기 타이머를 즉시 중단하고 패널을 닫습니다.
+    /// </summary>
+    public void Dismiss()
+    {
+        if (cancellationTokenSource != null)
+        {
+            cancellationTokenSource.Cancel();
+            cancellationTokenSource.Dispose();
+            cancellationTokenSource = null;
+        }
+        waitTime = -1;
+        KeyInteractManager.Instance?.RemoveMenuAction(OnCancel);
+        gameObject.SetActive(false);
+    }
+
     private void SetPanel(Action onAccept, Action onCancel)
     {
         OnAceeptClicked = onAccept;

@@ -1,6 +1,6 @@
 ID,KR,EN
-UI_Ready,준비 완료(Space),Ready(Space)
-UI_NotReady,준비 안됨(Space),Not Ready(Space)
+UI_Ready,준비 완료({0}),Ready({0})
+UI_NotReady,준비 안됨({0}),Not Ready({0})
 Upgrade_Cost,{0} <color=yellow>G</color> 필요,Cost: {0} <color=yellow>G</color>
 Upgrade_Cost_Not_Enough,<color=red>비용 부족: {0}</color>,<color=red>Not Enough: {0}</color>
 Upgrade_Max_Level,최대 레벨 달성,Max Level
@@ -28,12 +28,12 @@ Shop_Reload, 새로고침 ({0} <color=yellow>G</color>), Reload ({0} <color=yell
 Shop_Buy,구매,Buy
 Shop_NoGold,골드가 부족합니다.,Not enough gold.
 Shop_Inventory_Full,인벤토리가 가득 찼습니다.,Inventory is full.
-Status_Open,마을 현황 (Tab),Village Status (Tab)
+Status_Open,마을 현황 ({0}),Village Status ({0})
 Status_Close,닫기(ESC),Close
 Status_Content,<align=center><size=120%><b>마을 현황</b></size></align>\n<color=#C2A047>보유 골드</color>  <b>{0:N0}</b>\n\n<color=#C2A047><b>광산</b></color>  Lv. {1}\n<color=#A8A8A8>일일 골드</color>  <b>+{2:N0}</b>\n\n<color=#C2A047><b>대장간</b></color>  Lv. {3}\n<color=#A8A8A8>공격력</color>  <b>{4:N0} ~ {5:N0}</b>\n\n<color=#C2A047><b>상점</b></color>  Lv. {6}\n\n<color=#C2A047><b>농장</b></color>  Lv. {7}\n<color=#A8A8A8>최대 기력</color>  <b>{8:N0}</b>\n<color=#A8A8A8>일일 회복</color>  <b>+{9:N0}</b>\n\n<color=#C2A047><b>마법사의 탑</b></color>  Lv. {10}\n<color=#A8A8A8>방어력</color>  <b>{11:N0}</b>,<align=center><size=120%><b>Village Status</b></size></align>\n<color=#C2A047>Gold</color>  <b>{0:N0}</b>\n\n<color=#C2A047><b>Mine</b></color>  Lv. {1}\n<color=#A8A8A8>Daily Gold</color>  <b>+{2:N0}</b>\n\n<color=#C2A047><b>Forge</b></color>  Lv. {3}\n<color=#A8A8A8>Attack</color>  <b>{4:N0} ~ {5:N0}</b>\n\n<color=#C2A047><b>Shop</b></color>  Lv. {6}\n\n<color=#C2A047><b>Farm</b></color>  Lv. {7}\n<color=#A8A8A8>Max Energy</color>  <b>{8:N0}</b>\n<color=#A8A8A8>Daily Recovery</color>  <b>+{9:N0}</b>\n\n<color=#C2A047><b>Wizard's Tower</b></color>  Lv. {10}\n<color=#A8A8A8>Barrier Defense</color>  <b>{11:N0}</b>
-Topbar_Mine,광산(1),Mine(1)
-Topbar_Forge,대장간(2),Forge(2)
-Topbar_Shop,상점(3),Shop(3)
-Topbar_Farm,농장(4),Farm(4)
-Topbar_Barrier,마법사의 탑(5),Wizard's Tower(5)
-Topbar_Barrier_Alt,결계(5),Barrier(5)
+Topbar_Mine,광산({0}),Mine({0})
+Topbar_Forge,대장간({0}),Forge({0})
+Topbar_Shop,상점({0}),Shop({0})
+Topbar_Farm,농장({0}),Farm({0})
+Topbar_Barrier,마법사의 탑({0}),Wizard's Tower({0})
+Topbar_Barrier_Alt,결계({0}),Barrier({0})

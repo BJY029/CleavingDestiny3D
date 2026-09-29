@@ -33,6 +33,9 @@ public class LocalizedText : MonoBehaviour
         }
     }
 
+    [Tooltip("텍스트 포맷에 주입할 Action 이름 목록 (비워둘 시 LocalizationManager의 기본 매핑 사용)")]
+    [SerializeField] private string[] keyActionNames;
+
     private void Reset()
     {
         if (textComponent == null)
@@ -49,6 +52,7 @@ public class LocalizedText : MonoBehaviour
         {
             LocalizationManager.Instance.OnLanguageChanged += UpdateText;
         }
+        KeyInteractManager.OnKeyBindingsChanged += UpdateText;
     }
 
     private void OnDisable()
@@ -58,6 +62,7 @@ public class LocalizedText : MonoBehaviour
             // 비활성화될 때 구독 해제
             LocalizationManager.Instance.OnLanguageChanged -= UpdateText;
         }
+        KeyInteractManager.OnKeyBindingsChanged -= UpdateText;
     }
 
     public void UpdateText()
@@ -74,7 +79,14 @@ public class LocalizedText : MonoBehaviour
 
         if (LocalizationManager.Instance != null && LocalizationManager.Instance.IsLoaded)
         {
-            textComponent.SetText(LocalizationManager.Instance.GetText(tableType, textID));
+            if (keyActionNames != null && keyActionNames.Length > 0)
+            {
+                textComponent.SetText(LocalizationManager.Instance.GetFormatTextWithKeys(tableType, textID, keyActionNames));
+            }
+            else
+            {
+                textComponent.SetText(LocalizationManager.Instance.GetText(tableType, textID));
+            }
         }
     }
 }

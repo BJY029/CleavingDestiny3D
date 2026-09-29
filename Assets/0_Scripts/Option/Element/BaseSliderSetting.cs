@@ -29,6 +29,18 @@ namespace Option.Element
             slider.value = value;
         }
 
+        public virtual void SetValueWithoutNotify(float value)
+        {
+            if (slider == null)
+            {
+                slider = GetComponentInChildren<Slider>();
+            }
+            if (slider != null)
+            {
+                slider.SetValueWithoutNotify(value);
+            }
+        }
+
         public void SetMinMax(float min, float max)
         {
             slider.minValue = min;

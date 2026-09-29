@@ -39,10 +39,18 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         }
     }
 
+    public static event Action OnKeyBindingsChanged;
+
+    public static void NotifyKeyBindingsChanged()
+    {
+        OnKeyBindingsChanged?.Invoke();
+    }
+
     public void LoadBindingOverrides(string json)
     {
         if (string.IsNullOrEmpty(json) || _inputActions == null) return;
         _inputActions.LoadBindingOverridesFromJson(json);
+        NotifyKeyBindingsChanged();
     }
 
     public string SaveBindingOverrides()
@@ -53,6 +61,79 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
     public void ResetAllBindingOverrides()
     {
         _inputActions?.RemoveAllBindingOverrides();
+        NotifyKeyBindingsChanged();
+    }
+
+    /// <summary>
+    /// 지정된 액션의 키보드 바인딩 키 문자열(예: "F", "Space", "1")을 정제하여 반환합니다.
+    /// </summary>
+    public string GetActionKeyString(string actionName, int customBindingIndex = -1)
+    {
+        if (string.IsNullOrEmpty(actionName)) return string.Empty;
+
+        InputAction action = null;
+        if (_inputActions != null && _inputActions.asset != null)
+        {
+            action = _inputActions.asset.FindAction(actionName);
+        }
+
+        if (action == null) return actionName;
+
+        int targetIndex = customBindingIndex;
+        if (targetIndex < 0 || targetIndex >= action.bindings.Count)
+        {
+            // 1. 키보드 일반 키(numpad 제외) 우선 검색
+            for (int i = 0; i < action.bindings.Count; i++)
+            {
+                var b = action.bindings[i];
+                if (!b.isComposite && !b.isPartOfComposite)
+                {
+                    string p = !string.IsNullOrEmpty(b.effectivePath) ? b.effectivePath : b.path;
+                    if (p != null && p.Contains("Keyboard") && !p.Contains("numpad"))
+                    {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            // 2. numpad 포함 키보드 검색
+            if (targetIndex < 0)
+            {
+                for (int i = 0; i < action.bindings.Count; i++)
+                {
+                    var b = action.bindings[i];
+                    if (!b.isComposite && !b.isPartOfComposite)
+                    {
+                        string p = !string.IsNullOrEmpty(b.effectivePath) ? b.effectivePath : b.path;
+                        if (p != null && p.Contains("Keyboard"))
+                        {
+                            targetIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 3. 그래도 없으면 첫 번째 유효 바인딩
+            if (targetIndex < 0 && action.bindings.Count > 0)
+            {
+                targetIndex = 0;
+            }
+        }
+
+        if (targetIndex < 0 || targetIndex >= action.bindings.Count)
+            return actionName;
+
+        string str = action.GetBindingDisplayString(targetIndex, InputBinding.DisplayStringOptions.DontIncludeInteractions);
+        if (!string.IsNullOrEmpty(str))
+        {
+            if (str.StartsWith("Hold ", StringComparison.OrdinalIgnoreCase))
+            {
+                str = str.Substring(5).Trim();
+            }
+        }
+        return str;
     }
 
     private void OnEnable()

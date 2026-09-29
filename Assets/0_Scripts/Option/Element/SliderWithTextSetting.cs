@@ -40,6 +40,12 @@ namespace Option.Element
             UpdateText(value);
         }
 
+        public override void SetValueWithoutNotify(float value)
+        {
+            base.SetValueWithoutNotify(value);
+            UpdateText(value);
+        }
+
         protected override void OnSliderValueChangedInternal(float value)
         {
             UpdateText(value);

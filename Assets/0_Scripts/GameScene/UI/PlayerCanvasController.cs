@@ -101,6 +101,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 
 		GameSessionData.OnBranchCountChanged += UpdateBranchCount;
 		UpdateBranchCount(GameSessionData.CollectedBranchCount);
+		KeyInteractManager.OnKeyBindingsChanged += UpdateGameHitText;
 	}
 
 	public override void OnDisable()
@@ -108,6 +109,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		base.OnDisable();
 
 		GameSessionData.OnBranchCountChanged -= UpdateBranchCount;
+		KeyInteractManager.OnKeyBindingsChanged -= UpdateGameHitText;
 	}
 
 

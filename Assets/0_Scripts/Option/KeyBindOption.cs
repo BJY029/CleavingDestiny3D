@@ -331,22 +331,55 @@ namespace Option
             }
 
             _settingData.keyRebinds = rebindsJson;
+            KeyInteractManager.NotifyKeyBindingsChanged();
             OptionManager.Instance?.SaveSetting().Forget();
         }
 
+        /// <summary>
+        /// 모든 키 설정을 기본값으로 초기화하고 저장합니다.
+        /// 버튼 OnClick 이벤트에 연결하여 사용할 수 있습니다.
+        /// </summary>
         public void ResetToDefault()
         {
             CancelRebinding();
 
+            // 1. KeyInteractManager / InputActionAsset 오버라이드 전체 제거
             KeyInteractManager.Instance?.ResetAllBindingOverrides();
 
+            // 2. 관리 중인 모든 KeyBindItem 액션 오버라이드 제거
+            if (keyBindItems != null)
+            {
+                foreach (var item in keyBindItems)
+                {
+                    if (item == null) continue;
+                    var action = item.GetAction();
+                    action?.RemoveAllBindingOverrides();
+                    if (item.actionReference != null && item.actionReference.action != null)
+                    {
+                        item.actionReference.action.RemoveAllBindingOverrides();
+                    }
+                }
+            }
+
+            // 3. 설정 데이터 초기화 및 파일 저장
             if (_settingData != null)
             {
                 _settingData.keyRebinds = string.Empty;
-                OptionManager.Instance?.SaveSetting().Forget();
             }
+            OptionManager.Instance?.SaveSetting().Forget();
 
+            // 4. 리바인딩 변경 알림 브로드캐스트 ({0} UI 텍스트 등 실시간 갱신)
+            KeyInteractManager.NotifyKeyBindingsChanged();
+
+            // 5. 옵션 창 UI 갱신
             RefreshUI();
+
+            Debug.Log("[KeyBindOption] 모든 키 설정이 기본값으로 초기화 및 저장되었습니다.");
         }
+
+        /// <summary>
+        /// ResetToDefault()와 동일한 별칭 메서드입니다.
+        /// </summary>
+        public void ResetKeyBinds() => ResetToDefault();
     }
 }
