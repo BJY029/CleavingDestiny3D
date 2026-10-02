@@ -7,6 +7,7 @@ using UnityEngine;
 public class TreeStatus : MonoBehaviourPunCallbacks
 {
 	public static TreeStatus Instance;
+	private TreeDamageVisual treeDamageVisual;
 	private void Awake()
 	{
 		if (Instance != null && Instance != this)
@@ -22,6 +23,17 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 	private float maxTreeHP;
 	private float currentTreeHP;
 	private float currentTreeAtkPow;
+
+	private void Start()
+	{
+		if (TreeTransform != null)
+			treeDamageVisual = TreeTransform.gameObject.GetComponent<TreeDamageVisual>();
+
+		if (treeDamageVisual == null) return;
+
+		GetCurrentTreeStatus();
+		treeDamageVisual.UpdateVisual(currentTreeHP, maxTreeHP);
+	}
 
 	//���� ������Ƽ ���� ��������
 	public void GetCurrentTreeStatus()
@@ -40,6 +52,7 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 		if (GameStarter.instance.CurrentPhase == GameStartPhase.MainGame)
 			if (prevTreeHp < currentTreeHP) GameVFXManager.Instance.Play("TreeHeal", TreeTransform);
 		TreeCanvasController.Instance.UpdateTreeHP(maxTreeHP, currentTreeHP);
+		treeDamageVisual.UpdateVisual(currentTreeHP, maxTreeHP);
 	}
 
 	//���� ������Ƽ ����Ǹ� UI�� �ݿ��ϱ�

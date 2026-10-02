@@ -1,9 +1,24 @@
 fileFormatVersion: 2
-guid: d7da38c95fbde9743a0bb5d1f808a405
+guid: b06835a9e8afd97469e694800dda8b59
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Branches001.003
+    second: {fileID: 2100000, guid: 24e3f83dfad5d794a91d00c595110aa1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Trunk01.003
+    second: {fileID: 2100000, guid: 1f390b5531d4a124d93a7ca4bc882264, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wood_Inside
+    second: {fileID: 2100000, guid: dfe1e2fef8745d749b22700600701efd, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
