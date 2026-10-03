@@ -24,6 +24,19 @@ public class MatchEndEffectController : MonoBehaviourPun
     [SerializeField] private UnityEvent<int> onVillageDestroyed;
     [SerializeField] private UnityEvent onBothVillagesDestroyed;
     [SerializeField] private float villageEffectDuration = 3f;
+    [SerializeField] private Transform poisonTransfer;
+    [SerializeField] private ParticleSystem poisonHead;
+    [SerializeField] private ParticleSystem poisonTrail;
+    [SerializeField] private float poisonTraveDuration = 2.5f;
+    [SerializeField] private float poisonArcHeight = 5f;
+    [SerializeField] private float villagePoisonDuration = 7f;
+
+    [Header("Village each")]
+    [SerializeField] private ParticleSystem p1PoisonCloud;
+    [SerializeField] private ParticleSystem p2PoisonCloud;
+    [SerializeField] private Transform startTransform;
+    [SerializeField] private Transform p1VilageTransform;
+    [SerializeField] private Transform p2VilageTransform;
 
     private bool hasStarted;
 
@@ -106,6 +119,80 @@ public class MatchEndEffectController : MonoBehaviourPun
         if (fade != null) await fade.FadeOutAsync(fadeDuration);
 
         await UniTask.Delay(TimeSpan.FromSeconds(treeRevealDuration));
+
+        Transform targetTransform = actNum == 0 ? p1VilageTransform : p2VilageTransform;
+        ParticleSystem targetParticle = actNum == 0 ? p1PoisonCloud : p2PoisonCloud;
+        await PlayPoisonTransferAsync(startTransform.position, targetTransform.position, targetParticle);
+    }
+
+    private async UniTask PlayPoisonTransferAsync(Vector3 startPosition, Vector3 targetPosition, ParticleSystem villageCloud)
+    {
+        poisonHead.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        poisonTrail.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+        poisonTransfer.position = startPosition;
+        poisonTransfer.gameObject.SetActive(true);
+
+        poisonHead.Play(true);
+        poisonTrail.Play(true);
+
+        AudioManager audioManager = AudioManager.Instance;
+        AudioSource movingSound = null;
+        try
+        {
+            if (audioManager != null)
+            {
+                movingSound = audioManager.PlayAmbient3D("Poison_Travel", startPosition, 15f, 200f);
+
+                if (movingSound != null)
+                {
+                    movingSound.rolloffMode = AudioRolloffMode.Linear;
+
+                    movingSound.dopplerLevel = 0f;
+                }
+            }
+            float elapsed = 0f;
+            float duration = Mathf.Max(0.01f, poisonTraveDuration);
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+
+                float t = Mathf.Clamp01(elapsed / duration);
+
+                Vector3 position = Vector3.Lerp(startPosition, targetPosition, t);
+
+                float height = 4f * t * (1f - t) * poisonArcHeight;
+
+                poisonTransfer.position = position + Vector3.up * height;
+
+                if (movingSound != null) movingSound.transform.position = position;
+
+                await UniTask.Yield(PlayerLoopTiming.Update, destroyCancellationToken);
+            }
+
+            poisonTransfer.position = targetPosition;
+        }
+        finally
+        {
+            if (audioManager != null && movingSound != null)
+                audioManager.StopAmbient3D(movingSound);
+
+            if (poisonHead != null)
+                poisonHead.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            if (poisonTrail != null)
+                poisonTrail.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        }
+
+        if (villageCloud != null)
+        {
+            villageCloud.gameObject.SetActive(true);
+            villageCloud.Play(true);
+            AudioManager.Instance.PlaySfx3D("CrowdScream", targetPosition, 40f, 500f, AudioRolloffMode.Linear);
+        }
+
+        await UniTask.Delay(TimeSpan.FromSeconds(villagePoisonDuration));
     }
 
     private void SetActivedTree()
@@ -133,4 +220,5 @@ public class MatchEndEffectController : MonoBehaviourPun
         }
     }
 }
+
 

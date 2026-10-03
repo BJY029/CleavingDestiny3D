@@ -543,3 +543,21 @@ MonoBehaviour:
     useRandomPitch: 0
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
+  - id: CrowdScream
+    clip: {fileID: 8300000, guid: 62fe5cdb773bc1742a324e8838fdb1c4, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 1
+  - id: Poison_Travel
+    clip: {fileID: 8300000, guid: ae526e186af8c4d4cad73b5aaade4fe0, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
