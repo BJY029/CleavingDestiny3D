@@ -258,6 +258,15 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
 
         hasStartedEndPresentation = true;
 
+        if (TimeManager.instance != null) TimeManager.instance.AbortTurnTimer();
+
+        AIController[] aiControllers = UnityEngine.Object.FindObjectsByType<AIController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        foreach (AIController ai in aiControllers)
+        {
+            ai.StopForMatchEnd();
+        }
+
         if (MatchEndEffectController.instance == null)
         {
             ShowEndGameUI(loserActorNum, reason, turnIndex);

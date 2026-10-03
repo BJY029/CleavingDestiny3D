@@ -3,8 +3,9 @@ using Cysharp.Threading.Tasks;
 using UnityEngine.Events;
 using UnityEngine;
 using Unity.VisualScripting;
+using Photon.Pun;
 
-public class MatchEndEffectController : MonoBehaviour
+public class MatchEndEffectController : MonoBehaviourPun
 {
     public static MatchEndEffectController instance;
 
@@ -75,6 +76,20 @@ public class MatchEndEffectController : MonoBehaviour
 
         if (fade != null) await fade.FadeInAsync(fadeDuration);
 
+        int actNum = PhotonNetwork.LocalPlayer.ActorNumber;
+        GameObject PlayerObj = PlayerManager.Instance.LocalPlayerObj;
+        Vector3 des = PlayerManager.Instance.hitPos[actNum - 1];
+        Quaternion rot = PlayerManager.Instance.spawnRot[actNum - 1];
+        //플레이어의 PlayerController 컴포넌트
+        PlayerController pc = PlayerObj.GetComponent<PlayerController>();
+
+        //플레이어 순간이동
+        if (PlayerObj != null)
+        {
+            TeleportPlayer(PlayerObj, des, rot);
+            pc?.ResetCameraToForward();
+        }
+
         AudioManager.Instance.PlaySfx2D("TreeFallSound");
 
         await UniTask.Delay(TimeSpan.FromSeconds(treeBlackScreenDuration));
@@ -102,6 +117,19 @@ public class MatchEndEffectController : MonoBehaviour
                 standingTree = child.gameObject;
                 break;
             }
+        }
+    }
+
+    private void TeleportPlayer(GameObject player, Vector3 destination, Quaternion rotation)
+    {
+        CharacterController cc = player.GetComponent<CharacterController>();
+
+        if (cc != null)
+        {
+            cc.enabled = false;
+            player.transform.position = destination;
+            player.transform.rotation = rotation;
+            cc.enabled = true;
         }
     }
 }
