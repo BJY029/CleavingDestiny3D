@@ -336,11 +336,8 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 
 		// 게임 오버 확인
 		if (currentVillageHP <= 0)
-		{
-			currentVillageHP = 0;
 			// 패배 또는 게임 종료 로직
 			Debug.Log("Game End By VillageHP 0");
-		}
 		BattleLogController.AddVillageAttackLog(adjustedDamage, blockedDamage, hpBefore - currentVillageHP);
 
 		Debug.Log($"Final Village HP : {currentVillageHP}");
@@ -365,12 +362,6 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		damage = GetExpectedVillageDamageInternal(damage);
 
 		currentVillageHP -= damage;
-
-		if (currentVillageHP <= 0)
-		{
-			currentVillageHP = 0;
-		}
-
 		PhotonPropertyHelper.SetPlayerProp(aiNumber, PlayerPropKeys.VillageHP, currentVillageHP);
 		PhotonPropertyHelper.SetPlayerProp(aiNumber, PlayerPropKeys.VDamageProcessCompleted, true);
 

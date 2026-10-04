@@ -21,8 +21,8 @@ public class MatchEndEffectController : MonoBehaviourPun
     [SerializeField] private float treeRevealDuration = 2f;
 
     [Header("Village")]
-    [SerializeField] private UnityEvent<int> onVillageDestroyed;
-    [SerializeField] private UnityEvent onBothVillagesDestroyed;
+    //[SerializeField] private UnityEvent<int> onVillageDestroyed;
+    //[SerializeField] private UnityEvent onBothVillagesDestroyed;
     [SerializeField] private float villageEffectDuration = 3f;
     [SerializeField] private Transform poisonTransfer;
     [SerializeField] private ParticleSystem poisonHead;
@@ -37,6 +37,9 @@ public class MatchEndEffectController : MonoBehaviourPun
     [SerializeField] private Transform startTransform;
     [SerializeField] private Transform p1VilageTransform;
     [SerializeField] private Transform p2VilageTransform;
+
+    [Header("Scene")]
+    public VillageSceneManager villageSceneManager;
 
     private bool hasStarted;
 
@@ -63,26 +66,45 @@ public class MatchEndEffectController : MonoBehaviourPun
 
     private async UniTask PlayAsync(int loserActorNum, MatchResultReason reason, Action OnCompleted)
     {
+        if (villageSceneManager != null)
+        {
+            await villageSceneManager.ReturnToGameForMatchEndAsync();
+        }
+
         switch (reason)
         {
             case MatchResultReason.TreeDestroyed:
-                await PlayTreeDestroyedAsync();
+                await PlayTreeDestroyedAsync(loserActorNum);
                 break;
             case MatchResultReason.VillageDestroyed:
-                onVillageDestroyed?.Invoke(loserActorNum);
-                await UniTask.Delay(TimeSpan.FromSeconds(villageEffectDuration));
+                await PlayVillageDestroyedAsync(loserActorNum);
                 break;
             case MatchResultReason.Draw:
-                //현재 무승부 조건: 두 마을이 함께 파괴됨.
-                onBothVillagesDestroyed?.Invoke();
-                await UniTask.Delay(TimeSpan.FromSeconds(villageEffectDuration));
+                //현재 무승부 조건: 두 마을의 체력이 동일한 수치로 파괴됨(매우 적은 확률)
+                await PlayVillageDestroyedAsync(loserActorNum, true);
                 break;
         }
 
         OnCompleted?.Invoke();
     }
 
-    private async UniTask PlayTreeDestroyedAsync()
+    private async UniTask PlayVillageDestroyedAsync(int looserActNum, bool isDraw = false)
+    {
+        if (isDraw)
+        {
+            PlayPoisonEffect(p1PoisonCloud, p1VilageTransform);
+            PlayPoisonEffect(p2PoisonCloud, p2VilageTransform);
+        }
+        else
+        {
+            Transform targetTransform = GetLooserTarget(looserActNum);
+            ParticleSystem targetParticle = GetLooserParticleSys(looserActNum);
+            PlayPoisonEffect(targetParticle, targetTransform);
+        }
+        await UniTask.Delay(TimeSpan.FromSeconds(villagePoisonDuration));
+    }
+
+    private async UniTask PlayTreeDestroyedAsync(int looserActNum)
     {
         SetActivedTree();
         FadeCanvas fade = FadeCanvas.Instance;
@@ -119,9 +141,9 @@ public class MatchEndEffectController : MonoBehaviourPun
         if (fade != null) await fade.FadeOutAsync(fadeDuration);
 
         await UniTask.Delay(TimeSpan.FromSeconds(treeRevealDuration));
-
-        Transform targetTransform = actNum == 0 ? p1VilageTransform : p2VilageTransform;
-        ParticleSystem targetParticle = actNum == 0 ? p1PoisonCloud : p2PoisonCloud;
+        //AI처리 필요
+        Transform targetTransform = GetLooserTarget(looserActNum);
+        ParticleSystem targetParticle = GetLooserParticleSys(looserActNum);
         await PlayPoisonTransferAsync(startTransform.position, targetTransform.position, targetParticle);
     }
 
@@ -218,6 +240,33 @@ public class MatchEndEffectController : MonoBehaviourPun
             player.transform.rotation = rotation;
             cc.enabled = true;
         }
+    }
+
+    private void PlayPoisonEffect(ParticleSystem targetParticle, Transform targetTransform)
+    {
+        if (targetParticle != null)
+        {
+            targetParticle.gameObject.SetActive(true);
+            targetParticle.Play(true);
+            AudioManager.Instance.PlaySfx3D("CrowdScream", targetTransform.position, 40f, 500f, AudioRolloffMode.Linear);
+        }
+    }
+
+
+    private ParticleSystem GetLooserParticleSys(int looserNum)
+    {
+        int[] playerTurnInfo = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
+
+        if (playerTurnInfo[0] == looserNum) return p1PoisonCloud;
+        else return p2PoisonCloud;
+    }
+
+    private Transform GetLooserTarget(int looserNum)
+    {
+        int[] playerTurnInfo = PhotonPropertyHelper.GetRoomProp<int[]>(RoomPropKeys.TurnOrder);
+
+        if (playerTurnInfo[0] == looserNum) return p1VilageTransform;
+        else return p2VilageTransform;
     }
 }
 

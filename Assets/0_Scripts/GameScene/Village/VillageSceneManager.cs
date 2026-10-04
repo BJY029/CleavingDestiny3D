@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using ExitGames.Client.Photon;
+using NUnit.Framework;
 using Photon.Pun;
 using Photon.Realtime;
 using Potan.CoreUtils;
@@ -27,6 +28,11 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
         if (TurnManager.Instance != null)
         {
             TurnManager.Instance.SetVillageSceneManager(this);
+        }
+
+        if (MatchEndEffectController.instance != null)
+        {
+            MatchEndEffectController.instance.villageSceneManager = this;
         }
     }
 
@@ -195,7 +201,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     /// <summary>
     /// 페이드 효과와 함께 마을 씬을 언로드합니다.
     /// </summary>
-    public async UniTask UnloadVillageSceneAsync()
+    public async UniTask UnloadVillageSceneAsync(bool resetPlayerPos = false)
     {
         if (_isUnloading || !SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded) return;
         _isUnloading = true;
@@ -223,6 +229,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
         }
         finally
         {
+            if (resetPlayerPos) ResetPlayerPos();
             // 3. UI 복구 보장
             GameCanvasController.Instance?.SetActiveCanvas(true);
             PlayerCanvasController.Instance?.SetActiveCanvas(true);
@@ -236,6 +243,63 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             _isUnloading = false;
+        }
+    }
+
+    public async UniTask ReturnToGameForMatchEndAsync()
+    {
+        _isPhaseActive = false;
+        _endTime = -1f;
+
+        if (TurnManager.Instance != null)
+        {
+            TurnManager.Instance.isVillagePhase = false;
+            TurnManager.Instance.isUpgradePhase = false;
+        }
+
+        await UniTask.WaitUntil(() => !_isLoading, cancellationToken: destroyCancellationToken);
+
+        BgmStateController.Instance?.ExitVillage();
+
+        if (_isUnloading)
+        {
+            await UniTask.WaitUntil(() => !_isUnloading, cancellationToken: destroyCancellationToken);
+            return;
+        }
+
+        if (SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded)
+        {
+            await UnloadVillageSceneAsync(true);
+        }
+    }
+
+    private void ResetPlayerPos()
+    {
+        int actNum = PhotonNetwork.LocalPlayer.ActorNumber;
+        GameObject PlayerObj = PlayerManager.Instance.LocalPlayerObj;
+        Vector3 des = PlayerManager.Instance.hitPos[actNum - 1];
+        Quaternion rot = PlayerManager.Instance.spawnRot[actNum - 1];
+        //플레이어의 PlayerController 컴포넌트
+        PlayerController pc = PlayerObj.GetComponent<PlayerController>();
+
+        //플레이어 순간이동
+        if (PlayerObj != null)
+        {
+            TeleportPlayer(PlayerObj, des, rot);
+            pc?.ResetCameraToForward();
+        }
+    }
+
+    private void TeleportPlayer(GameObject player, Vector3 destination, Quaternion rotation)
+    {
+        CharacterController cc = player.GetComponent<CharacterController>();
+
+        if (cc != null)
+        {
+            cc.enabled = false;
+            player.transform.position = destination;
+            player.transform.rotation = rotation;
+            cc.enabled = true;
         }
     }
 }
