@@ -82,6 +82,18 @@ namespace Option.Element
             dropdown.value = index;
         }
 
+        public void SetValueWithoutNotify(int index)
+        {
+            if (dropdown == null)
+            {
+                dropdown = GetComponentInChildren<TMP_Dropdown>();
+            }
+            if (dropdown != null)
+            {
+                dropdown.SetValueWithoutNotify(index);
+            }
+        }
+
         void OnDropdownValueChanged(int value)
         {
             onValueChanged?.Invoke(value);

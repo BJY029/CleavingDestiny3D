@@ -1,21 +1,28 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 
 namespace Option.Element
 {
     public class SliderWithToggleSetting : BaseSliderSetting
     {
-        [SerializeField] Toggle toggle;
-        public Action<bool> onToggleChanged;
+        [SerializeField] private Toggle toggle;
+        private Action<bool> onToggleChanged;
+        private float cachedSliderValue = 1f;
 
-        void Start()
+        protected override void Awake()
         {
+            base.Awake();
+
             if (toggle == null)
             {
                 toggle = GetComponentInChildren<Toggle>();
             }
-            toggle.onValueChanged.AddListener(OnToggleValueChanged);
+
+            if (toggle != null)
+            {
+                toggle.onValueChanged.AddListener(OnToggleValueChanged);
+            }
         }
 
         public void AddToggleListener(Action<bool> listener)
@@ -24,29 +31,55 @@ namespace Option.Element
             onToggleChanged += listener;
         }
 
-        float cachedSliderValue = 1f;
-
-        void OnToggleValueChanged(bool isOn)
+        private void OnToggleValueChanged(bool isOn)
         {
             if (isOn)
             {
-                base.SetValue(cachedSliderValue);
                 slider.interactable = true;
+                SetValue(cachedSliderValue);
             }
             else
             {
                 cachedSliderValue = slider.value;
                 slider.interactable = false;
+                slider.SetValueWithoutNotify(slider.minValue);
             }
+
             onToggleChanged?.Invoke(isOn);
         }
 
         public override void SetValue(float value)
         {
-            base.SetValue(value);
-            if (toggle != null && toggle.isOn)
+            cachedSliderValue = value;
+
+            if (toggle != null && !toggle.isOn)
             {
-                cachedSliderValue = value;
+                slider.SetValueWithoutNotify(slider.minValue);
+                return;
+            }
+
+            base.SetValue(value);
+        }
+
+        public void SetToggleValue(bool isOn)
+        {
+            if (toggle == null)
+            {
+                toggle = GetComponentInChildren<Toggle>();
+            }
+
+            if (toggle != null)
+            {
+                toggle.isOn = isOn;
+                if (!isOn)
+                {
+                    slider.interactable = false;
+                    slider.SetValueWithoutNotify(slider.minValue);
+                }
+                else
+                {
+                    slider.interactable = true;
+                }
             }
         }
     }

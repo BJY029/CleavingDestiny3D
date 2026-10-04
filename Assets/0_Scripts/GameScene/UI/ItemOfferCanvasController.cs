@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 public class ItemOfferCanvasController : MonoBehaviour
 {
-	//½Ì±ÛÅÏ
+	//ì‹±ê¸€í„´
 	public static ItemOfferCanvasController instance;
 
 	private void Awake()
@@ -25,18 +25,21 @@ public class ItemOfferCanvasController : MonoBehaviour
 		OpenCloseText.SetActive(false);
 	}
 
-	//Å° ÀÔ·Â ¹Ş±â
+	//í‚¤ ì…ë ¥ ë°›ê¸°
 	private void Update()
 	{
-		//¼±ÅÃÇÏ´Â ½Ã°£ÀÌ ¾Æ´Ñ °æ¿ì °¨Áö ¾ÈÇÔ
+		//ì„ íƒí•˜ëŠ” ì‹œê°„ì´ ì•„ë‹Œ ê²½ìš° ê°ì§€ ì•ˆí•¨
 		if (!isChoosingPhase) return;
-		if (Keyboard.current == null) return;
-		//tapÅ° ´­¸®´Â °ÍÀ» °¨Áö
-		if (Keyboard.current.tabKey.wasPressedThisFrame)
+		
+		bool isTabPressed = KeyInteractManager.Instance != null && KeyInteractManager.Instance.InputActions != null
+			? KeyInteractManager.Instance.InputActions.Player.Tab.WasPressedThisFrame()
+			: (Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame);
+
+		if (isTabPressed)
 		{
-			//³» ÅÏÀÎ °æ¿ì(°ËÁõ¿ë)
+			//ë‚´ í„´ì¸ ê²½ìš°(ê²€ì¦ìš©)
 			if (GameHelper.IsMyTurn())
-				//ÆĞ³ÎÀ» ¿¬´Ù.
+				//íŒ¨ë„ì„ ì—°ë‹¤.
 				ToggleOfferPanel();
 		}
 	}
@@ -49,27 +52,27 @@ public class ItemOfferCanvasController : MonoBehaviour
 	public GameObject OpenCloseText;
 	public GameObject TitleText;
 
-	//ÇöÀç »óÅÂ ¸í½Ã
+	//í˜„ì¬ ìƒíƒœ ëª…ì‹œ
 	private bool isChoosingPhase = false;
-	//PlayerController¿¡¼­ »ç¿ëµÉ ¿òÁ÷ÀÓ Á¦ÇÑ¿ë ÇÃ·¡±×
+	//PlayerControllerì—ì„œ ì‚¬ìš©ë  ì›€ì§ì„ ì œí•œìš© í”Œë˜ê·¸
 	[HideInInspector]
 	public bool isOfferPanelOpened = false;
 
 	public void initItemOfferPanel(string offerList, int actorNum)
 	{
-		// 1) offerList ¹æ¾î (null/ºó¹®ÀÚ¸é ´İ±â)
+		// 1) offerList ë°©ì–´ (null/ë¹ˆë¬¸ìë©´ ë‹«ê¸°)
 		if (string.IsNullOrEmpty(offerList))
 		{
 			Close();
 			return;
 		}
 
-		// 2) ±âÁ¸ ÇÁ¸®ÆÕ Á¦°Å
+		// 2) ê¸°ì¡´ í”„ë¦¬íŒ¹ ì œê±°
 		foreach (Transform child in OffersPanel.transform)
 			Destroy(child.gameObject);
 
 		Debug.Log($"offered string : {offerList}");
-		// 3) Decode ¿¹¿Ü ¹æ¾î
+		// 3) Decode ì˜ˆì™¸ ë°©ì–´
 		var decoded = offerList.Split("|");
 
 
@@ -79,7 +82,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 			return;
 		}
 
-		// 4) »ı¼º
+		// 4) ìƒì„±
 		foreach (var of in decoded)
 		{
 			var go = Instantiate(offerPrefab, OffersPanel.transform);
@@ -95,54 +98,54 @@ public class ItemOfferCanvasController : MonoBehaviour
 		ActiveOfferPanel();
 	}
 
-	//¼±ÅÃ ÆĞ³ÎÀ» ÃÖÃÊ·Î ¿­ ¶§ È£ÃâµÉ ÇÔ¼ö
+	//ì„ íƒ íŒ¨ë„ì„ ìµœì´ˆë¡œ ì—´ ë•Œ í˜¸ì¶œë  í•¨ìˆ˜
 	private void ActiveOfferPanel()
 	{
-		//¸¶¿ì½º °ü·Ã ¼³Á¤
+		//ë§ˆìš°ìŠ¤ ê´€ë ¨ ì„¤ì •
 		//Cursor.lockState = CursorLockMode.None;
 		//Cursor.visible = true;
 
-		//UI ¼³Á¤
+		//UI ì„¤ì •
 		OpenCloseText.SetActive(true);
 		OpenCloseText.GetComponent<CanvasGroup>().alpha = 1.0f;
-		//HIT UI ºñÈ°¼ºÈ­(»óÈ£ÀÛ¿ëµµ ¸·À½)
+		//HIT UI ë¹„í™œì„±í™”(ìƒí˜¸ì‘ìš©ë„ ë§‰ìŒ)
 		PlayerCanvasController.Instance.SetHitTextUnActive();
 
 		//OffersPanel.SetActive(true);
-		//¼±ÅÃ Phase ÀÓÀ» ¸í½Ã
+		//ì„ íƒ Phase ì„ì„ ëª…ì‹œ
 		isChoosingPhase = true;
-		//¿òÁ÷ÀÓ Á¦ÇÑ¿ë ÇÃ·¡±×
+		//ì›€ì§ì„ ì œí•œìš© í”Œë˜ê·¸
 		//isOfferPanelOpened = true;
 	}
 
-	//¼±ÅÃ Ã¢ Åä±Û ÇÔ¼ö
+	//ì„ íƒ ì°½ í† ê¸€ í•¨ìˆ˜
 	private void ToggleOfferPanel()
 	{
-		//ÇöÀç »óÅÂ¿¡ µû¶ó¼­ ÆĞ³ÎÀ» ¿­°í ´İ´Â´Ù.
+		//í˜„ì¬ ìƒíƒœì— ë”°ë¼ì„œ íŒ¨ë„ì„ ì—´ê³  ë‹«ëŠ”ë‹¤.
 		bool isActive = OffersPanel.activeSelf;
 		OffersPanel.SetActive(!isActive);
 		TitleText.SetActive(!isActive);
-		//´İÇôÀÖ´ø »óÅÂÀÎ °æ¿ì -> ¿­¸² Ã³¸®
+		//ë‹«í˜€ìˆë˜ ìƒíƒœì¸ ê²½ìš° -> ì—´ë¦¼ ì²˜ë¦¬
 		if (!isActive)
 		{
-			//¸¶¿ì½º È°¼ºÈ­
+			//ë§ˆìš°ìŠ¤ í™œì„±í™”
 			Cursor.lockState = CursorLockMode.None;
 			Cursor.visible = true;
-			//UI Ã³¸®
+			//UI ì²˜ë¦¬
 			OpenCloseText.GetComponent<CanvasGroup>().alpha = 1.0f;
-			//HIT UI ºñÈ°¼ºÈ­(»óÈ£ÀÛ¿ëµµ ¸·À½)
+			//HIT UI ë¹„í™œì„±í™”(ìƒí˜¸ì‘ìš©ë„ ë§‰ìŒ)
 			PlayerCanvasController.Instance.SetHitTextUnActive();
-			//¿òÁ÷ÀÓ Á¦ÇÑ
+			//ì›€ì§ì„ ì œí•œ
 			isOfferPanelOpened = true;
 		}
 		else
 		{
-			//¸¶¿ì½º ºñÈ°¼ºÈ­
+			//ë§ˆìš°ìŠ¤ ë¹„í™œì„±í™”
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
-			//UI Ã³¸®
+			//UI ì²˜ë¦¬
 			OpenCloseText.GetComponent<CanvasGroup>().alpha = 0.5f;
-			//¿òÁ÷ÀÓ È°¼ºÈ­
+			//ì›€ì§ì„ í™œì„±í™”
 			isOfferPanelOpened = false;
 		}
 
@@ -169,10 +172,10 @@ public class ItemOfferCanvasController : MonoBehaviour
 	}
 
 
-	//¾ÆÀÌÅÛÀÌ ¼±ÅÃ µÈ °æ¿ì(ÆĞ³ÎÀÌ ÄÑÁø »óÅÂ¿´´Ù°í °¡Á¤)
+	//ì•„ì´í…œì´ ì„ íƒ ëœ ê²½ìš°(íŒ¨ë„ì´ ì¼œì§„ ìƒíƒœì˜€ë‹¤ê³  ê°€ì •)
 	public void SelectedItem(string itemId)
 	{
-		//ÆĞ³Î ´İ±â
+		//íŒ¨ë„ ë‹«ê¸°
 		Close();
 
 		foreach (Transform child in OffersPanel.transform)
@@ -183,10 +186,10 @@ public class ItemOfferCanvasController : MonoBehaviour
 		InventoryAuthority.Instance.RequestTakeOffer(itemId);
 	}
 
-	//Á¦ÇÑ ½Ã°£ÀÌ ¸ğµÎ Áö³ª¹ö¸° °æ¿ì
+	//ì œí•œ ì‹œê°„ì´ ëª¨ë‘ ì§€ë‚˜ë²„ë¦° ê²½ìš°
 	public void TurnOver()
 	{
-		//¼±ÅÃÀ» ÀÌ¹Ì ÇÑ °æ¿ì
+		//ì„ íƒì„ ì´ë¯¸ í•œ ê²½ìš°
 		if (!isChoosingPhase) return;
 		Close();
 	}

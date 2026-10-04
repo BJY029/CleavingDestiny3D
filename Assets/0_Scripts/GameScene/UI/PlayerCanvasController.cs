@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Threading;
+using PrimeTween;
+using UnityEngine.Serialization;
 
 public class PlayerCanvasController : MonoBehaviourPunCallbacks
 {
@@ -18,7 +20,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public TextMeshProUGUI DamageValue;
 	public TextMeshProUGUI BarrierValue;
 	public TextMeshProUGUI TreeMultValue;
-	public GameObject HitTextObj;
+	public CanvasGroup HitTextObj;
 
 	[SerializeField] private GameObject gaugeRoot;
 	[SerializeField] private Slider gaugeSlider;
@@ -30,6 +32,23 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 
 	[Header("Warning")]
 	[SerializeField] private GameObject WarningObj;
+	private TextMeshProUGUI WarningText;
+	private Animator WarningTextAnim;
+
+	[Header("Aim UI Tween")]
+	[Tooltip("아이템을 수령하지 않고 나무를 조준할 때 표시할 경고 UI")]
+	[SerializeField] private CanvasGroup unclaimedItemWarningObj;
+	private RectTransform unclaimedWarningRect;
+	[FormerlySerializedAs("unclaimedWarningShowDuration")]
+	[SerializeField, Min(0.01f)] private float warningShowDuration = 0.42f;
+	[FormerlySerializedAs("unclaimedWarningHideDuration")]
+	[SerializeField, Min(0.01f)] private float warningHideDuration = 0.25f;
+	[FormerlySerializedAs("unclaimedWarningSlideDistance")]
+	[SerializeField] private float warningSlideDistance = 100f;
+	private Vector2 unclaimedWarningPosition;
+	private Sequence unclaimedWarningTween;
+	private bool unclaimedWarningVisible;
+	private bool isLookingAtTree;
 
 	[Header("ItemNotifyHolder")]
 	[SerializeField] private GameObject Holder;
@@ -61,35 +80,36 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public bool selecting;
 
 	private TextMeshProUGUI HitText;
-	private Animator HitTextAnim;
-
-	private TextMeshProUGUI WarningText;
-	private Animator WarningTextAnim;
+	private RectTransform hitTextRect;
+	private Vector2 hitTextPosition;
+	private Sequence hitTextTween;
+	private bool hitTextVisible;
 
 
 	private ItemNotifyController INC;
 
 	private float _startTime = -1f;
 	private float _endTime = -1f;
+	private int _lastTimerSec = -1;
 
 	private void Awake()
 	{
 		if (Instance == null) Instance = this;
 		else Destroy(gameObject);
 
-		HitText = HitTextObj.GetComponentInChildren<TextMeshProUGUI>();
+		if (HitTextObj != null) HitText = HitTextObj.GetComponentInChildren<TextMeshProUGUI>(true);
 		WarningText = WarningObj.GetComponentInChildren<TextMeshProUGUI>();
 
-		HitTextAnim = HitTextObj.GetComponent<Animator>();
 		WarningTextAnim = WarningObj.GetComponent<Animator>();
 		canvasGroup = GetComponent<CanvasGroup>();
 
-		HitTextObj.SetActive(false);
+		hitTextPosition = InitializeTweenUI(HitTextObj, out hitTextRect);
 		WarningObj.SetActive(false);
+		unclaimedWarningPosition = InitializeTweenUI(unclaimedItemWarningObj, out unclaimedWarningRect);
 		MissionPanel.SetActive(false);
 		BranchInteractObj.SetActive(false);
 		CloseGauge();
-		HitText.text = "";
+		if (HitText != null) HitText.text = "";
 		WarningText.text = "";
 		InitTimer();
 	}
@@ -100,6 +120,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 
 		GameSessionData.OnBranchCountChanged += UpdateBranchCount;
 		UpdateBranchCount(GameSessionData.CollectedBranchCount);
+		KeyInteractManager.OnKeyBindingsChanged += UpdateGameHitText;
 	}
 
 	public override void OnDisable()
@@ -107,6 +128,18 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		base.OnDisable();
 
 		GameSessionData.OnBranchCountChanged -= UpdateBranchCount;
+		KeyInteractManager.OnKeyBindingsChanged -= UpdateGameHitText;
+		isLookingAtTree = false;
+		unclaimedWarningVisible = false;
+		unclaimedWarningTween.Stop();
+		if (unclaimedItemWarningObj != null) unclaimedItemWarningObj.alpha = 0f;
+		if (unclaimedWarningRect != null) unclaimedWarningRect.anchoredPosition = unclaimedWarningPosition;
+		unclaimedItemWarningObj?.gameObject.SetActive(false);
+		hitTextVisible = false;
+		hitTextTween.Stop();
+		if (HitTextObj != null) HitTextObj.alpha = 0f;
+		if (hitTextRect != null) hitTextRect.anchoredPosition = hitTextPosition;
+		HitTextObj?.gameObject.SetActive(false);
 	}
 
 
@@ -124,7 +157,13 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 			InitTimer();
 		}
 
-		TimerText.text = remainTime.ToString("F0");
+		// TimerText.text = remainTime.ToString("F0");
+		int curSecond = Mathf.CeilToInt(remainTime);
+		if (curSecond != _lastTimerSec)
+		{
+			TimerText.SetText("{0}", curSecond);
+			_lastTimerSec = curSecond;
+		}
 	}
 
 	private void InitTimer()
@@ -142,6 +181,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	//타이머가 설정되면, 시작, 끝 시간을 받아와서 저장한다.
 	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
 	{
+		UpdateUnclaimedItemWarning();
 		if (propertiesThatChanged.TryGetValue(RoomPropKeys.PlayerTurnStartEndTime, out var value))
 		{
 			if (value is Vector2 times)
@@ -157,7 +197,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public void UpdateGameHitText()
 	{
 		//Hit 텍스트가 활성화 되어있고
-		if (HitText.IsActive())
+		if (hitTextVisible && HitText != null)
 		{
 			//내 턴이면
 			if (GameHelper.IsMyTurn())
@@ -226,11 +266,13 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	//Hit text를 활성화 하는 함수
 	public void SetHitTextActive()
 	{
-		//Debug.LogError("my turn: " + myTurn + ", In Game Turn: " + CurrentTurn);
-		//오브젝트 활성화
-		HitTextObj.SetActive(true);
-		//텍스트 오브젝트를 띄우는 애니메이션 재생
-		HitTextAnim.Play("UI_Player_HitText_Up");
+		if (HitTextObj == null || HitText == null) return;
+		if (!hitTextVisible)
+		{
+			hitTextVisible = true;
+			hitTextTween.Stop();
+			hitTextTween = ShowTweenUI(HitTextObj, hitTextRect, hitTextPosition);
+		}
 		//내 턴인 경우
 		if (GameHelper.IsMyTurn())
 		{
@@ -249,10 +291,52 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	//Hit Text를 비활성화 하는 함수
 	public void SetHitTextUnActive()
 	{
-		//HitText를 비활성화 하는 애니메이션에 이벤트로 비활성함수가 삽입되어 있어서 따로 비활성화는 하지 않음
-		HitTextAnim.Play("UI_Player_HitText_Down");
 		CloseGauge();
-		HitText.text = "";
+		if (!hitTextVisible || HitTextObj == null) return;
+		hitTextVisible = false;
+		hitTextTween.Stop();
+		hitTextTween = Sequence.Create(useUnscaledTime: true)
+			.Group(Tween.Alpha(HitTextObj, 0f, warningHideDuration, Ease.InOutSine))
+			.OnComplete(this, controller =>
+			{
+				controller.HitTextObj.gameObject.SetActive(false);
+				controller.HitText.text = "";
+			});
+	}
+
+	public void SetLookingAtTree(bool looking)
+	{
+		isLookingAtTree = looking;
+		UpdateUnclaimedItemWarning();
+	}
+
+	private void UpdateUnclaimedItemWarning()
+	{
+		if (unclaimedItemWarningObj == null) return;
+
+		bool show = false;
+		if (isLookingAtTree && PhotonNetwork.InRoom && PhotonNetwork.LocalPlayer != null)
+		{
+			int actor = PhotonNetwork.LocalPlayer.ActorNumber;
+			string offer = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.OFFER(actor));
+			show = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor) == actor
+				&& !string.IsNullOrEmpty(offer) && offer != ERROR.FULL_INV.ToString();
+		}
+
+		if (show == unclaimedWarningVisible) return;
+		unclaimedWarningVisible = show;
+		unclaimedWarningTween.Stop();
+
+		if (show)
+		{
+			unclaimedWarningTween = ShowTweenUI(unclaimedItemWarningObj, unclaimedWarningRect, unclaimedWarningPosition);
+		}
+		else
+		{
+			unclaimedWarningTween = Sequence.Create(useUnscaledTime: true)
+				.Group(Tween.Alpha(unclaimedItemWarningObj, 0f, warningHideDuration, Ease.InOutSine))
+				.OnComplete(unclaimedItemWarningObj, group => group.gameObject.SetActive(false));
+		}
 	}
 
 	public void SetWarningTextActive(string textId)
@@ -260,6 +344,31 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		WarningObj.SetActive(true);
 		WarningText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, textId);
 		WarningTextAnim.Play("UI_Player_Warning_Up");
+	}
+
+	private static Vector2 InitializeTweenUI(CanvasGroup group, out RectTransform rect)
+	{
+		rect = null;
+		if (group == null) return Vector2.zero;
+		rect = group.GetComponent<RectTransform>();
+		if (group.TryGetComponent<Animator>(out var animator)) animator.enabled = false;
+		group.alpha = 0f;
+		group.interactable = false;
+		group.blocksRaycasts = false;
+		group.gameObject.SetActive(false);
+		return rect != null ? rect.anchoredPosition : Vector2.zero;
+	}
+
+	private Sequence ShowTweenUI(CanvasGroup group, RectTransform rect, Vector2 position)
+	{
+		if (!group.gameObject.activeSelf && rect != null)
+			rect.anchoredPosition = position + Vector2.down * warningSlideDistance;
+		group.gameObject.SetActive(true);
+		return Sequence.Create(useUnscaledTime: true)
+			.Group(Tween.Alpha(group, 1f, warningShowDuration, Ease.InOutSine))
+			.Group(rect != null
+				? Tween.UIAnchoredPositionY(rect, position.y, warningShowDuration, Ease.OutBack)
+				: default);
 	}
 
 	public void PopUpItemNotify(string itemId, Player player)

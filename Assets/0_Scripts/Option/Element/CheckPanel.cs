@@ -79,6 +79,7 @@ public class CheckPanel : MonoBehaviour
     void OnAccept()
     {
         waitTime = 0;
+        KeyInteractManager.Instance?.RemoveMenuAction(OnCancel);
         OnAceeptClicked?.Invoke();
         gameObject.SetActive(false);
     }
@@ -86,7 +87,24 @@ public class CheckPanel : MonoBehaviour
     void OnCancel()
     {
         waitTime = -1;
+        KeyInteractManager.Instance?.RemoveMenuAction(OnCancel);
         OnCancelClicked?.Invoke();
+        gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// 콜백 호출 없이 대기 타이머를 즉시 중단하고 패널을 닫습니다.
+    /// </summary>
+    public void Dismiss()
+    {
+        if (cancellationTokenSource != null)
+        {
+            cancellationTokenSource.Cancel();
+            cancellationTokenSource.Dispose();
+            cancellationTokenSource = null;
+        }
+        waitTime = -1;
+        KeyInteractManager.Instance?.RemoveMenuAction(OnCancel);
         gameObject.SetActive(false);
     }
 
@@ -95,6 +113,12 @@ public class CheckPanel : MonoBehaviour
         OnAceeptClicked = onAccept;
         OnCancelClicked = onCancel;
         gameObject.SetActive(true);
+        KeyInteractManager.Instance?.PushMenuAction(OnCancel);
         waitTime = -1;
+    }
+
+    private void OnDisable()
+    {
+        KeyInteractManager.Instance?.RemoveMenuAction(OnCancel);
     }
 }

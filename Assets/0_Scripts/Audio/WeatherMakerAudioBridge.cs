@@ -126,7 +126,10 @@ public class WeatherMakerAudioBridge : MonoBehaviour
 
         SettingData data = OptionManager.Instance.settingData;
 
-        masterVolume = Mathf.Clamp(data.masterVolume, MinVolume, MaxVolume);
-        environmentVolume = Mathf.Clamp(data.environmentVolume, MinVolume, MaxVolume);
+        float targetMaster = data.isMasterEnabled ? data.masterVolume : MinVolume;
+        float targetEnv = data.isEnvironmentEnabled ? data.environmentVolume : MinVolume;
+
+        masterVolume = Mathf.Clamp(targetMaster, MinVolume, MaxVolume);
+        environmentVolume = Mathf.Clamp(targetEnv, MinVolume, MaxVolume);
     }
 }

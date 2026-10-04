@@ -54,10 +54,10 @@ public class ButtonController : MatchController
 
     private void PlayButtonClickSound()
     {
-        Debug.Log(
-        $"[Button Sound] PlayButtonClickSound 호출됨\n" +
-        $"{System.Environment.StackTrace}"
-    );
+    //     Debug.Log(
+    //     $"[Button Sound] PlayButtonClickSound 호출됨\n" +
+    //     $"{System.Environment.StackTrace}"
+    // );
         AudioManager.Instance.PlaySfx2D("ui_button");
     }
 

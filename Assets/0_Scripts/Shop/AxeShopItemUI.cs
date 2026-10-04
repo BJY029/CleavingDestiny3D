@@ -95,6 +95,6 @@ public class AxeShopItemUI : MonoBehaviour
     private void OnDestroy()
     {
         buyButton.onClick.RemoveListener(HandleBuyClicked);
-        buyButton.onClick.RemoveListener(HandleEquipClicked);
+        equipButton.onClick.RemoveListener(HandleEquipClicked);
     }
 }

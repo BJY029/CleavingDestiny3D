@@ -333,10 +333,27 @@ public class LocalizationManager : MonoBehaviour
 		return span.ToString();
 	}
 
+	private static readonly Dictionary<string, string[]> DefaultActionKeyMappings = new(StringComparer.OrdinalIgnoreCase)
+	{
+		{ "UI_PlayerHIT", new[] { "Interact" } },
+		{ "UI_PlayerHIT2", new[] { "Interact" } },
+		{ "UI_PlayerSpace", new[] { "Jump" } },
+		{ "UI_LogWood_Interact", new[] { "Jump" } },
+		{ "UI_Ready", new[] { "Jump" } },
+		{ "UI_NotReady", new[] { "Jump" } },
+		{ "Status_Open", new[] { "Tab" } },
+		{ "Topbar_Mine", new[] { "QuickSlot1" } },
+		{ "Topbar_Forge", new[] { "QuickSlot2" } },
+		{ "Topbar_Shop", new[] { "QuickSlot3" } },
+		{ "Topbar_Farm", new[] { "QuickSlot4" } },
+		{ "Topbar_Barrier", new[] { "QuickSlot5" } },
+		{ "Topbar_Barrier_Alt", new[] { "QuickSlot5" } },
+	};
+
 	/// <summary>
-	/// CSV_Type과 ID로 텍스트를 가져옵니다. 없는 경우 ID 자체를 반환합니다.
+	/// 서식화(포맷팅) 없는 순수 CSV 원본 텍스트를 반환합니다.
 	/// </summary>
-	public string GetText(CSV_Type type, string id)
+	public string GetRawText(CSV_Type type, string id)
 	{
 		if (_tables.TryGetValue(type, out var table))
 		{
@@ -346,9 +363,68 @@ public class LocalizationManager : MonoBehaviour
 		return id;
 	}
 
+	/// <summary>
+	/// CSV_Type과 ID로 텍스트를 가져옵니다. 
+	/// 키 바인딩과 연동된 ID인 경우 현재 바인딩된 키가 {0} 등에 자동으로 포맷팅되어 반환됩니다.
+	/// </summary>
+	public string GetText(CSV_Type type, string id)
+	{
+		string text = GetRawText(type, id);
+
+		// 기본 액션 키 매핑이 등록되어 있고 텍스트에 {0} 플레이스홀더가 포함되어 있다면 자동 포맷팅
+		if (DefaultActionKeyMappings.TryGetValue(id, out var actions) && text.Contains("{0}"))
+		{
+			return GetFormatTextWithKeys(type, id, actions);
+		}
+
+		return text;
+	}
+
+	/// <summary>
+	/// 특정 Action 이름(예: "Interact", "Jump", "QuickSlot1")에 현재 바인딩된 키 표시 문자열을 반환합니다.
+	/// </summary>
+	public string GetActionKeyText(string actionName)
+	{
+		if (KeyInteractManager.Instance != null)
+		{
+			return KeyInteractManager.Instance.GetActionKeyString(actionName);
+		}
+		return actionName;
+	}
+
+	/// <summary>
+	/// CSV 텍스트의 {0}, {1} 등의 자리에 지정한 Action에 현재 바인딩된 키 문자열을 주입하여 반환합니다.
+	/// </summary>
+	public string GetFormatTextWithKeys(CSV_Type type, string id, params string[] actionNames)
+	{
+		string rawTemplate = GetRawText(type, id);
+		if (string.IsNullOrEmpty(rawTemplate)) return id;
+
+		if (actionNames == null || actionNames.Length == 0)
+		{
+			return rawTemplate;
+		}
+
+		object[] keyStrings = new object[actionNames.Length];
+		for (int i = 0; i < actionNames.Length; i++)
+		{
+			keyStrings[i] = GetActionKeyText(actionNames[i]);
+		}
+
+		try
+		{
+			return string.Format(rawTemplate, keyStrings);
+		}
+		catch (FormatException e)
+		{
+			Debug.LogWarning($"[Localization] Format with keys failed. ID: {id}, Text: {rawTemplate}, Error: {e.Message}");
+			return rawTemplate;
+		}
+	}
+
 	public string GetFormatText(CSV_Type type, string id, params object[] args)
 	{
-		string template = GetText(type, id);
+		string template = GetRawText(type, id);
 
 		try
 		{

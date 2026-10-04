@@ -1,6 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
-using NUnit.Framework;
+using Option;
 using Photon.Pun;
 using Potan.CoreUtils;
 using UnityEngine;
@@ -111,6 +111,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private bool WhileAnimation;
     private float damageRatio;
     private int damage;
+    private int _treeCutStartedFrame = -1;
 
     //특정 인벤토리에 들어가기 위한 키(값 = 인벤토리 주인 ActorNum)
     private int InvAdmissionTicket = -1;
@@ -377,10 +378,14 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             return;
         }
 
-        // 나무 베기 준비 상태 중 F 이외의 키 입력 시 취소 처리
-        if (isPreparingTreeCut)
+        // 나무 베기 준비 상태 중 상호작용(Interact) 이외의 키 입력 시 취소 처리
+        if (isPreparingTreeCut && Time.frameCount != _treeCutStartedFrame)
         {
-            if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame && !Keyboard.current.fKey.wasPressedThisFrame)
+            bool isInteractPressed = KeyInteractManager.Instance != null && KeyInteractManager.Instance.InputActions != null
+                ? KeyInteractManager.Instance.InputActions.Player.Interact.WasPressedThisFrame()
+                : (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame);
+
+            if (Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame && !isInteractPressed)
             {
                 CancelTreeCut();
             }
@@ -400,8 +405,15 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         if (ItemOfferCanvasController.instance.isOfferPanelOpened
         || ItemSelectionController.instance.IsItemSelectionActivated
         || SettingCanvasController.instance.IsSettingPanelOpened
-        || BettingSystemController.instance.BettingSystemActivated)
+        || BettingSystemController.instance.BettingSystemActivated
+        || (GuideBookUIController.Instance != null && GuideBookUIController.Instance.IsOpen))
         {
+            // 메뉴를 닫으면 같은 대상을 보고 있어도 OnLookEnter가 다시 실행되도록 한다.
+            if (currentInteractable != null)
+            {
+                currentInteractable.OnLookExit(this);
+                currentInteractable = null;
+            }
             SetInputLocked(true);
             return;
         }
@@ -546,6 +558,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         if (isLookingAtTree && !WhileAnimation)
         {
+            _treeCutStartedFrame = Time.frameCount;
             isPreparingTreeCut = true;
             WhileAnimation = true; // 차징 중 움직임 잠금
             SetInputLocked(true); // 상호작용 즉시 입력/속도 잠금 (슬라이딩 방지)
@@ -603,6 +616,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         // 1. 아직 준비 상태가 아닌 경우 준비 상태 진입 (자동 타격 시에는 게이지 UI를 오픈하지 않음)
         if (!isPreparingTreeCut)
         {
+            _treeCutStartedFrame = Time.frameCount;
             isPreparingTreeCut = true;
             WhileAnimation = true;
             SetInputLocked(true);
@@ -666,6 +680,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         {
             //미니 게임 관련 인터페이스 상호작용 수행
             currentMinigame?.OnInteract(this);
+            return;
         }
 
         //내 턴이 아니면 return
@@ -957,10 +972,20 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         if (lookInput.sqrMagnitude < _threshold)
             return;
 
+        float sensitivity = mouseSensitivity;
+        bool invertY = false;
+
+        if (OptionManager.Instance != null && OptionManager.Instance.settingData != null)
+        {
+            sensitivity *= OptionManager.Instance.settingData.mouseSensitivity;
+            invertY = OptionManager.Instance.settingData.invertY;
+        }
+
         //좌우 회전 값(감도 적용)
-        Yaw += lookInput.x * mouseSensitivity;
-        //상하 회전 값(감도 적용)
-        Pitch -= lookInput.y * mouseSensitivity;
+        Yaw += lookInput.x * sensitivity;
+        //상하 회전 값(감도 및 Y축 반전 적용)
+        float ySign = invertY ? 1f : -1f;
+        Pitch += ySign * lookInput.y * sensitivity;
 
         //좌우 회전 값을 0~360 범위만 갖도로 제한(즉, 361->1도)
         Yaw = Mathf.Repeat(Yaw, 360f);
