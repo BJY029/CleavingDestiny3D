@@ -17,9 +17,13 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	[Header("UI")]
 	public TextMeshProUGUI EnergyValue;
 	public TextMeshProUGUI VillageHP;
+	public Slider VillageHPSlider;
+	public Slider ShieldValueSlider;
+	public Slider AddShieldValueSlider;
 	public TextMeshProUGUI DamageValue;
 	public TextMeshProUGUI BarrierValue;
 	public TextMeshProUGUI TreeMultValue;
+	public TextMeshProUGUI MyTurnText;
 	public CanvasGroup HitTextObj;
 
 	[SerializeField] private GameObject gaugeRoot;
@@ -56,6 +60,8 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	[Header("Timer")]
 	public GameObject TimerObj;
 	public TextMeshProUGUI TimerText;
+	public Image ProgressRing;
+	public float duration;
 
 	[Header("Branch")]
 	public TextMeshProUGUI BranchCount;
@@ -108,11 +114,13 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		unclaimedWarningPosition = InitializeTweenUI(unclaimedItemWarningObj, out unclaimedWarningRect);
 		MissionPanel.SetActive(false);
 		BranchInteractObj.SetActive(false);
+		MyTurnText.gameObject.SetActive(false);
 		CloseGauge();
 		if (HitText != null) HitText.text = "";
 		WarningText.text = "";
 		InitTimer();
 	}
+
 
 	public override void OnEnable()
 	{
@@ -143,6 +151,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	}
 
 
+
 	//만약, 현재 타이머가 설정되었고, 시작 시간 또한 초기화 된 경우
 	private void Update()
 	{
@@ -157,13 +166,19 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 			InitTimer();
 		}
 
-		// TimerText.text = remainTime.ToString("F0");
 		int curSecond = Mathf.CeilToInt(remainTime);
 		if (curSecond != _lastTimerSec)
 		{
 			TimerText.SetText("{0}", curSecond);
 			_lastTimerSec = curSecond;
 		}
+		ProgressRing.fillAmount = duration > 0f ? Mathf.Clamp01(remainTime / duration) : 0f;
+	}
+
+	public void MyTurnActive()
+	{
+		MyTurnText.gameObject.SetActive(true);
+		AudioManager.Instance.PlaySfx2D("MyTurn");
 	}
 
 	private void InitTimer()
@@ -171,6 +186,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		TimerText.text = "";
 		_startTime = -1f;
 		_endTime = -1f;
+		_lastTimerSec = -1;
 	}
 
 	private void UpdateBranchCount(int count)
@@ -189,6 +205,11 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 				_startTime = times.x;
 				_endTime = times.y;
 			}
+		}
+
+		if (propertiesThatChanged.TryGetValue(RoomPropKeys.TurnTime, out var time))
+		{
+			duration = (float)time;
 		}
 	}
 
@@ -400,15 +421,45 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	}
 
 	//현재 플레이어 상태 UI를 업데이트 하는 함수
-	public void updatePlayerStatus(string Energy, string HP, string Damage, string Barrier, string TreeMult)
+	public void updatePlayerStatus(float Energy, float MaxEnergy, float HP, float Damage, float Barrier, float maxVillageHP)
 	{
 		//if (!photonView.IsMine) return;
 
-		EnergyValue.text = Energy;
-		VillageHP.text = HP;
-		DamageValue.text = Damage;
-		BarrierValue.text = Barrier;
-		TreeMultValue.text = TreeMult;
+		EnergyValue.text = Energy.ToString() + " / " + MaxEnergy.ToString();
+		VillageHP.text = HP.ToString();
+		if (Barrier > 0.0f) VillageHP.text += "\n+ " + Barrier.ToString();
+		DamageValue.text = Damage.ToString();
+		//BarrierValue.text = Barrier.ToString();
+		//TreeMultValue.text = "X " + TreeMult.ToString();
+		SetVillageShileldSlider(HP, Barrier, maxVillageHP);
+	}
+
+	public void UpdateDmgMulitValue(float value, int actNum)
+	{
+		Player target = PhotonNetwork.CurrentRoom.GetPlayer(actNum);
+		photonView.RPC(nameof(RPC_UpdateDmgMultiValue), target, value);
+	}
+
+	[PunRPC]
+	private void RPC_UpdateDmgMultiValue(float value)
+	{
+		TreeMultValue.text = "X " + value.ToString();
+	}
+
+	public void SetVillageShileldSlider(float villageHP, float shiledValue, float maxVillageHP)
+	{
+		float shownHP = Mathf.Clamp(villageHP, 0f, maxVillageHP);
+		float shownShield = Mathf.Max(0f, shiledValue);
+		float totalValue = shownHP + shownShield;
+		float overflow = Mathf.Max(0f, totalValue - maxVillageHP);
+
+		AddShieldValueSlider.maxValue = 3000;
+		ShieldValueSlider.maxValue = maxVillageHP;
+		VillageHPSlider.maxValue = maxVillageHP;
+
+		ShieldValueSlider.value = Mathf.Min(totalValue, maxVillageHP);
+		VillageHPSlider.value = shownHP;
+		AddShieldValueSlider.value = overflow;
 	}
 
 	//캔버스를 켜고 끄는 RPC 함수를 실행할 함수
@@ -463,17 +514,18 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		}
 		// if (active)
 		// {
-		// 	canvasGroup = GetComponent<CanvasGroup>();
-		// 	canvasGroup.alpha = 1f;
-		// 	canvasGroup.interactable = true;
-		// 	canvasGroup.blocksRaycasts = true;
+		//  canvasGroup = GetComponent<CanvasGroup>();
+		//  canvasGroup.alpha = 1f;
+		//  canvasGroup.interactable = true;
+		//  canvasGroup.blocksRaycasts = true;
 		// }
 		// else
 		// {
-		// 	canvasGroup = GetComponent<CanvasGroup>();
-		// 	canvasGroup.alpha = 0f;
-		// 	canvasGroup.interactable = false;
-		// 	canvasGroup.blocksRaycasts = false;
+		//  canvasGroup = GetComponent<CanvasGroup>();
+		//  canvasGroup.alpha = 0f;
+		//  canvasGroup.interactable = false;
+		//  canvasGroup.blocksRaycasts = false;
 		// }
 	}
 }
+

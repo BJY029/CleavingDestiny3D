@@ -5,7 +5,7 @@ using UnityEngine;
 //리펙토링 필요
 public static class StatusBehaviours
 {
-    public static void Execute(StatusInstance st, GameEvent e, EffectContext ctx, SimGameState state = null)
+    public static void Execute(StatusInstance st, GameEvent e, EffectContext ctx, SimGameState state = null, bool isPreview = false)
     {
         var dmg = e.payload as DamagePacket;
 
@@ -123,7 +123,7 @@ public static class StatusBehaviours
                 //배수 누적
                 dmg.multiplier *= st.spec.multiplier;
 
-                if (st.spec.consumeOnTrigger) st.remainingTurns = 0;
+                if (!isPreview && st.spec.consumeOnTrigger) st.remainingTurns = 0;
 
                 //디버그 로그로 임시 실행
                 ctx.Log?.Invoke($"[Status] GIM_TAUNT x{st.spec.multiplier}");

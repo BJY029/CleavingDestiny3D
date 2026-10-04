@@ -83,6 +83,13 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		if (!PhotonNetwork.IsMasterClient) return;
 		ItemHandlingSystem.instance.InitRandomSystem();
 		ItemHandlingSystem.instance.OnTurnStart();
+
+		foreach (Player player in PhotonNetwork.CurrentRoom.Players.Values)
+		{
+			float dmgMultiplier = ItemHandlingSystem.instance.GetCurrentDamageMultiplier(player.ActorNumber);
+			PlayerCanvasController.Instance.UpdateDmgMulitValue(dmgMultiplier, player.ActorNumber);
+		}
+
 	}
 
 	public void WaveEnd()
@@ -668,6 +675,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				if (GameStarter.instance.CurrentPhase != GameStartPhase.MainGame) return;
 				//턴 타이머 시작
 				TimeManager.instance.StartTurnTimer();
+				PlayerCanvasController.Instance.MyTurnActive();
 			}
 			//MasterClient이면서
 			if (PhotonNetwork.IsMasterClient)
@@ -683,7 +691,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 				}
 				else
 				{
-					AI_PlayNotTurnAsync(turnActor).Forget();
+					if (turnActor != -1)
+						AI_PlayNotTurnAsync(turnActor).Forget();
 				}
 			}
 			else
@@ -738,6 +747,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 					if (!isVillagePhase)
 						//관련 UI를 처리한다.
 						ItemOfferCanvasController.instance.initItemOfferPanel(offers, me);
+
 					else
 						ItemOfferCanvasController.instance.Close();
 				}
@@ -826,7 +836,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	private async UniTaskVoid AI_PlayNotTurnAsync(int aiActorNum)
 	{
-		if (isVillagePhase) return;
+		if (isVillagePhase || _isTreeActionRunning) return;
 		try
 		{
 			CancellationToken token = this.GetCancellationTokenOnDestroy();

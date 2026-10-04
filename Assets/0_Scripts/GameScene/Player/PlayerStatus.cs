@@ -155,7 +155,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		int prvEng = currentEnergy;
 		GetCurrentPlayerStatus();
 		PlayerCanvasController.Instance.updatePlayerStatus(
-			currentEnergy.ToString(), currentVillageHP.ToString(), currentTotalDamage.ToString(), GetCurrentTotalDefense().ToString(), currentTreeDmgMulit.ToString());
+			currentEnergy, currentMaxEnergy, currentVillageHP, currentTotalDamage, GetCurrentTotalDefense(), maxVillageHp);
 
 		photonView.RPC(nameof(RPC_SetVillageShieldVFX), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, currentBarrier + currentBarrierArmor);
 
@@ -289,7 +289,8 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 			changedProps.ContainsKey(PlayerPropKeys.TotalDamage) ||
 			changedProps.ContainsKey(PlayerPropKeys.VillageBarrier) ||
 			changedProps.ContainsKey(PlayerPropKeys.BarrierArmor) ||
-			changedProps.ContainsKey(PlayerPropKeys.TreeAtkMulti))
+			changedProps.ContainsKey(PlayerPropKeys.TreeAtkMulti) ||
+			changedProps.ContainsKey(PlayerPropKeys.MaxVillageHP))
 		{
 			SetPlayerStatusUIVFX();
 		}
@@ -335,11 +336,8 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 
 		// 게임 오버 확인
 		if (currentVillageHP <= 0)
-		{
-			currentVillageHP = 0;
 			// 패배 또는 게임 종료 로직
 			Debug.Log("Game End By VillageHP 0");
-		}
 		BattleLogController.AddVillageAttackLog(adjustedDamage, blockedDamage, hpBefore - currentVillageHP);
 
 		Debug.Log($"Final Village HP : {currentVillageHP}");
@@ -364,12 +362,6 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		damage = GetExpectedVillageDamageInternal(damage);
 
 		currentVillageHP -= damage;
-
-		if (currentVillageHP <= 0)
-		{
-			currentVillageHP = 0;
-		}
-
 		PhotonPropertyHelper.SetPlayerProp(aiNumber, PlayerPropKeys.VillageHP, currentVillageHP);
 		PhotonPropertyHelper.SetPlayerProp(aiNumber, PlayerPropKeys.VDamageProcessCompleted, true);
 

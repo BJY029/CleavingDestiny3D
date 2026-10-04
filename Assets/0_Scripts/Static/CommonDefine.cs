@@ -31,7 +31,7 @@ public enum GameStartPhase : byte
     TurnSelection = 2,
     PlayerPreparation = 3,
     TurnResult = 4,
-    MainGame = 5
+    MainGame = 5,
 }
 
 public enum GameTheme : byte

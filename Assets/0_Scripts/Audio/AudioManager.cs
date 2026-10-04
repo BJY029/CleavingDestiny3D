@@ -74,6 +74,9 @@ public class AudioManager : MonoSingleton<AudioManager>
             Debug.LogWarning("[AudioManager] Preload AudioDataSO가 할당되지 않았습니다.", this);
         }
 
+        if (bgmSource != null)
+            bgmSource.spatialBlend = 0f;
+
         // 2. 동일한 라벨을 가진 모든 AudioDataSO 비동기 로드
         LoadAddressableAudioDataAsync().Forget();
     }
@@ -93,7 +96,7 @@ public class AudioManager : MonoSingleton<AudioManager>
         sfx2DSource.PlayOneShot(data.clip, data.volume);
     }
 
-    public void PlaySfx3D(string id, Vector3 position)
+    public void PlaySfx3D(string id, Vector3 position, float? minDistance = null, float? maxDistance = null, AudioRolloffMode? rolloffMode = null)
     {
         if (!TryGetData(id, out var data))
             return;
@@ -104,6 +107,14 @@ public class AudioManager : MonoSingleton<AudioManager>
         source.clip = data.clip;
         source.volume = data.volume;
         source.pitch = data.pitch;
+        source.spatialBlend = 1f;
+        source.loop = false;
+        source.playOnAwake = false;
+
+        source.minDistance = Mathf.Max(0.01f, minDistance ?? sfx3DSourcePrefab.minDistance);
+        source.maxDistance = Mathf.Max(source.minDistance + 0.01f, maxDistance ?? sfx3DSourcePrefab.maxDistance);
+        source.rolloffMode = rolloffMode ?? sfx3DSourcePrefab.rolloffMode;
+        source.dopplerLevel = sfx3DSourcePrefab.dopplerLevel;
         source.Play();
 
         ReturnWhenFinishedAsync(

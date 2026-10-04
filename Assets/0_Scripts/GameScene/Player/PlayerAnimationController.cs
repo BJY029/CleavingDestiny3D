@@ -181,6 +181,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         }
         catch (OperationCanceledException) { return; }
 
+        PlayLocalTreeHitEffect();
         PlayLocalHitSound();
 
         aiController?.RequestAttackAtImpact();
@@ -195,6 +196,8 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
     public void FirstPersonAxeHit()
     {
+        PlayLocalTreeHitEffect();
+
         Vector3 hitPos = axeTransform != null ? axeTransform.position :
             (TreeStatus.Instance != null ? TreeStatus.Instance.transform.position : transform.position + transform.forward);
 
@@ -221,6 +224,17 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         {
             photonView.RPC(nameof(RPC_PlayHitSound), RpcTarget.All);
         }
+    }
+
+    private void PlayLocalTreeHitEffect()
+    {
+        if (TreeStatus.Instance == null) return;
+
+        TreeHitEffect treeHitEffect = TreeHitEffect.instance;
+        if (treeHitEffect == null) return;
+
+        Vector3 hitDirection = treeHitEffect.transform.position - transform.position;
+        treeHitEffect.PlayHit(hitDirection);
     }
 
     [PunRPC]

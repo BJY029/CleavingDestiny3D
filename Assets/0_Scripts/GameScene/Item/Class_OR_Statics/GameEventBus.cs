@@ -12,7 +12,7 @@ public class GameEventBus
 	}
 
 	//이벤트 발행
-	public void publish(GameEvent e, EffectContext ctx, SimGameState state = null)
+	public void publish(GameEvent e, EffectContext ctx, SimGameState state = null, bool isPreview = false)
 	{
 		//priority 순으로 상태 이상 정렬
 		foreach (var st in _statusSystem.ALL.OrderBy(s => s.spec.priority))
@@ -24,7 +24,7 @@ public class GameEventBus
 			if (st.spec.triggerScope == TriggerScope.OwnerOnly && st.ownerActorNum != e.actorNum) continue;
 
 			//상태 이상 동작 실행
-			StatusBehaviours.Execute(st, e, ctx, state);
+			StatusBehaviours.Execute(st, e, ctx, state, isPreview);
 		}
 	}
 }

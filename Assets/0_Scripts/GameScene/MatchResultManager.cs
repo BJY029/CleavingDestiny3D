@@ -2,11 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using NUnit.Framework;
 using Photon.Pun;
 using Photon.Realtime;
 using Potan.CoreUtils;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Village.Outside;
 
 public class MatchResultManager : MonoBehaviourPunCallbacks
 {
@@ -18,6 +20,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
     private MatchResultReason _lastResaon = MatchResultReason.None;
     private float delay = 3.0f;
     private string aiAttachedKey;
+    private bool hasStartedEndPresentation;
 
     [SerializeField] private GameEndedCanvasController gameEndedCanvasController;
 
@@ -25,7 +28,10 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
     void Awake()
     {
         if (Instance != null && Instance != this)
+        {
             Destroy(gameObject);
+            return;
+        }
         else
             Instance = this;
     }
@@ -121,17 +127,23 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         if (!isAllPlayerInit()) return false;
 
         //각 플레이어들의 마을 체력 프로퍼티를 확인하여, 0 이하인 플레이어들을 받아온다.
-        List<int> destroyedVillage = PhotonNetwork.PlayerList
-        .Where(p => PhotonPropertyHelper.GetPlayerProp<float>(p.ActorNumber, PlayerPropKeys.VillageHP) <= 0f)
-        .Select(p => p.ActorNumber)
-        .ToList<int>();
+        List<(int ActorNum, float VillageHP)> destroyedVillage = PhotonNetwork.PlayerList
+        .Select(p => (ActorNumber: p.ActorNumber, VillageHP: PhotonPropertyHelper.GetPlayerProp<float>(p.ActorNumber, PlayerPropKeys.VillageHP)))
+        .Where(p => p.VillageHP <= 0f)
+        .ToList();
 
         if (GameManager.Instance.isSoloPlay)
         {
-            if (PhotonPropertyHelper.GetPlayerProp<float>(PlayerManager.Instance.AIActNum, PlayerPropKeys.VillageHP) <= 0f)
+            float aiVillageHP = PhotonPropertyHelper.GetPlayerProp<float>(PlayerManager.Instance.AIActNum, PlayerPropKeys.VillageHP);
+            if (aiVillageHP <= 0f)
             {
-                destroyedVillage.Add(PlayerManager.Instance.AIActNum);
+                destroyedVillage.Add((PlayerManager.Instance.AIActNum, aiVillageHP));
             }
+        }
+
+        for (int i = 0; i < 2; i++)
+        {
+            Debug.LogWarning($"P{destroyedVillage[i].ActorNum}'s VillageHP : {destroyedVillage[i].VillageHP}");
         }
 
         //만약 마을이 파괴된 플레이어가 없는 경우
@@ -139,11 +151,23 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         //마을이 파괴된 플레이어가 1명 있는 경우
         if (destroyedVillage.Count == 1)
         {
-            int LostActor = destroyedVillage[0];
+            int LostActor = destroyedVillage[0].ActorNum;
             TrySetMatchResult(LostActor, MatchResultReason.VillageDestroyed);
         }
         //마을이 파괴된 플레이어가 2명 이상인 경우, 무승부로 처리
-        else TrySetMatchResult(-1, MatchResultReason.Draw);
+        else
+        {
+            //무승부 판별
+            if (Mathf.Approximately(destroyedVillage[0].VillageHP, destroyedVillage[1].VillageHP))
+                TrySetMatchResult(-1, MatchResultReason.Draw);
+            else //체력이 그나마 덜 깎인 플레이어 우승 처리
+            {
+                int LostActor =
+                    destroyedVillage[0].VillageHP > destroyedVillage[1].VillageHP
+                    ? destroyedVillage[1].ActorNum : destroyedVillage[0].ActorNum;
+                TrySetMatchResult(LostActor, MatchResultReason.VillageDestroyed);
+            }
+        }
 
         return true;
     }
@@ -204,7 +228,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         //주운 나뭇가지 저장(중간 탈주시 인정안함)
         GameSessionRewardManager.ConfirmRewards();
 
-        ShowEndGameUI(LoserActorNum, reason, resolveTurnIndex);
+        BeginEndPresentation(LoserActorNum, reason, resolveTurnIndex);
     }
 
     //게임 상테가 END로 변경되면 각 클라에게 호출될 함수
@@ -230,7 +254,31 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         //주운 나뭇가지 저장(중간 탈주시 인정안함)
         GameSessionRewardManager.ConfirmRewards();
 
-        ShowEndGameUI(LoserActor, reason, resolvedTurn);
+        BeginEndPresentation(LoserActor, reason, resolvedTurn);
+    }
+
+    private void BeginEndPresentation(int loserActorNum, MatchResultReason reason, int turnIndex)
+    {
+        if (hasStartedEndPresentation) return;
+
+        hasStartedEndPresentation = true;
+
+        if (TimeManager.instance != null) TimeManager.instance.AbortTurnTimer();
+
+        AIController[] aiControllers = UnityEngine.Object.FindObjectsByType<AIController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        foreach (AIController ai in aiControllers)
+        {
+            ai.StopForMatchEnd();
+        }
+
+        if (MatchEndEffectController.instance == null)
+        {
+            ShowEndGameUI(loserActorNum, reason, turnIndex);
+            return;
+        }
+
+        MatchEndEffectController.instance.Play(loserActorNum, reason, () => ShowEndGameUI(loserActorNum, reason, turnIndex));
     }
 
 
@@ -251,4 +299,5 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
 
         DevLog.Log($"<color=green>[MatchResult]</color> State : {result}, Loser : Player{LoserActorNum}, Reason : {reason}, TurnCnt : {turnIndex}");
     }
+
 }

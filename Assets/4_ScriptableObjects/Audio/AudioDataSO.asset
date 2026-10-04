@@ -229,7 +229,7 @@ MonoBehaviour:
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
   - id: 2000
-    clip: {fileID: 8300000, guid: 5543310da0e3fdc489394cc606a3954a, type: 3}
+    clip: {fileID: 8300000, guid: 8abf7f18bf00c7045854b8545e5d06b0, type: 3}
     randomClips: []
     useRandomClip: 0
     volume: 1
@@ -518,6 +518,42 @@ MonoBehaviour:
     is3D: 0
   - id: WoodPurchase
     clip: {fileID: 8300000, guid: 965276313ffc8f548a0ec6384e6df0f2, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: MyTurn
+    clip: {fileID: 8300000, guid: 6f2be561bad14784689ffa7e4942c56b, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: TreeFallSound
+    clip: {fileID: 8300000, guid: f1482be3998e54848b91d04b10fb414b, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: CrowdScream
+    clip: {fileID: 8300000, guid: 62fe5cdb773bc1742a324e8838fdb1c4, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 1
+  - id: Poison_Travel
+    clip: {fileID: 8300000, guid: ae526e186af8c4d4cad73b5aaade4fe0, type: 3}
     randomClips: []
     useRandomClip: 0
     volume: 1
