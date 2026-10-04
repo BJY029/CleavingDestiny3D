@@ -408,6 +408,12 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         || BettingSystemController.instance.BettingSystemActivated
         || (GuideBookUIController.Instance != null && GuideBookUIController.Instance.IsOpen))
         {
+            // 메뉴를 닫으면 같은 대상을 보고 있어도 OnLookEnter가 다시 실행되도록 한다.
+            if (currentInteractable != null)
+            {
+                currentInteractable.OnLookExit(this);
+                currentInteractable = null;
+            }
             SetInputLocked(true);
             return;
         }

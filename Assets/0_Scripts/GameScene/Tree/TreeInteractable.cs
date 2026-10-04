@@ -5,12 +5,14 @@ public class TreeInteractable : MonoBehaviour, ILookInteractable
 	public void OnLookEnter(IPlayerAction pc)
 	{
 		PlayerCanvasController.Instance.SetHitTextActive();
+		PlayerCanvasController.Instance.SetLookingAtTree(true);
 		pc.isLookingAtTree = true;
 	}
 
 	public void OnLookExit(IPlayerAction pc)
 	{
 		PlayerCanvasController.Instance.SetHitTextUnActive();
+		PlayerCanvasController.Instance.SetLookingAtTree(false);
 		pc.isLookingAtTree = false;
 	}
 

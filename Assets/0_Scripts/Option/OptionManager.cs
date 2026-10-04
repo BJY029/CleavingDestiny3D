@@ -100,7 +100,7 @@ namespace Option
         {
             string json = JsonUtility.ToJson(settingData);
             await File.WriteAllTextAsync(settingPath, json);
-            DevLog.Log($"Settings saved to: {settingPath}", this);
+            // DevLog.Log($"Settings saved to: {settingPath}", this);
         }
 
         /// <summary>
