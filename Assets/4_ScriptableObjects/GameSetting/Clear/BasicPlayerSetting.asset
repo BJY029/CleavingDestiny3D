@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07e03c7c99e313c468ee6c0c3e3a8736, type: 3}
   m_Name: BasicPlayerSetting
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSetting
-  villageHP: 10
+  villageHP: 5000
   villageBarrier: 0
   barrierConversionRate: 0.3
   initialGold: 500

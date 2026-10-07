@@ -141,11 +141,6 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
             }
         }
 
-        for (int i = 0; i < 2; i++)
-        {
-            Debug.LogWarning($"P{destroyedVillage[i].ActorNum}'s VillageHP : {destroyedVillage[i].VillageHP}");
-        }
-
         //만약 마을이 파괴된 플레이어가 없는 경우
         if (destroyedVillage.Count == 0) return false;
         //마을이 파괴된 플레이어가 1명 있는 경우

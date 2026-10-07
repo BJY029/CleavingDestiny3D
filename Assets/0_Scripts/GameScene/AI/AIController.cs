@@ -249,9 +249,9 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     }
 
     //제한 시간이 끝났을 때 AI 플레이어를 강제로 텔레포트 시키는 함수
-    public void ForceStopAndTeleportToHit()
+    public void ForceStopAndTeleportToHit(bool allowAfterMatchEnd = false)
     {
-        if (IsMatchEnded) return;
+        if (IsMatchEnded && !allowAfterMatchEnd) return;
         //턴 관련 토큰을 취소시켜 AI 로직을 중단시킨다.
         if (turnCts != null)
         {
@@ -398,7 +398,6 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         damage = -1;
         WhileHittingMotion = false;
 
-        ResetAnimation();
-        ForceStopAndTeleportToHit();
+        ForceStopAndTeleportToHit(allowAfterMatchEnd: true);
     }
 }
