@@ -16,6 +16,15 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 			return;
 		}
 		Instance = this;
+
+		treeDamageVisual = TreeTransform != null
+		? TreeTransform.GetComponent<TreeDamageVisual>()
+		: GetComponent<TreeDamageVisual>();
+
+		if (treeDamageVisual == null)
+		{
+			Debug.LogError("TreeStatus: TreeDamageVisual 컴포넌트를 찾을 수 없습니다.", this);
+		}
 	}
 
 	[SerializeField] private Transform TreeTransform;
@@ -26,13 +35,12 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 
 	private void Start()
 	{
-		if (TreeTransform != null)
-			treeDamageVisual = TreeTransform.gameObject.GetComponent<TreeDamageVisual>();
-
-		if (treeDamageVisual == null) return;
-
 		GetCurrentTreeStatus();
-		treeDamageVisual.UpdateVisual(currentTreeHP, maxTreeHP);
+
+		if (treeDamageVisual != null)
+		{
+			treeDamageVisual.UpdateVisual(currentTreeHP, maxTreeHP);
+		}
 	}
 
 	//���� ������Ƽ ���� ��������
@@ -52,7 +60,9 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 		if (GameStarter.instance.CurrentPhase == GameStartPhase.MainGame)
 			if (prevTreeHp < currentTreeHP) GameVFXManager.Instance.Play("TreeHeal", TreeTransform);
 		TreeCanvasController.Instance.UpdateTreeHP(maxTreeHP, currentTreeHP);
-		treeDamageVisual.UpdateVisual(currentTreeHP, maxTreeHP);
+
+		if (treeDamageVisual != null)
+			treeDamageVisual.UpdateVisual(currentTreeHP, maxTreeHP);
 	}
 
 	//���� ������Ƽ ����Ǹ� UI�� �ݿ��ϱ�
