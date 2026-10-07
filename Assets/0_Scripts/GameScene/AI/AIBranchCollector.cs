@@ -21,6 +21,11 @@ public class AIBranchCollector : AILogicModule
     private int targetBranchId = -1;
     private bool isMovingToTarget;
 
+    private bool isMatchEnded;
+    private bool IsMatchEnded =>
+    isMatchEnded ||
+    (MatchResultManager.Instance != null && MatchResultManager.Instance._isResultResolved);
+
     private void OnEnable()
     {
         if (BranchNetworkManager.Instance != null)
@@ -41,6 +46,11 @@ public class AIBranchCollector : AILogicModule
 
     public void StartCollecting()
     {
+        if (isMatchEnded)
+        {
+            StopCollecting();
+            return;
+        }
         StopCollecting();
 
         collectedThisOffTurn = 0;
@@ -116,7 +126,7 @@ public class AIBranchCollector : AILogicModule
         int curAIMaxCollectPerOffTurn = UnityEngine.Random.Range(1, aiMaxCollectPerOffTurn + 1);
         try
         {
-            while (!token.IsCancellationRequested)
+            while (!token.IsCancellationRequested && !IsMatchEnded)
             {
                 if (!TryFindTargetBranch(out int branchId, out Vector3 branchPosition))
                 {
@@ -126,10 +136,9 @@ public class AIBranchCollector : AILogicModule
 
                 targetBranchId = branchId;
 
-                bool arrived = await MoveToBranchAsync(
-                branchPosition,
-                token
-            );
+                bool arrived = await MoveToBranchAsync(branchPosition, token);
+
+                if (IsMatchEnded) return;
 
                 if (!arrived)
                 {
@@ -217,6 +226,7 @@ public class AIBranchCollector : AILogicModule
 
     private bool TryCollectTargetBranch()
     {
+        if (IsMatchEnded) return false;
         if (targetBranchId < 0) return false;
 
         BranchNetworkManager branchNetwork = BranchNetworkManager.Instance;
@@ -224,5 +234,22 @@ public class AIBranchCollector : AILogicModule
         if (branchNetwork == null) return false;
 
         return branchNetwork.TryCollectBranchByAI(targetBranchId, transform.position);
+    }
+
+    public void StopForMatchEnd()
+    {
+        isMatchEnded = true;
+        StopCollecting();
+
+        NavMeshAgent agent = brain != null
+            ? brain.aINevMeshController?.agent
+            : null;
+
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.ResetPath();
+            agent.velocity = Vector3.zero;
+        }
     }
 }

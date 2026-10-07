@@ -12,9 +12,11 @@ public class TreeCanvasController : MonoBehaviour
 	}
 
 	public TextMeshProUGUI TreeHP;
+	public Slider TreeHPSlider;
 
-	public void UpdateTreeHP(float damage)
+	public void UpdateTreeHP(float maxTreeHP, float curTreeHP)
 	{
-		TreeHP.text = damage.ToString();
+		TreeHPSlider.value = curTreeHP / maxTreeHP;
+		TreeHP.text = curTreeHP.ToString();
 	}
 }

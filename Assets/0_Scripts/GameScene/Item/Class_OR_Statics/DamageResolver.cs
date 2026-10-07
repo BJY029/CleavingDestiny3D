@@ -70,7 +70,7 @@ public class DamageResolver
             type = TriggerMask.OnBeforeAttack,
             actorNum = dmg.attackerNum,
             payload = dmg
-        }, ctx);
+        }, ctx, isPreview: true);
 
         //공격력->방어력 전환 단계 트리거 발행
         _bus.publish(new GameEvent

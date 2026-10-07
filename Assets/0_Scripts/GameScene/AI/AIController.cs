@@ -24,6 +24,11 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     public float accelation = 12f;
     public float deceleration = 12f;
 
+    private bool isMatchEnded;
+    private bool IsMatchEnded =>
+    isMatchEnded ||
+    (MatchResultManager.Instance != null && MatchResultManager.Instance._isResultResolved);
+
     //애니메이션 관련 파라미터
     private PlayerAnimationController animationController;
 
@@ -99,6 +104,12 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
     private void Update()
     {
+        if (IsMatchEnded)
+        {
+            StopForMatchEnd();
+            return;
+        }
+
         if (TurnManager.Instance.isUpgradePhase)
         {
             //아직 관련 처리를 진행하지 않은 경우
@@ -177,6 +188,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     //플레이어 턴 처리 비동기 함수(임시)
     public async UniTask PlayTurnAsync()
     {
+        if (IsMatchEnded) return;
         if (!PhotonNetwork.IsMasterClient) return;
 
         aiBrain.BranchCollector.StopCollecting();
@@ -222,6 +234,10 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
             //Hit 위치로 이동
             await aiBrain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_HIT, token);
 
+            token.ThrowIfCancellationRequested();
+
+            if (IsMatchEnded) return;
+
             //턴 변경 시도
             TryHit();
         }
@@ -233,8 +249,9 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     }
 
     //제한 시간이 끝났을 때 AI 플레이어를 강제로 텔레포트 시키는 함수
-    public void ForceStopAndTeleportToHit()
+    public void ForceStopAndTeleportToHit(bool allowAfterMatchEnd = false)
     {
+        if (IsMatchEnded && !allowAfterMatchEnd) return;
         //턴 관련 토큰을 취소시켜 AI 로직을 중단시킨다.
         if (turnCts != null)
         {
@@ -259,18 +276,21 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     // 마을 페이즈 진입
     public void VillageUpgradePhase()
     {
+        if (IsMatchEnded) return;
         aiBrain.VillageUpgrader.EnterVillage().Forget();
     }
 
     // 마을 페이즈 종료
     public void VillageUpgradePhaseOut()
     {
+        if (IsMatchEnded) return;
         aiBrain.VillageUpgrader.ExitVillage();
     }
 
     //턴 변경(나무 때리기) 처리 함수
     public void TryHit(bool IsItRandom = false)
     {
+        if (IsMatchEnded) return;
         //현재 임시로 랜덤 데미지 부여하도록 설정
         if (IsItRandom)
             damageRatio = UnityEngine.Random.Range(0f, 100f);
@@ -293,6 +313,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     //Hit 애니메이션을 재생하는 함수
     public void PlayHit()
     {
+        if (IsMatchEnded) return;
         //모션 재생 플래그 활성화
         WhileHittingMotion = true;
         //Hit 관련 UI 비활성화
@@ -304,6 +325,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
     public void RequestAttackAtImpact()
     {
+        if (IsMatchEnded) return;
         if (!PhotonNetwork.IsMasterClient)
             return;
 
@@ -323,6 +345,7 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
     public void OnAnimStateExit(int stateKey)
     {
+        if (IsMatchEnded) return;
         //stateKey가 1이면, 즉 Hit 관련 모션이면
         if (stateKey == 1)
         {
@@ -336,5 +359,45 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
             damage = -1;
             WhileHittingMotion = false;
         }
+    }
+
+    public void StopForMatchEnd()
+    {
+        if (isMatchEnded) return;
+
+        //취소 처리보다 먼저 설정해서 추가 명령을 차단.
+        isMatchEnded = true;
+
+        CancellationTokenSource cts = turnCts;
+        turnCts = null;
+
+        if (cts != null)
+        {
+            cts.Cancel();
+            cts.Dispose();
+        }
+
+        //나뭇가지 수집 중단.
+        if (aiBrain != null)
+            aiBrain.BranchCollector?.StopCollecting();
+
+        //이동 중단 및 기존 경로 제거.
+        NavMeshAgent agent = aiBrain != null
+            ? aiBrain.aINevMeshController?.agent
+            : null;
+
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.ResetPath();
+            agent.velocity = Vector3.zero;
+        }
+
+        //공격 애니메이션 이벤트로 추가 공격이 발생하지 않도록 설정.
+        attackRequestSent = true;
+        damage = -1;
+        WhileHittingMotion = false;
+
+        ForceStopAndTeleportToHit(allowAfterMatchEnd: true);
     }
 }

@@ -16,7 +16,7 @@ public class AtlasManager : MonoBehaviour
 		if (instance == null) instance = this;
 		else Destroy(gameObject);
 
-		Addressables.LoadAssetAsync<SpriteAtlas>("DummyItemIcons").Completed += OnAtlasLoaded;
+		Addressables.LoadAssetAsync<SpriteAtlas>("ItemIcons").Completed += OnAtlasLoaded;
 	}
 
 	private void OnAtlasLoaded(AsyncOperationHandle<SpriteAtlas> handle)
@@ -33,7 +33,7 @@ public class AtlasManager : MonoBehaviour
 
 	public Sprite GetItemSprite(string itemId)
 	{
-		if (itemId == "5000") return NewDrugItemSprite;
+		//if (itemId == "5000") return NewDrugItemSprite;
 		if (itemIconAtlas == null)
 		{
 			Debug.LogError("Atlas connected error");

@@ -5,24 +5,20 @@ using TMPro;
 
 public class GameCanvasController : MonoBehaviourPunCallbacks
 {
-    public static GameCanvasController Instance;
+	public static GameCanvasController Instance;
 
 	//캔버스를 끄고 켤때 사용할 캔버스 그룹
 	private CanvasGroup canvasGroup;
 
-	public GameObject DayTextObj;
-	private TextMeshProUGUI DayText;
-	public GameObject WaveTextObj;
-	private TextMeshProUGUI WaveText;
+	public TextMeshProUGUI DayText;
+	public TextMeshProUGUI WaveText;
 
 
 	private void Awake()
 	{
-		if(Instance == null) Instance = this;
+		if (Instance == null) Instance = this;
 		else Destroy(gameObject);
 
-		DayText = DayTextObj.GetComponentInChildren<TextMeshProUGUI>();
-		WaveText = WaveTextObj.GetComponentInChildren<TextMeshProUGUI>();
 		canvasGroup = GetComponent<CanvasGroup>();
 
 		DayText.text = string.Empty;
@@ -35,14 +31,14 @@ public class GameCanvasController : MonoBehaviourPunCallbacks
 	public void UpdateDayText()
 	{
 		int day = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentDay);
-		DayText.text = "Day : " + day.ToString();
+		DayText.text = "Day " + day.ToString();
 	}
 
 	//현재 웨이브 값을 받아와 텍스트에 반영
 	public void UpdateWaveText()
 	{
-		int wave = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave);
-		WaveText.text = "Wave : " + wave.ToString();
+		int wave = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentWave) + 1;
+		WaveText.text = "Wave " + wave.ToString();
 	}
 
 	//캔버스를 켜고 끄는 RPC를 실행할 함수
