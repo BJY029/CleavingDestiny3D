@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BasicRoomSetting
   m_EditorClassIdentifier: Assembly-CSharp::RoomSetting
   treeHP: 30000
-  treeAtkPow: 6000
+  treeAtkPow: 600
   poisonGrowthRate: 1.65
   startDay: 1
   initialTurn: 0

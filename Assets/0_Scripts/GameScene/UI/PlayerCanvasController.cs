@@ -426,8 +426,8 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		//if (!photonView.IsMine) return;
 
 		EnergyValue.text = Energy.ToString() + " / " + MaxEnergy.ToString();
-		VillageHP.text = HP.ToString();
-		if (Barrier > 0.0f) VillageHP.text += "\n+ " + Barrier.ToString();
+		VillageHP.text = ((int)HP).ToString();
+		if (Barrier > 0.0f) VillageHP.text += "\n+ " + ((int)Barrier).ToString();
 		DamageValue.text = Damage.ToString();
 		//BarrierValue.text = Barrier.ToString();
 		//TreeMultValue.text = "X " + TreeMult.ToString();

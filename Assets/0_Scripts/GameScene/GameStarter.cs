@@ -348,8 +348,11 @@ public class GameStarter : MonoBehaviourPunCallbacks
         GamePrepareCanvasController.instance.ShowBranchGameResult(isFirstTurn);
     }
 
+    private bool hasActived = false;
     private void EnterMainGame()
     {
+        if (hasActived) return;
+        hasActived = true;
         if (GamePrepareCanvasController.instance != null) GamePrepareCanvasController.instance.SetUnActive();
 
         mainGameCanvas.transform.localScale = Vector3.one;
