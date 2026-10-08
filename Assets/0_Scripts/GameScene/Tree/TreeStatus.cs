@@ -108,9 +108,14 @@ public class TreeStatus : MonoBehaviourPunCallbacks
 	{
 		GetCurrentTreeStatus();
 		int curDay = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentDay);
+		int elapsedDays = Mathf.Max(0, curDay - 1);
 
-		float calcTreeAtkPos = currentTreeAtkPow * Mathf.Pow(GameManager.Instance.roomDefaultSetting.poisonGrowthRate, curDay - 1);
-		return calcTreeAtkPos;
+		float poisonDamageIncreasePerDay = GameManager.Instance.roomDefaultSetting.poisonDamageIncreasePerDay;
+		float maxPoisonDamage = GameManager.Instance.roomDefaultSetting.maxPoisonDamage;
+
+		float damage = currentTreeAtkPow + poisonDamageIncreasePerDay * elapsedDays;
+		//float calcTreeAtkPos = currentTreeAtkPow * Mathf.Pow(GameManager.Instance.roomDefaultSetting.poisonGrowthRate, curDay - 1);
+		return Mathf.Min(damage, maxPoisonDamage);
 	}
 
 	private bool IsInitializer() => PhotonNetwork.IsMasterClient;

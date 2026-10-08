@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: StormRoomSetting
   m_EditorClassIdentifier: Assembly-CSharp::RoomSetting
   treeHP: 27000
-  treeAtkPow: 550
+  treeAtkPow: 1500
   poisonGrowthRate: 1.65
+  poisonDamageIncreasePerDay: 450
+  maxPoisonDamage: 3500
   startDay: 1
   initialTurn: 0
   initialTurnIndex: 1
