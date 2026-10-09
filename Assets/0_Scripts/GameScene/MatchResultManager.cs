@@ -221,7 +221,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         _lastResaon = reason;
 
         //주운 나뭇가지 저장(중간 탈주시 인정안함)
-        GameSessionRewardManager.ConfirmRewards();
+        GameSessionRewardManager.ConfirmRewards(LoserActorNum);
 
         BeginEndPresentation(LoserActorNum, reason, resolveTurnIndex);
     }
@@ -247,7 +247,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
         _isResultResolved = true;
 
         //주운 나뭇가지 저장(중간 탈주시 인정안함)
-        GameSessionRewardManager.ConfirmRewards();
+        GameSessionRewardManager.ConfirmRewards(LoserActor);
 
         BeginEndPresentation(LoserActor, reason, resolvedTurn);
     }

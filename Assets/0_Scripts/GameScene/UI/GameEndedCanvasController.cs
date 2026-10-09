@@ -5,6 +5,17 @@ using Photon.Pun;
 
 public class GameEndedCanvasController : MonoBehaviour
 {
+    private void OnEnable() => GameSessionRewardManager.RewardStateChanged += RefreshReward;
+    private void OnDisable() => GameSessionRewardManager.RewardStateChanged -= RefreshReward;
+
+    private void RefreshReward()
+    {
+        if (EarnedBranchCountText == null) return;
+        EarnedBranchCountText.text = GameSessionRewardManager.RewardError ??
+            (GameSessionRewardManager.IsRewardPending ? "정산 중…" :
+                GameSessionRewardManager.LastEarnedBranchCount.ToString());
+    }
+
     private void Awake()
     {
         GameEndedPanel.SetActive(false);
@@ -67,7 +78,7 @@ public class GameEndedCanvasController : MonoBehaviour
         if (LeftPlayerStatsText != null) LeftPlayerStatsText.text = leftStats;
         if (RightPlayerStatsText != null) RightPlayerStatsText.text = rightStats;
         if (StatsText != null) StatsText.text = matchHeader;
-        if (EarnedBranchCountText != null) EarnedBranchCountText.text = GameSessionRewardManager.LastEarnedBranchCount.ToString();
+        RefreshReward();
 
         // 플레이어 입력 비활성화 (움직임 및 카메라 회전 방지)
         if (KeyInteractManager.Instance != null)
