@@ -84,24 +84,34 @@ public static class PlayerProfile
         return true;
     }
 
-    public static AxePurchaseResult TryPurchaseAxeSkin(string skinId, int price)
+    // 서버 잔액과 구매 목록을 로컬 표시용으로 반영합니다. 로컬 데이터는 서버로 업로드하지 않습니다.
+    public static void ApplyServerWallet(int sticks, IReadOnlyList<string> ownedItems)
     {
-        if (string.IsNullOrWhiteSpace(skinId) || price < 0)
-            return AxePurchaseResult.InvalidSkin;
-
-        if (ownedAxeSkinIds.Contains(skinId))
-            return AxePurchaseResult.AlreadyOwned;
-
-        if (BranchCount < price)
-            return AxePurchaseResult.NotEnoughBranch;
-
-        BranchCount -= price;
-        ownedAxeSkinIds.Add(skinId);
-
-        OnBranchCountChanged?.Invoke(BranchCount);
-        OnAxeSkinChanged?.Invoke();
-
-        return AxePurchaseResult.Success;
+        if (sticks < 0) throw new ArgumentOutOfRangeException(nameof(sticks));
+        List<string> serverSkins = null;
+        if (ownedItems != null)
+        {
+            if (ownedItems.Any(string.IsNullOrWhiteSpace))
+                throw new InvalidOperationException("Invalid server-owned item ID.");
+            serverSkins = ownedItems.Distinct(StringComparer.Ordinal).ToList();
+            // 기본 도끼는 무료 기본 외형으로 항상 사용할 수 있습니다.
+            if (!serverSkins.Contains("axe_basic")) serverSkins.Insert(0, "axe_basic");
+        }
+        bool balanceChanged = BranchCount != sticks;
+        bool skinsChanged = serverSkins != null && !ownedAxeSkinIds.SequenceEqual(serverSkins);
+        BranchCount = sticks;
+        if (serverSkins != null)
+        {
+            ownedAxeSkinIds.Clear();
+            ownedAxeSkinIds.AddRange(serverSkins);
+            if (!ownedAxeSkinIds.Contains(EquippedAxeSkinId))
+            {
+                EquippedAxeSkinId = "axe_basic";
+                skinsChanged = true;
+            }
+        }
+        if (balanceChanged) OnBranchCountChanged?.Invoke(BranchCount);
+        if (skinsChanged) OnAxeSkinChanged?.Invoke();
     }
 
     public static bool EquipAxeSkin(string skinId)

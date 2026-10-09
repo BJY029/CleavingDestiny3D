@@ -35,6 +35,10 @@ public class AxeShopItemUI : MonoBehaviour
     public void Refresh()
     {
         if (skin == null) return;
+        if (shopController.TryGetPrice(skin, out var price))
+            priceText.text = price.Price.ToString();
+        // SO 가격은 임시 표시만 사용하며 구매 가능 여부는 서버 가격으로 판단합니다.
+        else priceText.text = shopController.IsShopReady ? "판매 정보 없음" : skin.Price.ToString();
 
         AxeSkinState state = shopController.GetSkinState(skin);
 
@@ -59,13 +63,13 @@ public class AxeShopItemUI : MonoBehaviour
         priceGroup.SetActive(true);
         soldoutGroup.SetActive(false);
 
-        buyButton.interactable = PlayerProfile.BranchCount >= skin.Price;
+        buyButton.interactable = shopController.CanPurchase(skin);
     }
 
     private void SetOwnedState()
     {
         buyButton.interactable = false;
-        equipButton.interactable = true;
+        equipButton.interactable = !shopController.IsBusy;
         equippedLabel.SetActive(false);
 
         priceGroup.SetActive(false);
