@@ -223,7 +223,8 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		pc.PlayerActNum = myActNum;
 		LocalPlayerObj = spawnPlayer;
 
-		GameObject PlayersInv = PhotonNetwork.Instantiate("Inventory/InventoryTent", spawnInvPos[myActNum - 1], spawnInvRot[myActNum - 1]);
+		string tentColor = myActNum == 1 ? "Red" : "Blue";
+		GameObject PlayersInv = PhotonNetwork.Instantiate($"Inventory/{tentColor}Tent", spawnInvPos[myActNum - 1], spawnInvRot[myActNum - 1]);
 		PlayerStatus.Instance.SetPlayerInventory(PlayersInv);
 		InventoryBarrier ib = PlayersInv.GetComponentInChildren<InventoryBarrier>();
 		playersInv.Add(myActNum, PlayersInv.GetComponent<WorldInventory>());
@@ -280,8 +281,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 				//PlayerController AIController = spawnAI.GetComponent<PlayerController>();
 				//AIController.PlayerActNum = rp.actorNumber;
 
+				string tentColor = opposite_num == 1 ? "Red" : "Blue";
 				GameObject spawnAIInv = PhotonNetwork.InstantiateRoomObject(
-					"Inventory/InventoryTent",
+					$"Inventory/{tentColor}Tent",
 					spawnInvPos[opposite_num - 1],
 					spawnInvRot[opposite_num - 1],
 					0,
