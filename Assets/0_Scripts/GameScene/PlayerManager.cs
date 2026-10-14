@@ -217,6 +217,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
 
 		GameObject spawnPlayer = PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
+		//GameObject spawnPlayer = PhotonNetwork.Instantiate($"Player/RedPlayer", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
 		PlayerController pc = spawnPlayer.GetComponent<PlayerController>();
 		LocalPlayerPC = pc;
 		pc.PlayerActNum = myActNum;

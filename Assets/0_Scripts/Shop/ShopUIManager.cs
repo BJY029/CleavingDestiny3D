@@ -9,27 +9,40 @@ public class ShopUIManager : MonoBehaviour
 {
     public static ShopUIManager Instance;
 
+    [Header("Shop Button")]
+    [SerializeField] private Button AxeShopButton;
+    [SerializeField] private Button CharacterShopButton;
+
     [Header("Branch Info")]
     [SerializeField] private TextMeshProUGUI branchCountText;
 
+    [Header("Gold Info")]
+    [SerializeField] private TextMeshProUGUI goldCountText;
+
     [Header("MainShop")]
     [SerializeField] private GameObject BackGround;
+    [SerializeField] private GameObject AxeShop;
+    [SerializeField] private GameObject CharacterShop;
 
     [Header("Exit")]
-    [SerializeField] private Button ExitBtn;
+    [SerializeField] private Button AxeShopExitBtn;
+    [SerializeField] private Button CharacterShopExitBtn;
 
     public bool IsShopOpen => BackGround != null && BackGround.activeSelf;
 
     private void OnEnable()
     {
         PlayerProfile.OnBranchCountChanged += UpdateBranchCount;
+        //PlayerProfile.OnGoldCountChange += UpdateGoldCount;
 
         UpdateBranchCount(PlayerProfile.BranchCount);
+        //UpdateGoldCount(PlayerProfile.GoldCount);
     }
 
     private void OnDisable()
     {
         PlayerProfile.OnBranchCountChanged -= UpdateBranchCount;
+        //PlayerProfile.OnGoldCountChange -= UpdateGoldCount;
     }
 
     private void Awake()
@@ -42,7 +55,17 @@ public class ShopUIManager : MonoBehaviour
 
         Instance = this;
 
-        ExitBtn.onClick.AddListener(ExitShopUI);
+        AxeShop.SetActive(true);
+        CharacterShop.SetActive(false);
+
+        AxeShopButton.interactable = false;
+        CharacterShopButton.interactable = true;
+
+        AxeShopExitBtn.onClick.AddListener(ExitShopUI);
+        CharacterShopExitBtn.onClick.AddListener(ExitShopUI);
+
+        AxeShopButton.onClick.AddListener(ChangeShop_Character_Axe);
+        CharacterShopButton.onClick.AddListener(ChangeShop_Axe_Character);
     }
 
     private void OnDestroy()
@@ -78,6 +101,11 @@ public class ShopUIManager : MonoBehaviour
         branchCountText.text = count.ToString();
     }
 
+    private void UpdateGoldCount(int count)
+    {
+        goldCountText.text = count.ToString();
+    }
+
     public void EnterShopUI()
     {
         BackGround.SetActive(true);
@@ -92,5 +120,23 @@ public class ShopUIManager : MonoBehaviour
         }
         AudioManager.Instance?.PlaySfx2D("ui_button");
         KeyInteractManager.Instance?.RemoveMenuAction(ExitShopUI);
+    }
+
+    public void ChangeShop_Axe_Character()
+    {
+        AxeShopButton.interactable = true;
+        CharacterShopButton.interactable = false;
+
+        AxeShop.SetActive(false);
+        CharacterShop.SetActive(true);
+    }
+
+    public void ChangeShop_Character_Axe()
+    {
+        AxeShopButton.interactable = false;
+        CharacterShopButton.interactable = true;
+
+        AxeShop.SetActive(true);
+        CharacterShop.SetActive(false);
     }
 }

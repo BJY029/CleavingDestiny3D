@@ -62050,19 +62050,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: NaN
+      value: 1.010252e-39
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 9.1835e-41
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 4.500301e-39
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 4.545857e-39
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 108655182436419188, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_Intensity
