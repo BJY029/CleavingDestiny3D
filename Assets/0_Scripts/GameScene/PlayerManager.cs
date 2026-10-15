@@ -5,6 +5,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -12,6 +14,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 {
 	//전역 접근
 	public static PlayerManager Instance { get; private set; }
+
+	[SerializeField] private CharacterSkinCatalogSO characterSkinCatalog;
+	private const float CharacterWalletTimeoutSeconds = 10f;
 
 	[SerializeField] private Terrain targetTerrain;
 	[SerializeField] private float heightOffset = 0.1f;
@@ -216,8 +221,15 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
 
-		GameObject spawnPlayer = PhotonNetwork.Instantiate($"Player/Player{myActNum}", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
-		//GameObject spawnPlayer = PhotonNetwork.Instantiate($"Player/RedPlayer", spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
+        var spawningRoom = PhotonNetwork.CurrentRoom;
+        string playerPrefabPath = CharacterSpawnResolver.DefaultPrefabPath;
+        yield return ResolveCharacterPrefabForSpawn(path => playerPrefabPath = path);
+        if (!isActiveAndEnabled || !PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom != spawningRoom)
+        {
+            IsPreparing = false;
+            yield break;
+        }
+        GameObject spawnPlayer = PhotonNetwork.Instantiate(playerPrefabPath, spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
 		PlayerController pc = spawnPlayer.GetComponent<PlayerController>();
 		LocalPlayerPC = pc;
 		pc.PlayerActNum = myActNum;
@@ -250,6 +262,61 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		//모든 프로퍼티가 준비 완료된 경우
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.IsReady, true);
 	}
+
+    // Select once per spawn. A late wallet response never replaces a live player.
+    private IEnumerator ResolveCharacterPrefabForSpawn(Action<string> select)
+    {
+        SaveManager.Initialize();
+        string fallback = CharacterSpawnResolver.DefaultPrefabPath;
+        if (characterSkinCatalog == null || characterSkinCatalog.DefaultSkin == null)
+        {
+            Debug.LogWarning("[CharacterSpawn] Missing catalog/default; using Player1.");
+            select(fallback);
+            yield break;
+        }
+        if (CharacterSpawnResolver.TryGetPrefabPath(characterSkinCatalog.DefaultSkin, out string defaultPath))
+            fallback = defaultPath;
+        else Debug.LogWarning("[CharacterSpawn] Invalid default prefab; using Player1.");
+        select(fallback);
+        string selectedId = PlayerProfile.EquippedCharacterSkinId;
+        if (string.IsNullOrEmpty(selectedId) || selectedId == characterSkinCatalog.DefaultSkin.SkinId)
+            yield break;
+
+        var originalRoom = PhotonNetwork.CurrentRoom;
+        UGSManager wallet = UGSManager.Instance;
+        Task refresh;
+        try { refresh = wallet.LoadPlayerData().AsTask(); }
+        catch (Exception error)
+        {
+            Debug.LogWarning($"[CharacterSpawn] Wallet refresh failed; using default. {error.Message}");
+            yield break;
+        }
+        // Observe faults even if the coroutine times out or its player is destroyed.
+        _ = refresh.ContinueWith(task => { _ = task.Exception; }, TaskContinuationOptions.OnlyOnFaulted);
+        float deadline = Time.realtimeSinceStartup + CharacterWalletTimeoutSeconds;
+        while (!refresh.IsCompleted && Time.realtimeSinceStartup < deadline)
+        {
+            if (!isActiveAndEnabled || !PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom != originalRoom) yield break;
+            yield return null;
+        }
+        if (!isActiveAndEnabled || !PhotonNetwork.InRoom) yield break;
+        if (!refresh.IsCompleted || refresh.IsFaulted || refresh.IsCanceled)
+        {
+            Debug.LogWarning("[CharacterSpawn] Wallet unavailable or timed out; using default this match. Saved selection retained.");
+            yield break;
+        }
+
+        // Only a successful authoritative read may repair the saved selection.
+        PlayerProfile.ApplyCharacterOwnership(characterSkinCatalog, wallet.OwnedItems);
+        SaveManager.Save();
+        if (!PlayerProfile.OwnsCharacterSkin(selectedId) || !characterSkinCatalog.TryGetSkin(selectedId, out CharacterSkinSO skin))
+        {
+            Debug.LogWarning("[CharacterSpawn] Selected character is not owned or registered; using default.");
+            yield break;
+        }
+        if (CharacterSpawnResolver.TryGetPrefabPath(skin, out string path)) select(path);
+        else Debug.LogWarning($"[CharacterSpawn] Invalid player prefab for {selectedId}; using default this match.");
+    }
 
 	//Masterclient가(즉 싱글 모드의 로컬 플레이어) AI 스폰 수행
 	private void TrySpawnAI()

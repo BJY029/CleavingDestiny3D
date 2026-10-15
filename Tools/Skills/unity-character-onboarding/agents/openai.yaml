@@ -1,0 +1,4 @@
+interface:
+  display_name: "Unity Character Onboarding"
+  short_description: "Import rigged FBX characters into the coin skin shop"
+  default_prompt: "Use $unity-character-onboarding to add this FBX as a playable character skin with the supplied name and coin price."

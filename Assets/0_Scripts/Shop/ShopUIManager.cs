@@ -30,10 +30,19 @@ public class ShopUIManager : MonoBehaviour
 
     public bool IsShopOpen => BackGround != null && BackGround.activeSelf;
 
+    private UGSManager wallet;
+
+    private void UpdateCoinBalance()
+    {
+        if (goldCountText != null) goldCountText.text = wallet != null && wallet.IsWalletReady && wallet.PlayerData.TryGetValue("coins", out int coins) ? coins.ToString("N0") : "—";
+    }
+
     private void OnEnable()
     {
         PlayerProfile.OnBranchCountChanged += UpdateBranchCount;
-        //PlayerProfile.OnGoldCountChange += UpdateGoldCount;
+        wallet = UGSManager.Instance;
+        wallet.WalletChanged += UpdateCoinBalance;
+        UpdateCoinBalance();
 
         UpdateBranchCount(PlayerProfile.BranchCount);
         //UpdateGoldCount(PlayerProfile.GoldCount);
@@ -42,7 +51,7 @@ public class ShopUIManager : MonoBehaviour
     private void OnDisable()
     {
         PlayerProfile.OnBranchCountChanged -= UpdateBranchCount;
-        //PlayerProfile.OnGoldCountChange -= UpdateGoldCount;
+        if (wallet != null) wallet.WalletChanged -= UpdateCoinBalance;
     }
 
     private void Awake()

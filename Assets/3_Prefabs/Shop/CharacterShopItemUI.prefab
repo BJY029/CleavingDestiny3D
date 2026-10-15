@@ -353,9 +353,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 3637787675609639883}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a593b7450f34c424798ce5a090dd8a3c, type: 3}
+  m_Script: {fileID: 11500000, guid: f57e9ac884b301248a316c4569b4cf70, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AxeShopItemUI
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterShopItemUI
   iconImage: {fileID: 4664447621076122421}
   nameText: {fileID: 5615135142634057500}
   priceText: {fileID: 5901603199903533495}
@@ -1298,7 +1298,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Sold Out
+  m_text: Owned
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 1091f0bad79a669438be1422893f694c, type: 2}
   m_sharedMaterial: {fileID: 5079885363763989454, guid: 1091f0bad79a669438be1422893f694c, type: 2}

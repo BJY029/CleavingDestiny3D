@@ -22979,6 +22979,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 631a7deee03bf7742a16b4bde5d4d3eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
+  characterSkinCatalog: {fileID: 11400000, guid: 1516d652d8652514d982d0b45207e36c, type: 2}
   targetTerrain: {fileID: 1483146311}
   heightOffset: 0.1
   LocalPlayerPC: {fileID: 0}
