@@ -1,0 +1,30 @@
+{
+    "id": "heavy_armored_knight",
+    "displayName": "Heavy armored knight",
+    "sourceHash": "EE7FC294CEC6555B1210511D961D8C524D772F3563403CF1A5CED39B3DA1CDB3:cce3e35dbfa52efe0046ec824359ad09",
+    "folder": "Assets/CharacterOnboarding/heavy_armored_knight",
+    "modelPath": "Assets/CharacterOnboarding/heavy_armored_knight/Model.fbx",
+    "prefabPath": "Assets/Resources/Player/Characters/heavy_armored_knight.prefab",
+    "skinPath": "Assets/CharacterOnboarding/heavy_armored_knight/Skin.asset",
+    "iconPath": "Assets/CharacterOnboarding/heavy_armored_knight/Icon.png",
+    "previewHash": "8c43f0616cfd905a8456fd22ea28ea02",
+    "error": "",
+    "price": 250,
+    "verificationOnly": false,
+    "validated": true,
+    "registered": true,
+    "warnings": [],
+    "checks": [
+        "Model height normalized through FBX import scale; Avatar and bones remain consistent",
+        "Humanoid avatar valid",
+        "Humanoid skeleton and meshes retain imported transforms (no post-Avatar scaling)",
+        "Player, Photon, animation, socket, effect and body references valid",
+        "Resources loading and skin metadata valid; no catalog mutation yet",
+        "Source Avatar/skeleton scale regression guard verified; supplied shop icon retained."
+    ],
+    "previews": [
+        "Assets/CharacterOnboarding/heavy_armored_knight/Preview_walk.png",
+        "Assets/CharacterOnboarding/heavy_armored_knight/Preview_hit.png",
+        "Assets/CharacterOnboarding/heavy_armored_knight/Preview_idle.png"
+    ]
+}

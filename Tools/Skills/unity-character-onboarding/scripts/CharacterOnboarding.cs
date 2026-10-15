@@ -81,7 +81,9 @@ public static class CharacterOnboarding
             importer.animationType = ModelImporterAnimationType.Human;
             importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
             var original = AssetImporter.GetAtPath(ToAssetPath(source)) as ModelImporter;
-            if (original != null && original.animationType == ModelImporterAnimationType.Human) importer.humanDescription = original.humanDescription;
+            var humanDescription = original != null && original.animationType == ModelImporterAnimationType.Human ? original.humanDescription : importer.humanDescription;
+            humanDescription.skeleton = Array.Empty<SkeletonBone>();
+            importer.humanDescription = humanDescription;
             importer.SaveAndReimport();
             var rigCheck = AssetDatabase.LoadAssetAtPath<GameObject>(report.modelPath).GetComponent<Animator>();
             if (rigCheck == null || rigCheck.avatar == null || !rigCheck.avatar.isValid || !rigCheck.avatar.isHuman)
@@ -89,6 +91,7 @@ public static class CharacterOnboarding
             importer = (ModelImporter)AssetImporter.GetAtPath(report.modelPath);
             importer.ExtractTextures(folder + "/Textures");
             AssetDatabase.Refresh();
+            NormalizeImportScale(report);
             PrepareMaterials(report, original);
             var model = AssetDatabase.LoadAssetAtPath<GameObject>(report.modelPath);
             var avatar = model == null ? null : model.GetComponent<Animator>();
@@ -298,6 +301,33 @@ public static class CharacterOnboarding
         return AssetDatabase.LoadAssetAtPath<Texture>(path);
     }
 
+    // Humanoid retargeting uses Avatar scale. Scaling rig children after Avatar creation breaks that relationship.
+    private static void NormalizeImportScale(Report report)
+    {
+        var template = PrefabUtility.LoadPrefabContents(Template);
+        var modelAsset = AssetDatabase.LoadAssetAtPath<GameObject>(report.modelPath);
+        var instance = Object.Instantiate(modelAsset);
+        try
+        {
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(instance, template.scene);
+            float targetHeight = BoundsOf(BodyRoots(template).SelectMany(g => g.GetComponentsInChildren<Renderer>(true))).size.y;
+            float sourceHeight = BoundsOf(instance.GetComponentsInChildren<Renderer>(true)).size.y;
+            float ratio = targetHeight / sourceHeight;
+            if (float.IsNaN(ratio) || float.IsInfinity(ratio) || ratio <= 0) throw new InvalidOperationException("Cannot normalize FBX import scale.");
+            if (Mathf.Abs(ratio - 1f) > 0.001f)
+            {
+                var importer = (ModelImporter)AssetImporter.GetAtPath(report.modelPath);
+                importer.globalScale *= ratio;
+                var description = importer.humanDescription;
+                description.skeleton = Array.Empty<SkeletonBone>();
+                importer.humanDescription = description;
+                importer.SaveAndReimport();
+            }
+            report.checks.Add("Model height normalized through FBX import scale; Avatar and bones remain consistent");
+        }
+        finally { Object.DestroyImmediate(instance); PrefabUtility.UnloadPrefabContents(template); }
+    }
+
     private static void BuildPrefab(Report report, GameObject modelAsset)
     {
         var player = PrefabUtility.LoadPrefabContents(Template);
@@ -324,10 +354,8 @@ public static class CharacterOnboarding
             Bounds bounds = BoundsOf(newBodies);
             float scale = baseline.size.y / bounds.size.y;
             if (float.IsNaN(scale) || float.IsInfinity(scale) || scale <= 0) throw new InvalidOperationException("Cannot normalize model height.");
-            model.transform.localScale *= scale;
-            bounds = BoundsOf(newBodies);
-            model.transform.localPosition += Vector3.up * (baseline.min.y - bounds.min.y);
-            report.checks.Add("Uniform model scale " + scale.ToString("F4") + "; feet aligned to template");
+            if (Mathf.Abs(scale - 1f) > 0.01f) throw new InvalidOperationException("FBX import scale normalization failed; refusing to scale humanoid children.");
+            report.checks.Add("Humanoid skeleton and meshes retain imported transforms (no post-Avatar scaling)");
             var map = new Dictionary<Transform, Transform>();
             for (int bone = 0; bone < (int)HumanBodyBones.LastBone; bone++)
             {
@@ -394,6 +422,18 @@ public static class CharacterOnboarding
     {
         if (!CharacterSpawnResolver.IsValidPlayerPrefab(p)) throw new InvalidOperationException("Player prefab component/avatar validation failed.");
         var a = p.GetComponent<Animator>();
+        Transform upper = a.GetBoneTransform(HumanBodyBones.LeftUpperLeg), lower = a.GetBoneTransform(HumanBodyBones.LeftLowerLeg), foot = a.GetBoneTransform(HumanBodyBones.LeftFoot);
+        float legLength = Vector3.Distance(upper.position, lower.position) + Vector3.Distance(lower.position, foot.position);
+        float avatarRatio = a.humanScale * Mathf.Abs(p.transform.lossyScale.y) / legLength;
+        if (!float.IsFinite(avatarRatio) || avatarRatio < 0.25f || avatarRatio > 4f) throw new InvalidOperationException("Avatar scale does not match the imported skeleton; rebuild its skeleton description after changing import scale.");
+        var sourceModel = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GetAssetPath(a.avatar));
+        var sourceAnimator = sourceModel == null ? null : sourceModel.GetComponent<Animator>();
+        if (sourceAnimator != null)
+        {
+            float sourceLegLength = Vector3.Distance(sourceAnimator.GetBoneTransform(HumanBodyBones.LeftUpperLeg).position, sourceAnimator.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position) + Vector3.Distance(sourceAnimator.GetBoneTransform(HumanBodyBones.LeftLowerLeg).position, sourceAnimator.GetBoneTransform(HumanBodyBones.LeftFoot).position);
+            float skeletonRatio = (legLength / Mathf.Abs(p.transform.lossyScale.y)) / (sourceLegLength / Mathf.Abs(sourceModel.transform.lossyScale.y));
+            if (Mathf.Abs(skeletonRatio - 1f) > 0.02f) throw new InvalidOperationException("Player skeleton scale differs from its source Avatar. Normalize through the FBX importer, not rig transforms.");
+        }
         var anim = p.GetComponent<PlayerAnimationController>(); var fx = p.GetComponent<PlayerEffectPoints>();
         if (fx == null || Ref(anim, "axeTransform") == null || Ref(anim, "leftHandTarget") == null || Ref(anim, "itemTransform") == null) throw new InvalidOperationException("Missing sockets or effect component.");
         foreach (var component in new Component[] { anim, p.GetComponent<PlayerController>(), p.GetComponent<PlayerAxeSkinController>(), fx })

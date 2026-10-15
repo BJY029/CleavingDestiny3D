@@ -23,6 +23,7 @@ Require an existing FBX path, display name and nonnegative integer coin price. D
 ## Invariants
 
 - Work from the current Player1 template; use RedPlayer only as a known working comparison. Preserve source FBX/import settings and template prefabs.
+- Normalize model size through the copied FBX importer, not post-Avatar rig/mesh Transform scaling. Clear the cached HumanDescription.skeleton when changing import scale so Avatar units are rebuilt; preserve human bone mappings.
 - Use Humanoid bone mappings for sockets/effects, not assumed Mixamo names. Keep the Animator, PhotonView, observed components and gameplay scripts on the player root.
 - Only validated candidates enter the catalog. An invalid Avatar, unresolved old-rig reference, missing texture needed for the intended appearance, missing preview or broken socket is a stop condition.
 - Reuse same-input generated output; reject name/ID/price/source conflicts. Do not delete or overwrite unrelated assets or alter an existing product to make a rerun succeed.
