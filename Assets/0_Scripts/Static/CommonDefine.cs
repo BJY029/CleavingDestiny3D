@@ -43,6 +43,21 @@ public enum GameTheme : byte
 
 public class UI_CSV
 {
+    public const string UI_PWF_CodeCopied = "UI_PWF_CodeCopied";
+    public const string UI_PWF_HostLeft = "UI_PWF_HostLeft";
+    public const string UI_PWF_RejoinCooldown = "UI_PWF_RejoinCooldown";
+    public const string UI_PWF_ConnectionRequired = "UI_PWF_ConnectionRequired";
+    public const string UI_PWF_CreateRequestFailed = "UI_PWF_CreateRequestFailed";
+    public const string UI_PWF_NotFriendRoom = "UI_PWF_NotFriendRoom";
+    public const string UI_PWF_CreateFailed = "UI_PWF_CreateFailed";
+    public const string UI_PWF_RoomFull = "UI_PWF_RoomFull";
+    public const string UI_PWF_RoomClosed = "UI_PWF_RoomClosed";
+    public const string UI_PWF_JoinFailed = "UI_PWF_JoinFailed";
+    public const string UI_PWF_Removed = "UI_PWF_Removed";
+    public const string UI_PWF_Disconnected = "UI_PWF_Disconnected";
+    public const string UI_PWF_CodeRequired = "UI_PWF_CodeRequired";
+    public const string UI_PWF_JoinRequestFailed = "UI_PWF_JoinRequestFailed";
+    public const string UI_PWF_PlayerName = "UI_PWF_PlayerName";
     public const string UI_PVP = "UI_PVP";
     public const string UI_PVE = "UI_PVE";
     public const string UI_EXIT = "UI_EXIT";

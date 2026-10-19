@@ -1,4 +1,24 @@
 ID,KR,EN
+UI_PWF_CreateRoom,방 만들기,Create Room
+UI_PWF_JoinRoom,참가,Join
+UI_PWF_CodePlaceholder,초대코드 입력...,Enter invite code...
+UI_PWF_RoomCode,초대코드,Invite Code
+UI_PWF_Player,플레이어,Player
+UI_PWF_PlayerName,플레이어 {0},Player {0}
+UI_PWF_CodeCopied,초대코드가 복사되었습니다.,Invite code copied to clipboard.
+UI_PWF_ConnectionRequired,서버 연결을 확인한 뒤 다시 시도해 주세요.,Check your server connection and try again.
+UI_PWF_CreateRequestFailed,방 생성 요청을 보내지 못했습니다. 다시 시도해 주세요.,Could not send the room creation request. Please try again.
+UI_PWF_NotFriendRoom,초대코드 방이 아닙니다.,This is not a friend room.
+UI_PWF_CreateFailed,방을 생성하지 못했습니다. 다시 시도해 주세요.,Could not create the room. Please try again.
+UI_PWF_RoomFull,이미 가득 찬 방입니다.,This room is full.
+UI_PWF_RoomClosed,이미 시작되었거나 닫힌 방입니다.,This room has already started or is closed.
+UI_PWF_JoinFailed,방에 입장하지 못했습니다. 초대코드를 확인해 주세요.,Could not join the room. Please check the invite code.
+UI_PWF_Removed,방에서 퇴장되었습니다. 10초 후 다시 입장할 수 있습니다.,You have been kicked. You can rejoin after 10 seconds.
+UI_PWF_RejoinCooldown,강퇴 후 10초 동안은 해당 방에 다시 입장할 수 없습니다.,You cannot rejoin this room for 10 seconds after being kicked.
+UI_PWF_HostLeft,방장이 나가 방이 종료되었습니다.,The host left. The room has been closed.
+UI_PWF_Disconnected,서버 연결이 끊어졌습니다. 연결 후 다시 시도해 주세요.,Disconnected from the server. Please reconnect and try again.
+UI_PWF_CodeRequired,초대코드를 입력해 주세요.,Please enter an invite code.
+UI_PWF_JoinRequestFailed,입장 요청을 보내지 못했습니다. 다시 시도해 주세요.,Could not send the join request. Please try again.
 UI_Load_Finding,상대 찾는 중,Looking for an opponent
 UI_Load_Waiting,상대 기다리는 중,Waiting for opponent
 UI_Load_MatchSuccess,매칭 성공! 게임에 입장합니다.,Matching success! Enter the game.

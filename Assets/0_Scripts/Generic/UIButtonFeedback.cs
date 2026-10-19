@@ -99,6 +99,8 @@ public class UIButtonFeedback : MonoBehaviour,
 
     public void OnPointerExit(PointerEventData eventData)
     {
+        
+        
         _isPointerInside = false;
         _isPointerDown = false;
 
