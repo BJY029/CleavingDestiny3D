@@ -235,6 +235,8 @@ public class StickGameController : MonoBehaviourPunCallbacks
 
             owners[stickIdx] = playerActNum;
             setTurns[playerActNum] = lengths[stickIdx];
+
+            BranchSpawner.Instance.CallBackBranchClick(stickIdx, playerActNum);
         }
 
         if (GameManager.Instance.isSoloPlay)
@@ -249,6 +251,8 @@ public class StickGameController : MonoBehaviourPunCallbacks
 
             owners[randIdx] = aiID;
             setTurns.Add(aiID, lengths[randIdx]);
+
+            BranchSpawner.Instance.CallBackBranchClick(randIdx, aiID);
         }
 
 

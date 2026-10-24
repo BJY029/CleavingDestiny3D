@@ -20332,6 +20332,7 @@ MonoBehaviour:
   startX: -7.2
   topAlignZOffset: 3
   topIsMaxZ: 1
+  branchCam: {fileID: 201524901}
   selectedScaleMultiplier: 1.2
   scaleUpDuration: 0.1
   scaleDownDuration: 0.12
@@ -62051,15 +62052,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 1.010252e-39
+      value: 4.3e-44
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 0
+      value: 6.96e-43
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 0
+      value: 8e-44
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.z
@@ -106635,7 +106636,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4442597892161609212, guid: 505534e2853047d4584afce3f074386f, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.0010120895
+      value: -0.0010177105
       objectReference: {fileID: 0}
     - target: {fileID: 4537629923018951794, guid: 505534e2853047d4584afce3f074386f, type: 3}
       propertyPath: m_AnchorMax.y

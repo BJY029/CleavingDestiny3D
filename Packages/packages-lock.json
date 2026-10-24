@@ -37,6 +37,14 @@
       "dependencies": {},
       "hash": "b5d154c509e93ca92af2b49dbf9ca845e3881d5e"
     },
+    "com.tripo3d.unitybridge": {
+      "version": "file:C:/Users/junba/Downloads/Tripo3d_Unity_Bridge-latest/Tripo3d_Unity_Bridge",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.unity.modules.jsonserialize": "1.0.0"
+      }
+    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,
