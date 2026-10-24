@@ -15,7 +15,7 @@ MonoBehaviour:
   skinId: character_basic
   displayName: Basic Character
   price: 0
-  icon: {fileID: 21300000, guid: 305fbba62b964884fa225fc213313c67, type: 3}
+  icon: {fileID: 21300000, guid: c8456ebd5bfe2294c98a0012cf2df8e8, type: 3}
   description: 
   characterPrefab: {fileID: 171133721816373843, guid: 6e4cab52048164d48b905ba0380f897c, type: 3}
   photonPrefabPath: Player/Player1

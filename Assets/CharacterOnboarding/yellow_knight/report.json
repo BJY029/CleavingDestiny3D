@@ -1,0 +1,28 @@
+{
+    "id": "yellow_knight",
+    "displayName": "Yellow Knight",
+    "sourceHash": "1AAE4543F855E32589D8FF1C05D0BB80D83F91EF4D22E5EABF3F572C85BB3929:황토색 공병 기사 T자 정면도-1.png:E4-67-FE-0E-6A-46-11-0D-3E-22-82-4C-32-66-FF-85-B8-C0-11-CF-B3-65-04-99-4F-AA-67-4E-16-A0-59-38:57f958ca6ce14d8f3c0b58b25d39324a",
+    "folder": "Assets/CharacterOnboarding/yellow_knight",
+    "modelPath": "Assets/CharacterOnboarding/yellow_knight/Model.fbx",
+    "prefabPath": "Assets/Resources/Player/Characters/yellow_knight.prefab",
+    "skinPath": "Assets/CharacterOnboarding/yellow_knight/Skin.asset",
+    "iconPath": "Assets/CharacterOnboarding/yellow_knight/Icon.png",
+    "previewHash": "8e4b88320df1cec92544ad762e73cc33",
+    "error": "",
+    "price": 2000,
+    "verificationOnly": false,
+    "validated": true,
+    "registered": true,
+    "warnings": [],
+    "checks": [
+        "Model height normalized through FBX import scale; Avatar and bones remain consistent",
+        "Humanoid avatar valid",
+        "Humanoid skeleton and meshes retain imported transforms (no post-Avatar scaling)",
+        "Player, Photon, animation, socket, effect and body references valid",
+        "Resources loading and skin metadata valid; no catalog mutation yet"
+    ],
+    "previews": [
+        "Assets/CharacterOnboarding/yellow_knight/Preview_walk.png",
+        "Assets/CharacterOnboarding/yellow_knight/Preview_hit.png"
+    ]
+}
