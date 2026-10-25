@@ -18,4 +18,5 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 305fbba62b964884fa225fc213313c67, type: 3}
   description: 
   characterPrefab: {fileID: 567226301938784698, guid: 6dc36dd3d58a17a498543ac76c7920fe, type: 3}
+  lobbyPrefab: {fileID: 2186896179462994151, guid: 25fe85800f0b5684c832141ae1cd1baa, type: 3}
   photonPrefabPath: Player/RedPlayer

@@ -15,6 +15,8 @@ public class CharacterSkinSO : ScriptableObject
 
     [Header("Visual")]
     [SerializeField] private GameObject characterPrefab;
+    [Tooltip("Visual-only prefab used by the lobby equipment display.")]
+    [SerializeField] private GameObject lobbyPrefab;
     [SerializeField, HideInInspector] private string photonPrefabPath;
 
     public string SkinId => skinId;
@@ -23,6 +25,7 @@ public class CharacterSkinSO : ScriptableObject
     public Sprite Icon => icon;
     public string Description => description;
     public GameObject CharacterPrefab => characterPrefab;
+    public GameObject LobbyPrefab => lobbyPrefab;
     public string PhotonPrefabPath => photonPrefabPath;
 
 

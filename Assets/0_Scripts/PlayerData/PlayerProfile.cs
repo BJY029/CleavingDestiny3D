@@ -62,6 +62,7 @@ public static class PlayerProfile
 
         OnBranchCountChanged?.Invoke(BranchCount);
         OnAxeSkinChanged?.Invoke();
+        OnCharacterSkinChanged?.Invoke();
     }
 
     public static PlayerSaveData CreateSaveData()

@@ -18,4 +18,5 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 50aec9e767e184d469f298a51c2efb10, type: 3}
   description: 
   characterPrefab: {fileID: 920925289510583833, guid: 857fcc25a670a6e48a6db4771df1b09a, type: 3}
+  lobbyPrefab: {fileID: 6002175717645214506, guid: 5b55bb841d7b49b439c648b48bf96f30, type: 3}
   photonPrefabPath: Player/Characters/yellow_knight

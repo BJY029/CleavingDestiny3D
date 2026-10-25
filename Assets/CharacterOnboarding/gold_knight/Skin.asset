@@ -18,4 +18,5 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: b750af14dcbbeb54894572f29dcf4996, type: 3}
   description: 
   characterPrefab: {fileID: 4502144684202616035, guid: 922cc3d4c26d481439d0c6502526ab09, type: 3}
+  lobbyPrefab: {fileID: 7059613979995365958, guid: 925e05970d3a69c4cb517fe6b899cb42, type: 3}
   photonPrefabPath: Player/Characters/gold_knight
