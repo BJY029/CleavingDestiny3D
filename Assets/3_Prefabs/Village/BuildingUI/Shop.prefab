@@ -2071,8 +2071,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 537, y: 97}
-  m_SizeDelta: {x: 1024, y: 1096}
+  m_AnchoredPosition: {x: 262, y: 104}
+  m_SizeDelta: {x: 1400, y: 1300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &9049998949990042195
 CanvasRenderer:
@@ -2102,7 +2102,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: eadd5905c28da5147a53efa955795422, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2690,11 +2690,11 @@ MonoBehaviour:
   upgradeSound: Coins
   npcImage: {fileID: 2039675136854351418}
   npcSprites:
-  - {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}
-  - {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}
-  - {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}
-  - {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}
-  - {fileID: 21300000, guid: 7ae35edd7b90c174c84b1f51e06f9ff7, type: 3}
+  - {fileID: 21300000, guid: eadd5905c28da5147a53efa955795422, type: 3}
+  - {fileID: 21300000, guid: 58e7228ee0c743b41ba5d452b0a0a8a6, type: 3}
+  - {fileID: 21300000, guid: 87b9d3fd59a63b843816aa259ac42011, type: 3}
+  - {fileID: 21300000, guid: 0b2665eb3a762c74c8963f38b6ad6e3c, type: 3}
+  - {fileID: 21300000, guid: 2b973bcfbb6d2b144a8278f5abbef262, type: 3}
   shopItemPrefab: {fileID: -2094178037640346087, guid: 8b6d88b296be8af43b52f17c3f1ccede, type: 3}
   reloadButton: {fileID: 834263513703505446}
   buyButton: {fileID: 9146965705594673051}
@@ -2996,6 +2996,7 @@ MonoBehaviour:
   textComponent: {fileID: 1944731165263482124}
   tableType: 3
   textID: Building_Quit
+  keyActionNames: []
 --- !u!1 &7554841329598773197
 GameObject:
   m_ObjectHideFlags: 0
@@ -3445,6 +3446,7 @@ MonoBehaviour:
   textComponent: {fileID: 6286140856894327692}
   tableType: 3
   textID: Building_Upgrade
+  keyActionNames: []
 --- !u!1 &8516427293391582102
 GameObject:
   m_ObjectHideFlags: 0
