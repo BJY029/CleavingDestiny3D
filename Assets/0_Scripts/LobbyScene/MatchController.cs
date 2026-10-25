@@ -23,6 +23,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 	private bool allowSceneChange = false;
 	//역할 분배 완료 플래그
 	private bool roleDistribution = false;
+	private bool matchStarting = false; // 입장·룸 속성 콜백이 겹쳐도 게임 시작은 한 번만 실행
 	//솔로 모드 진입 플래그 (정적 변수에 상태 유지)
 	public static bool IsStartingSoloGlobal = false;
 	protected bool isStartingSolo
@@ -176,6 +177,8 @@ public class MatchController : MonoBehaviourPunCallbacks
 	//의도치 않게 방을 나간 경우, 매치메이킹을 취소한다.
 	public override void OnLeftRoom()
 	{
+		matchStarting = false;
+		roleDistribution = false;
 		if (isFindingMatch)
 			CancelMatch();
 	}
@@ -187,9 +190,18 @@ public class MatchController : MonoBehaviourPunCallbacks
 		CheckPlayersInRoom();
 	}
 
+	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
+	{
+		// 친구 방은 인원 충족만으로 시작하지 않고, 호스트의 시작 신호를 받은 뒤 다시 확인한다.
+		if (propertiesThatChanged.ContainsKey(PlayWithFriendPanelManager.StartedProperty))
+			CheckPlayersInRoom();
+	}
+
 	// 서버 연결이 끊어졌을 때 호출되는 콜백
 	public override void OnDisconnected(DisconnectCause cause)
 	{
+		matchStarting = false;
+		roleDistribution = false;
 		// 솔로 모드 진입을 위해 의도적으로 연결을 끊은 경우
 		if (isStartingSolo && isFindingMatch)
 		{
@@ -200,9 +212,21 @@ public class MatchController : MonoBehaviourPunCallbacks
 	//현재 방의 인원 확인 및 로직 처리
 	private void CheckPlayersInRoom()
 	{
+		if (!PhotonNetwork.InRoom || matchStarting) return;
+		var properties = PhotonNetwork.CurrentRoom.CustomProperties;
+		bool friendRoom = properties[PlayWithFriendPanelManager.FriendRoomProperty] is true;
+		// 친구 방은 호스트의 시작 버튼을 기다리고, 일반 매칭·솔로 방은 기존 자동 시작을 유지한다.
+		if (friendRoom)
+		{
+			if (!(properties[PlayWithFriendPanelManager.StartedProperty] is true)) return;
+		}
+		else if (!isFindingMatch) return;
+
 		//인원 구성이 완료되면 (2명이거나, 솔로모드라 오프라인 모드일 경우)
 		if (PhotonNetwork.CurrentRoom.PlayerCount == 2 || PhotonNetwork.OfflineMode)
 		{
+			matchStarting = true;
+			roleDistribution = false;
 			isStartingSolo = false;
 			GameManager.Instance.nextScene = CommonDefine.GAMESCENE;
 
