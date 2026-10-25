@@ -11832,6 +11832,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 529d2d4501b866346aebd1dedc9f5665, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameCanvasController
+  DayWaveCG: {fileID: 955438087}
   DayText: {fileID: 792423806}
   WaveText: {fileID: 1233343646}
 --- !u!225 &452008723
@@ -22845,6 +22846,7 @@ GameObject:
   - component: {fileID: 939753130}
   - component: {fileID: 939753132}
   - component: {fileID: 939753131}
+  - component: {fileID: 939753133}
   m_Layer: 5
   m_Name: Timer
   m_TagString: Untagged
@@ -22912,6 +22914,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939753129}
   m_CullTransparentMesh: 1
+--- !u!225 &939753133
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939753129}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &949254149
 GameObject:
   m_ObjectHideFlags: 0
@@ -23012,6 +23026,7 @@ GameObject:
   - component: {fileID: 955438084}
   - component: {fileID: 955438086}
   - component: {fileID: 955438085}
+  - component: {fileID: 955438087}
   m_Layer: 5
   m_Name: Day/Wave
   m_TagString: Untagged
@@ -23079,6 +23094,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 955438083}
   m_CullTransparentMesh: 1
+--- !u!225 &955438087
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 955438083}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1003205828
 GameObject:
   m_ObjectHideFlags: 0
@@ -62052,19 +62079,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 4.3e-44
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 6.96e-43
+      value: 3.5e-43
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 8e-44
+      value: 1.1e-44
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 0
+      value: 8.8e-44
       objectReference: {fileID: 0}
     - target: {fileID: 108655182436419188, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_Intensity

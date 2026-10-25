@@ -420,6 +420,38 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		INC.SetStolenActive(ItemDB.Instance.Get(itemId), FromPlayer, ToPlayer);
 	}
 
+	Coroutine timerCoroutine;
+	public void SetTimerAlpha(float v, float duration)
+	{
+		if (timerCoroutine != null)
+		{
+			StopCoroutine(timerCoroutine);
+			timerCoroutine = null;
+		}
+
+		timerCoroutine = StartCoroutine(C_SetTimerAlpha(v, duration));
+	}
+
+	private IEnumerator C_SetTimerAlpha(float v, float duration)
+	{
+		CanvasGroup cg = TimerObj.GetComponent<CanvasGroup>();
+
+		float startAlpha = cg.alpha;
+		float elapsedTime = 0f;
+
+		while (elapsedTime < duration)
+		{
+			elapsedTime += Time.deltaTime;
+			float t = elapsedTime / duration;
+
+			cg.alpha = Mathf.Lerp(startAlpha, v, t);
+
+			yield return null;
+		}
+
+		cg.alpha = v;
+	}
+
 	//현재 플레이어 상태 UI를 업데이트 하는 함수
 	public void updatePlayerStatus(float Energy, float MaxEnergy, float HP, float Damage, float Barrier, float maxVillageHP)
 	{

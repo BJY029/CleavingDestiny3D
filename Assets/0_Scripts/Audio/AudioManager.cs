@@ -57,6 +57,7 @@ public class AudioManager : MonoSingleton<AudioManager>
     private readonly List<AudioSource> _audioSourcesPool = new();
     private readonly List<AudioSource> _ambient3DSourcesPool = new();
     private readonly HashSet<AudioSource> _activeAmbient3DSources = new();
+    private bool _isAmbient3DPaused;
 
     private CancellationTokenSource _bgmFadeCancellationTokenSource;
 
@@ -400,6 +401,8 @@ public class AudioManager : MonoSingleton<AudioManager>
         source.dopplerLevel = 0f;
         source.Play();
 
+        if (_isAmbient3DPaused) source.Pause();
+
         _activeAmbient3DSources.Add(source);
 
         return source;
@@ -429,6 +432,33 @@ public class AudioManager : MonoSingleton<AudioManager>
         foreach (AudioSource source in activeSources)
         {
             StopAmbient3D(source);
+        }
+    }
+
+    public void PauseAllAmbient3D()
+    {
+        if (_isAmbient3DPaused) return;
+
+        _isAmbient3DPaused = true;
+
+        foreach (AudioSource source in _activeAmbient3DSources)
+        {
+            if (source == null || !source.isPlaying) continue;
+            source.Pause();
+        }
+    }
+
+    public void ResumeAllAmbient3D()
+    {
+        if (!_isAmbient3DPaused) return;
+
+        _isAmbient3DPaused = false;
+
+        foreach (AudioSource source in _activeAmbient3DSources)
+        {
+            if (source == null) continue;
+
+            source.UnPause();
         }
     }
 

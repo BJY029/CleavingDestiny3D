@@ -35,6 +35,7 @@ public class BgmStateController : MonoSingleton<BgmStateController>
         string targetBgmId = GetVillageBgmId();
 
         AudioManager.Instance.PlayTemporaryBgm(targetBgmId, fadeOutDuration, fadeInDuration);
+        WeatherMakerAudioBridge.instance.MuteWeatherAudio(0.7f);
     }
 
     public void ExitVillage()
@@ -43,6 +44,9 @@ public class BgmStateController : MonoSingleton<BgmStateController>
         if (GameStarter.instance.CurrentPhase != GameStartPhase.MainGame) return;
 
         _isInVillage = false;
+
+        if (WeatherMakerAudioBridge.HasInstance)
+            WeatherMakerAudioBridge.instance.RestoreWeatherAudio(0.7f);
 
         string targetBgmId = GetMainBgmId();
 
