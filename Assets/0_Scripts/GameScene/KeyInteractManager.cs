@@ -367,7 +367,7 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         _isMenuInputEnabled = enabled;
     }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
     // Update is called once per frame
     void Update()
     {
@@ -391,11 +391,10 @@ public class KeyInteractManager : MonoSceneSingleton<KeyInteractManager>
         //     OnInteractSpaceKeyDown?.Invoke();
         // }
 
-        // K키가 눌리고 마스터 클라이언트이며 아직 마을 페이즈가 아닌 경우 강제 시작 - 디버그용
-        if (Keyboard.current.kKey.wasPressedThisFrame && !TurnManager.Instance.isUpgradePhase)
+        // K키로 남은 턴을 생략하고 정상 하루 종료 흐름을 테스트한다.
+        if (Keyboard.current != null && Keyboard.current.kKey.wasPressedThisFrame && TurnManager.Instance != null)
         {
-            if (!PhotonNetwork.IsMasterClient) return;
-            TurnManager.Instance.StartVillageUpgradePhase();
+            TurnManager.Instance.FinishDayForVillageTest();
         }
     }
 #endif
