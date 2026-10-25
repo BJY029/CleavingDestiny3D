@@ -203,7 +203,18 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     /// </summary>
     public async UniTask UnloadVillageSceneAsync(bool resetPlayerPos = false)
     {
-        if (_isUnloading || !SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded) return;
+        if (_isLoading)
+        {
+            await UniTask.WaitUntil(() => !_isLoading, cancellationToken: destroyCancellationToken);
+        }
+
+        if (_isUnloading)
+        {
+            await UniTask.WaitUntil(() => !_isUnloading, cancellationToken: destroyCancellationToken);
+            return;
+        }
+
+        if (!SceneManager.GetSceneByName(CommonDefine.VILLAGESCENE).isLoaded) return;
         _isUnloading = true;
 
         try

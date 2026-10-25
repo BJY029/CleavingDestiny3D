@@ -269,8 +269,21 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		offerGenerated = flag;
 	}
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+	public void FinishDayForVillageTest()
+	{
+		if (!PhotonNetwork.InRoom || !IsInitializer()) return;
+		if (GameStarter.instance == null || GameStarter.instance.CurrentPhase != GameStartPhase.MainGame) return;
+		if (isVillagePhase || isUpgradePhase || _isTreeActionRunning) return;
+		if (PhotonPropertyHelper.GetRoomProp<GamePhaseValue>(RoomPropKeys.GamePhase) != GamePhaseValue.DAY) return;
+
+		TimeManager.instance.AbortTurnTimer();
+		ChangeToNextTurn(finishDay: true);
+	}
+#endif
+
 	//턴 전환 함수
-	private void ChangeToNextTurn()
+	private void ChangeToNextTurn(bool finishDay = false)
 	{
 		if (!IsInitializer()) return;
 
@@ -306,7 +319,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 
 		//만약 모든 턴을 돌고 한 웨이브가 끝난 경우
-		if (nextIndex == 0)
+		if (finishDay || nextIndex == 0)
 		{
 			Debug.Log("Wave " + currentWaveCnt + " End");
 
@@ -317,7 +330,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 			//만약 최대 웨이브에 도달한 경우
 			int MaxWaveCnt = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.MaxWaveCnt);
-			if (currentWaveCnt >= MaxWaveCnt)
+			if (finishDay || currentWaveCnt >= MaxWaveCnt)
 			{
 				//중요!!
 				//턴 전환 오류가 나지 않도록 -1로 초기화 하기
@@ -533,7 +546,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 			//마을 데미지 플래그 초기화
 			ResetAllPlayersReadyState();
 			//완료된 경우, 마을 종료 수행
-			CompleteDayChangeAfterUpgrade();
+			CompleteDayChangeAfterUpgrade().Forget();
 			PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsTreeBulkDamage, false);
 		}
 	}
@@ -590,7 +603,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	}
 
 	//마을 페이즈 종료
-	private void CompleteDayChangeAfterUpgrade()
+	private async UniTask CompleteDayChangeAfterUpgrade()
 	{
 		//권한자만 실행
 		if (!IsInitializer()) return;
@@ -598,12 +611,11 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		// 1. 프로퍼티 설정 해제
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.IsVillageUpgradePhase, false);
 
+		// 다음 날과 턴은 마을 퇴장 페이드가 모두 끝난 뒤 시작한다.
+		await villageSceneManager.UnloadVillageSceneAsync();
+
 		//플레이어 상태 정보 초기화
 		PlayerStatus.Instance.initPlayerStatus();
-
-		//관련 UI를 처리한다.
-		GameCanvasController.Instance.SetActiveCanvas(true);
-		PlayerCanvasController.Instance.SetActiveCanvas(true);
 
 		// 기본 세팅값 참조
 		var roomSet = GameManager.Instance.roomDefaultSetting;
@@ -659,6 +671,20 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	//프로퍼티 변경 감지
 	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
 	{
+		ProcessRoomPropertiesUpdateAsync(propertiesThatChanged).Forget();
+	}
+
+	private async UniTask ProcessRoomPropertiesUpdateAsync(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
+	{
+		// 다른 클라이언트도 자신의 퇴장 전환을 마친 후 턴을 시작한다.
+		if ((propertiesThatChanged.ContainsKey(RoomPropKeys.CurrentTurn)
+			|| propertiesThatChanged.ContainsKey(RoomPropKeys.CurrentTurnActor))
+			&& !PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase)
+			&& villageSceneManager != null)
+		{
+			await villageSceneManager.UnloadVillageSceneAsync();
+		}
+
 		//나의 Actor 번호
 		int me = PhotonNetwork.LocalPlayer.ActorNumber;
 		//현재 턴에 해당되는 Actor 번호(최신 값을 기준으로 한다.)
