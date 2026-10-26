@@ -32,6 +32,7 @@ public static class PlayerSaveDataValidator
             data.equippedAxeSkinId = DefaultAxeSkinId;
         }
 
+        if (string.IsNullOrWhiteSpace(data.equippedCharacterSkinId)) data.equippedCharacterSkinId = null;
         return true;
     }
 

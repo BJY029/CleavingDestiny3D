@@ -2,6 +2,8 @@ using Photon.Pun;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
+using Unity.VisualScripting;
 
 public class GameCanvasController : MonoBehaviourPunCallbacks
 {
@@ -10,6 +12,7 @@ public class GameCanvasController : MonoBehaviourPunCallbacks
 	//Äµ¹ö½º¸¦ ²ô°í ÄÓ¶§ »ç¿ëÇÒ Äµ¹ö½º ±×·ì
 	private CanvasGroup canvasGroup;
 
+	public CanvasGroup DayWaveCG;
 	public TextMeshProUGUI DayText;
 	public TextMeshProUGUI WaveText;
 
@@ -66,5 +69,35 @@ public class GameCanvasController : MonoBehaviourPunCallbacks
 			canvasGroup.interactable = false;
 			canvasGroup.blocksRaycasts = false;
 		}
+	}
+
+	private Coroutine daywaveCG;
+	public void SetDayWaveAlpha(float v, float duration)
+	{
+		if (daywaveCG != null)
+		{
+			StopCoroutine(daywaveCG);
+			daywaveCG = null;
+		}
+
+		daywaveCG = StartCoroutine(C_SetDayWaveAlpha(v, duration));
+	}
+
+	private IEnumerator C_SetDayWaveAlpha(float v, float duration)
+	{
+		float startAlpha = DayWaveCG.alpha;
+		float elapsedTime = 0f;
+
+		while (elapsedTime < duration)
+		{
+			elapsedTime += Time.deltaTime;
+			float t = elapsedTime / duration;
+
+			DayWaveCG.alpha = Mathf.Lerp(startAlpha, v, t);
+
+			yield return null;
+		}
+
+		DayWaveCG.alpha = v;
 	}
 }

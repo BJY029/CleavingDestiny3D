@@ -47,6 +47,8 @@ public class UGSManager : MonoSingleton<UGSManager>
     private Task catalogLoading;
     private Dictionary<string, AxeShopPrice> skinPrices = new();
     public bool IsWalletReady { get; private set; }
+    private readonly List<string> ownedItems = new();
+    public IReadOnlyList<string> OwnedItems => ownedItems.AsReadOnly();
     public event Action WalletChanged;
 
     // 재시도할 때도 ID, 시각, 획득량과 승패를 그대로 유지해야 중복 지급을 막을 수 있습니다.
@@ -224,6 +226,11 @@ public class UGSManager : MonoSingleton<UGSManager>
 
         SaveManager.Initialize();
         PlayerProfile.ApplyServerWallet(response.sticks, response.ownedItems);
+        if (response.ownedItems != null)
+        {
+            ownedItems.Clear();
+            ownedItems.AddRange(response.ownedItems);
+        }
         PlayerData["coins"] = response.coins;
         PlayerData["sticks"] = response.sticks;
         IsWalletReady = true;

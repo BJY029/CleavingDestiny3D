@@ -1,0 +1,22 @@
+{
+  "skill": "unity-character-onboarding",
+  "installed": "C:/Users/junba/.codex/skills/unity-character-onboarding",
+  "checks": [
+    "official quick_validate.py passed before and after install",
+    "Unity C# compilation passed",
+    "real rigged FBX candidate build passed",
+    "Humanoid/avatar/skin bones/Photon/socket/camera/effect reference checks passed",
+    "icon, walk and hit image generation and visual inspection passed",
+    "same-input reuse and interrupted rebuild passed",
+    "price/ID conflict rejection passed",
+    "unreviewed and verification-only catalog registration blocked",
+    "unrigged FBX rejected before registration",
+    "independent skill review issues corrected"
+  ],
+  "limitations": [
+    "preview clip sampling does not exercise runtime left-hand IK",
+    "live two-client gameplay and actual purchases were not performed",
+    "UGS publication is manual"
+  ],
+  "previewDirectory": "Tools/Verification/CharacterOnboarding"
+}

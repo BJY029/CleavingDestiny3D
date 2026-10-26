@@ -1,0 +1,27 @@
+{
+    "id": "onboarding_verification_v2",
+    "displayName": "Onboarding Verification V2",
+    "sourceHash": "DEB34BF8B15A993567C64593DE3925801B0135EDC4FB1DE40F108B1B71998AA2:medieval_knight_3d_model_basecolor.PNG:2D-72-F4-18-D2-DB-03-FA-CC-95-9E-E6-F6-0B-1A-E2-B7-CC-66-49-10-D5-B9-DC-DC-F2-D4-E2-B9-BA-A1-7E:210e074629ee9c4dde8d60cf3a50fdef",
+    "folder": "Assets/CharacterOnboardingVerification/onboarding_verification_v2",
+    "modelPath": "Assets/CharacterOnboardingVerification/onboarding_verification_v2/Model.fbx",
+    "prefabPath": "Assets/CharacterOnboardingVerification/onboarding_verification_v2/Resources/Player/Characters/onboarding_verification_v2.prefab",
+    "skinPath": "Assets/CharacterOnboardingVerification/onboarding_verification_v2/Skin.asset",
+    "iconPath": "Assets/CharacterOnboardingVerification/onboarding_verification_v2/Icon.png",
+    "previewHash": "6fd7f4ec452ff56fe36c610712e2d2b2",
+    "error": "",
+    "price": 100,
+    "verificationOnly": true,
+    "validated": true,
+    "registered": false,
+    "warnings": [],
+    "checks": [
+        "Humanoid avatar valid",
+        "Uniform model scale 1.6645; feet aligned to template",
+        "Player, Photon, animation, socket, effect and body references valid",
+        "Resources loading and skin metadata valid; no catalog mutation yet"
+    ],
+    "previews": [
+        "Assets/CharacterOnboardingVerification/onboarding_verification_v2/Preview_walk.png",
+        "Assets/CharacterOnboardingVerification/onboarding_verification_v2/Preview_hit.png"
+    ]
+}

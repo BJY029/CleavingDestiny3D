@@ -23,6 +23,8 @@ public class WeatherMakerAudioBridge : MonoBehaviour
 
     private WeatherMakerAudioManagerScript _weatherMakerAudioManager;
     private CancellationTokenSource _bindCancellationTokenSource;
+    private float _weatherAudioFadeMultiplier = 1f;
+    private CancellationTokenSource _weatherAudioFadeCancellationTokenSource;
 
     private void Awake()
     {
@@ -55,6 +57,7 @@ public class WeatherMakerAudioBridge : MonoBehaviour
     private void OnDestroy()
     {
         CancelBinding();
+        CancelWeatherAudioFade();
 
         if (instance == this) instance = null;
     }
@@ -115,7 +118,7 @@ public class WeatherMakerAudioBridge : MonoBehaviour
     {
         if (_weatherMakerAudioManager == null) return;
 
-        _weatherMakerAudioManager.VolumeModifier = masterVolume;
+        _weatherMakerAudioManager.VolumeModifier = masterVolume * _weatherAudioFadeMultiplier;
         _weatherMakerAudioManager.WeatherVolumeModifier = environmentVolume;
         _weatherMakerAudioManager.AmbientVolumeModifier = useWeatherMakerAmbientSound ? environmentVolume : 0f;
     }
@@ -131,5 +134,78 @@ public class WeatherMakerAudioBridge : MonoBehaviour
 
         masterVolume = Mathf.Clamp(targetMaster, MinVolume, MaxVolume);
         environmentVolume = Mathf.Clamp(targetEnv, MinVolume, MaxVolume);
+    }
+
+    public void MuteWeatherAudio(float fadeDuration = 0.7f)
+    {
+        //Debug.Log($"[WeatherAudio] 음소거 요청\n{System.Environment.StackTrace}", this);
+        StartWeatherAudioFade(0f, fadeDuration);
+    }
+
+    public void RestoreWeatherAudio(float fadeDuration = 0.7f)
+    {
+        _weatherMakerAudioManager = WeatherMakerAudioManagerScript.Instance;
+        LoadVolumesFromOption();
+
+        //Debug.Log($"[WeatherAudio] 복원 요청 | Manager={_weatherMakerAudioManager != null}, Master={masterVolume}, Environment={environmentVolume}, Fade={_weatherAudioFadeMultiplier}", this);
+
+        if (_weatherMakerAudioManager == null)
+        {
+            RebindWeatherMaker();
+        }
+
+        StartWeatherAudioFade(1f, fadeDuration);
+    }
+
+    private void StartWeatherAudioFade(float targetMultiplier, float duration)
+    {
+        CancelWeatherAudioFade();
+
+        if (duration <= 0f)
+        {
+            _weatherAudioFadeMultiplier = targetMultiplier;
+            ApplyVolumes();
+            return;
+        }
+
+        _weatherAudioFadeCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+
+        FadeWeatherAudioAsync(targetMultiplier, duration, _weatherAudioFadeCancellationTokenSource.Token).Forget();
+    }
+
+    private async UniTaskVoid FadeWeatherAudioAsync(float targetMultiplier, float duration, CancellationToken cancellationToken)
+    {
+        float startMultiplier = _weatherAudioFadeMultiplier;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < duration)
+        {
+            if (cancellationToken.IsCancellationRequested) return;
+
+            elapsedTime += Time.unscaledDeltaTime;
+
+            float progress = Mathf.Clamp01(elapsedTime / duration);
+            _weatherAudioFadeMultiplier = Mathf.Lerp(startMultiplier, targetMultiplier, progress);
+
+            ApplyVolumes();
+
+            bool canceled = await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken).SuppressCancellationThrow();
+
+            if (canceled) return;
+        }
+
+        _weatherAudioFadeMultiplier = targetMultiplier;
+        ApplyVolumes();
+
+        //Debug.Log($"[WeatherAudio] 페이드 완료 | Target={targetMultiplier}, Manager={_weatherMakerAudioManager != null}, Master={masterVolume}, Environment={environmentVolume}", this);
+    }
+
+    private void CancelWeatherAudioFade()
+    {
+        if (_weatherAudioFadeCancellationTokenSource == null) return;
+
+        _weatherAudioFadeCancellationTokenSource.Cancel();
+        _weatherAudioFadeCancellationTokenSource.Dispose();
+        _weatherAudioFadeCancellationTokenSource = null;
     }
 }

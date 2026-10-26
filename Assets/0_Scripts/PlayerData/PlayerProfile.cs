@@ -4,6 +4,39 @@ using System.Linq;
 
 public static class PlayerProfile
 {
+    private static readonly List<string> ownedCharacterSkinIds = new();
+    public static IReadOnlyList<string> OwnedCharacterSkinIds => ownedCharacterSkinIds.AsReadOnly();
+    public static string EquippedCharacterSkinId { get; private set; }
+    public static event Action OnCharacterSkinChanged;
+
+    public static bool OwnsCharacterSkin(string skinId) => !string.IsNullOrEmpty(skinId) && ownedCharacterSkinIds.Contains(skinId);
+
+    public static void ApplyCharacterOwnership(CharacterSkinCatalogSO catalog, IReadOnlyList<string> serverItems)
+    {
+        if (catalog == null || catalog.DefaultSkin == null || serverItems == null) return;
+        string defaultCharacterSkinId = catalog.DefaultSkin.SkinId;
+        var ids = new List<string> { defaultCharacterSkinId };
+        foreach (string id in serverItems)
+            if (catalog.TryGetSkin(id, out _) && !ids.Contains(id)) ids.Add(id);
+        bool changed = !ownedCharacterSkinIds.SequenceEqual(ids);
+        ownedCharacterSkinIds.Clear();
+        ownedCharacterSkinIds.AddRange(ids);
+        if (!OwnsCharacterSkin(EquippedCharacterSkinId))
+        {
+            EquippedCharacterSkinId = defaultCharacterSkinId;
+            changed = true;
+        }
+        if (changed) OnCharacterSkinChanged?.Invoke();
+    }
+
+    public static bool EquipCharacterSkin(string skinId)
+    {
+        if (!OwnsCharacterSkin(skinId) || EquippedCharacterSkinId == skinId) return false;
+        EquippedCharacterSkinId = skinId;
+        OnCharacterSkinChanged?.Invoke();
+        return true;
+    }
+
     public static int BranchCount { get; private set; }
     public static IReadOnlyList<string> OwnedAxeSkinIds => ownedAxeSkinIds;
     public static string EquippedAxeSkinId { get; private set; }
@@ -17,6 +50,8 @@ public static class PlayerProfile
     public static void Initialize(PlayerSaveData saveData)
     {
         BranchCount = saveData.branchCount;
+        ownedCharacterSkinIds.Clear();
+        EquippedCharacterSkinId = saveData.equippedCharacterSkinId;
 
         ownedAxeSkinIds.Clear();
 
@@ -27,6 +62,7 @@ public static class PlayerProfile
 
         OnBranchCountChanged?.Invoke(BranchCount);
         OnAxeSkinChanged?.Invoke();
+        OnCharacterSkinChanged?.Invoke();
     }
 
     public static PlayerSaveData CreateSaveData()
@@ -35,7 +71,8 @@ public static class PlayerProfile
         {
             branchCount = BranchCount,
             ownedAxeSkinIdx = new List<string>(ownedAxeSkinIds),
-            equippedAxeSkinId = EquippedAxeSkinId
+            equippedAxeSkinId = EquippedAxeSkinId,
+            equippedCharacterSkinId = EquippedCharacterSkinId
         };
     }
 

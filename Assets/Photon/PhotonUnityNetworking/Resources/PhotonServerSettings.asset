@@ -155,6 +155,7 @@ MonoBehaviour:
   - RPC_SpawnBranch
   - RPC_ReceiveShopPurchaseResult
   - RPC_UpdateDmgMultiValue
+  - BranchHoverRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

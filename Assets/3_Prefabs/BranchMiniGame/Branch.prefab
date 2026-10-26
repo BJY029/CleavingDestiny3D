@@ -108,6 +108,12 @@ MonoBehaviour:
   normalMat: {fileID: 2100000, guid: 880f88e4975a429499181033699ea83e, type: 2}
   highlightMat: {fileID: 2100000, guid: f1e87b6f78f539048a64f88ff7b8fbed, type: 2}
   selectedMat: {fileID: 2100000, guid: dd842374801ab6e4db35ef069e618b03, type: 2}
+  myMarkerPrefab: {fileID: 2694354349665839226, guid: 13e337633a1a33e4483b633494406814, type: 3}
+  oppMarkerPrefab: {fileID: 1267556783239554276, guid: e95973676edfd2e49b99ed674c078780, type: 3}
+  topIsMaxZ: 1
+  markerOffset: {x: 0, y: 0.5, z: 0}
+  markerRotationOffset: {x: 0, y: 0, z: 0}
+  markerRotateSpeed: 90
 --- !u!136 &4189437827704651276
 CapsuleCollider:
   m_ObjectHideFlags: 0

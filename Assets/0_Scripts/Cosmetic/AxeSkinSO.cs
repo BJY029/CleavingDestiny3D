@@ -15,6 +15,8 @@ public class AxeSkinSO : ScriptableObject
 
     [Header("Visual")]
     [SerializeField] private GameObject axePrefab;
+    [Tooltip("Visual-only prefab positioned for the lobby log display.")]
+    [SerializeField] private GameObject lobbyPrefab;
 
     public string SkinId => skinId;
     public string DisplayName => displayName;
@@ -22,6 +24,7 @@ public class AxeSkinSO : ScriptableObject
     public Sprite Icon => icon;
     public string Description => description;
     public GameObject AxePrefab => axePrefab;
+    public GameObject LobbyPrefab => lobbyPrefab;
 
 
 #if UNITY_EDITOR

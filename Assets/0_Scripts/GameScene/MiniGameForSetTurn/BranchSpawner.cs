@@ -30,6 +30,8 @@ public class BranchSpawner : MonoBehaviourPunCallbacks
 
     [SerializeField] private float topAlignZOffset = 0f;
     [SerializeField] private bool topIsMaxZ = true;
+
+    [SerializeField] private Camera branchCam;
     //[SerializeField] private float UISpacing = 105.71f;
     //����� ������ ���� �÷���
     private bool spawned = false;
@@ -77,6 +79,7 @@ public class BranchSpawner : MonoBehaviourPunCallbacks
             GameObject branch = Instantiate(branchPrefab, pos, Quaternion.Euler(90, 0, 0), spawnRoot);
             branchs[i] = branch;
 
+
             //GameObject branchBtn = Instantiate(btnPrefab, branchCanvas);
 
 
@@ -85,6 +88,7 @@ public class BranchSpawner : MonoBehaviourPunCallbacks
             //rt.anchoredPosition = UIPos;
 
             BranchController bc = branch.GetComponent<BranchController>();
+            bc.SetMarkerCam(branchCam);
             bc.InitBranch(i, length[i]);
 
             float targetTopZ = spawnRoot.position.z + topAlignZOffset;
@@ -138,7 +142,7 @@ public class BranchSpawner : MonoBehaviourPunCallbacks
             branchs[index].GetComponent<CapsuleCollider>().enabled = false;
         }
 
-        branchs[index].GetComponent<BranchController>().SetSelected();
+        branchs[index].GetComponent<BranchController>().SetSelected(clickActorNumber);
 
         StartCoroutine(PlayBranchScaleEffect(selectedBranch.transform));
     }
@@ -208,5 +212,27 @@ public class BranchSpawner : MonoBehaviourPunCallbacks
         {
             if (branch != null) Destroy(branch);
         }
+    }
+
+    public void NotifyBranchHover(int index, bool hovered)
+    {
+        if (!PhotonNetwork.InRoom) return;
+
+        photonView.RPC(nameof(BranchHoverRPC), RpcTarget.Others, index, hovered);
+    }
+
+    [PunRPC]
+    private void BranchHoverRPC(int index, bool hovered, PhotonMessageInfo info)
+    {
+        if (info.Sender == null || info.Sender.IsLocal) return;
+        if (branchs == null || index < 0 || index >= branchs.Length) return;
+
+        GameObject branch = branchs[index];
+        if (branch == null) return;
+
+        BranchController controller = branch.GetComponent<BranchController>();
+        if (controller == null) return;
+
+        controller.SetOppHovered(hovered);
     }
 }

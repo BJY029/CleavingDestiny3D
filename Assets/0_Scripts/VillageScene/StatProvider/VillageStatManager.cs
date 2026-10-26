@@ -107,12 +107,12 @@ namespace Village
 
         public int GetMaxEnergy(int level)
         {
-            return Mathf.RoundToInt(_villageBalanceData.EnergyMaxBase + (level * _villageBalanceData.EnergyMaxMultiplier));
+            return _villageBalanceData.GetFarmMaxEnergy(GameManager.Instance.playerDefaultSetting, level);
         }
 
         public int GetEnergyIncomePerDay(int level)
         {
-            return Mathf.RoundToInt(_villageBalanceData.EnergyIncomeBase + (level * _villageBalanceData.EnergyIncomeMultiplier));
+            return _villageBalanceData.GetFarmEnergyIncome(GameManager.Instance.playerDefaultSetting, level);
         }
 
         public int GetBarrierArmor(int level)
