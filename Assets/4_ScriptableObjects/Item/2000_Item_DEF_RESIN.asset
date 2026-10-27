@@ -15,7 +15,7 @@ MonoBehaviour:
   itemId: 2000
   displayName_ID: NAME_DEF_RESIN
   itemDesc_ID: DESC_DEF_RESIN
-  itemCost: 3
+  itemCost: 2
   type: 1
   target: 3
   itemClass: 0
@@ -27,7 +27,7 @@ MonoBehaviour:
   - effectType: 4
     intValue1: 0
     intValue2: 0
-    floatValue1: 200
+    floatValue1: 250
     floatValue2: 0
     statusSpce:
       statusId: 

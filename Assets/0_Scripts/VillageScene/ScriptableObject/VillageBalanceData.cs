@@ -26,21 +26,39 @@ public class VillageBalanceData : ScriptableObject
 
     [Header("Farm (Energy Income & Max Energy)")]
     [SerializeField]
+    [Tooltip("Legacy field. Farm base income comes from PlayerSetting.energyIncomePerDay.")]
     private float energyIncomeBase = 5;
     public float EnergyIncomeBase => energyIncomeBase;
 
     [SerializeField]
-    private float energyIncomeMultiplier = 3.2f;
+    private float energyIncomeMultiplier = 2f;
     public float EnergyIncomeMultiplier => energyIncomeMultiplier;
 
     [SerializeField]
+    [Tooltip("Legacy field. Farm base capacity comes from PlayerSetting.maxEnergy.")]
     private float energyMaxBase = 10f;
     public float EnergyMaxBase => energyMaxBase;
 
     [SerializeField]
-    private float energyMaxMultiplier = 5f;
+    private float energyMaxMultiplier = 2f;
     public float EnergyMaxMultiplier => energyMaxMultiplier;
 
+
+    public int GetFarmMaxEnergy(PlayerSetting playerSetting, int level)
+    {
+        return playerSetting.maxEnergy + GetFarmEnergyBonus(level, energyMaxMultiplier);
+    }
+
+    public int GetFarmEnergyIncome(PlayerSetting playerSetting, int level)
+    {
+        return playerSetting.energyIncomePerDay + GetFarmEnergyBonus(level, energyIncomeMultiplier);
+    }
+
+    private int GetFarmEnergyBonus(int level, float multiplier)
+    {
+        int L = Mathf.Clamp(level, 0, Mathf.Max(0, maxLevel - 1));
+        return Mathf.RoundToInt(multiplier * L * (L + 3f) / 4f);
+    }
 
     [Header("Forge (Axe Damage)")]
 

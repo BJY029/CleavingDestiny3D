@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: FogRoomSetting
   m_EditorClassIdentifier: Assembly-CSharp::RoomSetting
   treeHP: 33000
-  treeAtkPow: 850
+  treeAtkPow: 1500
   poisonGrowthRate: 1.65
+  poisonDamageIncreasePerDay: 550
+  maxPoisonDamage: 5000
   startDay: 1
   initialTurn: 0
   initialTurnIndex: 1

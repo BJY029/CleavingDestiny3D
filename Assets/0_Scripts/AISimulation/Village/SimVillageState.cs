@@ -19,6 +19,7 @@ public class VillageObjInfo
 {
     public VillageLevelData _levelData;
     private VillageBalanceData _balanceData;
+    private PlayerSetting _playerSetting;
     public string curLevelDesc { get; private set; }
     public string nextLevelDesc { get; private set; }
     public int upgradeGold;
@@ -35,16 +36,18 @@ public class VillageObjInfo
             _currentLevel = value;
 
             // 레벨이 변경될 때마다 텍스트를 자동으로 갱신합니다.
-            curLevelDesc = GetVillDesc(_currentLevel, _balanceData);
-            nextLevelDesc = GetVillDesc(_currentLevel + 1, _balanceData);
+            int descriptionLevel = _levelData.VillageType == VillageType.Farm ? _currentLevel - 1 : _currentLevel;
+            curLevelDesc = GetVillDesc(descriptionLevel, _balanceData);
+            nextLevelDesc = GetVillDesc(descriptionLevel + 1, _balanceData);
             if (_levelData.TryGetUpgradeCost(currentLevel - 1, out int goldV)) upgradeGold = goldV;
         }
     }
 
-    public VillageObjInfo(VillageLevelData data, int level, VillageBalanceData balanceData)
+    public VillageObjInfo(VillageLevelData data, int level, VillageBalanceData balanceData, PlayerSetting playerSetting)
     {
         this._levelData = data;
         this._balanceData = balanceData;
+        this._playerSetting = playerSetting;
         this.currentLevel = level + 1;
         if (data.TryGetUpgradeCost(level, out int goldV)) this.upgradeGold = goldV;
         this.curLevelDesc = GetVillDesc(level, balanceData);
@@ -64,8 +67,9 @@ public class VillageObjInfo
         }
         else if (_levelData.VillageType == VillageType.Farm)
         {
-            int MaxEng = Mathf.RoundToInt(balanceData.EnergyMaxBase + (level * balanceData.EnergyMaxMultiplier));
-            int DayEng = Mathf.RoundToInt(balanceData.EnergyIncomeBase + (level * balanceData.EnergyIncomeMultiplier));
+            if (level >= balanceData.MaxLevel) return "Max Level";
+            int MaxEng = balanceData.GetFarmMaxEnergy(_playerSetting, level);
+            int DayEng = balanceData.GetFarmEnergyIncome(_playerSetting, level);
             return string.Format(vDesc.FarmDesc, DayEng, MaxEng);
         }
         else if (_levelData.VillageType == VillageType.Barrier)
@@ -88,6 +92,7 @@ public class SimVillageState
     public List<VillageObjInfo> P1VillageObjInfos;
     public List<VillageObjInfo> P2VillageObjInfos;
     private VillageBalanceData _villageBalanceData;
+    private PlayerSetting _playerSetting;
 
     public event Action<int, VStateType, int> OnVStatChange;
     public event Action<int, VillageObjInfo> OnVillageObjChanged;
@@ -260,9 +265,10 @@ public class SimVillageState
         }
     }
 
-    public SimVillageState(VillageBalanceData balanceData, VillageLevelData[] levelDatas)
+    public SimVillageState(VillageBalanceData balanceData, VillageLevelData[] levelDatas, PlayerSetting playerSetting)
     {
         _villageBalanceData = balanceData;
+        _playerSetting = playerSetting;
         P1VillageObjInfos = new List<VillageObjInfo>();
         P2VillageObjInfos = new List<VillageObjInfo>();
 
@@ -279,8 +285,8 @@ public class SimVillageState
 
         for (int i = 0; i < levelDatas.Length; i++)
         {
-            VillageObjInfo p1Info = new VillageObjInfo(levelDatas[i], 0, balanceData);
-            VillageObjInfo p2Info = new VillageObjInfo(levelDatas[i], 0, balanceData);
+            VillageObjInfo p1Info = new VillageObjInfo(levelDatas[i], 0, balanceData, playerSetting);
+            VillageObjInfo p2Info = new VillageObjInfo(levelDatas[i], 0, balanceData, playerSetting);
             P1VillageObjInfos.Add(p1Info);
             P2VillageObjInfos.Add(p2Info);
             OnVillageObjChanged?.Invoke(1, p1Info);
@@ -298,6 +304,7 @@ public class SimVillageState
 
         if (targetObj != null)
         {
+            if (facilityType == VillageType.Farm && targetObj.currentLevel >= _villageBalanceData.MaxLevel) return;
             if (targetObj._levelData.TryGetUpgradeCost(targetObj.currentLevel - 1, out int upgradeGold))
             {
                 int VillGold = playerNum == 1 ? p1VillGold : p2VillGold;
@@ -359,8 +366,8 @@ public class SimVillageState
                 }
                 break;
             case (VillageType.Farm):
-                int MaxEng = GetMaxEnergy(target.currentLevel);
-                int IncomeEng = GetEnergyIncomePerDay(target.currentLevel);
+                int MaxEng = GetMaxEnergy(target.currentLevel - 1);
+                int IncomeEng = GetEnergyIncomePerDay(target.currentLevel - 1);
                 if (playerNum == 1)
                 {
                     p1MaxEnergy = MaxEng;
@@ -419,12 +426,12 @@ public class SimVillageState
 
     public int GetMaxEnergy(int level)
     {
-        return Mathf.RoundToInt(_villageBalanceData.EnergyMaxBase + (level * _villageBalanceData.EnergyMaxMultiplier));
+        return _villageBalanceData.GetFarmMaxEnergy(_playerSetting, level);
     }
 
     public int GetEnergyIncomePerDay(int level)
     {
-        return Mathf.RoundToInt(_villageBalanceData.EnergyIncomeBase + (level * _villageBalanceData.EnergyIncomeMultiplier));
+        return _villageBalanceData.GetFarmEnergyIncome(_playerSetting, level);
     }
 
     public int GetBarrierArmor(int level)

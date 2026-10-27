@@ -238,7 +238,7 @@ public class SimGameState
         this.roomSetting = roomSetting;
 
         //simVillageState를 가장 먼저 생성해야 그 안의 스탯을 빼옴
-        this.simVillageState = new SimVillageState(villageBalanceData, villageLevelDatas);
+        this.simVillageState = new SimVillageState(villageBalanceData, villageLevelDatas, playerSetting);
 
         //2. 초기 기력과 방어력을 업그레이드 관리 객체(simVillageState)에서 가져옴
         this.p1Energy = simVillageState.p1DayEnergy;

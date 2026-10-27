@@ -11832,6 +11832,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 529d2d4501b866346aebd1dedc9f5665, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameCanvasController
+  DayWaveCG: {fileID: 955438087}
   DayText: {fileID: 792423806}
   WaveText: {fileID: 1233343646}
 --- !u!225 &452008723
@@ -20332,6 +20333,7 @@ MonoBehaviour:
   startX: -7.2
   topAlignZOffset: 3
   topIsMaxZ: 1
+  branchCam: {fileID: 201524901}
   selectedScaleMultiplier: 1.2
   scaleUpDuration: 0.1
   scaleDownDuration: 0.12
@@ -22844,6 +22846,7 @@ GameObject:
   - component: {fileID: 939753130}
   - component: {fileID: 939753132}
   - component: {fileID: 939753131}
+  - component: {fileID: 939753133}
   m_Layer: 5
   m_Name: Timer
   m_TagString: Untagged
@@ -22911,6 +22914,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939753129}
   m_CullTransparentMesh: 1
+--- !u!225 &939753133
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939753129}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &949254149
 GameObject:
   m_ObjectHideFlags: 0
@@ -22979,6 +22994,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 631a7deee03bf7742a16b4bde5d4d3eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
+  characterSkinCatalog: {fileID: 11400000, guid: 1516d652d8652514d982d0b45207e36c, type: 2}
   targetTerrain: {fileID: 1483146311}
   heightOffset: 0.1
   LocalPlayerPC: {fileID: 0}
@@ -23010,6 +23026,7 @@ GameObject:
   - component: {fileID: 955438084}
   - component: {fileID: 955438086}
   - component: {fileID: 955438085}
+  - component: {fileID: 955438087}
   m_Layer: 5
   m_Name: Day/Wave
   m_TagString: Untagged
@@ -23077,6 +23094,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 955438083}
   m_CullTransparentMesh: 1
+--- !u!225 &955438087
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 955438083}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &1003205828
 GameObject:
   m_ObjectHideFlags: 0
@@ -47614,8 +47643,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1646385175}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -31.82, y: 3.95, z: -539.99}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: -31.82, y: 4.41, z: -496.86}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -47628,7 +47657,7 @@ Transform:
   - {fileID: 1353867210}
   - {fileID: 704644602}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &1646487949
 GameObject:
   m_ObjectHideFlags: 0
@@ -62050,19 +62079,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 8.3e-44
-      objectReference: {fileID: 0}
-    - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
-      propertyPath: m_BoundingSphereOverride.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
+      propertyPath: m_BoundingSphereOverride.x
+      value: 3.5e-43
+      objectReference: {fileID: 0}
+    - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: -1.9934278e-38
+      value: 1.1e-44
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 6.52e-43
+      value: 8.8e-44
       objectReference: {fileID: 0}
     - target: {fileID: 108655182436419188, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_Intensity
@@ -106634,7 +106663,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4442597892161609212, guid: 505534e2853047d4584afce3f074386f, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.0010120895
+      value: -0.0010177105
       objectReference: {fileID: 0}
     - target: {fileID: 4537629923018951794, guid: 505534e2853047d4584afce3f074386f, type: 3}
       propertyPath: m_AnchorMax.y

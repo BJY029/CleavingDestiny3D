@@ -7,6 +7,8 @@ public class RoomSetting : ScriptableObject
     public float treeHP = 300000f;
     public float treeAtkPow = 1500f;
     public float poisonGrowthRate = 1.45f;
+    public float poisonDamageIncreasePerDay = 350f;
+    public float maxPoisonDamage = 2950f;
 
     [Header("Default Game Flow")]
     public int startDay = 1;
