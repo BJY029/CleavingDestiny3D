@@ -2,6 +2,11 @@ using UnityEngine;
 
 public class GameBootstrap : MonoBehaviour
 {
+    private void Awake()
+    {
+        SaveManager.Initialize();
+    }
+
     private async void Start()
     {
         try
@@ -10,10 +15,5 @@ public class GameBootstrap : MonoBehaviour
             GameSessionRewardManager.RetryCurrentReward();
         }
         catch (System.Exception e) { Debug.LogWarning($"[UGS] Pending rewards will retry on the next lobby visit: {e.Message}"); }
-    }
-
-    private void Awake()
-    {
-        SaveManager.Initialize();
     }
 }

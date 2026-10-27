@@ -9,7 +9,7 @@ using Cysharp.Threading.Tasks;
 using Unity.InferenceEngine.Tokenization.PostProcessors.Templating;
 
 public enum Language { KR, EN }
-public enum CSV_Type { UI, Item, Preload, Village, Option, Mission, GuideBook, Shop }
+public enum CSV_Type { UI, Item, Preload, Village, Option, Mission, GuideBook, Shop, Story }
 
 public class LocalizationManager : MonoBehaviour
 {
