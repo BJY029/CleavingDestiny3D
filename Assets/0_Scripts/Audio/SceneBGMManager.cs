@@ -40,14 +40,16 @@ public class SceneBGMManager : MonoBehaviour
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
-        StoryCreditController.instance.onFinished += HandleStoryFinished;
+        if (StoryCreditController.instance != null)
+            StoryCreditController.instance.onFinished += HandleStoryFinished;
     }
 
 
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
-        StoryCreditController.instance.onFinished -= HandleStoryFinished;
+        if (StoryCreditController.instance != null)
+            StoryCreditController.instance.onFinished -= HandleStoryFinished;
     }
 
     private void OnDestroy()
