@@ -27,6 +27,9 @@ public class TutorialCanvasController : MonoBehaviour
     {
         ShowPage(0);
         tutorialBackground.SetActive(false);
+
+        if (prevBtn != null) prevBtn.onClick.AddListener(PlayButtonClickSound);
+        if (nextBtn != null) nextBtn.onClick.AddListener(PlayButtonClickSound);
     }
 
     public void Toggle()
@@ -39,11 +42,13 @@ public class TutorialCanvasController : MonoBehaviour
     {
         ShowPage(resetPageOnOpen ? 0 : currentPage);
         tutorialBackground.SetActive(true);
+        AudioManager.Instance.PlaySfx2D("ui_button");
     }
 
     public void Close()
     {
         tutorialBackground.SetActive(false);
+        AudioManager.Instance.PlaySfx2D("ui_button");
     }
 
     public void Next()
@@ -78,5 +83,10 @@ public class TutorialCanvasController : MonoBehaviour
             string title = LocalizationManager.Instance.GetText(CSV_Type.Tutorial, $"Header_{currentPage + 1}");
             titleText.text = title;
         }
+    }
+
+    private void PlayButtonClickSound()
+    {
+        AudioManager.Instance.PlaySfx2D("ui_button");
     }
 }
