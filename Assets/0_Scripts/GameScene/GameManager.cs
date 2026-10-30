@@ -27,6 +27,7 @@ public class GameManager : MonoBehaviour
 
 	public GameObject playerObj;
 	public string nextScene;
+	public bool hasStoryPlayed = false;
 
 	void Init()
 	{

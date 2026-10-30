@@ -40,16 +40,16 @@ public class SceneBGMManager : MonoBehaviour
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
+        if (StoryCreditController.instance != null)
+            StoryCreditController.instance.onFinished += HandleStoryFinished;
     }
 
-    private void Start()
-    {
-        PlayBGMForScene(SceneManager.GetActiveScene());
-    }
 
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        if (StoryCreditController.instance != null)
+            StoryCreditController.instance.onFinished -= HandleStoryFinished;
     }
 
     private void OnDestroy()
@@ -58,13 +58,22 @@ public class SceneBGMManager : MonoBehaviour
             instance = null;
     }
 
+    private void HandleStoryFinished()
+    {
+        PlayBGMForScene(SceneManager.GetActiveScene());
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
     {
+
         PlayBGMForScene(scene);
     }
 
     private void PlayBGMForScene(Scene scene)
     {
+        if (!GameManager.Instance.hasStoryPlayed)
+            return;
+
         SceneBGMData sceneBGMData = FindSceneBGMData(scene.name);
 
         if (sceneBGMData == null || string.IsNullOrWhiteSpace(sceneBGMData.bgmID))

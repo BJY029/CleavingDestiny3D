@@ -1,0 +1,73 @@
+ID,KR,EN
+Prev_Btn,이전,Previous
+Next_Btn,다음,Next
+Close_Btn,닫기,Close
+Header_1,1. 조작법,1. Controls
+Header_2,2. 하루의 흐름,2. Daily Cycle
+Header_3,3. 낮에는 무엇을 하나요?,3. What to Do During the Day
+Header_4,4. 밤에는 무엇을 하나요?,4. What to Do at Night
+Header_5,5. 승리하는 법,5. How to Win
+Controls_WASD,이동,Move
+Controls_Shift,달리기,Sprint
+Controls_F,상호작용,Interact
+Controls_Space,미니게임 상호작용,Minigame Interact
+Controls_Tab,현황판 / 정보,Status / Info
+Contorls_G,가이드 북,Guidebook
+Controls_ESC,옵션,Options
+Cycle_1_Title,1. 선공 정하기,1. Determining the turn order
+Cycle_1_Des,더 긴 나뭇가지를 뽑은 플레이어가 먼저 턴을 시작합니다.,The player who draws the longer branch takes the first turn.
+Cycle_2_Title,2. 낮,2. Day
+Cycle_2_Des1,"아이템을 뽑고, 기력을 소모해 사용하세요.","Draw items and spend stamina to use them."
+Cycle_2_Des2,서로 번갈아 각자 3번씩 나무를 공격합니다.,Take turns attacking the tree three times each.
+Cycle_2_Des3,공격 피해 일부가 마을 방어력으로 전환됩니다.,Part of the damage dealt becomes your village's defense.
+Cycle_3_Title,3. 밤,3.Night
+Cycle_3_Des,마을로 돌아가 시설을 강화하고 상점에서 아이템을 구매하세요.,Return to your village to upgrade facilities and purchase items from the shop.
+Cycle_4_Title,4. 나무의 독성 공격,4. The Tree's Poison Attack
+Cycle_4_Des1,나무가 두 마을에 독성을 내뿜습니다.,The tree unleashes poison on both villages.
+Cycle_4_Des2,당신이 대비한 만큼 피해를 막아낼 수 있습니다.,The better you prepare, the more damage you can block.
+Day_Theme_Title,세 가지 날씨 존재,Three types of weather exist
+Day_Theme_Clear,맑음,Clear
+Day_Theme_Clear_Desc,기본 상태,Normal conditions
+Day_Theme_Fog,짙은 안개,Dense Fog
+Day_Theme_Fog_Desc,플레이어 약화/나무 강화,Players weakened / Tree strengthened
+Day_Theme_Storm,폭풍우,Storm
+Day_Theme_Storm_Desc,플레이어 각성/나무 약화,Players empowered / Tree weakened
+Day_SelectItem_Title,1. 아이템 선택,1. Select an item
+Day_SelectItem_Desc1,턴마다 아이템을 뽑으세요.,Draw item each turn.
+Day_SelectItem_Desc2,상황에 맞는 아이템을 선택하세요.,Choose the right item for your situation.
+Day_UseItem_Title,2. 아이템 사용,2. Use Items
+Day_UseItem_Desc1,기력을 소모해 아이템을 사용합니다.,Spend stamina to use items.
+Day_UseItem_Desc2,효과와 남은 기력을 확인하세요.,Check their effects and your remaining stamina.
+Day_AttackTree_Title,3. 나무 공격,3. Attack the Tree
+Day_AttackTree_Desc1,공격 게이지에 맞춰 타격하세요.,Time your strike using the attack gauge.
+Day_AttackTree_Desc2,상황에 맞게 피해량을 조절하세요.,Adjust your damage to suit the situation.
+Day_AttackTree_Dese3,공격 피해 일부는 마을 방어력이 됩니다.,Part of the damage dealt becomes your village's defense.
+Day_AttackTree_Dese4,나무를 공격하면 턴이 넘어갑니다.,Attacking the tree ends your turn.
+Night_Village_Title,1. 마을 업그레이드,1.Upgrade your Village
+Night_Village_Desc,시설을 선택해 업그레이드 하세요.,Select a facility on the village map to upgrade it.
+Night_Village_Forge,대장간,Blacksmith
+Night_Village_Forge_Desc,도끼 공격력 범위 증가,Increase axe's attack damage range
+Night_Village_Farm,농장,Farm
+Night_Village_Farm_Desc,플레이어 기력 증가,Increase stamina
+Night_Village_Mine,광산,Mine
+Night_Village_Mine_Desc,마을 수익 증가,Increase village's income
+Night_Village_Wizard,마법사의 집,Wizard's House
+Night_Village_Wizard_Desc,마을 방어력 증가,Increase village's defense
+Night_Village_Shop,상점,Shop
+Night_Village_Shop_Desc,아이템 미리 구매,Purchase items for upcoming turns
+Night_Ready_Title,2. 마을 상태와 준비,2. Check your Village's Status
+Night_Ready_HP,마을 체력,Village HP
+Night_Ready_HP_Desc,0이 되면 즉시 패배합니다.,Your village falls when its HP reaches zero.
+Night_Ready_Defencse,마을 방어력,Defense
+Night_Ready_Defencse_Desc,나무의 독성 피해를 막아줍니다.,Blocks damage from the tree's poison attack.
+Night_Ready_Ready,준비 완료,Get Ready
+Night_Ready_Ready_Desc,정비를 마쳤다면 준비 완료를 누르세요.,Finish your upgrades, then press Ready
+Objectives_Tree_Title,마지막 한 방을 피하세요,Avoid the Final Blow
+Objectives_Tree_Desc1,상대와 번갈아 나무를 공격하세요,Take turns attacking the tree.
+Objectives_Tree_Desc2,상황에 맞게 공격 피해량을 조절하세요.,Choose your damage carefully.
+Objectives_Tree_Dese3,마지막 일격을 가하면 패배합니다!,Deal the final blow, and you lose!
+Objectives_Village_Title,마을을 지키세요,Protect Your Village
+Objectives_Village_Desc1,낮에는 마을의 방어력을 쌓으세요.,Build defense during the day.
+Objectives_Village_Desc2,밤에는 마을 시설을 업그레이드하세요.,Upgrade your village at night.
+Objectives_Village_Desc3,마을 체력이 0이 되지 않도록 지키세요!,Keep your village HP above zero!
+Objectives_Desc,나무에 마지막 일격을 가하거나 마을이 파괴되면 그 즉시 패배합니다.,You lose immediately if you fell the tree or your village is destroyed.

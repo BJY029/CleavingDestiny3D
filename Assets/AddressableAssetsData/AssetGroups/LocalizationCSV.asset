@@ -39,6 +39,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - Localization
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 95b7c6f8556b767449884d48239910bd
+    m_Address: Assets/Localization/Tutorial_CSV.csv
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Localization
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b12c791a8369a674c9af6e3d46e4fa17
     m_Address: Assets/Localization/Shop_CSV.csv
     m_ReadOnly: 0
@@ -51,8 +57,20 @@ MonoBehaviour:
     m_SerializedLabels:
     - Localization
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d5c89f4a9d0fc474db2c21147c084897
+    m_Address: Assets/Localization/Play_CSV.csv
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Localization
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: da7861af316e05a45a29161013551f92
     m_Address: Assets/Localization/UI_CSV.csv
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Localization
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e4f5461152e849a438e91272ef2c6d06
+    m_Address: Assets/Localization/Story_CSV.csv
     m_ReadOnly: 0
     m_SerializedLabels:
     - Localization
