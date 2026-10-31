@@ -5,3 +5,19 @@ Equipped_Title,장착한 도끼,Equipped Axe
 Equipped_Title_Ch,현재 스킨,Equipped Skin
 Item_Buy,구매하기,Buy
 Item_Equip,장착하기,Equip
+Shop_Loading,"상점 정보를 불러오는 중…","Loading shop information…"
+AxeShop_ConfigError,"기본 도끼와 상점 설정을 확인하세요.","Please check the default axe and shop settings."
+CharacterShop_ConfigError,"기본 캐릭터 설정을 확인하세요.","Please check the default character settings."
+Shop_LoadFailed,"상점 조회 실패 · 다시 시도해 주세요.","Failed to load shop information. Please try again."
+Shop_Purchasing,"구매 처리 중…","Processing your purchase…"
+Shop_PurchaseComplete,"구매 완료 · 장착 버튼으로 선택하세요.","Purchase complete. Press Equip to equip your item."
+AxeShop_AlreadyOwned,"이미 보유한 도끼입니다.","You already own this axe."
+CharacterShop_AlreadyOwned,"이미 보유한 캐릭터입니다.","You already own this character."
+Shop_NotEnoughCoins,"Coin이 부족합니다.","Not enough Coins."
+Shop_NotEnoughSticks,"나뭇가지가 부족합니다.","Not enough Sticks."
+Shop_NoSaleInfo,"판매 정보가 없습니다.","No sale information is available."
+Shop_PurchaseRecovered,"구매 상태를 복구했습니다.","Your purchase status has been restored."
+Shop_PurchaseFailed,"구매 실패 · 다시 시도해 주세요.","Purchase failed. Please try again."
+Shop_VerificationFailed,"구매 확인 실패 · 잔액을 다시 조회해 주세요.","Failed to verify your purchase. Please refresh your balance."
+AxeShop_Equipped,"도끼를 장착했습니다.","Axe equipped."
+CharacterShop_Equipped,"캐릭터를 장착했습니다.","Character equipped."

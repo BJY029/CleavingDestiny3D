@@ -15,10 +15,12 @@ public class CharacterShopController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI EquippedCharacterName;
     [SerializeField] private TextMeshProUGUI statusText;
     [SerializeField] private Button retryButton;
+
     private readonly List<CharacterShopItemUI> itemUIs = new();
     private UGSManager ugs;
     private bool isBuilt, isBuying, isLoading;
     private int activation;
+
     public bool IsShopReady { get; private set; }
     public bool IsBusy => isBuying || isLoading || !IsShopReady;
 
@@ -27,7 +29,10 @@ public class CharacterShopController : MonoBehaviour
         ugs = UGSManager.Instance;
         ugs.WalletChanged += HandleWalletChanged;
         PlayerProfile.OnCharacterSkinChanged += RefreshAll;
-        if (retryButton != null) retryButton.onClick.AddListener(RetryLoad);
+
+        if (retryButton != null)
+            retryButton.onClick.AddListener(RetryLoad);
+
         BuildShop();
         LoadShop(false);
     }
@@ -35,9 +40,14 @@ public class CharacterShopController : MonoBehaviour
     private void OnDisable()
     {
         activation++;
-        if (ugs != null) ugs.WalletChanged -= HandleWalletChanged;
+
+        if (ugs != null)
+            ugs.WalletChanged -= HandleWalletChanged;
+
         PlayerProfile.OnCharacterSkinChanged -= RefreshAll;
-        if (retryButton != null) retryButton.onClick.RemoveListener(RetryLoad);
+
+        if (retryButton != null)
+            retryButton.onClick.RemoveListener(RetryLoad);
     }
 
     public void RetryLoad() => LoadShop(true);
@@ -45,30 +55,38 @@ public class CharacterShopController : MonoBehaviour
     private async void LoadShop(bool refreshWallet)
     {
         if (isLoading || isBuying) return;
+
         int token = ++activation;
         isLoading = true;
         IsShopReady = false;
-        SetStatus("상점 정보를 불러오는 중…", false);
+
+        SetStatus("Shop_Loading", false);
         RefreshAll();
+
         try
         {
             await ugs.LoadShopDataAsync(refreshWallet);
+
             if (this == null || !isActiveAndEnabled || token != activation) return;
+
             IsShopReady = catalog != null && catalog.DefaultSkin != null && ugs.IsWalletReady;
+
             SyncOwnership();
-            SetStatus(IsShopReady ? "" : "기본 캐릭터 설정을 확인하세요.", !IsShopReady);
+            SetStatus(IsShopReady ? "" : "CharacterShop_ConfigError", !IsShopReady);
         }
         catch (Exception e)
         {
             Debug.LogException(e);
+
             if (this != null && isActiveAndEnabled && token == activation)
-                SetStatus("상점 조회 실패 · 다시 시도해 주세요.", true);
+                SetStatus("Shop_LoadFailed", true);
         }
         finally
         {
             if (this != null)
             {
                 isLoading = false;
+
                 if (isActiveAndEnabled)
                 {
                     if (token != activation) LoadShop(false);
@@ -82,15 +100,21 @@ public class CharacterShopController : MonoBehaviour
     {
         if (isBuilt) return;
         if (catalog == null || itemPrefab == null || contentRoot == null) return;
+
         var ids = new HashSet<string>();
+
         AddItem(catalog.DefaultSkin, ids);
-        foreach (var skin in catalog.Skins) AddItem(skin, ids);
+
+        foreach (var skin in catalog.Skins)
+            AddItem(skin, ids);
+
         isBuilt = true;
     }
 
     private void AddItem(CharacterSkinSO skin, HashSet<string> ids)
     {
         if (skin == null || !ids.Add(skin.SkinId)) return;
+
         var item = Instantiate(itemPrefab, contentRoot);
         item.Initialize(skin, this);
         itemUIs.Add(item);
@@ -98,13 +122,16 @@ public class CharacterShopController : MonoBehaviour
 
     public CharacterSkinState GetSkinState(CharacterSkinSO skin)
     {
-        if (skin == null || !PlayerProfile.OwnsCharacterSkin(skin.SkinId)) return CharacterSkinState.Locked;
+        if (skin == null || !PlayerProfile.OwnsCharacterSkin(skin.SkinId))
+            return CharacterSkinState.Locked;
+
         return PlayerProfile.EquippedCharacterSkinId == skin.SkinId ? CharacterSkinState.Equipped : CharacterSkinState.Owned;
     }
 
     public bool TryGetPrice(CharacterSkinSO skin, out AxeShopPrice price)
     {
         price = null;
+
         return skin != null && IsShopReady && catalog.TryGetSkin(skin.SkinId, out _) &&
             ugs.TryGetSkinPrice(skin.SkinId, out price) && price.Currency == "coins";
     }
@@ -116,42 +143,65 @@ public class CharacterShopController : MonoBehaviour
     public async void TryPurchase(CharacterSkinSO skin)
     {
         if (!CanPurchase(skin)) return;
+
         int token = activation;
         isBuying = true;
-        SetStatus("구매 처리 중…", false);
+
+        SetStatus("Shop_Purchasing", false);
         RefreshAll();
+
         try
         {
             var result = await ugs.PurchaseSkinAsync(skin.SkinId);
+
             if (this == null || !isActiveAndEnabled) return;
+
             SyncOwnership();
+
             switch (result.status)
             {
-                case "purchased": SetStatus("구매 완료 · 장착 버튼으로 선택하세요.", false); break;
-                case "already_owned": SetStatus("이미 보유한 캐릭터입니다.", false); break;
-                case "insufficient_funds": SetStatus("Coin이 부족합니다.", false); break;
-                default: SetStatus("판매 정보가 없습니다.", false); break;
+                case "purchased":
+                    SetStatus("Shop_PurchaseComplete", false);
+                    AudioManager.Instance?.PlaySfx2D("CoinPurchase");
+                    break;
+
+                case "already_owned":
+                    SetStatus("CharacterShop_AlreadyOwned", false);
+                    break;
+
+                case "insufficient_funds":
+                    SetStatus("Shop_NotEnoughCoins", false);
+                    break;
+
+                default:
+                    SetStatus("Shop_NoSaleInfo", false);
+                    break;
             }
         }
         catch (Exception e)
         {
             Debug.LogException(e);
+
             try
             {
                 await ugs.LoadPlayerData();
+
                 if (this != null && isActiveAndEnabled)
                 {
                     SyncOwnership();
-                    SetStatus(PlayerProfile.OwnsCharacterSkin(skin.SkinId) ? "구매 상태를 복구했습니다." : "구매 실패 · 다시 시도해 주세요.", false);
+                    SetStatus(PlayerProfile.OwnsCharacterSkin(skin.SkinId) ? "Shop_PurchaseRecovered" : "Shop_PurchaseFailed", false);
                 }
             }
             catch (Exception refreshError)
             {
                 Debug.LogException(refreshError);
+
                 if (this != null)
                 {
                     IsShopReady = false;
-                    if (isActiveAndEnabled) SetStatus("구매 확인 실패 · 잔액을 다시 조회해 주세요.", true);
+
+                    if (isActiveAndEnabled)
+                        SetStatus("Shop_VerificationFailed", true);
                 }
             }
         }
@@ -160,10 +210,18 @@ public class CharacterShopController : MonoBehaviour
             if (this != null)
             {
                 isBuying = false;
+
                 if (isActiveAndEnabled)
                 {
-                    if (token != activation) RetryLoad();
-                    else { SyncOwnership(); RefreshAll(); }
+                    if (token != activation)
+                    {
+                        RetryLoad();
+                    }
+                    else
+                    {
+                        SyncOwnership();
+                        RefreshAll();
+                    }
                 }
             }
         }
@@ -172,30 +230,58 @@ public class CharacterShopController : MonoBehaviour
     public void TryEquip(CharacterSkinSO skin)
     {
         if (IsBusy || skin == null || !catalog.TryGetSkin(skin.SkinId, out _) || !PlayerProfile.EquipCharacterSkin(skin.SkinId)) return;
+
         SaveManager.Save();
-        SetStatus("캐릭터를 장착했습니다.", false);
+        AudioManager.Instance?.PlaySfx2D("EquipItem");
+        SetStatus("CharacterShop_Equipped", false);
     }
 
-    private void HandleWalletChanged() { SyncOwnership(); RefreshAll(); }
+    private void HandleWalletChanged()
+    {
+        SyncOwnership();
+        RefreshAll();
+    }
+
     private void SyncOwnership()
     {
         if (ugs == null || !ugs.IsWalletReady || catalog == null) return;
+
         PlayerProfile.ApplyCharacterOwnership(catalog, ugs.OwnedItems);
         SaveManager.Save();
     }
-    private void SetStatus(string message, bool retry)
+
+    private string GetLocalString(string id)
     {
-        if (statusText != null) statusText.text = message;
-        if (retryButton != null) retryButton.gameObject.SetActive(retry);
+        if (string.IsNullOrEmpty(id)) return "";
+        return LocalizationManager.Instance.GetText(CSV_Type.Shop, id);
     }
+
+    private void SetStatus(string id, bool retry)
+    {
+        if (statusText != null)
+            statusText.text = GetLocalString(id);
+
+        if (retryButton != null)
+            retryButton.gameObject.SetActive(retry);
+    }
+
     private void RefreshAll()
     {
         if (!isActiveAndEnabled) return;
+
         if (catalog != null && catalog.TryGetSkin(PlayerProfile.EquippedCharacterSkinId, out var skin))
         {
-            if (EquippedCharacterIcon != null) EquippedCharacterIcon.sprite = skin.Icon;
-            if (EquippedCharacterName != null) EquippedCharacterName.text = skin.DisplayName;
+            if (EquippedCharacterIcon != null)
+                EquippedCharacterIcon.sprite = skin.Icon;
+
+            if (EquippedCharacterName != null)
+                EquippedCharacterName.text = skin.DisplayName;
         }
-        foreach (var item in itemUIs) if (item != null) item.Refresh();
+
+        foreach (var item in itemUIs)
+        {
+            if (item != null)
+                item.Refresh();
+        }
     }
 }
