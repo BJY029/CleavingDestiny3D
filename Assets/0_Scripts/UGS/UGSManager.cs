@@ -292,7 +292,10 @@ public class UGSManager : MonoSingleton<UGSManager>
             skinPrices[skinId] = new AxeShopPrice(response.currency, response.price);
             ApplyWallet(new WalletResponse
             {
-                ready = true, coins = response.coins, sticks = response.sticks, ownedItems = response.ownedItems
+                ready = true,
+                coins = response.coins,
+                sticks = response.sticks,
+                ownedItems = response.ownedItems
             });
             return response;
         }

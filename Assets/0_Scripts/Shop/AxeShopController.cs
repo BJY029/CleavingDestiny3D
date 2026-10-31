@@ -75,7 +75,6 @@ public class AxeShopController : MonoBehaviour
 
         try
         {
-            BuildShop();
             await ugs.LoadShopDataAsync(refreshWallet);
 
             if (!IsCurrent(token)) return;

@@ -19,6 +19,11 @@ public class CharacterShopController : MonoBehaviour
     private readonly List<CharacterShopItemUI> itemUIs = new();
     private UGSManager ugs;
     private bool isBuilt, isBuying, isLoading;
+
+    //현재 작업이 유효한지 확인하는 번호
+    //각 함수에서 로컬 변수 token과 함께 사용됨. token은 작업을 시작할 때 기억해 둔 세대번호
+    //token != activation이면 비동기 작업 중 대기가 시작한 뒤 사용자 인터렉션으로 상점 상태가 바뀐 것. 
+    // 이 경우, 비동기 작업 결괄르 반영하지 않도록 한다.
     private int activation;
 
     public bool IsShopReady { get; private set; }
