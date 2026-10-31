@@ -107,7 +107,7 @@ public class ShopUIManager : MonoBehaviour
 
     private void UpdateBranchCount(int count)
     {
-        branchCountText.text = count.ToString();
+        branchCountText.text = count.ToString("N0");
     }
 
     private void UpdateGoldCount(int count)

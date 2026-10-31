@@ -86,7 +86,7 @@ public class UGSManager : MonoSingleton<UGSManager>
     private async void Start()
     {
         if (!IsValidInstance) return;
-        try { await EnsureInitializedAsync(); }
+        try { await LoadShopDataAsync(); }
         catch (Exception e) { Debug.LogException(e); }
     }
 
@@ -238,7 +238,16 @@ public class UGSManager : MonoSingleton<UGSManager>
         WalletChanged?.Invoke();
     }
 
-    // 가격표는 상점 첫 진입에 한 번만 받아 캐시합니다. 실패한 경우 다음 진입 때 재시도합니다.
+    // 게임 시작과 상점 진입이 같은 초기화/가격표 요청을 공유합니다.
+    // 잔액과 보유 목록은 초기화·구매·보상 응답으로 갱신되며, 명시적 재시도는 서버에서 다시 읽습니다.
+    public async Task LoadShopDataAsync(bool refreshWallet = false)
+    {
+        await LoadSkinCatalogAsync();
+        if (refreshWallet || !IsWalletReady)
+            await LoadPlayerData();
+    }
+
+    // 가격표는 시작 시 미리 받아 캐시합니다. 실패한 경우 상점 진입/재시도 때 다시 요청합니다.
     public Task LoadSkinCatalogAsync()
     {
         if (catalogLoading == null || catalogLoading.IsFaulted || catalogLoading.IsCanceled)

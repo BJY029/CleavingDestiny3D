@@ -29,7 +29,7 @@ public class CharacterShopController : MonoBehaviour
         PlayerProfile.OnCharacterSkinChanged += RefreshAll;
         if (retryButton != null) retryButton.onClick.AddListener(RetryLoad);
         BuildShop();
-        RetryLoad();
+        LoadShop(false);
     }
 
     private void OnDisable()
@@ -40,7 +40,9 @@ public class CharacterShopController : MonoBehaviour
         if (retryButton != null) retryButton.onClick.RemoveListener(RetryLoad);
     }
 
-    public async void RetryLoad()
+    public void RetryLoad() => LoadShop(true);
+
+    private async void LoadShop(bool refreshWallet)
     {
         if (isLoading || isBuying) return;
         int token = ++activation;
@@ -50,8 +52,7 @@ public class CharacterShopController : MonoBehaviour
         RefreshAll();
         try
         {
-            await ugs.LoadSkinCatalogAsync();
-            await ugs.LoadPlayerData();
+            await ugs.LoadShopDataAsync(refreshWallet);
             if (this == null || !isActiveAndEnabled || token != activation) return;
             IsShopReady = catalog != null && catalog.DefaultSkin != null && ugs.IsWalletReady;
             SyncOwnership();
@@ -70,7 +71,7 @@ public class CharacterShopController : MonoBehaviour
                 isLoading = false;
                 if (isActiveAndEnabled)
                 {
-                    if (token != activation) RetryLoad();
+                    if (token != activation) LoadShop(false);
                     else RefreshAll();
                 }
             }

@@ -26,7 +26,7 @@ public class AxeShopItemUI : MonoBehaviour
 
         iconImage.sprite = skin.Icon;
         nameText.text = skin.DisplayName;
-        priceText.text = skin.Price.ToString();
+        priceText.text = "불러오는 중…";
 
         buyButton.onClick.AddListener(HandleBuyClicked);
         equipButton.onClick.AddListener(HandleEquipClicked);
@@ -36,9 +36,9 @@ public class AxeShopItemUI : MonoBehaviour
     {
         if (skin == null) return;
         if (shopController.TryGetPrice(skin, out var price))
-            priceText.text = price.Price.ToString();
-        // SO 가격은 임시 표시만 사용하며 구매 가능 여부는 서버 가격으로 판단합니다.
-        else priceText.text = shopController.IsShopReady ? "판매 정보 없음" : skin.Price.ToString();
+            priceText.text = $"{price.Price:N0} {(price.Currency == "coins" ? "Coin" : "Sticks")}";
+        // Prices and purchase availability both come from the server catalog.
+        else priceText.text = shopController.IsShopReady ? "판매 정보 없음" : "불러오는 중…";
 
         AxeSkinState state = shopController.GetSkinState(skin);
 
