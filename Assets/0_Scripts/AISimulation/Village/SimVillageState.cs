@@ -36,7 +36,8 @@ public class VillageObjInfo
             _currentLevel = value;
 
             // 레벨이 변경될 때마다 텍스트를 자동으로 갱신합니다.
-            int descriptionLevel = _levelData.VillageType == VillageType.Farm ? _currentLevel - 1 : _currentLevel;
+            int descriptionLevel = _levelData.VillageType == VillageType.Farm || _levelData.VillageType == VillageType.Forge
+                ? _currentLevel - 1 : _currentLevel;
             curLevelDesc = GetVillDesc(descriptionLevel, _balanceData);
             nextLevelDesc = GetVillDesc(descriptionLevel + 1, _balanceData);
             if (_levelData.TryGetUpgradeCost(currentLevel - 1, out int goldV)) upgradeGold = goldV;
@@ -79,9 +80,9 @@ public class VillageObjInfo
         }
         else if (_levelData.VillageType == VillageType.Forge)
         {
-            int MaxDmg = Mathf.RoundToInt(balanceData.AxeDamageBase + ((level + 1) * balanceData.AxeDamageLevelMultiplier * balanceData.AxeDamageMinMultiplier));
-            int MinDmg = Mathf.RoundToInt(balanceData.AxeDamageBase - ((level + 1) * balanceData.AxeDamageLevelMultiplier * balanceData.AxeDamageMaxMultiplier));
-            return string.Format(vDesc.ForgeDesc, MaxDmg, MinDmg);
+            if (level >= balanceData.MaxLevel) return "Max Level";
+            var damage = balanceData.GetAxeRangeDamage(_playerSetting, level);
+            return string.Format(vDesc.ForgeDesc, damage.max, damage.min);
         }
         return "error";
     }
@@ -353,7 +354,7 @@ public class SimVillageState
                 else p2IncomeVillGold = VillGold;
                 break;
             case (VillageType.Forge):
-                var AtkDmgs = GetAxeRangeDamage(target.currentLevel);
+                var AtkDmgs = GetAxeRangeDamage(target.currentLevel - 1);
                 if (playerNum == 1)
                 {
                     p1MinHitDmg = AtkDmgs.min;
@@ -442,9 +443,6 @@ public class SimVillageState
 
     public (int min, int max) GetAxeRangeDamage(int level)
     {
-        return (
-             Mathf.RoundToInt(_villageBalanceData.AxeDamageBase - ((level + 1) * _villageBalanceData.AxeDamageLevelMultiplier * _villageBalanceData.AxeDamageMinMultiplier)),
-            Mathf.RoundToInt(_villageBalanceData.AxeDamageBase + ((level + 1) * _villageBalanceData.AxeDamageLevelMultiplier * _villageBalanceData.AxeDamageMaxMultiplier))
-        );
+        return _villageBalanceData.GetAxeRangeDamage(_playerSetting, level);
     }
 }

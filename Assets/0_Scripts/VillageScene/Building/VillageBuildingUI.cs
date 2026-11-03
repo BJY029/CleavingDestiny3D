@@ -110,7 +110,7 @@ namespace Village.Building
             npcImage.sprite = npcSprites[Math.Clamp(villageLevel, 0, npcSprites.Length - 1)];
 
             currentGoldText.SetText("{0}", currentGold);
-            UpdateUpgradeButton(nextUpgradeCost, currentGold);
+            UpdateUpgradeButton(nextUpgradeCost, currentGold, villageLevel);
         }
 
         public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
@@ -125,7 +125,7 @@ namespace Village.Building
             SetBuildingUI(currentBuildingType);
         }
 
-        private void UpdateUpgradeButton(int nextUpgradeCost, int currentGold)
+        private void UpdateUpgradeButton(int nextUpgradeCost, int currentGold, int currentLevel)
         {
             if (nextUpgradeCost <= 0)
             {
@@ -137,6 +137,17 @@ namespace Village.Building
             bool canUpgrade = currentGold >= nextUpgradeCost;
             var upgradeCostStr = new LocalizedString(CSV_Type.Village, canUpgrade ? "Upgrade_Cost" : "Upgrade_Cost_Not_Enough");
             upgradeCostText.SetText(upgradeCostStr, nextUpgradeCost);
+
+            if (currentBuildingType == VillageType.Forge)
+            {
+                int actor = PhotonNetwork.LocalPlayer.ActorNumber;
+                int currentMin = PhotonPropertyHelper.GetPlayerProp<int>(actor, PlayerPropKeys.MinAtkPow);
+                int currentMax = PhotonPropertyHelper.GetPlayerProp<int>(actor, PlayerPropKeys.MaxAtkPow);
+                var nextDamage = VillageStat.GetAxeRangeDamage(currentLevel + 1);
+                string delta = LocalizationManager.Instance.GetFormatText(CSV_Type.Village, "Forge_Upgrade_Delta",
+                    nextDamage.min - currentMin, nextDamage.max - currentMax);
+                upgradeCostText.SetText($"{upgradeCostText.text}\n<size=85%><color=#C2C2C2>{delta}</color></size>");
+            }
 
             // 업그레이드 버튼 활성화 여부 설정
             upgradeButton.interactable = canUpgrade;

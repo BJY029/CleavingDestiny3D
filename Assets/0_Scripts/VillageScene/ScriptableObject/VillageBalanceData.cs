@@ -63,6 +63,7 @@ public class VillageBalanceData : ScriptableObject
     [Header("Forge (Axe Damage)")]
 
     [SerializeField]
+    [Tooltip("Legacy field. Forge base damage comes from PlayerSetting.minAtkPow / maxAtkPow.")]
     private float axeDamageBase = 1000f;
     public float AxeDamageBase => axeDamageBase;
 
@@ -78,6 +79,15 @@ public class VillageBalanceData : ScriptableObject
     [SerializeField]
     private float axeDamageMaxMultiplier = 1.5f;
     public float AxeDamageMaxMultiplier => axeDamageMaxMultiplier;
+
+    public (int min, int max) GetAxeRangeDamage(PlayerSetting playerSetting, int level)
+    {
+        int upgrades = Mathf.Clamp(level, 0, Mathf.Max(0, maxLevel - 1));
+        return (
+            playerSetting.minAtkPow - Mathf.RoundToInt(upgrades * axeDamageLevelMultiplier * axeDamageMinMultiplier),
+            playerSetting.maxAtkPow + Mathf.RoundToInt(upgrades * axeDamageLevelMultiplier * axeDamageMaxMultiplier)
+        );
+    }
 
     [Header("Barrier (Armor)")]
     // Armor(L) = Base * Multiplier^(L-1)
