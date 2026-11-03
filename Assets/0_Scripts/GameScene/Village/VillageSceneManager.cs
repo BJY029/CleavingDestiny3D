@@ -160,6 +160,10 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
                 await FadeCanvas.Instance.FadeInAsync(1f);
             }
 
+            // 위치·시선 정렬과 카메라 전환은 화면이 완전히 가려진 뒤 수행한다.
+            ResetPlayerPos();
+            PlayerManager.Instance.LocalPlayerObj.GetComponent<PlayerController>()?.VillageUpgradePhase();
+
             GameCanvasController.Instance?.SetActiveCanvas(false);
             PlayerCanvasController.Instance?.SetActiveCanvas(false);
 
@@ -229,6 +233,9 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
 
             // 2. 화면이 가려진 상태에서 언로드
             await SceneManager.UnloadSceneAsync(CommonDefine.VILLAGESCENE).ToUniTask(cancellationToken: destroyCancellationToken);
+
+            // 각 클라이언트가 화면을 밝히기 전에 다음 날의 낮 시간으로 맞춘다.
+            if (!resetPlayerPos) WeatherMakerTimeController.instance?.SetNoon();
         }
         catch (OperationCanceledException)
         {

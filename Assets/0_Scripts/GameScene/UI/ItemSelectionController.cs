@@ -152,7 +152,7 @@ public class ItemSelectionController : MonoBehaviourPunCallbacks
         ItemDescPanel.SetActive(true);
         ItemName.text = LocalizationManager.Instance.GetText(CSV_Type.Item, item.displayName_ID);
         ItemRarity.text = item.itemClass.ToString();
-        ItemDesc.text = LocalizationManager.Instance.GetText(CSV_Type.Item, item.itemDesc_ID);
+        ItemDesc.text = ItemStatusText.GetItemDescription(item);
     }
 
     public void SetDescTable(int ActNum)

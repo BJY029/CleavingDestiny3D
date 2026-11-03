@@ -156,6 +156,9 @@ MonoBehaviour:
   - RPC_ReceiveShopPurchaseResult
   - RPC_UpdateDmgMultiValue
   - BranchHoverRPC
+  - RPC_ClearItemUsage
+  - RPC_RecordItemUsage
+  - RPC_ShowItemUseWarning
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

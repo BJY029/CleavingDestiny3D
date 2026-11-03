@@ -78,7 +78,7 @@ namespace Village.Building
             if (currentItem == null)
                 return string.Empty;
 
-            return LocalizationManager.Instance.GetText(CSV_Type.Item, currentItem.itemDesc_ID); // 아이템 설명 반환
+            return ItemStatusText.GetItemDescription(currentItem);
         }
 
         public void SetSelected(bool selected)

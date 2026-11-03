@@ -51,6 +51,7 @@ public class ItemStatusBarUI : MonoBehaviour
 
             var go = Instantiate(iconPrefab, iconParent);
             StatusIconView view = go.GetComponent<StatusIconView>();
+            view.SetStatusInfo(st, shouldMask);
 
             if (shouldMask)
             {

@@ -411,8 +411,13 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 
 	public void SetWarningTextActive(string textId)
 	{
+		SetWarningMessageActive(LocalizationManager.Instance.GetText(CSV_Type.UI, textId));
+	}
+
+	public void SetWarningMessageActive(string message)
+	{
 		WarningObj.SetActive(true);
-		WarningText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, textId);
+		WarningText.text = message;
 		WarningTextAnim.Play("UI_Player_Warning_Up");
 	}
 

@@ -384,7 +384,9 @@ public class GuideBookUIController : MonoBehaviour
                 pageTitleText.text = LocalizationManager.Instance.GetText(tableType, currentPage.pageTitleKey);
             
             if (pageDescriptionText != null) 
-                pageDescriptionText.text = LocalizationManager.Instance.GetText(tableType, currentPage.pageDescriptionKey);
+                pageDescriptionText.text = currentPage.item != null
+                    ? ItemStatusText.GetItemDescription(currentPage.item)
+                    : LocalizationManager.Instance.GetText(tableType, currentPage.pageDescriptionKey);
         }
 
         if (pageImage != null)

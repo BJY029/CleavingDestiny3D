@@ -442,9 +442,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             //아직 관련 처리를 진행하지 않은 경우
             if (!UpgradePhase)
             {
-                //처리 진행후
-                VillageUpgradePhase();
-                //마을 업그레이드 페이즈에 돌입했음을 명시
+                // 카메라 전환은 VillageSceneManager에서 페이드가 끝난 뒤 처리한다.
                 UpgradePhase = true;
             }
             SetInputLocked(true);

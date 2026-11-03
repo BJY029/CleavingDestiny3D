@@ -60,6 +60,44 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_UseItem), RpcTarget.MasterClient, ActNum, slotIdx);
 	}
 
+	public string GetItemUseBlockReason(int actor, ItemSO item, out int missingEnergy)
+	{
+		missingEnergy = 0;
+		if (item == null) return "UI_ItemUse_Unavailable";
+		if (PhotonPropertyHelper.GetRoomProp<GamePhaseValue>(RoomPropKeys.GamePhase) != GamePhaseValue.DAY)
+			return "UI_ItemUse_DayOnly";
+		if (PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor) != actor)
+			return "UI_ItemUse_NotYourTurn";
+		string limit = ItemHandlingSystem.instance.GetItemUsageBlockReason(actor, item.itemId);
+		if (limit != null) return limit;
+		missingEnergy = Mathf.Max(0, item.itemCost - PhotonPropertyHelper.GetPlayerProp<int>(actor, PlayerPropKeys.Energy));
+		if (missingEnergy > 0) return "UI_ItemUse_EnergyMissing";
+		bool needsOpponent = item.target == ItemTarget.Opponent || item.target == ItemTarget.OpponentVillage ||
+			item.target == ItemTarget.OpponentTree || item.itemId == "4006";
+		if (needsOpponent && !PlayerManager.Instance.Players.Keys.Any(other => other != actor))
+			return "UI_ItemUse_NoTarget";
+		if (item.itemId == "2002")
+		{
+			int cap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(actor));
+			var slots = ItemInfoSerializer.Decode(PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(actor)), cap);
+			if (slots.Count(slot => !string.IsNullOrEmpty(slot.itemID)) <= 1) return "UI_ItemUse_NeedSacrifice";
+		}
+		return null;
+	}
+
+	public void ShowItemUseWarning(string reason, int missingEnergy)
+	{
+		PlayerCanvasController.Instance.SetWarningMessageActive(
+			LocalizationManager.Instance.GetFormatText(CSV_Type.UI, reason, missingEnergy));
+	}
+
+	[PunRPC]
+	private void RPC_ShowItemUseWarning(string reason, int missingEnergy, PhotonMessageInfo info)
+	{
+		if (!info.Sender.IsMasterClient) return;
+		ShowItemUseWarning(reason, missingEnergy);
+	}
+
 	public void RequestUseNewDrugItem(int ActNum, InventoryNewDrug nd)
 	{
 		photonView.RPC(nameof(RPC_UseNewDrugItem), RpcTarget.MasterClient, ActNum);
@@ -242,14 +280,8 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		//Turn 검증
 		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
-		if (turnActor != requestActor)
-		{
-			if (!GameManager.Instance.isSoloPlay)
-			{
-				Debug.LogError("Requester isn't Current turn");
-				return;
-			}
-		}
+		if (info.Sender.ActorNumber != requestActor &&
+			!(info.Sender.IsMasterClient && GameManager.Instance.isSoloPlay && PhotonNetwork.CurrentRoom.GetPlayer(requestActor) == null)) return;
 
 		bool hasNewDrugItem = PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.INV_NEWDRUG(requestActor));
 		if (!hasNewDrugItem)
@@ -260,6 +292,12 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		ItemSO item = ItemDB.Instance.Get("5000");
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(requestActor);
+		string reason = GetItemUseBlockReason(requestActor, item, out int missingEnergy);
+		if (reason != null)
+		{
+			if (player != null) photonView.RPC(nameof(RPC_ShowItemUseWarning), player, reason, missingEnergy);
+			return;
+		}
 
 		photonView.RPC(nameof(RPC_OffNewDrug), player);
 		photonView.RPC(nameof(PlayNewDrugSFX), RpcTarget.All);
@@ -313,14 +351,8 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		//Turn 검증
 		int turnActor = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor);
-		if (turnActor != requestActor)
-		{
-			if (!GameManager.Instance.isSoloPlay)
-			{
-				Debug.LogError("Requester isn't Current turn");
-				return;
-			}
-		}
+		if (info.Sender.ActorNumber != requestActor &&
+			!(info.Sender.IsMasterClient && GameManager.Instance.isSoloPlay && PhotonNetwork.CurrentRoom.GetPlayer(requestActor) == null)) return;
 
 		//요청자 INV 정보 가져오기
 		string Inv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(requestActor));
@@ -328,12 +360,6 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 
 		//요청자 INV 정보 검증
 		var slots = ItemInfoSerializer.Decode(Inv, InvCap);
-		int itemCnt = 0;
-		for (int i = 0; i < slots.Length; i++)
-		{
-			if (slots[i].itemID != null) itemCnt++;
-		}
-
 		if (slots == null || slots.Length != InvCap)
 		{
 			Debug.LogError("Slots Info Error");
@@ -364,34 +390,17 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		Player player = PhotonNetwork.CurrentRoom.GetPlayer(requestActor);
 
 
-		//희생 아이템이면서, 아이템 갯수가 1개 이하인 경우
-		if (itemCnt <= 1 && item.itemId == "2002")
-		{
-			if (player != null)
-				photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_NotEnoughItem);
-			return;
-		}
-
-		//Check whether you are trying to use an item that can only be used once per turn or day.
-		if (!ItemHandlingSystem.instance.CheckItemAvaiable(requestActor, itemId))
-		{
-			if (player != null)
-				photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_NotAvaiable);
-			return;
-		}
-
-		//Check player's energy and prevent to use item
-		int playerEng = PhotonPropertyHelper.GetPlayerProp<int>(requestActor, PlayerPropKeys.Energy);
-		if (playerEng - item.itemCost < 0)
+		string reason = GetItemUseBlockReason(requestActor, item, out int missingEnergy);
+		if (reason != null)
 		{
 			if (player != null)
 			{
-				photonView.RPC(nameof(RPC_ShowWarning), player, UI_CSV.UI_Warning_Energy);
+				photonView.RPC(nameof(RPC_ShowItemUseWarning), player, reason, missingEnergy);
 				photonView.RPC(nameof(RPC_SetItemSlotUI), player, false);
 			}
 			return;
 		}
-
+		int playerEng = PhotonPropertyHelper.GetPlayerProp<int>(requestActor, PlayerPropKeys.Energy);
 		//기력량 업데이트
 		PhotonPropertyHelper.SetPlayerProp(requestActor, PlayerPropKeys.Energy, playerEng - item.itemCost);
 

@@ -1,4 +1,20 @@
 ID,KR,EN
+UI_Status_TurnEnd,효과를 받은 플레이어의 턴 종료 시 종료,Expires at the end of the affected player's turn.
+UI_Status_TurnEndsRemaining,효과를 받은 플레이어의 턴이 {0}번 끝나면 종료,Expires after {0} more turn endings of the affected player.
+UI_Status_VillageEnd,마을 단계 시작 시 종료,Expires when the village phase begins.
+UI_Status_VillageConsumed,마을 단계 시작 시 발동 후 종료,Triggers and expires when the village phase begins.
+UI_Status_AttackConsumed,다음 공격 시 발동 후 소모,Triggers and is consumed on the next attack.
+UI_Status_ConversionConsumed,방어막 전환 효과 발동 시 소모,Consumed when its barrier conversion effect activates.
+UI_Status_UntilTriggered,효과가 발동할 때까지 유지,Remains until its effect activates.
+UI_ItemUse_Unavailable,이 아이템은 사용할 수 없습니다.,This item is unavailable.
+UI_ItemUse_DayOnly,낮 행동 단계에서만 사용할 수 있습니다.,Available during the daytime action phase only.
+UI_ItemUse_NotYourTurn,내 턴에만 사용할 수 있습니다.,Available on your turn only.
+UI_ItemUse_EnergyMissing,기력 {0} 부족,Need {0} more energy.
+UI_ItemUse_TurnUsed,이번 턴에 이미 사용했습니다.,Already used this turn.
+UI_ItemUse_DayUsed,오늘 이미 사용했습니다.,Already used today.
+UI_ItemUse_GameUsed,이번 게임에서 이미 사용했습니다.,Already used this match.
+UI_ItemUse_NoTarget,사용할 수 있는 대상이 없습니다.,No valid target is available.
+UI_ItemUse_NeedSacrifice,희생할 다른 아이템이 필요합니다.,Another item is required as a sacrifice.
 UI_PWF_CreateRoom,방 만들기,Create Room
 UI_PWF_JoinRoom,참가,Join
 UI_PWF_CodePlaceholder,초대코드 입력...,Enter invite code...
