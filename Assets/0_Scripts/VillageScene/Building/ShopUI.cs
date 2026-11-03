@@ -205,30 +205,14 @@ namespace Village.Building
             base.RefreshStatusUI();
             shopInventory?.RefreshInventory();
 
-            int currentLevel = VillageStat.GetVillageLevel(currentBuildingType) + 1; // 레벨은 0부터 시작하므로 +1
-
-            float rareChance = VillageStat.VillageBalance.ShopRareChanceBase + (currentLevel * VillageStat.VillageBalance.ShopRareChanceMultiplier);
-            float heroChance = 0f;
-            if (currentLevel >= VillageStat.VillageBalance.ShopHeroMinLevel)
-            {
-                int heroLevelOffset = currentLevel - VillageStat.VillageBalance.ShopHeroMinLevel;
-                heroChance = VillageStat.VillageBalance.ShopHeroChanceBase + (heroLevelOffset * VillageStat.VillageBalance.ShopHeroChanceMultiplier);
-            }
-
-            float legendaryChance = 0f;
-            if (currentLevel >= VillageStat.VillageBalance.ShopLegendaryMinLevel)
-            {
-                int legendaryLevelOffset = currentLevel - VillageStat.VillageBalance.ShopLegendaryMinLevel;
-                legendaryChance = VillageStat.VillageBalance.ShopLegendaryChanceBase + (legendaryLevelOffset * VillageStat.VillageBalance.ShopLegendaryChanceMultiplier);
-            }
-
-
+            int currentLevel = VillageStat.GetVillageLevel(currentBuildingType);
+            var chances = VillageStat.VillageBalance.GetShopRarityChances(currentLevel);
 
             shopEffectText.SetText(
                 LocalizationManager.Instance.GetText(CSV_Type.Village, "Shop_Effect"),
-                rareChance * 100f,
-                heroChance * 100f,
-                legendaryChance * 100f
+                chances.rare * 100f,
+                chances.hero * 100f,
+                chances.legendary * 100f
             );
 
             int reloadCost = VillageStat.VillageBalance.GetShopReloadCost(reloadCount);

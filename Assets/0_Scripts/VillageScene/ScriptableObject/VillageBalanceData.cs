@@ -97,7 +97,7 @@ public class VillageBalanceData : ScriptableObject
 
     [Header("Shop Rarity - Rare")]
     [SerializeField]
-    private float shopRareChanceBase = 0.05f; // 레벨 1 기본 확률
+    private float shopRareChanceBase = 0.05f; // 기준 확률에 표시 레벨별 증가분을 더한다.
     public float ShopRareChanceBase => shopRareChanceBase;
 
     [SerializeField]
@@ -129,6 +129,22 @@ public class VillageBalanceData : ScriptableObject
     [SerializeField]
     private float shopLegendaryChanceMultiplier = 0.01f; // 최소 레벨 이후 레벨당 증가량
     public float ShopLegendaryChanceMultiplier => shopLegendaryChanceMultiplier;
+
+    // level은 내부 저장 기준(0부터)이며 화면에 표시되는 레벨은 level + 1이다.
+    public (float common, float hero, float rare, float legendary) GetShopRarityChances(int level)
+    {
+        int displayLevel = Mathf.Clamp(level, 0, maxLevel - 1) + 1;
+        float rare = Mathf.Clamp01(shopRareChanceBase + displayLevel * shopRareChanceMultiplier);
+        float hero = displayLevel >= shopHeroMinLevel
+            ? Mathf.Clamp01(shopHeroChanceBase + (displayLevel - shopHeroMinLevel) * shopHeroChanceMultiplier)
+            : 0f;
+        float legendary = displayLevel >= shopLegendaryMinLevel
+            ? Mathf.Clamp01(shopLegendaryChanceBase + (displayLevel - shopLegendaryMinLevel) * shopLegendaryChanceMultiplier)
+            : 0f;
+        float total = rare + hero + legendary;
+        if (total > 1f) return (0f, hero / total, rare / total, legendary / total);
+        return (1f - total, hero, rare, legendary);
+    }
 
     [SerializeField]
     private int shopReloadCost = 50;
