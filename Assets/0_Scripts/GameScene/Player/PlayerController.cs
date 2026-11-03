@@ -603,15 +603,15 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         //ItemVFXController.Instance.Any_StopItemVFX(VFXType.PowerUP, PlayerActNum);
     }
 
-    // 시간 초과 / 타임아웃 자동 실행용 : 나무베기 준비 후 풀게이지(100%) 타격 자동 진행
-    public void AutoTriggerFullGaugeStrike()
+    // 시간 초과 시 나무베기 준비 후 무작위 게이지로 자동 타격
+    public void AutoTriggerRandomGaugeStrike()
     {
         if (!photonView.IsMine) return;
 
-        AutoTriggerFullGaugeStrikeAsync().Forget();
+        AutoTriggerRandomGaugeStrikeAsync().Forget();
     }
 
-    private async UniTaskVoid AutoTriggerFullGaugeStrikeAsync()
+    private async UniTaskVoid AutoTriggerRandomGaugeStrikeAsync()
     {
         // 1. 아직 준비 상태가 아닌 경우 준비 상태 진입 (자동 타격 시에는 게이지 UI를 오픈하지 않음)
         if (!isPreparingTreeCut)
@@ -636,8 +636,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             PlayerCanvasController.Instance?.CloseGauge();
         }
 
-        // 2. 풀게이지(100%) 타격 실행
-        TriggerTreeStrikeWithGauge(100f);
+        TriggerTreeStrikeWithGauge(Random.Range(0f, 100f));
     }
 
     private void TriggerTreeStrikeWithGauge(float overrideDamageRatio)
@@ -653,7 +652,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
         damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100f));
 
-        DevLog.Log($"<color=green>[HIT - AutoFullGaugeStrike]</color> Player {PlayerActNum} Auto Full Gauge Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
+        DevLog.Log($"<color=green>[HIT - AutoRandomGaugeStrike]</color> Player {PlayerActNum} Auto Random Gauge Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
 
         attackRequestSent = false;
         animationController?.PlayStrikeAnimation();
