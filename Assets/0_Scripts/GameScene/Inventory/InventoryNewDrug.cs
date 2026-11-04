@@ -11,14 +11,9 @@ public class InventoryNewDrug : MonoBehaviourPunCallbacks, ILookInteractable
     public GameObject ToolTipPanel;
     public TextMeshProUGUI ItemNameText;
     public TextMeshProUGUI ItemDescText;
+    [SerializeField] private ItemTooltipCard tooltipCard;
 
     private int ownerActorNumber;
-
-    private void Awake()
-    {
-        ItemDescText.fontSizeMax = Mathf.Max(ItemDescText.fontSizeMax, ItemDescText.fontSize);
-        ItemDescText.enableAutoSizing = true;
-    }
 
     private void RefreshTooltip()
     {
@@ -38,9 +33,10 @@ public class InventoryNewDrug : MonoBehaviourPunCallbacks, ILookInteractable
         if (IsMine(PhotonNetwork.LocalPlayer.ActorNumber))
         {
             string reason = InventoryAuthority.Instance.GetItemUseBlockReason(ownerActorNumber, NewDrugItem, out int missingEnergy);
-            if (reason != null) ItemDescText.text = "<b><color=#B83A32>" +
+            if (reason != null) ItemDescText.text = "<b><color=#FF9A86>" +
                 LocalizationManager.Instance.GetFormatText(CSV_Type.UI, reason, missingEnergy) + "</color></b>\n\n" + ItemDescText.text;
         }
+        tooltipCard.SetItem(NewDrugItem);
     }
 
     public void InitOwnerActorNum(int actorNum)

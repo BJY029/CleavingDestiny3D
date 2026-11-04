@@ -1,4 +1,9 @@
 ID,KR,EN
+UI_ItemTooltip_Common,일반,Common
+UI_ItemTooltip_Hero,영웅,Hero
+UI_ItemTooltip_Rare,희귀,Rare
+UI_ItemTooltip_Legendary,전설,Legendary
+UI_ItemTooltip_Energy,소모 기력  {0},Energy cost  {0}
 UI_Status_TurnEnd,효과를 받은 플레이어의 턴 종료 시 종료,Expires at the end of the affected player's turn.
 UI_Status_TurnEndsRemaining,효과를 받은 플레이어의 턴이 {0}번 끝나면 종료,Expires after {0} more turn endings of the affected player.
 UI_Status_VillageEnd,마을 단계 시작 시 종료,Expires when the village phase begins.

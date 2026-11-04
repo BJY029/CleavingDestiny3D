@@ -25,9 +25,8 @@ public class WorldInventorySlot : MonoBehaviourPunCallbacks, ILookInteractable
 	[Header("ToolTipInfos")]
 	public GameObject ToolTipPanel;
 	public TextMeshProUGUI ItemNameText;
-	public TextMeshProUGUI ItemRarityText;
-	public TextMeshProUGUI ItemPriceText;
 	public TextMeshProUGUI ItemDescText;
+	[SerializeField] private ItemTooltipCard tooltipCard;
 
 	[Header("NullTexture")]
 	public Texture2D nullTexture;
@@ -37,8 +36,6 @@ public class WorldInventorySlot : MonoBehaviourPunCallbacks, ILookInteractable
 		//머테리얼 정보 
 		mpb = new MaterialPropertyBlock();
 		quadRenderer = GetComponent<MeshRenderer>();
-		ItemDescText.fontSizeMax = Mathf.Max(ItemDescText.fontSizeMax, ItemDescText.fontSize);
-		ItemDescText.enableAutoSizing = true;
 
 
 	}
@@ -108,16 +105,15 @@ public class WorldInventorySlot : MonoBehaviourPunCallbacks, ILookInteractable
 	private void InitItemInfos()
 	{
 		ItemNameText.text = LocalizationManager.Instance.GetText(CSV_Type.Item, currentItem.displayName_ID);
-		ItemRarityText.text = currentItem.itemClass.ToString();
-		ItemPriceText.text = "Cost : " + currentItem.itemCost.ToString();
 		ItemDescText.text = ItemStatusText.GetItemDescription(currentItem);
 		if (IsMine(PhotonNetwork.LocalPlayer.ActorNumber) && InventoryAuthority.Instance != null)
 		{
 			string reason = InventoryAuthority.Instance.GetItemUseBlockReason(ownerActor, currentItem, out int missingEnergy);
 			if (reason != null)
-				ItemDescText.text = "<b><color=#B83A32>" +
+				ItemDescText.text = "<b><color=#FF9A86>" +
 					LocalizationManager.Instance.GetFormatText(CSV_Type.UI, reason, missingEnergy) + "</color></b>\n\n" + ItemDescText.text;
 		}
+		tooltipCard.SetItem(currentItem);
 	}
 
 	//아이콘 설정
