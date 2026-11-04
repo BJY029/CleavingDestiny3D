@@ -1,14 +1,10 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum AxeSkinState
-{
-    Locked,
-    Owned,
-    Equipped
-}
+public enum AxeSkinState { Locked, Owned, Equipped }
 
 public class AxeShopController : MonoBehaviour
 {
@@ -20,162 +16,256 @@ public class AxeShopController : MonoBehaviour
     [SerializeField] private Transform contentRoot;
     [SerializeField] private Image EquippedAxeIcon;
     [SerializeField] private TextMeshProUGUI EquippedAxeName;
+    [SerializeField] private TextMeshProUGUI statusText;
+    [SerializeField] private Button retryButton;
 
     private readonly List<AxeShopItemUI> itemUIs = new();
-
-    private bool isBuilt;
-    private bool isBuying;
     private UGSManager ugs;
-    public bool IsShopReady { get; private set; }
-    public bool IsBusy => isBuying || !IsShopReady;
+    private bool isBuilt, isBuying, isLoading;
+    private int activation;
 
-    private async void OnEnable()
+    public bool IsShopReady { get; private set; }
+    public bool IsBusy => !isActiveAndEnabled || isBuying || isLoading || !IsShopReady;
+
+    private void OnEnable()
     {
-        PlayerProfile.OnBranchCountChanged += HandleBranchCountChanged;
-        PlayerProfile.OnAxeSkinChanged += HandleAxeSkinChanged;
         ugs = UGSManager.Instance;
         ugs.WalletChanged += HandleWalletChanged;
+        PlayerProfile.OnAxeSkinChanged += RefreshAll;
+
+        if (retryButton != null)
+            retryButton.onClick.AddListener(RetryLoad);
+
         IsShopReady = false;
+        SetStatus("Shop_Loading", false);
 
-        if (!isBuilt) BuildShop();
-
+        BuildShop();
         RefreshAll();
-        try
-        {
-            await UGSManager.Instance.LoadSkinCatalogAsync();
-            if (this != null && isActiveAndEnabled) IsShopReady = UGSManager.Instance.IsWalletReady;
-        }
-        catch (System.Exception e) { Debug.LogException(e); }
-        finally { if (this != null && isActiveAndEnabled) RefreshAll(); }
+        LoadShop(false);
     }
 
     private void OnDisable()
     {
-        PlayerProfile.OnBranchCountChanged -= HandleBranchCountChanged;
-        PlayerProfile.OnAxeSkinChanged -= HandleAxeSkinChanged;
-        if (ugs != null) ugs.WalletChanged -= HandleWalletChanged;
+        activation++;
+        IsShopReady = false;
+
+        if (ugs != null)
+            ugs.WalletChanged -= HandleWalletChanged;
+
+        PlayerProfile.OnAxeSkinChanged -= RefreshAll;
+
+        if (retryButton != null)
+            retryButton.onClick.RemoveListener(RetryLoad);
+    }
+
+    private bool IsCurrent(int token) => this != null && isActiveAndEnabled && token == activation;
+
+    public void RetryLoad() => LoadShop(true);
+
+    private async void LoadShop(bool refreshWallet)
+    {
+        if (!isActiveAndEnabled || isLoading || isBuying) return;
+
+        int token = ++activation;
+        isLoading = true;
+        IsShopReady = false;
+
+        SetStatus("Shop_Loading", false);
+        RefreshAll();
+
+        try
+        {
+            await ugs.LoadShopDataAsync(refreshWallet);
+
+            if (!IsCurrent(token)) return;
+
+            IsShopReady = isBuilt && catalog.TryGetSkin("axe_basic", out _) && ugs.IsWalletReady;
+            SetStatus(IsShopReady ? "" : "AxeShop_ConfigError", !IsShopReady);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+
+            if (IsCurrent(token))
+                SetStatus("Shop_LoadFailed", true);
+        }
+        finally
+        {
+            if (this != null)
+            {
+                isLoading = false;
+
+                if (isActiveAndEnabled)
+                {
+                    if (token != activation) LoadShop(false);
+                    else RefreshAll();
+                }
+            }
+        }
     }
 
     private void BuildShop()
     {
-        if (catalog == null || itemPrefab == null || contentRoot == null)
-        {
-            Debug.LogError("[AxeShopController] 상점 설정이 올바르지 않습니다.", this);
-            return;
-        }
+        if (isBuilt || catalog == null || itemPrefab == null || contentRoot == null) return;
 
-        foreach (AxeSkinSO skin in catalog.Skins)
-        {
-            if (skin == null) continue;
+        var ids = new HashSet<string>(StringComparer.Ordinal);
 
-            AxeShopItemUI itemUI = Instantiate(itemPrefab, contentRoot);
-            itemUI.Initialize(skin, this);
+        if (catalog.TryGetSkin("axe_basic", out var defaultSkin))
+            AddItem(defaultSkin, ids);
 
-            itemUIs.Add(itemUI);
-        }
+        foreach (var skin in catalog.Skins)
+            AddItem(skin, ids);
 
         isBuilt = true;
     }
 
+    private void AddItem(AxeSkinSO skin, HashSet<string> ids)
+    {
+        if (skin == null || string.IsNullOrWhiteSpace(skin.SkinId) || !ids.Add(skin.SkinId)) return;
+
+        var item = Instantiate(itemPrefab, contentRoot);
+        item.Initialize(skin, this);
+        itemUIs.Add(item);
+    }
+
     public AxeSkinState GetSkinState(AxeSkinSO skin)
     {
-        if (skin == null)
+        if (skin == null || !PlayerProfile.OwnsAxeSkin(skin.SkinId))
             return AxeSkinState.Locked;
 
-        if (!PlayerProfile.OwnsAxeSkin(skin.SkinId))
-            return AxeSkinState.Locked;
-
-        if (PlayerProfile.EquippedAxeSkinId == skin.SkinId)
-            return AxeSkinState.Equipped;
-
-        return AxeSkinState.Owned;
-
+        return PlayerProfile.EquippedAxeSkinId == skin.SkinId ? AxeSkinState.Equipped : AxeSkinState.Owned;
     }
 
     public bool TryGetPrice(AxeSkinSO skin, out AxeShopPrice price)
     {
         price = null;
-        return skin != null && IsShopReady && UGSManager.Instance.TryGetSkinPrice(skin.SkinId, out price);
+
+        return skin != null && IsShopReady && ugs != null &&
+            catalog.TryGetSkin(skin.SkinId, out _) &&
+            ugs.TryGetSkinPrice(skin.SkinId, out price);
     }
 
-    public bool CanPurchase(AxeSkinSO skin)
-    {
-        return !IsBusy && TryGetPrice(skin, out var price) &&
-            UGSManager.Instance.PlayerData.TryGetValue(price.Currency, out int balance) && balance >= price.Price;
-    }
+    public bool CanPurchase(AxeSkinSO skin) => !IsBusy && skin != null && ugs.IsWalletReady &&
+        !PlayerProfile.OwnsAxeSkin(skin.SkinId) && TryGetPrice(skin, out var price) &&
+        ugs.PlayerData.TryGetValue(price.Currency, out int balance) && balance >= price.Price;
 
     public async void TryPurchase(AxeSkinSO skin)
     {
-        if (skin == null || IsBusy || !TryGetPrice(skin, out _)) return;
+        if (!CanPurchase(skin) || !TryGetPrice(skin, out var price)) return;
+
+        int token = activation;
         isBuying = true;
+
+        SetStatus("Shop_Purchasing", false);
         RefreshAll();
+
         try
         {
-            var response = await UGSManager.Instance.PurchaseSkinAsync(skin.SkinId);
-            switch (response.status)
+            var result = await ugs.PurchaseSkinAsync(skin.SkinId);
+
+            if (!IsCurrent(token)) return;
+
+            switch (result.status)
             {
                 case "purchased":
-                    Debug.Log($"[AxeShop] 구매 성공: {skin.DisplayName} / {response.currency} {response.price}");
+                    SetStatus("Shop_PurchaseComplete", false);
                     AudioManager.Instance?.PlaySfx2D("WoodPurchase");
                     break;
+
                 case "already_owned":
-                    Debug.Log("[AxeShop] 이미 보유한 스킨입니다. 서버 구매 목록을 반영했습니다.");
+                    SetStatus("AxeShop_AlreadyOwned", false);
                     break;
+
                 case "insufficient_funds":
-                    Debug.Log("[AxeShop] 구매에 필요한 재화가 부족합니다.");
+                    SetStatus(price.Currency == "coins" ? "Shop_NotEnoughCoins" : "Shop_NotEnoughSticks", false);
                     break;
-                case "skin_not_found":
-                    Debug.LogError("[AxeShop] 서버 SKIN_CATALOG에 없는 스킨입니다: " + skin.SkinId);
+
+                default:
+                    SetStatus("Shop_NoSaleInfo", false);
                     break;
             }
         }
-        catch (System.Exception e) { Debug.LogException(e); }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+
+            try
+            {
+                // 응답을 받지 못했더라도 서버에서 구매가 완료되었을 수 있습니다.
+                await ugs.LoadPlayerData();
+
+                if (IsCurrent(token))
+                    SetStatus(PlayerProfile.OwnsAxeSkin(skin.SkinId) ? "Shop_PurchaseRecovered" : "Shop_PurchaseFailed", false);
+            }
+            catch (Exception refreshError)
+            {
+                Debug.LogException(refreshError);
+
+                if (IsCurrent(token))
+                {
+                    IsShopReady = false;
+                    SetStatus("Shop_VerificationFailed", true);
+                }
+            }
+        }
         finally
         {
-            isBuying = false;
-            if (this != null) RefreshAll();
+            if (this != null)
+            {
+                isBuying = false;
+
+                if (isActiveAndEnabled)
+                {
+                    if (token != activation) RetryLoad();
+                    else RefreshAll();
+                }
+            }
         }
     }
 
     public void TryEquip(AxeSkinSO skin)
     {
-        if (skin == null || IsBusy) return;
-
-        if (!PlayerProfile.EquipAxeSkin(skin.SkinId))
-            return;
+        if (IsBusy || skin == null || !catalog.TryGetSkin(skin.SkinId, out _) || !PlayerProfile.EquipAxeSkin(skin.SkinId)) return;
 
         SaveManager.Save();
-
-        AudioManager.Instance.PlaySfx2D("EquipItem");
-        Debug.Log($"[AxeShop] 장착 : {skin.DisplayName}");
-    }
-
-    private void HandleBranchCountChanged(int count)
-    {
-        RefreshAll();
-    }
-
-    private void HandleAxeSkinChanged()
-    {
-        RefreshAll();
+        AudioManager.Instance?.PlaySfx2D("EquipItem");
+        SetStatus("AxeShop_Equipped", false);
     }
 
     private void HandleWalletChanged() => RefreshAll();
 
+    private string GetLocalString(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return "";
+        return LocalizationManager.Instance.GetText(CSV_Type.Shop, id);
+    }
+
+    private void SetStatus(string id, bool retry)
+    {
+        if (statusText != null)
+            statusText.text = GetLocalString(id);
+
+        if (retryButton != null)
+            retryButton.gameObject.SetActive(retry);
+    }
+
     private void RefreshAll()
     {
-        if (catalog == null) return;
-        catalog.TryGetSkin(PlayerProfile.EquippedAxeSkinId, out AxeSkinSO skin);
+        if (!isActiveAndEnabled) return;
 
-        if (skin != null)
+        if (catalog != null && catalog.TryGetSkin(PlayerProfile.EquippedAxeSkinId, out var skin))
         {
-            EquippedAxeIcon.sprite = skin.Icon;
-            EquippedAxeName.text = skin.DisplayName;
+            if (EquippedAxeIcon != null)
+                EquippedAxeIcon.sprite = skin.Icon;
+
+            if (EquippedAxeName != null)
+                EquippedAxeName.text = skin.DisplayName;
         }
 
-        foreach (AxeShopItemUI itemUI in itemUIs)
+        foreach (var item in itemUIs)
         {
-            if (itemUI != null) itemUI.Refresh();
+            if (item != null)
+                item.Refresh();
         }
     }
 }

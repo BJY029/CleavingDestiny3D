@@ -16,7 +16,7 @@ public class AxeSkinCatalogSO : ScriptableObject
 
         foreach (AxeSkinSO skin in skins)
         {
-            if (skin == null) return false;
+            if (skin == null) continue;
 
             if (string.Equals(skin.SkinId, skinId, StringComparison.Ordinal))
             {
