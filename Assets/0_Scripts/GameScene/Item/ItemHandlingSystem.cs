@@ -37,6 +37,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	private Dictionary<int, List<string>> UsedTurnItem;
 	private Dictionary<int, List<string>> UsedDayItem;
 	private Dictionary<int, List<string>> UsedGameItem;
+	public event Action ItemUsageChanged;
 
 	private void Awake()
 	{
@@ -73,6 +74,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		if (!UsedDayItem.ContainsKey(actorNum))
 			UsedDayItem.Add(actorNum, new List<string>());
 		UsedDayItem[actorNum].Add(itemId);
+		ItemUsageChanged?.Invoke();
 	}
 
 	/// <summary>
@@ -84,6 +86,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		{
 			I.Value.Clear();
 		}
+		ItemUsageChanged?.Invoke();
+		if (PhotonNetwork.IsMasterClient) photonView.RPC(nameof(RPC_ClearItemUsage), RpcTarget.Others, true);
 	}
 
 	/// <summary>
@@ -96,6 +100,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			UsedTurnItem.Add(actorNum, new List<string>());
 
 		UsedTurnItem[actorNum].Add(itemId);
+		ItemUsageChanged?.Invoke();
 	}
 
 	/// <summary>
@@ -107,6 +112,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		{
 			I.Value.Clear();
 		}
+		ItemUsageChanged?.Invoke();
+		if (PhotonNetwork.IsMasterClient) photonView.RPC(nameof(RPC_ClearItemUsage), RpcTarget.Others, false);
 	}
 
 	public void AddUsedGameItem(int actorNum, string itemId)
@@ -114,6 +121,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		if (!UsedGameItem.ContainsKey(actorNum))
 			UsedGameItem.Add(actorNum, new List<string>());
 		UsedGameItem[actorNum].Add(itemId);
+		ItemUsageChanged?.Invoke();
 	}
 
 	/// <summary>
@@ -123,19 +131,34 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	/// <returns></returns>
 	public bool CheckItemAvaiable(int actorNum, string itemId)
 	{
-		// 1. UsedGameItem에 키가 있는지 확인 후 검사
-		if (UsedGameItem.ContainsKey(actorNum) && UsedGameItem[actorNum].Contains(itemId))
-			return false;
+		return GetItemUsageBlockReason(actorNum, itemId) == null;
+	}
 
-		// 2. UsedDayItem에 키가 있는지 확인 후 검사
-		if (UsedDayItem.ContainsKey(actorNum) && UsedDayItem[actorNum].Contains(itemId))
-			return false;
+	public string GetItemUsageBlockReason(int actorNum, string itemId)
+	{
+		if (UsedGameItem.TryGetValue(actorNum, out var game) && game.Contains(itemId)) return "UI_ItemUse_GameUsed";
+		if (UsedDayItem.TryGetValue(actorNum, out var day) && day.Contains(itemId)) return "UI_ItemUse_DayUsed";
+		if (UsedTurnItem.TryGetValue(actorNum, out var turn) && turn.Contains(itemId)) return "UI_ItemUse_TurnUsed";
+		return null;
+	}
 
-		// 3. UsedTurnItem에 키가 있는지 확인 후 검사
-		if (UsedTurnItem.ContainsKey(actorNum) && UsedTurnItem[actorNum].Contains(itemId))
-			return false;
+	[PunRPC]
+	private void RPC_RecordItemUsage(int actorNum, string itemId, PhotonMessageInfo info)
+	{
+		if (!info.Sender.IsMasterClient) return;
+		var item = ItemDB.Instance.Get(itemId);
+		if (item == null) return;
+		if (item.oncePerTurn) AddUsedTurnItem(actorNum, itemId);
+		if (item.oncePerDay) AddUsedDayItem(actorNum, itemId);
+		if (item.oncePerGame) AddUsedGameItem(actorNum, itemId);
+	}
 
-		return true;
+	[PunRPC]
+	private void RPC_ClearItemUsage(bool day, PhotonMessageInfo info)
+	{
+		if (!info.Sender.IsMasterClient || PhotonNetwork.IsMasterClient) return;
+		if (day) ClearUsedDayItem();
+		else ClearUsedTurnItem();
 	}
 
 	public int HasLockPick(int actorNum)
@@ -186,6 +209,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		if (item.oncePerTurn) AddUsedTurnItem(actorNum, item.itemId);
 		if (item.oncePerDay) AddUsedDayItem(actorNum, item.itemId);
 		if (item.oncePerGame) AddUsedGameItem(actorNum, item.itemId);
+		if (item.oncePerTurn || item.oncePerDay || item.oncePerGame)
+			photonView.RPC(nameof(RPC_RecordItemUsage), RpcTarget.Others, actorNum, item.itemId);
 
 		//If Sacrifice Item
 		if (item.itemId == "2002")
@@ -466,7 +491,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			statusId = st.spec.statusId,
 			ownerActNum = st.ownerActorNum,
 			sourceActNum = st.sourceActorNum,
-			remainingTurns = (st.spec.durationType == DurationType.Turns) ? -1 : st.remainingTurns,
+			remainingTurns = st.remainingTurns,
+			isHiddenToEnemy = (st.spec.tags & TagMask.Hidden) != 0,
 			type = item.type,
 			activateTrigger = st.spec.triggers,
 			stackCount = 1

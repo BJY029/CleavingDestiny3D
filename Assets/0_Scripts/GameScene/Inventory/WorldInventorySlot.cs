@@ -5,7 +5,7 @@ using TMPro;
 
 
 
-public class WorldInventorySlot : MonoBehaviour, ILookInteractable
+public class WorldInventorySlot : MonoBehaviourPunCallbacks, ILookInteractable
 {
 	//해당 인벤토리 슬롯 소유자
 	private int ownerActor;
@@ -25,9 +25,8 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	[Header("ToolTipInfos")]
 	public GameObject ToolTipPanel;
 	public TextMeshProUGUI ItemNameText;
-	public TextMeshProUGUI ItemRarityText;
-	public TextMeshProUGUI ItemPriceText;
 	public TextMeshProUGUI ItemDescText;
+	[SerializeField] private ItemTooltipCard tooltipCard;
 
 	[Header("NullTexture")]
 	public Texture2D nullTexture;
@@ -39,6 +38,31 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 		quadRenderer = GetComponent<MeshRenderer>();
 
 
+	}
+
+	public override void OnEnable()
+	{
+		base.OnEnable();
+		if (ItemHandlingSystem.instance != null) ItemHandlingSystem.instance.ItemUsageChanged += RefreshTooltip;
+		if (LocalizationManager.Instance != null) LocalizationManager.Instance.OnLanguageChanged += RefreshTooltip;
+	}
+
+	public override void OnDisable()
+	{
+		base.OnDisable();
+		if (ItemHandlingSystem.instance != null) ItemHandlingSystem.instance.ItemUsageChanged -= RefreshTooltip;
+		if (LocalizationManager.Instance != null) LocalizationManager.Instance.OnLanguageChanged -= RefreshTooltip;
+	}
+
+	private void RefreshTooltip()
+	{
+		if (currentItem != null && ToolTipPanel.activeSelf) InitItemInfos();
+	}
+
+	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable changed) => RefreshTooltip();
+	public override void OnPlayerPropertiesUpdate(Photon.Realtime.Player player, ExitGames.Client.Photon.Hashtable changed)
+	{
+		if (player.IsLocal) RefreshTooltip();
 	}
 
 	//현재 슬롯이 아이템을 가지고 있는지 확인
@@ -60,6 +84,7 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 		{
 			// 아이템이 null이면 투명 텍스처로 변경하고 종료
 			SetIcon(nullTexture);
+			ToolTipPanel.SetActive(false);
 			return;
 		}
 
@@ -80,9 +105,15 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 	private void InitItemInfos()
 	{
 		ItemNameText.text = LocalizationManager.Instance.GetText(CSV_Type.Item, currentItem.displayName_ID);
-		ItemRarityText.text = currentItem.itemClass.ToString();
-		ItemPriceText.text = "Cost : " + currentItem.itemCost.ToString();
-		ItemDescText.text = LocalizationManager.Instance.GetText(CSV_Type.Item, currentItem.itemDesc_ID);
+		ItemDescText.text = ItemStatusText.GetItemDescription(currentItem);
+		if (IsMine(PhotonNetwork.LocalPlayer.ActorNumber) && InventoryAuthority.Instance != null)
+		{
+			string reason = InventoryAuthority.Instance.GetItemUseBlockReason(ownerActor, currentItem, out int missingEnergy);
+			if (reason != null)
+				ItemDescText.text = "<b><color=#FF9A86>" +
+					LocalizationManager.Instance.GetFormatText(CSV_Type.UI, reason, missingEnergy) + "</color></b>\n\n" + ItemDescText.text;
+		}
+		tooltipCard.SetItem(currentItem);
 	}
 
 	//아이콘 설정
@@ -182,7 +213,13 @@ public class WorldInventorySlot : MonoBehaviour, ILookInteractable
 			InventoryAuthority.Instance.RequestSteelItem(ownerActor, ToActorNum, slotIndex, this);
 			return;
 		}
-		if (!GameHelper.IsCurrentTurnAI() && !GameHelper.IsMyTurn()) return;
+		string reason = InventoryAuthority.Instance.GetItemUseBlockReason(ActNum, currentItem, out int missingEnergy);
+		if (reason != null)
+		{
+			if (playerCtrl != null) InventoryAuthority.Instance.ShowItemUseWarning(reason, missingEnergy);
+			RefreshTooltip();
+			return;
+		}
 
 		ToolTipPanel.SetActive(false);
 		Debug.Log("Interacted!!");

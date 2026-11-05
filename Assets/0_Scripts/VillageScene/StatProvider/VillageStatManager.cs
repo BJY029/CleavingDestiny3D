@@ -123,10 +123,7 @@ namespace Village
 
         public (int min, int max) GetAxeRangeDamage(int level)
         {
-            return (
-                 Mathf.RoundToInt(_villageBalanceData.AxeDamageBase - ((level + 1) * _villageBalanceData.AxeDamageLevelMultiplier * _villageBalanceData.AxeDamageMinMultiplier)),
-                Mathf.RoundToInt(_villageBalanceData.AxeDamageBase + ((level + 1) * _villageBalanceData.AxeDamageLevelMultiplier * _villageBalanceData.AxeDamageMaxMultiplier))
-            );
+            return _villageBalanceData.GetAxeRangeDamage(GameManager.Instance.playerDefaultSetting, level);
         }
     }
 }

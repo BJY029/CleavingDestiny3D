@@ -97,6 +97,12 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	private float _startTime = -1f;
 	private float _endTime = -1f;
 	private int _lastTimerSec = -1;
+	private Color timerTextColor;
+	private Color timerRingColor;
+	private Vector3 timerTextScale;
+	private CanvasGroup timerCanvasGroup;
+	private float timerTargetAlpha = 1f;
+	private bool timerWarningActive;
 
 	private void Awake()
 	{
@@ -118,6 +124,11 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		CloseGauge();
 		if (HitText != null) HitText.text = "";
 		WarningText.text = "";
+		timerTextColor = TimerText.color;
+		timerRingColor = ProgressRing.color;
+		timerTextScale = TimerText.rectTransform.localScale;
+		timerCanvasGroup = TimerObj.GetComponent<CanvasGroup>();
+		if (timerCanvasGroup != null) timerTargetAlpha = timerCanvasGroup.alpha;
 		InitTimer();
 	}
 
@@ -148,6 +159,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		if (HitTextObj != null) HitTextObj.alpha = 0f;
 		if (hitTextRect != null) hitTextRect.anchoredPosition = hitTextPosition;
 		HitTextObj?.gameObject.SetActive(false);
+		ResetTimerWarning();
 	}
 
 
@@ -155,7 +167,11 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	//만약, 현재 타이머가 설정되었고, 시작 시간 또한 초기화 된 경우
 	private void Update()
 	{
-		if (!TimeManager.instance.TurnTimerActivated || _startTime == -1f) return;
+		if (TimeManager.instance == null || !TimeManager.instance.TurnTimerActivated || _startTime == -1f)
+		{
+			ResetTimerWarning();
+			return;
+		}
 
 		//시간 계산 수행
 		float remainTime = _endTime - (float)PhotonNetwork.Time;
@@ -171,8 +187,39 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		{
 			TimerText.SetText("{0}", curSecond);
 			_lastTimerSec = curSecond;
+			if (curSecond > 0 && curSecond <= 5 && GameHelper.IsMyTurn())
+				AudioManager.Instance?.PlaySfx2D("Time_Onetick");
 		}
 		ProgressRing.fillAmount = duration > 0f ? Mathf.Clamp01(remainTime / duration) : 0f;
+		UpdateTimerWarning(remainTime);
+	}
+
+	private void UpdateTimerWarning(float remaining)
+	{
+		if (remaining <= 0f || remaining > 10f)
+		{
+			ResetTimerWarning();
+			return;
+		}
+
+		timerWarningActive = true;
+		bool critical = remaining <= 5f;
+		Color warningColor = critical ? new Color(1f, 0.25f, 0.2f) : new Color(1f, 0.7f, 0.2f);
+		TimerText.color = new Color(warningColor.r, warningColor.g, warningColor.b, timerTextColor.a);
+		ProgressRing.color = new Color(warningColor.r, warningColor.g, warningColor.b, timerRingColor.a);
+		float pulse = Mathf.Pow(Mathf.Repeat(remaining, 1f), 3f);
+		TimerText.rectTransform.localScale = timerTextScale * (1f + pulse * (critical ? 0.2f : 0.08f));
+		if (timerCanvasGroup != null) timerCanvasGroup.alpha = 1f;
+	}
+
+	private void ResetTimerWarning()
+	{
+		if (!timerWarningActive) return;
+		TimerText.color = timerTextColor;
+		ProgressRing.color = timerRingColor;
+		TimerText.rectTransform.localScale = timerTextScale;
+		if (timerCanvasGroup != null) timerCanvasGroup.alpha = timerTargetAlpha;
+		timerWarningActive = false;
 	}
 
 	public void MyTurnActive()
@@ -187,6 +234,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		_startTime = -1f;
 		_endTime = -1f;
 		_lastTimerSec = -1;
+		ResetTimerWarning();
 	}
 
 	private void UpdateBranchCount(int count)
@@ -204,6 +252,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 			{
 				_startTime = times.x;
 				_endTime = times.y;
+				duration = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TurnTime);
 			}
 		}
 
@@ -362,8 +411,13 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 
 	public void SetWarningTextActive(string textId)
 	{
+		SetWarningMessageActive(LocalizationManager.Instance.GetText(CSV_Type.UI, textId));
+	}
+
+	public void SetWarningMessageActive(string message)
+	{
 		WarningObj.SetActive(true);
-		WarningText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, textId);
+		WarningText.text = message;
 		WarningTextAnim.Play("UI_Player_Warning_Up");
 	}
 
@@ -423,6 +477,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	Coroutine timerCoroutine;
 	public void SetTimerAlpha(float v, float duration)
 	{
+		timerTargetAlpha = v;
 		if (timerCoroutine != null)
 		{
 			StopCoroutine(timerCoroutine);
@@ -444,12 +499,12 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 			elapsedTime += Time.deltaTime;
 			float t = elapsedTime / duration;
 
-			cg.alpha = Mathf.Lerp(startAlpha, v, t);
+			cg.alpha = timerWarningActive ? 1f : Mathf.Lerp(startAlpha, v, t);
 
 			yield return null;
 		}
 
-		cg.alpha = v;
+		cg.alpha = timerWarningActive ? 1f : v;
 	}
 
 	//현재 플레이어 상태 UI를 업데이트 하는 함수

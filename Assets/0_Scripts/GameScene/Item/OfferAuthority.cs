@@ -4,8 +4,6 @@ using Photon.Realtime;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using ExitGames.Client.Photon;
-using System.Text;
 using Village;
 
 public class OfferAuthority : MonoBehaviourPunCallbacks
@@ -68,7 +66,6 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 	}
 
 	private List<string> currentOffer = new List<string>();
-	private List<(double key, string itemId)> scored = new List<(double key, string itemId)>();
 
 	public int GetItemRollSeed(int turnActor, int turnIndex)
 	{
@@ -114,17 +111,8 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 
 		var b = VillageSystem.VillageStat.VillageBalance;
 
-		float rareW = b.ShopRareChanceBase + (shopLevel - 1) * b.ShopRareChanceMultiplier;
-
-		float heroW = (shopLevel >= b.ShopHeroMinLevel)
-			? b.ShopHeroChanceBase + (shopLevel - b.ShopHeroMinLevel) * b.ShopHeroChanceMultiplier
-			: 0f;
-
-		float legendaryW = (shopLevel >= b.ShopLegendaryMinLevel)
-			? b.ShopLegendaryChanceBase + (shopLevel - b.ShopLegendaryMinLevel) * b.ShopLegendaryChanceMultiplier
-			: 0f;
-
-		RarityWeights shopWeights = new RarityWeights(1.0f, heroW, rareW, legendaryW);
+		var chances = b.GetShopRarityChances(shopLevel);
+		RarityWeights shopWeights = new(chances.common, chances.hero, chances.rare, chances.legendary);
 
 		List<ItemSO> items = ItemDB.Instance.GetItemsList();
 		items = FilterNewDrugDevelopmentItem(turnActor, items);
@@ -186,37 +174,59 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 		return string.Join("|", currentOffer);
 	}
 
-	// MasterClient만 수행
-	public void Pick(int randomSeed, List<ItemSO> items, in RarityWeights weights, int count, List<string> itemCache)
+	// 등급을 먼저 추첨하므로 등급별 아이템 종류 수가 등장 확률을 바꾸지 않는다.
+	public static void Pick(int randomSeed, List<ItemSO> items, in RarityWeights weights, int count, List<string> itemCache)
 	{
 		itemCache.Clear();
-		scored.Clear();
 		var rng = new System.Random(randomSeed);
+		var pools = new List<ItemSO>[4];
+		var itemWeights = new double[4];
+		var ids = new HashSet<string>(StringComparer.Ordinal);
+		for (int i = 0; i < pools.Length; i++) pools[i] = new List<ItemSO>();
 
 		foreach (var it in items)
 		{
-			if (string.IsNullOrEmpty(it.itemId)) continue;
-
+			if (it == null || string.IsNullOrEmpty(it.itemId)) continue;
 			float rw = weights.GetWeight(it.itemClass);
-			if (rw <= 0f || it.itemWeight <= 0f) continue;
-
-			double w = rw * it.itemWeight;
-			double u = 1.0 - rng.NextDouble();
-			double key = -Math.Log(u) / w;
-
-			scored.Add((key, it.itemId));
+			if (!(rw > 0f) || float.IsInfinity(rw) || !(it.itemWeight > 0f) || float.IsInfinity(it.itemWeight)) continue;
+			if (!ids.Add(it.itemId)) continue;
+			int rarity = (int)it.itemClass;
+			pools[rarity].Add(it);
+			itemWeights[rarity] += it.itemWeight;
 		}
 
-		var picked = scored
-			.GroupBy(s => s.itemId)
-			.Select(g => g.OrderBy(x => x.key).First())
-			.OrderBy(x => x.key)
-			.Take(count)
-			.Select(x => x.itemId)
-			.ToList();
+		for (int slot = 0; slot < count; slot++)
+		{
+			// 중복을 막기 위해 후보가 소진된 등급만 제외하고 나머지 비율을 유지한다.
+			double totalRarityWeight = 0;
+			for (int i = 0; i < pools.Length; i++)
+				if (pools[i].Count > 0) totalRarityWeight += weights.GetWeight((ItemClass)i);
+			if (totalRarityWeight <= 0) break;
 
-		while (picked.Count < count) picked.Add("Error");
-		itemCache.AddRange(picked);
+			double rarityRoll = rng.NextDouble() * totalRarityWeight;
+			int rarity = -1;
+			for (int i = 0; i < pools.Length; i++)
+			{
+				if (pools[i].Count == 0) continue;
+				rarity = i;
+				rarityRoll -= weights.GetWeight((ItemClass)i);
+				if (rarityRoll < 0) break;
+			}
+
+			var pool = pools[rarity];
+			double itemRoll = rng.NextDouble() * itemWeights[rarity];
+			int selected = pool.Count - 1;
+			for (int i = 0; i < pool.Count; i++)
+			{
+				itemRoll -= pool[i].itemWeight;
+				if (itemRoll < 0) { selected = i; break; }
+			}
+			itemCache.Add(pool[selected].itemId);
+			itemWeights[rarity] -= pool[selected].itemWeight;
+			pool.RemoveAt(selected);
+		}
+
+		while (itemCache.Count < count) itemCache.Add("Error");
 	}
 
 	private List<ItemSO> FilterNewDrugDevelopmentItem(int actorNum, List<ItemSO> items)

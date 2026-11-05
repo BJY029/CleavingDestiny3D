@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Photon.Pun;
 using TMPro;
 
-public class InventoryNewDrug : MonoBehaviour, ILookInteractable
+public class InventoryNewDrug : MonoBehaviourPunCallbacks, ILookInteractable
 {
     public ItemSO NewDrugItem;
 
@@ -10,13 +11,32 @@ public class InventoryNewDrug : MonoBehaviour, ILookInteractable
     public GameObject ToolTipPanel;
     public TextMeshProUGUI ItemNameText;
     public TextMeshProUGUI ItemDescText;
+    [SerializeField] private ItemTooltipCard tooltipCard;
 
     private int ownerActorNumber;
+
+    private void RefreshTooltip()
+    {
+        if (NewDrugItem != null && ToolTipPanel.activeSelf) InitItemInfos();
+    }
+
+    public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable changed) => RefreshTooltip();
+    public override void OnPlayerPropertiesUpdate(Photon.Realtime.Player player, ExitGames.Client.Photon.Hashtable changed)
+    {
+        if (player.IsLocal) RefreshTooltip();
+    }
 
     private void InitItemInfos()
     {
         ItemNameText.text = LocalizationManager.Instance.GetText(CSV_Type.Item, NewDrugItem.displayName_ID);
-        ItemDescText.text = LocalizationManager.Instance.GetText(CSV_Type.Item, NewDrugItem.itemDesc_ID);
+        ItemDescText.text = ItemStatusText.GetItemDescription(NewDrugItem);
+        if (IsMine(PhotonNetwork.LocalPlayer.ActorNumber))
+        {
+            string reason = InventoryAuthority.Instance.GetItemUseBlockReason(ownerActorNumber, NewDrugItem, out int missingEnergy);
+            if (reason != null) ItemDescText.text = "<b><color=#FF9A86>" +
+                LocalizationManager.Instance.GetFormatText(CSV_Type.UI, reason, missingEnergy) + "</color></b>\n\n" + ItemDescText.text;
+        }
+        tooltipCard.SetItem(NewDrugItem);
     }
 
     public void InitOwnerActorNum(int actorNum)
@@ -88,7 +108,13 @@ public class InventoryNewDrug : MonoBehaviour, ILookInteractable
             //InventoryAuthority.Instance.RequestSteelItem(owenrActorNumber, ToActorNum, -1, this);
             //return;
         }
-        if (!GameHelper.IsCurrentTurnAI() && !GameHelper.IsMyTurn()) return;
+        string reason = InventoryAuthority.Instance.GetItemUseBlockReason(ActNum, NewDrugItem, out int missingEnergy);
+        if (reason != null)
+        {
+            if (playerCtrl != null) InventoryAuthority.Instance.ShowItemUseWarning(reason, missingEnergy);
+            InitItemInfos();
+            return;
+        }
 
         ToolTipPanel.SetActive(false);
         Debug.Log("Interacted!!");

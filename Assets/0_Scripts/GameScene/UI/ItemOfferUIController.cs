@@ -31,7 +31,7 @@ public class ItemOfferUIController : MonoBehaviour
 		itemName.text = LocalizationManager.Instance.GetText(CSV_Type.Item, item.displayName_ID);
         itemRarity.text = item.itemClass.ToString();
         itemCost.text = "Cost : " + item.itemCost.ToString();
-        itemDesc.text = LocalizationManager.Instance.GetText(CSV_Type.Item, item.itemDesc_ID);
+        itemDesc.text = ItemStatusText.GetItemDescription(item);
 
         //select 버튼이 리스너 달기
         selectBtn.onClick.RemoveAllListeners();

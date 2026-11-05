@@ -230,12 +230,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	}
 
 	[PunRPC]
-	private void RPC_SetWeatherAsTime(int hour, int min)
-	{
-		WeatherMakerTimeController.instance.SetTime(hour, min);
-	}
-
-	[PunRPC]
 	private void RPC_PlayTimeFlow(int sHour, int sMin, float duration)
 	{
 		WeatherMakerTimeController.instance.PlayTimeTransition(sHour, sMin, duration);
@@ -658,7 +652,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		NotifyTurnStarted(nextIndex, nextActor, turnIndex, roomSet.initialWave);
 
 		photonView.RPC(nameof(setOfferGenerated), RpcTarget.All, true);
-		photonView.RPC(nameof(RPC_SetWeatherAsTime), RpcTarget.All, 12, 0);
 		//photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 	}
 
