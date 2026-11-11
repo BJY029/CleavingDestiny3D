@@ -819,8 +819,20 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             }
             //Hit 한 순간의 데미지 값을 인자로 해서 턴 전환 함수 호출
             //TurnManager.Instance.RequestChangeTurn(damage, this);
-            damage = -1;
-            WhileAnimation = false;
+            FinishTreeStrike();
+        }
+    }
+
+    private void FinishTreeStrike()
+    {
+        treeStrikeActive = false;
+        ++treeStrikeVersion; // Invalidate the recovery task for this completed strike.
+        damage = -1;
+        isPreparingTreeCut = false;
+        WhileAnimation = false;
+        PlayerCanvasController.Instance?.CloseGauge();
+        // Update() restores movement only when menus, minigames and phase locks also allow it.
+    }
 
     private async UniTaskVoid RecoverTreeStrikeIfAnimationStalls(int version)
     {
