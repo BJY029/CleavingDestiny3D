@@ -18,6 +18,7 @@ public class NotifyOnAnimExit : StateMachineBehaviour
 	//모션 state에 enter 되면 호출될 함수
 	public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
 	{
+		animator.GetComponent<PlayerAnimationController>()?.OnStrikeAnimationEntered(stateKey);
 		//해당 애니메이터를 보유한 플레이어로부터 IAnimNotify 객체 가져오기(PlayerController)
 		cached ??= animator.GetComponent<IAnimNotify>();
 	}

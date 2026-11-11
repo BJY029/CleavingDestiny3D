@@ -76,6 +76,8 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private bool isPreparingTreeCut = false; // 나무 베기 준비 상태
     private bool attackRequestSent;
     private bool attackCommitPending;
+    private bool treeStrikeActive;
+    private int treeStrikeVersion;
     public AttackCommand PendingAttack { get; private set; }
 
     //움직임 관련 코드 내부에서 사용하는 파라미터
@@ -744,11 +746,12 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private void BeginCommittedStrike(bool automatic, bool strikeOnly)
     {
         if (attackCommitPending || !photonView.IsMine) return;
+        int version = ++treeStrikeVersion;
         attackCommitPending = true;
         WhileAnimation = true;
         ItemHandlingSystem.instance.CommitAttack(damage, this, automatic, (command, accepted) =>
         {
-            if (this == null || !isActiveAndEnabled) return;
+            if (this == null || !isActiveAndEnabled || version != treeStrikeVersion) return;
             attackCommitPending = false;
             if (!accepted)
             {
@@ -758,7 +761,9 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
                 return;
             }
             PendingAttack = command;
+            treeStrikeActive = true;
             attackRequestSent = false;
+            RecoverTreeStrikeIfAnimationStalls(version).Forget();
             if (strikeOnly) animationController?.PlayStrikeAnimation();
             else PlayHit();
         });
@@ -801,7 +806,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     public void OnAnimStateExit(int stateKey)
     {
         //stateKey가 1이면, 즉 Hit 관련 모션이면
-        if (stateKey == 1)
+        if (stateKey == 1 && treeStrikeActive)
         {
             if (!photonView.IsMine) return;
 
@@ -817,8 +822,18 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             damage = -1;
             WhileAnimation = false;
 
-            PlayerCanvasController.Instance.CloseGauge();
+    private async UniTaskVoid RecoverTreeStrikeIfAnimationStalls(int version)
+    {
+        try
+        {
+            await UniTask.Delay(TimeSpan.FromSeconds(3), ignoreTimeScale: true, cancellationToken: destroyCancellationToken);
         }
+        catch (OperationCanceledException) { return; }
+        if (!treeStrikeActive || version != treeStrikeVersion) return;
+        // The master has its own idempotent impact fallback. This only releases presentation/input.
+        Debug.LogWarning("[PlayerController] Strike animation did not finish; releasing tree attack lock.");
+        if (PhotonNetwork.InRoom) animationController?.CancelReadyAnimation();
+        FinishTreeStrike();
     }
 
     private bool TryGetTreeAttackPosition(out Vector3 targetPosition, out Quaternion targetRotation)

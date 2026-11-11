@@ -47,6 +47,9 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
     private IAnimNotify animNotify;
     [SerializeField] bool isAI = false;
+    private bool strikeQueued;
+    private int queuedTurnIndex;
+    private int queuedNonce;
 
     MaterialPropertyBlock itemMpb;
 
@@ -142,6 +145,11 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     private void RPC_SetHitReady(bool isReady)
     {
         if (animator == null) return;
+        if (!isReady)
+        {
+            strikeQueued = false;
+            animator.ResetTrigger(HashHit);
+        }
         animator.SetBool(HashHitReady, isReady);
     }
 
@@ -152,9 +160,23 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     private void RPC_PlayHit(int turnIndex, int nonce)
     {
         if (animator == null) return;
-        animator.SetBool(HashHitReady, false); // 타격 시 준비 상태 해제
+        queuedTurnIndex = turnIndex;
+        queuedNonce = nonce;
+        strikeQueued = true;
+        // A fast second F can arrive before Idle has entered HitReady_Start.
+        // Keep the path to that state open until the strike state consumes Hit.
+        animator.SetBool(HashHitReady, true);
         animator.ResetTrigger(HashHit);
         animator.SetTrigger(HashHit);
+    }
+
+    public void OnStrikeAnimationEntered(int stateKey)
+    {
+        if (stateKey != 1 || !strikeQueued) return;
+        strikeQueued = false;
+        animator.SetBool(HashHitReady, false);
+        int turnIndex = queuedTurnIndex;
+        int nonce = queuedNonce;
 
         if (isAI)
         {

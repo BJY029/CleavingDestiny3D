@@ -1,0 +1,18 @@
+CASE 0 gap=0 turn=3 controller=NewPlayerAnimation
+after4s busy=False locked=False sent=True preparing=False
+movement distance=0.3092377 look angle=1.201508
+PASS case 0
+CASE 1 gap=0.05 turn=5 controller=NewPlayerAnimation
+after4s busy=False locked=False sent=True preparing=False
+movement distance=0.5375443 look angle=31.57953
+PASS case 1
+CASE 2 gap=0.5 turn=7 controller=NewPlayerAnimation
+after4s busy=False locked=False sent=True preparing=False
+movement distance=0.5348942 look angle=14.80304
+PASS case 2
+CASE 3 gap=0 turn=9 controller=NewPlayerAnimation
+Injected disabled Animator after strike entry to omit exit notification
+after4s busy=False locked=False sent=True preparing=False
+movement distance=0.5320666 look angle=0.04138184
+PASS case 3
+PASS all four rapid/normal/stalled scenarios finished
