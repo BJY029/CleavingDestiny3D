@@ -1,0 +1,62 @@
+{
+  "success": true,
+  "message": "Retrieved 8 log entries.",
+  "data": [
+    {
+      "type": "Error",
+      "message": "Assets\\0_Scripts\\PlayerData\\ForTestBranchSystem.cs(19,21): error CS0117: 'SaveManager' does not contain a definition for 'ResetSaveForTest'\n",
+      "file": "Assets\\0_Scripts\\PlayerData\\ForTestBranchSystem.cs",
+      "line": 19,
+      "stackTrace": null
+    },
+    {
+      "type": "Error",
+      "message": "Assets\\99_ImportAssets\\WeatherMaker\\Prefab\\Scripts\\Clouds\\WeatherMakerCloudProbeScript.cs(48,17): error CS0103: The name 'blackTexture' does not exist in the current context\n",
+      "file": "Assets\\99_ImportAssets\\WeatherMaker\\Prefab\\Scripts\\Clouds\\WeatherMakerCloudProbeScript.cs",
+      "line": 48,
+      "stackTrace": null
+    },
+    {
+      "type": "Error",
+      "message": "Assets\\99_ImportAssets\\WeatherMaker\\Prefab\\Scripts\\Clouds\\WeatherMakerCloudProbeScript.cs(50,34): error CS0103: The name 'blackTexture' does not exist in the current context\n",
+      "file": "Assets\\99_ImportAssets\\WeatherMaker\\Prefab\\Scripts\\Clouds\\WeatherMakerCloudProbeScript.cs",
+      "line": 50,
+      "stackTrace": null
+    },
+    {
+      "type": "Error",
+      "message": "Failed to compile player scripts",
+      "file": "./Library/PackageCache/com.unity.scriptablebuildpipeline@36e3b5898ee2/Editor/Tasks/BuildPlayerScripts.cs",
+      "line": 41,
+      "stackTrace": "UnityEditor.AddressableAssets.GUI.AddressableAssetsSettingsGroupEditor:BuildAddressablesWithResult (UnityEditor.AddressableAssets.GUI.AddressableAssetsSettingsGroupEditor/BuildMenuContext,UnityEditor.AddressableAssets.Build.AddressablesDataBuilderInput)\nAddressablesPlayerBuildProcessor:DefaultBuild (UnityEditor.AddressableAssets.Settings.AddressableAssetSettings,UnityEditor.Build.BuildPlayerContext) (at ./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs:147)\nAddressablesPlayerBuildProcessor:PrepareForPlayerbuild (UnityEditor.AddressableAssets.Settings.AddressableAssetSettings,UnityEditor.Build.BuildPlayerContext,bool) (at ./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs:100)\nAddressablesPlayerBuildProcessor:PrepareForBuild (UnityEditor.Build.BuildPlayerContext) (at ./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs:79)\nUnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)\nMCPForUnity.Editor.Tools.Build.BuildRunner/<>c__DisplayClass0_0:<ScheduleBuild>b__1 () (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:21)\nMCPForUnity.Editor.Tools.Build.BuildRunner:RunBuildCore (MCPForUnity.Editor.Tools.Build.BuildJob,System.Func`1<UnityEditor.Build.Reporting.BuildReport>) (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:116)\nMCPForUnity.Editor.Tools.Build.BuildRunner/<>c__DisplayClass0_0:<ScheduleBuild>b__0 () (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:21)\nMCPForUnity.Editor.Tools.Build.BuildRunner/<>c__DisplayClass6_0:<ScheduleOnNextUpdate>g__RunOnce|0 () (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:224)\nUnityEditor.EditorApplication:Internal_CallUpdateFunctions ()\n"
+    },
+    {
+      "type": "Error",
+      "message": "SBP ErrorError",
+      "file": "./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Settings/AddressableAssetSettings.cs",
+      "line": 3134,
+      "stackTrace": "UnityEditor.AddressableAssets.GUI.AddressableAssetsSettingsGroupEditor:BuildAddressablesWithResult (UnityEditor.AddressableAssets.GUI.AddressableAssetsSettingsGroupEditor/BuildMenuContext,UnityEditor.AddressableAssets.Build.AddressablesDataBuilderInput)\nAddressablesPlayerBuildProcessor:DefaultBuild (UnityEditor.AddressableAssets.Settings.AddressableAssetSettings,UnityEditor.Build.BuildPlayerContext) (at ./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs:147)\nAddressablesPlayerBuildProcessor:PrepareForPlayerbuild (UnityEditor.AddressableAssets.Settings.AddressableAssetSettings,UnityEditor.Build.BuildPlayerContext,bool) (at ./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs:100)\nAddressablesPlayerBuildProcessor:PrepareForBuild (UnityEditor.Build.BuildPlayerContext) (at ./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs:79)\nUnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)\nMCPForUnity.Editor.Tools.Build.BuildRunner/<>c__DisplayClass0_0:<ScheduleBuild>b__1 () (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:21)\nMCPForUnity.Editor.Tools.Build.BuildRunner:RunBuildCore (MCPForUnity.Editor.Tools.Build.BuildJob,System.Func`1<UnityEditor.Build.Reporting.BuildReport>) (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:116)\nMCPForUnity.Editor.Tools.Build.BuildRunner/<>c__DisplayClass0_0:<ScheduleBuild>b__0 () (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:21)\nMCPForUnity.Editor.Tools.Build.BuildRunner/<>c__DisplayClass6_0:<ScheduleOnNextUpdate>g__RunOnce|0 () (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:224)\nUnityEditor.EditorApplication:Internal_CallUpdateFunctions ()\n"
+    },
+    {
+      "type": "Error",
+      "message": "Addressable content build failure (duration : 0:00:24.934)",
+      "file": "./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Settings/AddressableAssetSettings.cs",
+      "line": 3135,
+      "stackTrace": "UnityEditor.AddressableAssets.GUI.AddressableAssetsSettingsGroupEditor:BuildAddressablesWithResult (UnityEditor.AddressableAssets.GUI.AddressableAssetsSettingsGroupEditor/BuildMenuContext,UnityEditor.AddressableAssets.Build.AddressablesDataBuilderInput)\nAddressablesPlayerBuildProcessor:DefaultBuild (UnityEditor.AddressableAssets.Settings.AddressableAssetSettings,UnityEditor.Build.BuildPlayerContext) (at ./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs:147)\nAddressablesPlayerBuildProcessor:PrepareForPlayerbuild (UnityEditor.AddressableAssets.Settings.AddressableAssetSettings,UnityEditor.Build.BuildPlayerContext,bool) (at ./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs:100)\nAddressablesPlayerBuildProcessor:PrepareForBuild (UnityEditor.Build.BuildPlayerContext) (at ./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs:79)\nUnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)\nMCPForUnity.Editor.Tools.Build.BuildRunner/<>c__DisplayClass0_0:<ScheduleBuild>b__1 () (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:21)\nMCPForUnity.Editor.Tools.Build.BuildRunner:RunBuildCore (MCPForUnity.Editor.Tools.Build.BuildJob,System.Func`1<UnityEditor.Build.Reporting.BuildReport>) (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:116)\nMCPForUnity.Editor.Tools.Build.BuildRunner/<>c__DisplayClass0_0:<ScheduleBuild>b__0 () (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:21)\nMCPForUnity.Editor.Tools.Build.BuildRunner/<>c__DisplayClass6_0:<ScheduleOnNextUpdate>g__RunOnce|0 () (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:224)\nUnityEditor.EditorApplication:Internal_CallUpdateFunctions ()\n"
+    },
+    {
+      "type": "Exception",
+      "message": "BuildFailedException: Failed to build Addressables content, content not included in Player Build. \"SBP ErrorError\"",
+      "file": "./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs",
+      "line": 125,
+      "stackTrace": "AddressablesPlayerBuildProcessor.PrepareForPlayerbuild (UnityEditor.AddressableAssets.Settings.AddressableAssetSettings settings, UnityEditor.Build.BuildPlayerContext buildPlayerContext, System.Boolean buildAddressables) (at ./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs:125)\nAddressablesPlayerBuildProcessor.PrepareForBuild (UnityEditor.Build.BuildPlayerContext buildPlayerContext) (at ./Library/PackageCache/com.unity.addressables@8460f1c9c927/Editor/Build/AddressablesPlayerBuildProcessor.cs:79)\nUnityEditor.Build.BuildPipelineInterfaces.PreparePlayerBuild (UnityEditor.Build.BuildPlayerContext context) (at <49fcb209645d4ccfb3e373da32345d37>:0)\nUnityEditor.BuildPipeline.PreparePlayerBuild (UnityEditor.BuildPlayerOptions buildPlayerOptions) (at <49fcb209645d4ccfb3e373da32345d37>:0)\nUnityEditor.BuildPipeline:BuildPlayer(BuildPlayerOptions)\nMCPForUnity.Editor.Tools.Build.<>c__DisplayClass0_0:<ScheduleBuild>b__1() (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:21)\nMCPForUnity.Editor.Tools.Build.BuildRunner:RunBuildCore(BuildJob, Func`1) (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:116)\nMCPForUnity.Editor.Tools.Build.<>c__DisplayClass0_0:<ScheduleBuild>b__0() (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:21)\nMCPForUnity.Editor.Tools.Build.<>c__DisplayClass6_0:<ScheduleOnNextUpdate>g__RunOnce|0() (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:224)\nUnityEditor.EditorApplication:Internal_CallUpdateFunctions()\n"
+    },
+    {
+      "type": "Error",
+      "message": "[MCP Build] ✗ Build failed: StandaloneWindows64 — ",
+      "file": "./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs",
+      "line": 157,
+      "stackTrace": "UnityEngine.Debug:LogError (object)\nMCPForUnity.Editor.Tools.Build.BuildRunner:RunBuildCore (MCPForUnity.Editor.Tools.Build.BuildJob,System.Func`1<UnityEditor.Build.Reporting.BuildReport>) (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:157)\nMCPForUnity.Editor.Tools.Build.BuildRunner/<>c__DisplayClass0_0:<ScheduleBuild>b__0 () (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:21)\nMCPForUnity.Editor.Tools.Build.BuildRunner/<>c__DisplayClass6_0:<ScheduleOnNextUpdate>g__RunOnce|0 () (at ./Library/PackageCache/com.coplaydev.unity-mcp@da7b9ae4aeeb/Editor/Tools/Build/BuildRunner.cs:224)\nUnityEditor.EditorApplication:Internal_CallUpdateFunctions ()\n"
+    }
+  ]
+}

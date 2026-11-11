@@ -1,0 +1,9 @@
+Command: dotnet run --project Tools/Tests/ShopFlow
+Result: exit code 1; tests did not execute.
+
+Assets/0_Scripts/Shop/AxeShopController.cs(240,16): error CS0103: 'LocalizationManager' does not exist in the current context.
+Assets/0_Scripts/Shop/AxeShopController.cs(240,53): error CS0103: 'CSV_Type' does not exist in the current context.
+
+The standalone test project compiles AxeShopController with Fakes.cs. It does not include the localization types now used by the production controller. This is a QA harness build failure, not evidence that the Unity Editor cannot compile the game.
+
+An earlier sandbox attempt could not read the user's NuGet.Config. The authorized retry reached compilation and produced the errors above. No dependency or source changes were made.

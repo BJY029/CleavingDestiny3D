@@ -14,8 +14,7 @@ public class SceneLoader : MonoBehaviour
     public GameObject loadingPanel;
     public TextMeshProUGUI sceneLoadingText;
     public TextMeshProUGUI mainLoadingText;
-    public TextMeshProUGUI timer;
-    public Button stopMatching;
+    public TextMeshProUGUI timer; public Button stopMatching;
 
     private const float DotDuration = 0.4f;
     private const float WaitDuration = 0.5f;
@@ -82,7 +81,7 @@ public class SceneLoader : MonoBehaviour
                 mainLoadingText.text = overrideTextKey;
             }
         }
-        
+
         StopDotsAnimation();
         dotsCancelToken = new CancellationTokenSource();
         StartDotsAnimation(dotsCancelToken.Token).Forget();
@@ -115,7 +114,7 @@ public class SceneLoader : MonoBehaviour
     {
         isAnimating = true;
         string originText = "";
-        
+
         // 보조 로딩 텍스트는 언제나 일반 로딩("로딩 중") 텍스트를 기준으로 점 애니메이션을 수행합니다.
         if (LocalizationManager.Instance != null)
         {
