@@ -108,7 +108,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     public void PlayHitAnimation()
     {
         // 전체(타인 화면 포함 및 로컬): 애니메이션 트리거
-        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All);
+        BroadcastCommittedHit();
     }
 
     // 준비 자세 애니메이션 실행 (F Key Down 시점에 호출)
@@ -129,7 +129,13 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     public void PlayStrikeAnimation()
     {
         // 전체(타인 화면 포함): 애니메이션 트리거
-        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All);
+        BroadcastCommittedHit();
+    }
+
+    private void BroadcastCommittedHit()
+    {
+        var attack = isAI ? aiController.PendingAttack : playerController.PendingAttack;
+        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, attack.turnIndex, attack.clientNonce);
     }
 
     [PunRPC]
@@ -143,7 +149,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     [SerializeField] private float playerHitSoundDelay = 0.35f; // 플레이어 타격음 및 임팩트 지연 시간 (초)
 
     [PunRPC]
-    private void RPC_PlayHit()
+    private void RPC_PlayHit(int turnIndex, int nonce)
     {
         if (animator == null) return;
         animator.SetBool(HashHitReady, false); // 타격 시 준비 상태 해제
@@ -152,16 +158,16 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
         if (isAI)
         {
-            PlayAIImpactAsync().Forget();
+            PlayAIImpactAsync(turnIndex, nonce).Forget();
         }
         else
         {
             // 플레이어: 3인칭 타격 애니메이션의 도끼 타격 타이밍에 맞춰 소리 및 타격 이펙트 재생
-            PlayPlayerImpactAsync().Forget();
+            PlayPlayerImpactAsync(turnIndex, nonce).Forget();
         }
     }
 
-    private async UniTaskVoid PlayPlayerImpactAsync()
+    private async UniTaskVoid PlayPlayerImpactAsync(int turnIndex, int nonce)
     {
         try
         {
@@ -169,10 +175,11 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         }
         catch (OperationCanceledException) { return; }
 
+        if (!IsImpactCurrent(turnIndex, nonce)) return;
         FirstPersonAxeHit();
     }
 
-    private async UniTaskVoid PlayAIImpactAsync()
+    private async UniTaskVoid PlayAIImpactAsync(int turnIndex, int nonce)
     {
         try
         {
@@ -181,10 +188,22 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         }
         catch (OperationCanceledException) { return; }
 
+        if (!IsImpactCurrent(turnIndex, nonce)) return;
         PlayLocalTreeHitEffect();
         PlayLocalHitSound();
 
         aiController?.RequestAttackAtImpact();
+    }
+
+    private bool IsImpactCurrent(int turnIndex, int nonce)
+    {
+        if (!isActiveAndEnabled || !PhotonNetwork.InRoom ||
+            PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) != turnIndex ||
+            PhotonPropertyHelper.GetRoomProp<GamePhaseValue>(RoomPropKeys.GamePhase) == GamePhaseValue.END) return false;
+        // Remote characters only play presentation; the owning controller sends damage.
+        if (!isAI && !photonView.IsMine) return true;
+        var attack = isAI ? aiController.PendingAttack : playerController.PendingAttack;
+        return attack.turnIndex == turnIndex && attack.clientNonce == nonce;
     }
 
     // 애니메이션 이벤트로부터 호출되는 함수

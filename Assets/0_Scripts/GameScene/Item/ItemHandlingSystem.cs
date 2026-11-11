@@ -5,18 +5,11 @@ using System;
 using System.Collections.Generic;
 using static UnityEngine.Rendering.DebugUI;
 
-[Serializable] //Client -> MasterClient
-public struct AttackCommand
-{
-	public int attackerNum;     //요청자 Actor 번호
-	public int baseDamage;      //게이지로 계산한 원본 데미지
-	public bool isBasicAttack;  //평타인지 아닌지 여부
-	public int clientNonce;     //중복 요청 방지
-}
-
 [Serializable] //MasterClient -> client
 public struct AttackResult
 {
+	public int turnIndex;
+	public int clientNonce;
 	public int attackerNum;     //요청을 보낸 Actor 번호
 	public int finalDamage;     //최종 확정 데미지(숨김 상태인 경우 다른 플레이어에겐 -1)
 	public float convertedBarrier; //최종 방어력 Rate
@@ -28,6 +21,98 @@ public struct AttackResult
 public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 {
 	public static ItemHandlingSystem instance;
+	public readonly TurnAttackState AttackState = new();
+	private readonly Dictionary<int, Action<AttackCommand, bool>> commitCallbacks = new();
+	private int nextAttackNonce;
+	private int lastResultTurn = -1;
+	private AttackCommand resolvingAttack;
+	private string cachedAttackResult;
+
+	private bool CanAttack => PhotonNetwork.InRoom
+		&& PhotonPropertyHelper.GetRoomProp<GamePhaseValue>(RoomPropKeys.GamePhase) == GamePhaseValue.DAY
+		&& !PhotonPropertyHelper.GetRoomProp<bool>(RoomPropKeys.IsVillageUpgradePhase)
+		&& (MatchResultManager.Instance == null || !MatchResultManager.Instance._isResultResolved);
+
+	public void SyncAttackTurn()
+	{
+		AttackState.Begin(PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex),
+			PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor));
+	}
+
+	public bool ReserveTimeoutAttack()
+	{
+		if (!PhotonNetwork.IsMasterClient || !CanAttack) return false;
+		SyncAttackTurn();
+		return AttackState.TryExpire();
+	}
+
+	public void CommitAttack(int baseDamage, IPlayerAction requester, bool automatic, Action<AttackCommand, bool> callback)
+	{
+		var cmd = new AttackCommand { attackerNum = requester.PlayerActNum, baseDamage = baseDamage,
+			isBasicAttack = true, turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex),
+			clientNonce = ++nextAttackNonce, automatic = automatic };
+		commitCallbacks[cmd.clientNonce] = callback;
+		photonView.RPC(nameof(RPC_CommitAttack), RpcTarget.MasterClient, JsonUtility.ToJson(cmd));
+	}
+
+	[PunRPC]
+	private void RPC_CommitAttack(string json, PhotonMessageInfo info)
+	{
+		if (!PhotonNetwork.IsMasterClient) return;
+		var cmd = JsonUtility.FromJson<AttackCommand>(json);
+		bool authorized = info.Sender.ActorNumber == cmd.attackerNum ||
+			(info.Sender.IsMasterClient && GameManager.Instance.isSoloPlay && PlayerManager.Instance.AIPlayerObj.ContainsKey(cmd.attackerNum));
+		bool accepted = false;
+		double deadline = TimeManager.instance.AttackDeadline;
+		if (authorized && CanAttack)
+		{
+			SyncAttackTurn();
+			accepted = AttackState.TryCommit(cmd, PhotonNetwork.Time, deadline,
+				TimeManager.instance.TurnTimerActivated);
+			if (accepted) TimeManager.instance.RPC_AbortTurnTimer();
+		}
+		string reason = accepted ? "accepted" : !authorized ? "sender" : !CanAttack ? "phase" :
+			cmd.turnIndex != AttackState.TurnIndex ? "stale-turn" : cmd.attackerNum != AttackState.Actor ? "actor" :
+			AttackState.Committed ? "already-committed" : AttackState.Expired ? "expired" : "deadline-or-inactive-timer";
+		Debug.Log($"[Attack] Commit turn={cmd.turnIndex} actor={cmd.attackerNum} request={cmd.clientNonce} reason={reason} received={PhotonNetwork.Time:F3} deadline={deadline:F3}");
+		photonView.RPC(nameof(RPC_AttackCommitted), info.Sender, json, accepted);
+	}
+
+	[PunRPC]
+	private void RPC_AttackCommitted(string json, bool accepted, PhotonMessageInfo info)
+	{
+		if (!info.Sender.IsMasterClient) return;
+		var cmd = JsonUtility.FromJson<AttackCommand>(json);
+		if (!commitCallbacks.TryGetValue(cmd.clientNonce, out var callback)) return;
+		commitCallbacks.Remove(cmd.clientNonce);
+		callback?.Invoke(cmd, accepted && CanAttack && cmd.turnIndex == PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex));
+	}
+
+	public void RequestCommittedHit(AttackCommand command)
+	{
+		if (!CanAttack) return;
+		photonView.RPC(nameof(RPC_RequestAttack), RpcTarget.MasterClient, JsonUtility.ToJson(command));
+	}
+
+	private void Update()
+	{
+		if (!PhotonNetwork.InRoom) { commitCallbacks.Clear(); return; }
+		if (!PhotonNetwork.IsMasterClient || !CanAttack) return;
+		SyncAttackTurn();
+		if (AttackState.NeedsFallback(PhotonNetwork.Time))
+		{
+			Debug.LogWarning($"[Attack] Impact fallback turn={AttackState.TurnIndex} actor={AttackState.Actor}");
+			ApplyCommittedAttack(AttackState.Command);
+		}
+	}
+
+	public override void OnLeftRoom()
+	{
+		commitCallbacks.Clear();
+		AttackState.Begin(-1, 0);
+		lastResultTurn = -1;
+		cachedAttackResult = null;
+	}
 
 	private StatusSystem _statusSystem;
 	private GameEventBus _gameEventBus;
@@ -682,17 +767,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	//턴 전환 시 호출될 함수
 	public void RequestHit(int baseDamage, bool isBasicAttack, IPlayerAction requester)
 	{
-		//json 형식으로 공격 커맨드 객체 생성
-		var cmd = new AttackCommand
-		{
-			attackerNum = requester.PlayerActNum,//인터페이스를 통해서 플레이어의 고유 번호 받아온다.
-			baseDamage = baseDamage,
-			isBasicAttack = isBasicAttack,
-			clientNonce = UnityEngine.Random.Range(int.MinValue, int.MaxValue),
-		};
-		//Debug.Log("커맨드 생성, RPC 전송");
-		//Json 형태로 직렬화 해서 MasterClient에게 요청 전송
-		photonView.RPC(nameof(RPC_RequestAttack), RpcTarget.MasterClient, JsonUtility.ToJson(cmd));
+		// Compatibility entry point: all production strikes commit before animation.
+		CommitAttack(baseDamage, requester, false, (cmd, accepted) => { if (accepted) RequestCommittedHit(cmd); });
 	}
 
 	//MasterClient에서 처리 수행
@@ -705,21 +781,24 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//역직렬화
 		var cmd = JsonUtility.FromJson<AttackCommand>(json);
 
-		//요청자와 객체 정보가 같은지 확인(핵 방지)
-		if (info.Sender.ActorNumber != cmd.attackerNum)
+		if (info.Sender.ActorNumber != cmd.attackerNum &&
+			!(info.Sender.IsMasterClient && GameManager.Instance.isSoloPlay && PlayerManager.Instance.AIPlayerObj.ContainsKey(cmd.attackerNum))) return;
+		if (CanAttack && AttackState.Applied && AttackState.Matches(cmd) && cachedAttackResult != null)
 		{
-			if (!GameHelper.IsCurrentTurnAI())//현재 AI 턴 또한 아닌 경우
-			{
-				Debug.LogError("[ERROR]It is not real Requester");
-				return;
-			}
-		}
-		//턴 검증 2
-		if (!IsMyTurnCheckInMaster(cmd.attackerNum))
-		{
-			Debug.LogError("[ERROR]It is not Requester Turn");
+			photonView.RPC(nameof(RPC_OnAttackResult), info.Sender, cmd.attackerNum, cachedAttackResult);
 			return;
 		}
+		ApplyCommittedAttack(cmd);
+	}
+
+	private void ApplyCommittedAttack(AttackCommand cmd)
+	{
+		if (!CanAttack || !IsMyTurnCheckInMaster(cmd.attackerNum)) return;
+		SyncAttackTurn();
+		if (!AttackState.TryApply(cmd)) return;
+		cmd = AttackState.Command; // The impact cannot change the damage accepted at commit.
+		resolvingAttack = cmd;
+		Debug.Log($"[Attack] Apply turn={cmd.turnIndex} actor={cmd.attackerNum} request={cmd.clientNonce}");
 
 		//컨텍스트 생성
 		var ctx = new EffectContext(_rng, Debug.Log);
@@ -813,6 +892,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		var fullInfo = new AttackResult
 		{
 			attackerNum = attackNum,
+			turnIndex = resolvingAttack.turnIndex,
+			clientNonce = resolvingAttack.clientNonce,
 			finalDamage = finalDmg,
 			convertedBarrier = finalBarrierConverted,
 			hidden = hidden,
@@ -823,6 +904,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		var maskedInfo = new AttackResult
 		{
 			attackerNum = attackNum,
+			turnIndex = resolvingAttack.turnIndex,
+			clientNonce = resolvingAttack.clientNonce,
 			//hidden 여부에 따라서 데미지 정보 공개 혹은 비공개
 			finalDamage = hidden ? -1 : finalDmg,
 			convertedBarrier = hidden ? -1f : finalBarrierConverted,
@@ -832,6 +915,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 		//직렬화
 		string fullInfoJson = JsonUtility.ToJson(fullInfo);
+		cachedAttackResult = fullInfoJson;
 		string maskedInfoJson = JsonUtility.ToJson(maskedInfo);
 
 
@@ -860,7 +944,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					{
 						//해당 플레이어의 준비 여부 임의로 설정
 						PhotonPropertyHelper.SetPlayerProp(actNum, PlayerPropKeys.PDamageProcessCompleted, true);
-						TurnManager.Instance.PlayerDamageChecker(attacker.ActorNumber);
+						// Human client acknowledgment completes the solo turn.
 					}
 				}
 			}
@@ -875,9 +959,16 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 	}
 
 	[PunRPC]
-	private void RPC_OnAttackResult(int attackerNum, string json)
+	private void RPC_OnAttackResult(int attackerNum, string json, PhotonMessageInfo info)
 	{
+		if (!info.Sender.IsMasterClient) return;
 		var res = JsonUtility.FromJson<AttackResult>(json);
+		if (res.turnIndex <= lastResultTurn)
+		{
+			if (res.turnIndex == lastResultTurn) TurnManager.Instance.PlayerDamageChecker(attackerNum, res.turnIndex, res.clientNonce);
+			return;
+		}
+		lastResultTurn = res.turnIndex;
 		bool isLocalAttacker = res.attackerNum == PhotonNetwork.LocalPlayer.ActorNumber;
 		if (isLocalAttacker && !res.hidden && res.convertedBarrier > 0f)
 			BattleLogController.AddHitBarrierLog(res.convertedBarrier);
@@ -911,12 +1002,14 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			Debug.Log($"Player{PhotonNetwork.LocalPlayer.ActorNumber}s Barrier : {currentBarrier}");
 		}
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.PDamageProcessCompleted, true);
-		TurnManager.Instance.PlayerDamageChecker(attackerNum);
+		TurnManager.Instance.PlayerDamageChecker(attackerNum, res.turnIndex, res.clientNonce);
 	}
 
 	private void AI_OnAttackResult(int attackerNum, string json)
 	{
 		var res = JsonUtility.FromJson<AttackResult>(json);
+		if (res.turnIndex <= lastResultTurn) return;
+		lastResultTurn = res.turnIndex;
 
 		if (res.hidden)
 		{
@@ -944,7 +1037,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		//AI 플레이어와 다른 플레이어(즉 마스트 클라)의 준비 여부 설정
 		PhotonPropertyHelper.SetPlayerProp(attackerNum, PlayerPropKeys.PDamageProcessCompleted, true);
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.PDamageProcessCompleted, true);
-		TurnManager.Instance.PlayerDamageChecker(attackerNum);
+		TurnManager.Instance.PlayerDamageChecker(attackerNum, res.turnIndex, res.clientNonce);
 	}
 
 	[PunRPC]

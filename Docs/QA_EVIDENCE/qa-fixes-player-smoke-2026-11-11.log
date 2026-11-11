@@ -1,0 +1,36 @@
+Mono path[0] = 'C:/UnityProject/CleavingDestiny3D/CleavingDestiny3D/Builds/QA_Fixes/CleavingDestiny_Data/Managed'
+Mono config path = 'C:/UnityProject/CleavingDestiny3D/CleavingDestiny3D/Builds/QA_Fixes/MonoBleedingEdge/etc'
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Initialize engine version: 6000.3.10f1 (e35f0c77bd8e)
+[Subsystems] Discovering subsystems at path C:/UnityProject/CleavingDestiny3D/CleavingDestiny3D/Builds/QA_Fixes/CleavingDestiny_Data/UnitySubsystems
+Forcing GfxDevice: Null
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  3.834 seconds
+- Finished resetting the current domain, in  0.003 seconds
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Microsoft Media Foundation video decoding to texture disabled: graphics device is Null, only Direct3D 11 and Direct3D 12 (only on desktop) are supported for hardware-accelerated video decoding.
+UnloadTime: 2.790500 ms
+[Localization] Preload Data Loaded.
+[SaveManager] Main Save 로드 성공
+[ButtonController] Start() 시작됨.
+[ButtonController] 리스너 등록 완료 및 버튼 임시 비활성화 처리됨.
+Changing weather profile None to WeatherMakerProfile_HeavyRain(Clone), transition time: 0.001, hold time: 586.066
+[Localization] Addressable Assets Loaded.
+[AudioManager] Addressable AudioDataSO 로드 완료 (라벨: 'AudioData', 총 등록된 사운드 수: 67)
+[SaveManager] 저장 완료 : C:/Users/junba/AppData/LocalLow/PandoraTeam/CleavingDestiny\player_save.dat
+Connected Region: kr
+AppVersion: 2_2.51
+Connected: True
+In Lobby: True

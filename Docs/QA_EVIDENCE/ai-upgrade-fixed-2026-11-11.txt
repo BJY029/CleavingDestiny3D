@@ -1,0 +1,11 @@
+Drive existing FinishDayForVillageTest helper; no currency injection
+54.215 AI=1000 armor=0 gold=500 levels=0,0,0,0,0 ready=False
+54.258 AI=1000 armor=0 gold=400 levels=1,0,0,0,0,0 ready=False
+54.267 AI=1000 armor=0 gold=200 levels=2,0,0,0,0,0 ready=False
+54.279 AI=1000 armor=100 gold=100 levels=2,0,0,0,1,0 ready=False
+54.296 AI=1000 armor=100 gold=0 levels=2,1,0,0,1,0 ready=False
+54.307 AI=1000 armor=100 gold=0 levels=2,1,0,0,1,0 ready=True
+PASS callback armor type Int32
+PASS callback armor type Single
+PASS callback armor type Double
+PASS AI barrier upgrade completed, ready=true, continuing normal village exit

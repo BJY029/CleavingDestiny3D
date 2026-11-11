@@ -144,8 +144,8 @@ public class AIBrain : MonoBehaviourPunCallbacks
 
         if (hasEnergy || hasMaxEnergy)
         {
-            int currentEnergy = hasEnergy ? (int)eng : PhotonPropertyHelper.GetPlayerProp<int>(MyActorNum, PlayerPropKeys.Energy);
-            int currentMaxEnergy = hasMaxEnergy ? (int)Meng : PhotonPropertyHelper.GetPlayerProp<int>(MyActorNum, PlayerPropKeys.MaxEnergy);
+            int currentEnergy = hasEnergy ? PhotonPropertyHelper.GetHashtableValue<int>(Changed, PlayerPropKeys.Energy + attachedKey) : PhotonPropertyHelper.GetPlayerProp<int>(MyActorNum, PlayerPropKeys.Energy);
+            int currentMaxEnergy = hasMaxEnergy ? PhotonPropertyHelper.GetHashtableValue<int>(Changed, PlayerPropKeys.MaxEnergy + attachedKey) : PhotonPropertyHelper.GetPlayerProp<int>(MyActorNum, PlayerPropKeys.MaxEnergy);
 
             int energyDiff = currentEnergy - prevEnergy;
 
@@ -160,8 +160,8 @@ public class AIBrain : MonoBehaviourPunCallbacks
 
         if (hasBarrier || hasArmor)
         {
-            float currentBarrier = hasBarrier ? (float)bar : PhotonPropertyHelper.GetPlayerProp<float>(MyActorNum, PlayerPropKeys.VillageBarrier);
-            float currentArmor = hasArmor ? (float)amo : PhotonPropertyHelper.GetPlayerProp<float>(MyActorNum, PlayerPropKeys.BarrierArmor);
+            float currentBarrier = hasBarrier ? PhotonPropertyHelper.GetHashtableValue<float>(Changed, PlayerPropKeys.VillageBarrier + attachedKey) : PhotonPropertyHelper.GetPlayerProp<float>(MyActorNum, PlayerPropKeys.VillageBarrier);
+            float currentArmor = hasArmor ? PhotonPropertyHelper.GetHashtableValue<float>(Changed, PlayerPropKeys.BarrierArmor + attachedKey) : PhotonPropertyHelper.GetPlayerProp<float>(MyActorNum, PlayerPropKeys.BarrierArmor);
 
             AI_SetVillageShieldVFX(MyActorNum, currentArmor + currentBarrier);
         }
@@ -185,19 +185,7 @@ public class AIBrain : MonoBehaviourPunCallbacks
 
     public void AI_SetVillageShieldVFX(int actorNum, float barrier)
     {
-        if (!PlayerStatus.Instance.playerVillageVFXBases.TryGetValue(actorNum, out Transform VFXbase))
-        {
-            Debug.LogError($"[PlayerStatus] There is no VillageVFXBase. ActorNumber={actorNum}");
-            return;
-        }
-
-        if (barrier <= 0f)
-        {
-            GameVFXManager.Instance.StopPersistent("VillageShield", actorNum);
-            return;
-        }
-
-        GameVFXManager.Instance.PlayOrUpdatePersistent("VillageShield", actorNum, VFXbase, 1f, barrier);
+        PlayerStatus.Instance.RPC_SetVillageShieldVFX(actorNum, barrier);
     }
 
     public void AI_SetEnergyVFX(int aiNum)
@@ -213,10 +201,6 @@ public class AIBrain : MonoBehaviourPunCallbacks
 
     private T GetValue<T>(ExitGames.Client.Photon.Hashtable prop, string key)
     {
-        if (prop.TryGetValue(key, out object value))
-        {
-            return (T)value;
-        }
-        return default(T);
+        return PhotonPropertyHelper.GetHashtableValue<T>(prop, key);
     }
 }

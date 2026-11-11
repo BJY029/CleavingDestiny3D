@@ -4,7 +4,8 @@ using Photon.Pun;
 
 public class LobbyConnectController : MonoBehaviourPunCallbacks
 {
-	private string gameVersion = "1";
+	// Attack commit/result RPCs carry turn identities starting with protocol 2.
+	private const string gameVersion = "2";
 
 	private void Awake()
 	{
@@ -56,8 +57,9 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 		LobbyUIManager.instance.setConnectedText("Disconnected. Reconnecting...");
 
 		PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = "kr";
-		PhotonNetwork.GameVersion = gameVersion;
 		PhotonNetwork.ConnectUsingSettings();
+		// ConnectUsingSettings overwrites GameVersion from its settings; set before authentication.
+		PhotonNetwork.GameVersion = gameVersion;
 	}
 
 	//Master server  , Lobby  õ
@@ -128,7 +130,7 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 		}
 
 		PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = "kr";
-		PhotonNetwork.GameVersion = gameVersion;
 		PhotonNetwork.ConnectUsingSettings();
+		PhotonNetwork.GameVersion = gameVersion;
 	}
 }

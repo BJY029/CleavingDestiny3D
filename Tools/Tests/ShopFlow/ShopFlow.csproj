@@ -6,6 +6,7 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../../Assets/Localization/Shop_CSV.csv" Link="Shop_CSV.csv" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../../Assets/0_Scripts/Shop/AxeShopController.cs" Link="Production/AxeShopController.cs" />
     <Compile Include="../../../Assets/0_Scripts/Shop/AxeShopItemUI.cs" Link="Production/AxeShopItemUI.cs" />
     <Compile Include="../../../Assets/0_Scripts/Cosmetic/AxeSkinCatalogSO.cs" Link="Production/AxeSkinCatalogSO.cs" />

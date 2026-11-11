@@ -1,0 +1,39 @@
+﻿PASS accept before deadline 0.5
+PASS committed strike excludes timeout
+PASS accepted strike applies even after deadline
+PASS duplicate impact cannot apply twice
+PASS applied strike excludes watchdog
+PASS accept before deadline 0.1
+PASS committed strike excludes timeout
+PASS accepted strike applies even after deadline
+PASS duplicate impact cannot apply twice
+PASS applied strike excludes watchdog
+PASS accept before deadline 0.001
+PASS committed strike excludes timeout
+PASS accepted strike applies even after deadline
+PASS duplicate impact cannot apply twice
+PASS applied strike excludes watchdog
+PASS reject at/after deadline 20
+PASS timeout claimed once
+PASS expired turn excludes manual strike
+PASS timeout permits automatic strike after deadline
+PASS automatic strike applies once
+PASS reject at/after deadline 20.1
+PASS timeout claimed once
+PASS expired turn excludes manual strike
+PASS timeout permits automatic strike after deadline
+PASS automatic strike applies once
+PASS stale turn rejected
+PASS wrong actor rejected
+PASS cannot forge timeout attack before expiry
+PASS paused/inactive timer rejects manual commit
+PASS manual commit
+PASS same request commit is idempotent
+PASS second request cannot replace commit
+PASS watchdog starts at three seconds
+PASS wrong impact request rejected
+PASS same turn synchronization preserves accepted damage
+PASS next turn resets state
+PASS late impact cannot affect next turn
+PASS 1000 alternating boundary races select one damage application
+38 checks passed.

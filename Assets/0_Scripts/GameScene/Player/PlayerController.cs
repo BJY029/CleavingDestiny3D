@@ -75,6 +75,8 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     private bool isPreparingTreeCut = false; // 나무 베기 준비 상태
     private bool attackRequestSent;
+    private bool attackCommitPending;
+    public AttackCommand PendingAttack { get; private set; }
 
     //움직임 관련 코드 내부에서 사용하는 파라미터
     private CharacterController characterController;
@@ -584,10 +586,10 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     // 타격 실행 처리 메서드 (2번째 F KeyDown 입력 시 호출)
     private void TriggerTreeStrike()
     {
+        if (attackCommitPending) return;
         isPreparingTreeCut = false;
 
         damageRatio = PlayerCanvasController.Instance.SelectNow();
-        TimeManager.instance.AbortTurnTimer();
         ItemOfferCanvasController.instance.Close();
 
         int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow);
@@ -596,8 +598,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         DevLog.Log($"<color=green>[HIT - DoublePressStrike]</color> Player {PlayerActNum} KeyDown Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
 
-        attackRequestSent = false;
-        animationController?.PlayStrikeAnimation();
+        BeginCommittedStrike(false, true);
         //ItemVFXController.Instance.Any_StopItemVFX(VFXType.PowerUP, PlayerActNum);
     }
 
@@ -611,6 +612,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     private async UniTaskVoid AutoTriggerRandomGaugeStrikeAsync()
     {
+        int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
         // 1. 아직 준비 상태가 아닌 경우 준비 상태 진입 (자동 타격 시에는 게이지 UI를 오픈하지 않음)
         if (!isPreparingTreeCut)
         {
@@ -634,16 +636,18 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             PlayerCanvasController.Instance?.CloseGauge();
         }
 
+        if (!PhotonNetwork.InRoom || !GameHelper.IsMyTurn() ||
+            turnIndex != PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex)) return;
         TriggerTreeStrikeWithGauge(Random.Range(0f, 100f));
     }
 
     private void TriggerTreeStrikeWithGauge(float overrideDamageRatio)
     {
+        if (attackCommitPending) return;
         isPreparingTreeCut = false;
 
         damageRatio = overrideDamageRatio;
         PlayerCanvasController.Instance?.CloseGauge();
-        TimeManager.instance?.AbortTurnTimer();
         ItemOfferCanvasController.instance?.Close();
 
         int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MaxAtkPow);
@@ -652,8 +656,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         DevLog.Log($"<color=green>[HIT - AutoRandomGaugeStrike]</color> Player {PlayerActNum} Auto Random Gauge Strike with damageRatio: {damageRatio}, calculated damage: {damage}", this);
 
-        attackRequestSent = false;
-        animationController?.PlayStrikeAnimation();
+        BeginCommittedStrike(true, true);
     }
 
     // 나무 베기 준비 상태 취소 메서드
@@ -714,6 +717,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
     public void TryHit(bool IsItRandom = false)
     {
+        if (attackCommitPending) return;
         //만약, 사용자 선택이 아닌 임의의 데미지인 경우(턴 시간 초과)
         if (IsItRandom)
         {
@@ -725,7 +729,6 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             //Hit 순간의 게이지 데미지 값 받기
             damageRatio = PlayerCanvasController.Instance.SelectNow();
             //타이머 중지
-            TimeManager.instance.AbortTurnTimer();
 
             MoveToTreeAttackPosition();
         }
@@ -735,8 +738,30 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.MinAtkPow);
         damage = currentMinAtkDamage + Mathf.RoundToInt((currentMaxAtkDamage - currentMinAtkDamage) * (damageRatio / 100));
         //Hit 애니메이션 재생 
-        attackRequestSent = false;
-        PlayHit();
+        BeginCommittedStrike(IsItRandom, false);
+    }
+
+    private void BeginCommittedStrike(bool automatic, bool strikeOnly)
+    {
+        if (attackCommitPending || !photonView.IsMine) return;
+        attackCommitPending = true;
+        WhileAnimation = true;
+        ItemHandlingSystem.instance.CommitAttack(damage, this, automatic, (command, accepted) =>
+        {
+            if (this == null || !isActiveAndEnabled) return;
+            attackCommitPending = false;
+            if (!accepted)
+            {
+                damage = -1;
+                WhileAnimation = false;
+                animationController?.CancelReadyAnimation();
+                return;
+            }
+            PendingAttack = command;
+            attackRequestSent = false;
+            if (strikeOnly) animationController?.PlayStrikeAnimation();
+            else PlayHit();
+        });
     }
 
     //Hit 애니메이션을 재생하는 함수
@@ -766,7 +791,8 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         attackRequestSent = true;
 
-        TurnManager.Instance.RequestChangeTurn(damage, this);
+        if (!PhotonNetwork.InRoom || PendingAttack.turnIndex != PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex)) return;
+        ItemHandlingSystem.instance.RequestCommittedHit(PendingAttack);
         ItemVFXController.Instance.Master_ResetTurnVFX(PlayerActNum);
     }
 

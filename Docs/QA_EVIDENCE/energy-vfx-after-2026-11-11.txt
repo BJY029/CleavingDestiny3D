@@ -1,0 +1,15 @@
+47.537 frame=3784 day=1 phase=DAY village=False fading=False energy=6 ui=6 / 9
+47.537 QA set local match energy=0 and use existing day-transition test helper
+47.553 frame=3785 day=1 phase=DAY village=False fading=False energy=0 ui=0 / 9
+52.863 frame=4285 day=1 phase=NIGHT_VILLAGE village=False fading=True energy=0 ui=0 / 9
+53.869 frame=4355 day=1 phase=NIGHT_VILLAGE village=False fading=False energy=0 ui=0 / 9
+54.198 frame=4395 day=1 phase=NIGHT_VILLAGE village=True fading=True energy=0 ui=0 / 9
+55.172 frame=4472 day=1 phase=NIGHT_VILLAGE village=True fading=False energy=0 ui=0 / 9
+55.188 frame=4473 day=1 phase=NIGHT_TREEATK village=True fading=True energy=0 ui=0 / 9
+56.173 frame=4554 day=1 phase=NIGHT_TREEATK village=True fading=False energy=0 ui=0 / 9
+56.477 frame=4580 day=1 phase=NIGHT_TREEATK village=False fading=False energy=0 ui=0 / 9
+56.491 frame=4581 day=1 phase=NIGHT_TREEATK village=False fading=True energy=0 ui=0 / 9
+57.482 frame=4675 day=1 phase=NIGHT_TREEATK village=False fading=False energy=0 ui=0 / 9
+57.502 frame=4676 day=2 phase=DAY village=False fading=False energy=6 ui=6 / 9
+57.502 frame=4676 ENERGY_EFFECT_PLAY
+57.502 QA refreshed UI twice after AI cache read; must not replay EnergyUp

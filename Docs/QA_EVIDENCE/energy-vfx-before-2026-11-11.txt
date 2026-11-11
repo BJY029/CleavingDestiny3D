@@ -1,0 +1,13 @@
+56.096 frame=5269 day=1 phase=DAY village=False fading=False energy=5 ui=5 / 8
+56.096 QA set local match energy=0 and use existing day-transition test helper
+56.111 frame=5270 day=1 phase=DAY village=False fading=False energy=0 ui=0 / 8
+61.415 frame=5793 day=1 phase=NIGHT_VILLAGE village=False fading=True energy=0 ui=0 / 8
+62.422 frame=5875 day=1 phase=NIGHT_VILLAGE village=False fading=False energy=0 ui=0 / 8
+62.752 frame=5917 day=1 phase=NIGHT_VILLAGE village=True fading=True energy=0 ui=0 / 8
+63.730 frame=5997 day=1 phase=NIGHT_VILLAGE village=True fading=False energy=0 ui=0 / 8
+63.747 frame=5998 day=1 phase=NIGHT_TREEATK village=True fading=True energy=0 ui=0 / 8
+64.737 frame=6086 day=1 phase=NIGHT_TREEATK village=True fading=False energy=0 ui=0 / 8
+65.045 frame=6113 day=1 phase=NIGHT_TREEATK village=False fading=False energy=0 ui=0 / 8
+65.058 frame=6114 day=1 phase=NIGHT_TREEATK village=False fading=True energy=0 ui=0 / 8
+66.051 frame=6209 day=1 phase=NIGHT_TREEATK village=False fading=False energy=0 ui=0 / 8
+66.067 frame=6210 day=2 phase=DAY village=False fading=False energy=5 ui=5 / 8

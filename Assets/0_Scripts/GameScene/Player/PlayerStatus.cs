@@ -21,6 +21,8 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 
 	public readonly Dictionary<int, Transform> playerVillageVFXBases = new();
 	[SerializeField] private Transform[] VillageVFXBase;
+	private readonly Dictionary<int, float> pendingVillageShields = new();
+	private bool villageVFXReady;
 
 	//플레이어의 인벤토리
 	private GameObject myInventory;
@@ -29,6 +31,9 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	private int currentGold;
 	private int currentDayGoldIncome;
 	private int currentEnergy;
+	// Presentation history must not share the working cache used for player/AI calculations.
+	private int lastPresentedEnergy;
+	private bool hasPresentedEnergy;
 	private int currentEnergyIncome;
 	private int currentMaxEnergy;
 	private int currentCarryOverEnergy;
@@ -65,10 +70,26 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	public void ApplyVillageVFXBase()
 	{
 		int[] turnList = PhotonPropertyHelper.GetRoomProp<int[]>("TurnInfo");
+		playerVillageVFXBases.Clear();
+		villageVFXReady = false;
+		if (turnList == null || VillageVFXBase == null || VillageVFXBase.Length < turnList.Length)
+		{
+			Debug.LogError("[PlayerStatus] Village VFX positions do not match TurnInfo.");
+			return;
+		}
 		for (int i = 0; i < turnList.Length; i++)
 		{
+			if (VillageVFXBase[i] == null)
+			{
+				Debug.LogError($"[PlayerStatus] Village VFX position is null. Index={i}");
+				return;
+			}
 			playerVillageVFXBases[turnList[i]] = VillageVFXBase[i];
 		}
+		villageVFXReady = true;
+		foreach (var shield in pendingVillageShields.ToArray())
+			RPC_SetVillageShieldVFX(shield.Key, shield.Value);
+		pendingVillageShields.Clear();
 	}
 
 	public GameObject GetPlayerInventory()
@@ -152,29 +173,36 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 	// UI 업데이트
 	public void SetPlayerStatusUIVFX()
 	{
-		int prvEng = currentEnergy;
 		GetCurrentPlayerStatus();
+		int energyGain = hasPresentedEnergy ? currentEnergy - lastPresentedEnergy : 0;
+		lastPresentedEnergy = currentEnergy;
+		hasPresentedEnergy = true;
 		PlayerCanvasController.Instance.updatePlayerStatus(
 			currentEnergy, currentMaxEnergy, currentVillageHP, currentTotalDamage, GetCurrentTotalDefense(), maxVillageHp);
 
 		photonView.RPC(nameof(RPC_SetVillageShieldVFX), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, currentBarrier + currentBarrierArmor);
 
-		if (GameStarter.instance.CurrentPhase == GameStartPhase.MainGame)
-			photonView.RPC(nameof(RPC_SetEnergyVFX), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, currentEnergy - prvEng);
+		if (energyGain > 0 && GameStarter.instance.CurrentPhase == GameStartPhase.MainGame)
+			photonView.RPC(nameof(RPC_SetEnergyVFX), RpcTarget.All, PhotonNetwork.LocalPlayer.ActorNumber, energyGain);
 	}
 
 	[PunRPC]
 	public void RPC_SetVillageShieldVFX(int actorNum, float barrier)
 	{
+		if (barrier <= 0f)
+		{
+			pendingVillageShields.Remove(actorNum);
+			GameVFXManager.Instance.StopPersistent("VillageShield", actorNum);
+			return;
+		}
+		if (!villageVFXReady)
+		{
+			pendingVillageShields[actorNum] = barrier;
+			return;
+		}
 		if (!playerVillageVFXBases.TryGetValue(actorNum, out Transform VFXbase))
 		{
 			Debug.LogError($"[PlayerStatus] There is no VillageVFXBase. ActorNumber={actorNum}");
-			return;
-		}
-
-		if (barrier <= 0f)
-		{
-			GameVFXManager.Instance.StopPersistent("VillageShield", actorNum);
 			return;
 		}
 

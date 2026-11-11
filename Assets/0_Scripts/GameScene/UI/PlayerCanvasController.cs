@@ -365,6 +365,12 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		if (!hitTextVisible || HitTextObj == null) return;
 		hitTextVisible = false;
 		hitTextTween.Stop();
+		if (Mathf.Approximately(HitTextObj.alpha, 0f))
+		{
+			HitTextObj.gameObject.SetActive(false);
+			HitText.text = "";
+			return;
+		}
 		hitTextTween = Sequence.Create(useUnscaledTime: true)
 			.Group(Tween.Alpha(HitTextObj, 0f, warningHideDuration, Ease.InOutSine))
 			.OnComplete(this, controller =>
@@ -403,6 +409,11 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		}
 		else
 		{
+			if (Mathf.Approximately(unclaimedItemWarningObj.alpha, 0f))
+			{
+				unclaimedItemWarningObj.gameObject.SetActive(false);
+				return;
+			}
 			unclaimedWarningTween = Sequence.Create(useUnscaledTime: true)
 				.Group(Tween.Alpha(unclaimedItemWarningObj, 0f, warningHideDuration, Ease.InOutSine))
 				.OnComplete(unclaimedItemWarningObj, group => group.gameObject.SetActive(false));
@@ -439,11 +450,12 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		if (!group.gameObject.activeSelf && rect != null)
 			rect.anchoredPosition = position + Vector2.down * warningSlideDistance;
 		group.gameObject.SetActive(true);
-		return Sequence.Create(useUnscaledTime: true)
-			.Group(Tween.Alpha(group, 1f, warningShowDuration, Ease.InOutSine))
-			.Group(rect != null
-				? Tween.UIAnchoredPositionY(rect, position.y, warningShowDuration, Ease.OutBack)
-				: default);
+		var sequence = Sequence.Create(useUnscaledTime: true);
+		if (!Mathf.Approximately(group.alpha, 1f))
+			sequence.Group(Tween.Alpha(group, 1f, warningShowDuration, Ease.InOutSine));
+		if (rect != null && !Mathf.Approximately(rect.anchoredPosition.y, position.y))
+			sequence.Group(Tween.UIAnchoredPositionY(rect, position.y, warningShowDuration, Ease.OutBack));
+		return sequence;
 	}
 
 	public void PopUpItemNotify(string itemId, Player player)

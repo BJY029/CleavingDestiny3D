@@ -1,0 +1,118 @@
+{
+  "scenario": "Editor AI battle, human timeout turns, normal AI attacks, normal F confirmation 0.119 seconds before deadline",
+  "events": [
+    {
+      "type": "Log",
+      "message": "[Attack] Commit turn=1 actor=1 request=1 reason=accepted received=127.529 deadline=-1.000",
+      "file": "Assets/0_Scripts/GameScene/Item/ItemHandlingSystem.cs",
+      "line": 77,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Apply turn=1 actor=1 request=1",
+      "file": "Assets/0_Scripts/GameScene/Item/ItemHandlingSystem.cs",
+      "line": 801,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Complete turn=1 actor=1 request=1",
+      "file": "Assets/0_Scripts/GameScene/TurnManager.cs",
+      "line": 158,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Commit turn=2 actor=1000 request=2 reason=accepted received=143.050 deadline=167.936",
+      "file": "Assets/0_Scripts/GameScene/Item/ItemHandlingSystem.cs",
+      "line": 77,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Apply turn=2 actor=1000 request=2",
+      "file": "Assets/0_Scripts/GameScene/Item/ItemHandlingSystem.cs",
+      "line": 801,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Complete turn=2 actor=1000 request=2",
+      "file": "Assets/0_Scripts/GameScene/TurnManager.cs",
+      "line": 158,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Commit turn=3 actor=1 request=3 reason=accepted received=185.878 deadline=-1.000",
+      "file": "Assets/0_Scripts/GameScene/Item/ItemHandlingSystem.cs",
+      "line": 77,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Apply turn=3 actor=1 request=3",
+      "file": "Assets/0_Scripts/GameScene/Item/ItemHandlingSystem.cs",
+      "line": 801,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Complete turn=3 actor=1 request=3",
+      "file": "Assets/0_Scripts/GameScene/TurnManager.cs",
+      "line": 158,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Commit turn=4 actor=1000 request=4 reason=accepted received=200.745 deadline=226.248",
+      "file": "Assets/0_Scripts/GameScene/Item/ItemHandlingSystem.cs",
+      "line": 77,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Apply turn=4 actor=1000 request=4",
+      "file": "Assets/0_Scripts/GameScene/Item/ItemHandlingSystem.cs",
+      "line": 801,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Complete turn=4 actor=1000 request=4",
+      "file": "Assets/0_Scripts/GameScene/TurnManager.cs",
+      "line": 158,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[QA] Boundary F confirm remaining=0.119 turn=5",
+      "file": "",
+      "line": 0,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Commit turn=5 actor=1 request=5 reason=accepted received=241.035 deadline=241.154",
+      "file": "Assets/0_Scripts/GameScene/Item/ItemHandlingSystem.cs",
+      "line": 77,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Apply turn=5 actor=1 request=5",
+      "file": "Assets/0_Scripts/GameScene/Item/ItemHandlingSystem.cs",
+      "line": 801,
+      "stackTrace": null
+    },
+    {
+      "type": "Log",
+      "message": "[Attack] Complete turn=5 actor=1 request=5",
+      "file": "Assets/0_Scripts/GameScene/TurnManager.cs",
+      "line": 158,
+      "stackTrace": null
+    }
+  ],
+  "errors": 0
+}

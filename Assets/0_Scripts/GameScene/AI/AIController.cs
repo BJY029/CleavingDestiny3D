@@ -36,6 +36,8 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     private bool UpgradePhase;
     private bool WhileHittingMotion;
     private bool attackRequestSent;
+    private bool attackCommitPending;
+    public AttackCommand PendingAttack { get; private set; }
     //데미지 관련 값
     private float damageRatio;
     private int damage;
@@ -291,12 +293,10 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
     public void TryHit(bool IsItRandom = false)
     {
         if (IsMatchEnded) return;
+        if (attackCommitPending || !PhotonNetwork.IsMasterClient) return;
         //현재 임시로 랜덤 데미지 부여하도록 설정
         if (IsItRandom)
             damageRatio = UnityEngine.Random.Range(0f, 100f);
-        else
-            //타이머 중지
-            TimeManager.instance.AbortTurnTimer();
 
         int currentMaxAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PlayerActNum, PlayerPropKeys.MaxAtkPow);
         int currentMinAtkDamage = PhotonPropertyHelper.GetPlayerProp<int>(PlayerActNum, PlayerPropKeys.MinAtkPow);
@@ -306,8 +306,16 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
             : Mathf.RoundToInt(aiBrain.TreeAttacker.SelectDamage());
         //Hit 애니메이션 재생 
 
-        attackRequestSent = false;
-        PlayHit();
+        attackCommitPending = true;
+        ItemHandlingSystem.instance.CommitAttack(damage, this, IsItRandom, (command, accepted) =>
+        {
+            if (this == null) return;
+            attackCommitPending = false;
+            if (!accepted || IsMatchEnded) return;
+            PendingAttack = command;
+            attackRequestSent = false;
+            PlayHit();
+        });
     }
 
     //Hit 애니메이션을 재생하는 함수
@@ -340,7 +348,8 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
         attackRequestSent = true;
 
         ItemVFXController.Instance.Master_ResetTurnVFX(PlayerActNum);
-        TurnManager.Instance.RequestChangeTurn(damage, this);
+        if (!PhotonNetwork.InRoom || PendingAttack.turnIndex != PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex)) return;
+        ItemHandlingSystem.instance.RequestCommittedHit(PendingAttack);
     }
 
     public void OnAnimStateExit(int stateKey)
