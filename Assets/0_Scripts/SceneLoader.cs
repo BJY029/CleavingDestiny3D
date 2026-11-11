@@ -20,8 +20,6 @@ public class SceneLoader : MonoBehaviour
     private const float WaitDuration = 0.5f;
 
     private CancellationTokenSource dotsCancelToken;
-    private bool isAnimating = false;
-    private string currentLoadingKey = UI_CSV.UI_Load_Loading;
 
     private void Awake()
     {
@@ -29,10 +27,7 @@ public class SceneLoader : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            if (loadingPanel != null)
-            {
-                loadingPanel.SetActive(false);
-            }
+            HideLoadingUI();
         }
         else if (Instance != this)
         {
@@ -53,6 +48,9 @@ public class SceneLoader : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        if (Instance != this) return;
+        if (mode == LoadSceneMode.Single && scene.name == CommonDefine.LOBBYSCENE)
+            FadeCanvas.Instance?.SetFade(false);
         // 씬 로드가 완료되면 로딩창을 비활성화합니다.
         HideLoadingUI();
     }
@@ -62,12 +60,17 @@ public class SceneLoader : MonoBehaviour
     /// </summary>
     public void ShowLoadingUI(string overrideTextKey = null)
     {
-        currentLoadingKey = overrideTextKey;
+        StopDotsAnimation();
 
         if (loadingPanel != null)
         {
             loadingPanel.SetActive(true);
+            loadingPanel.transform.localScale = Vector3.one;
         }
+        SetTimerVisible(false);
+        if (stopMatching != null) stopMatching.gameObject.SetActive(false);
+        if (sceneLoadingText != null) sceneLoadingText.gameObject.SetActive(true);
+        if (mainLoadingText != null) mainLoadingText.gameObject.SetActive(true);
 
         // overrideTextKey가 지정되었을 때만 mainLoadingText의 내용을 업데이트합니다.
         if (mainLoadingText != null && !string.IsNullOrEmpty(overrideTextKey))
@@ -82,9 +85,26 @@ public class SceneLoader : MonoBehaviour
             }
         }
 
-        StopDotsAnimation();
-        dotsCancelToken = new CancellationTokenSource();
+        dotsCancelToken = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
         StartDotsAnimation(dotsCancelToken.Token).Forget();
+    }
+
+    // The persistent panel is reused; restore every child changed by scene loading.
+    public void ShowMatchmakingUI()
+    {
+        HideLoadingUI();
+        if (loadingPanel != null)
+        {
+            loadingPanel.transform.localScale = Vector3.one;
+            loadingPanel.SetActive(true);
+        }
+        if (mainLoadingText != null) mainLoadingText.gameObject.SetActive(true);
+        SetTimerVisible(true);
+        if (stopMatching != null)
+        {
+            stopMatching.gameObject.SetActive(true);
+            stopMatching.interactable = true;
+        }
     }
 
     /// <summary>
@@ -93,10 +113,28 @@ public class SceneLoader : MonoBehaviour
     public void HideLoadingUI()
     {
         StopDotsAnimation();
+        if (mainLoadingText != null) mainLoadingText.text = string.Empty;
+        if (sceneLoadingText != null)
+        {
+            sceneLoadingText.text = string.Empty;
+            sceneLoadingText.gameObject.SetActive(false);
+        }
+        if (timer != null) timer.text = "00:00";
         if (loadingPanel != null)
         {
             loadingPanel.SetActive(false);
         }
+    }
+
+    private void SetTimerVisible(bool visible)
+    {
+        if (timer == null) return;
+        Transform group = timer.transform;
+        // TimerBG and its text form one group directly under the shared loading panel.
+        if (loadingPanel != null && group.IsChildOf(loadingPanel.transform))
+            while (group.parent != loadingPanel.transform) group = group.parent;
+        group.gameObject.SetActive(visible);
+        if (visible) timer.gameObject.SetActive(true);
     }
 
     private void StopDotsAnimation()
@@ -107,12 +145,10 @@ public class SceneLoader : MonoBehaviour
             dotsCancelToken.Dispose();
             dotsCancelToken = null;
         }
-        isAnimating = false;
     }
 
     private async UniTask StartDotsAnimation(CancellationToken token)
     {
-        isAnimating = true;
         string originText = "";
 
         // 보조 로딩 텍스트는 언제나 일반 로딩("로딩 중") 텍스트를 기준으로 점 애니메이션을 수행합니다.
@@ -130,7 +166,7 @@ public class SceneLoader : MonoBehaviour
 
         try
         {
-            while (!token.IsCancellationRequested && isAnimating)
+            while (!token.IsCancellationRequested)
             {
                 if (sceneLoadingText != null)
                 {
@@ -143,13 +179,6 @@ public class SceneLoader : MonoBehaviour
         catch (OperationCanceledException)
         {
             // 의도된 취소 처리
-        }
-        finally
-        {
-            if (sceneLoadingText != null)
-            {
-                sceneLoadingText.text = originText + "...Done!";
-            }
         }
     }
 

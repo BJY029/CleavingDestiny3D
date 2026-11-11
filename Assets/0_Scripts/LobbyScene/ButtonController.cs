@@ -14,6 +14,7 @@ public class ButtonController : MatchController
     public Button ShopBtn;
     public Button ExitBtn;
     public Button OptionBtn;
+    private Button boundStopMatching;
 
     private void Awake()
     {
@@ -29,8 +30,9 @@ public class ButtonController : MatchController
         MatchmakingBtn.onClick.AddListener(FindMatch);
         MatchmakingBtn.onClick.AddListener(PlayButtonClickSound);
 
-        StopMatching.onClick.AddListener(PlayButtonClickSound);
-        StopMatching.onClick.AddListener(CancelMatch);
+        boundStopMatching = StopMatching;
+        boundStopMatching.onClick.AddListener(PlayButtonClickSound);
+        boundStopMatching.onClick.AddListener(CancelMatch);
 
         PlayWithAIBtn.onClick.AddListener(PlayButtonClickSound);
         PlayWithAIBtn.onClick.AddListener(StartSoloplay);
@@ -44,9 +46,6 @@ public class ButtonController : MatchController
         OptionBtn.onClick.AddListener(PlayButtonClickSound);
         OptionBtn.onClick.AddListener(OnClickOption);
 
-        if (LoadingPanel != null)
-            LoadingPanel.transform.localScale = Vector3.zero;
-
         // 시작 시 로비 접속 대기 상태이므로 버튼 임시 비활성화
         SetButtonsInteractable(false);
         Debug.Log("[ButtonController] 리스너 등록 완료 및 버튼 임시 비활성화 처리됨.");
@@ -59,6 +58,16 @@ public class ButtonController : MatchController
         //     $"{System.Environment.StackTrace}"
         // );
         AudioManager.Instance.PlaySfx2D("ui_button");
+    }
+
+    protected override void OnDestroy()
+    {
+        if (boundStopMatching != null)
+        {
+            boundStopMatching.onClick.RemoveListener(PlayButtonClickSound);
+            boundStopMatching.onClick.RemoveListener(CancelMatch);
+        }
+        base.OnDestroy();
     }
 
     public void SetButtonsInteractable(bool state)

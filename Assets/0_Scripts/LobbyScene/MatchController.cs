@@ -18,7 +18,6 @@ public class MatchController : MonoBehaviourPunCallbacks
 	//현재 매칭메이킹 중인지 확인
 	private bool isFindingMatch = false;
 	//텍스트 애니메이션 재생 플래그
-	private bool spining = false;
 	//씬 전환 허용 여부 플래그
 	private bool allowSceneChange = false;
 	//역할 분배 완료 플래그
@@ -51,12 +50,13 @@ public class MatchController : MonoBehaviourPunCallbacks
 
 	protected virtual void Start()
 	{
-		SceneLoadingText.text = "";
+		SceneLoader.Instance?.HideLoadingUI();
 	}
 
 	//매치메이킹을 시도하는 함수
 	protected void FindMatch()
 	{
+		if (isFindingMatch || matchStarting) return;
 		Debug.Log($"[MatchController] FindMatch() 호출됨. IsConnectedAndReady: {PhotonNetwork.IsConnectedAndReady}, InRoom: {PhotonNetwork.InRoom}");
 		// 서버 연결 완료 및 방에 있지 않은 상태 확인 (GameServer에서 매칭 시도 방지)
 		if (PhotonNetwork.IsConnectedAndReady && !PhotonNetwork.InRoom)
@@ -67,8 +67,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 			isFindingMatch = true;
 
 			//로딩 패널 활성화
-			LoadingPanel.SetActive(true);
-			LoadingPanel.transform.localScale = Vector3.one;
+			SceneLoader.Instance.ShowMatchmakingUI();
 
 			//...이 반복되어 표시되도록 한다.
 			LoadingText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Load_Finding);
@@ -77,7 +76,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 				spiningCancelToken.Cancel();
 				spiningCancelToken.Dispose();
 			}
-			spiningCancelToken = new CancellationTokenSource();
+			spiningCancelToken = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
 			SpiningDots(LoadingText, spiningCancelToken.Token).Forget();
 
 
@@ -128,26 +127,8 @@ public class MatchController : MonoBehaviourPunCallbacks
 		//현재 방에 들어와있다면 방에서 나간다.
 		if (PhotonNetwork.InRoom) PhotonNetwork.LeaveRoom();
 
-		//타이머 초기화
-		if (timerCoroutine != null)
-		{
-			StopCoroutine(timerCoroutine);
-			Timer.text = "00:00";
-
-			if (spiningCancelToken != null)
-			{
-				spiningCancelToken.Cancel();
-				spiningCancelToken.Dispose();
-				spiningCancelToken = null;
-			}
-		}
-
-		//로딩 패널 비활성화(크기 0으로 설정)
-		if (LoadingPanel != null)
-		{
-			LoadingPanel.transform.localScale = Vector3.zero;
-			LoadingPanel.SetActive(false);
-		}
+		StopMatchUiTasks();
+		SceneLoader.Instance?.HideLoadingUI();
 	}
 
 	//타이머를 갱신하는 코루틴
@@ -171,6 +152,13 @@ public class MatchController : MonoBehaviourPunCallbacks
 	//방을 생성하는 방장이나 해당 방에 들어가는 플레이어 모두 들어오면 호출되는 함수
 	public override void OnJoinedRoom()
 	{
+		// A join response can arrive after the user canceled matchmaking.
+		if (!isFindingMatch && !matchStarting &&
+			!(PhotonNetwork.CurrentRoom.CustomProperties[PlayWithFriendPanelManager.FriendRoomProperty] is true))
+		{
+			PhotonNetwork.LeaveRoom();
+			return;
+		}
 		CheckPlayersInRoom();
 	}
 
@@ -242,7 +230,8 @@ public class MatchController : MonoBehaviourPunCallbacks
 			}
 
 			// 로딩 UI만 표시 (포톤 LoadLevel로 씬 전환이 전파되며 씬 로드 완료 시 자동 해제됨)
-			SceneLoader.Instance.ShowLoadingUI();
+			StopMatchUiTasks();
+			SceneLoader.Instance.ShowLoadingUI(UI_CSV.UI_Load_MatchSuccess);
 			AudioManager.Instance.PlaySfx2D("Match_Con");
 			//씬 전환 코루틴 시작
 			StartCoroutine(StopTimerAndFinalizeMatch());
@@ -256,7 +245,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 				spiningCancelToken.Cancel();
 				spiningCancelToken.Dispose();
 			}
-			spiningCancelToken = new CancellationTokenSource();
+			spiningCancelToken = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
 			SpiningDots(LoadingText, spiningCancelToken.Token).Forget();
 		}
 	}
@@ -264,29 +253,40 @@ public class MatchController : MonoBehaviourPunCallbacks
 	//특정 텍스트 뒤에 ...이 반복적으로 표시되는 코루틴
 	async UniTask SpiningDots(TextMeshProUGUI texts, CancellationToken token)
 	{
-		spining = true;
-
 		string originText = texts.text;
 		int curDot = 0;
-		var destroyToken = destroyCancellationToken;
-
 		try
 		{
-			while (!token.IsCancellationRequested && spining && !destroyToken.IsCancellationRequested)
+			while (!token.IsCancellationRequested)
 			{
+				if (texts == null) return;
 				texts.text = originText + dots[curDot];
-				curDot = (curDot + 1) % 4;
-
+				curDot = (curDot + 1) % dots.Length;
 				await UniTask.Delay(TimeSpan.FromSeconds(duration), cancellationToken: token);
 			}
 		}
-		finally
-		{
-			// 종료시 스피닝 플래그 해제 및 원래 텍스트 복원
-			spining = false;
-			texts.text = originText;
-		}
+		catch (OperationCanceledException) { }
+		// Canceled/destroyed controllers must never restore text on the persistent panel.
+	}
 
+	private void StopMatchUiTasks()
+	{
+		if (timerCoroutine != null)
+		{
+			StopCoroutine(timerCoroutine);
+			timerCoroutine = null;
+		}
+		if (spiningCancelToken != null)
+		{
+			spiningCancelToken.Cancel();
+			spiningCancelToken.Dispose();
+			spiningCancelToken = null;
+		}
+	}
+
+	protected virtual void OnDestroy()
+	{
+		StopMatchUiTasks();
 	}
 
 	//매칭을 종료하기 위한 코루틴
@@ -295,11 +295,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 		//매치메이킹 플래그 해제
 		isFindingMatch = false;
 
-		//타이머 중지
-		if (timerCoroutine != null)
-		{
-			StopCoroutine(timerCoroutine);
-		}
+		StopMatchUiTasks();
 		LoadingText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_Load_MatchSuccess);
 
 		//매치메이킹 취소 불가능하게 버튼 비활성화
@@ -370,8 +366,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 		isFindingMatch = true;
 
 		// 로딩 패널 활성화
-		LoadingPanel.SetActive(true);
-		LoadingPanel.transform.localScale = Vector3.one;
+		SceneLoader.Instance.ShowMatchmakingUI();
 
 		// 로딩 텍스트 설정
 		LoadingText.text = "Loading Solo Mode";
@@ -380,7 +375,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 			spiningCancelToken.Cancel();
 			spiningCancelToken.Dispose();
 		}
-		spiningCancelToken = new CancellationTokenSource();
+		spiningCancelToken = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
 		SpiningDots(LoadingText, spiningCancelToken.Token).Forget();
 
 		// 타이머 갱신 시작 (UI 일관성 유지)
