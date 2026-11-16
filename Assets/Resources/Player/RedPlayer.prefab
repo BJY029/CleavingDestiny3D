@@ -113,6 +113,7 @@ GameObject:
   - component: {fileID: 4843472718520129601}
   - component: {fileID: 2216364797711470863}
   - component: {fileID: 1498683865448580545}
+  - component: {fileID: 2407787750526097877}
   m_Layer: 9
   m_Name: RedPlayer
   m_TagString: Untagged
@@ -359,6 +360,18 @@ MonoBehaviour:
   m_SynchronizeLayers:
   - SynchronizeType: 2
     LayerIndex: 0
+--- !u!114 &2407787750526097877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 567226301938784698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffc2dfd8720f1be4194df7616813a083, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerFootsteps
 --- !u!1 &611206736616433855
 GameObject:
   m_ObjectHideFlags: 0
