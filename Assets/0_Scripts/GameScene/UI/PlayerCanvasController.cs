@@ -24,6 +24,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public TextMeshProUGUI BarrierValue;
 	public TextMeshProUGUI TreeMultValue;
 	public TextMeshProUGUI MyTurnText;
+	public GameObject ItemInteractUI;
 	public CanvasGroup HitTextObj;
 
 	[SerializeField] private GameObject gaugeRoot;
@@ -120,6 +121,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		unclaimedWarningPosition = InitializeTweenUI(unclaimedItemWarningObj, out unclaimedWarningRect);
 		MissionPanel.SetActive(false);
 		BranchInteractObj.SetActive(false);
+		ItemInteractUI.SetActive(false);
 		MyTurnText.gameObject.SetActive(false);
 		CloseGauge();
 		if (HitText != null) HitText.text = "";
