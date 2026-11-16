@@ -1130,7 +1130,7 @@ MonoBehaviour:
   _mainCamera: {fileID: 6342265255397381254}
   firstPersonObjects: {fileID: 4654932561933149179}
   mouseSensitivity: 0.1
-  TopClamp: 35
+  TopClamp: 60
   BottomClamp: -80
   targetTerrain: {fileID: 0}
   terrainHeightOffset: 0.05
