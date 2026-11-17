@@ -138,6 +138,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public override void OnEnable()
 	{
 		base.OnEnable();
+		RefreshTurnTimerFromRoomState();
 
 		GameSessionData.OnBranchCountChanged += UpdateBranchCount;
 		UpdateBranchCount(GameSessionData.CollectedBranchCount);
@@ -244,23 +245,31 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		BranchCount.text = count.ToString();
 	}
 
+	private void RefreshTurnTimerFromRoomState()
+	{
+		if (!PhotonNetwork.InRoom) return;
+
+		// 비활성 중에는 Photon 콜백을 받지 못하므로 현재 방의 시간으로 복구한다.
+		var props = PhotonNetwork.CurrentRoom.CustomProperties;
+		if (props.TryGetValue(RoomPropKeys.PlayerTurnStartEndTime, out var value)
+			&& value is Vector2 times)
+		{
+			_startTime = times.x;
+			_endTime = times.y;
+			_lastTimerSec = -1;
+		}
+
+		duration = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TurnTime);
+	}
+
 	//타이머가 설정되면, 시작, 끝 시간을 받아와서 저장한다.
 	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
 	{
 		UpdateUnclaimedItemWarning();
-		if (propertiesThatChanged.TryGetValue(RoomPropKeys.PlayerTurnStartEndTime, out var value))
+		if (propertiesThatChanged.ContainsKey(RoomPropKeys.PlayerTurnStartEndTime)
+			|| propertiesThatChanged.ContainsKey(RoomPropKeys.TurnTime))
 		{
-			if (value is Vector2 times)
-			{
-				_startTime = times.x;
-				_endTime = times.y;
-				duration = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TurnTime);
-			}
-		}
-
-		if (propertiesThatChanged.TryGetValue(RoomPropKeys.TurnTime, out var time))
-		{
-			duration = (float)time;
+			RefreshTurnTimerFromRoomState();
 		}
 	}
 
