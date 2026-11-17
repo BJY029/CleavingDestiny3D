@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../Assets/0_Scripts/GameScene/Item/ItemSO.cs" Link="Production/ItemSO.cs" />
+    <Compile Include="../../../Assets/0_Scripts/GameScene/Item/Class_OR_Statics/EffectContext.cs" Link="Production/EffectContext.cs" />
+    <Compile Include="../../../Assets/0_Scripts/GameScene/Item/Class_OR_Statics/DamageResolver.cs" Link="Production/DamageResolver.cs" />
+    <Compile Include="../../../Assets/0_Scripts/GameScene/Item/Class_OR_Statics/GameEventBus.cs" Link="Production/GameEventBus.cs" />
+    <Compile Include="../../../Assets/0_Scripts/GameScene/Item/Class_OR_Statics/StatusBehaviours.cs" Link="Production/StatusBehaviours.cs" />
+    <Compile Include="../../../Assets/0_Scripts/GameScene/Item/Class_OR_Statics/StatusInstance.cs" Link="Production/StatusInstance.cs" />
+    <Compile Include="../../../Assets/0_Scripts/GameScene/Item/Class_OR_Statics/DamagePacket.cs" Link="Production/DamagePacket.cs" />
+    <Compile Include="../../../Assets/0_Scripts/GameScene/Item/Class_OR_Statics/DeterministicRng.cs" Link="Production/DeterministicRng.cs" />
+  </ItemGroup>
+</Project>

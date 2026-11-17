@@ -89,12 +89,23 @@ public class DamageResolver
 
     public void ResolveWhenStartTurn(EffectContext ctx, int currentActNum)
     {
-        _bus.publish(new GameEvent
+        // Share one HP snapshot across statuses; Photon properties update asynchronously.
+        ctx.BeginTreeHpBatch();
+        try
         {
-            type = TriggerMask.OnTurnStart,
-            actorNum = currentActNum,
-            payload = null
-        }, ctx);
+            _bus.publish(new GameEvent
+            {
+                type = TriggerMask.OnTurnStart,
+                actorNum = currentActNum,
+                payload = null
+            }, ctx);
+            ctx.CommitTreeHpBatch();
+        }
+        catch
+        {
+            ctx.CancelTreeHpBatch();
+            throw;
+        }
     }
 
     public void ResolveWhenVillageStart(EffectContext ctx)
