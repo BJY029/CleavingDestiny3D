@@ -149,7 +149,7 @@ public static class StatusBehaviours
                 if (e.type != TriggerMask.OnDamageConvert) return;
 
                 if (dmg.attackerNum != st.ownerActorNum) return;
-                if (dmg.convertRateOverride >= 0f) return;
+                //if (dmg.convertRateOverride >= 0f) return;
 
                 float delta = st.spec.convertRate;
                 dmg.convertRateDelta += delta;

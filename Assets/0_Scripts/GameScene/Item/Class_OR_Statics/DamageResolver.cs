@@ -45,7 +45,9 @@ public class DamageResolver
             baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum);
         else
             baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum, state);
-        float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate + dmg.convertRateDelta;
+        //float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate + dmg.convertRateDelta;
+        baseRate = (dmg.convertRateOverride > 0) ? dmg.convertRateOverride : baseRate;
+        float rate = baseRate + dmg.convertRateDelta;
         rate = Mathf.Clamp01(rate);
         if (state != null) state.SetPlayerBarConRate(dmg.attackerNum, rate);
 
