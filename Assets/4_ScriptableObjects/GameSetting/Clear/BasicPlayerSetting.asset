@@ -22,8 +22,8 @@ MonoBehaviour:
   VillageDmgMulti: 1
   maxAtkPow: 1100
   minAtkPow: 900
-  initialEnergy: 5
-  maxEnergy: 8
+  initialEnergy: 50
+  maxEnergy: 80
   energyIncomePerDay: 5
   carryOverEnergy: 0
   regenEnergyPerDay: 10

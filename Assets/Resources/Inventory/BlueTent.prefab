@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8445038379460102535}
   - component: {fileID: 4296887078180941373}
   - component: {fileID: 9028652717245241168}
+  - component: {fileID: 6424704084481441792}
   m_Layer: 8
   m_Name: Slot2
   m_TagString: Untagged
@@ -132,6 +133,27 @@ MonoBehaviour:
   ItemDescText: {fileID: 272921385807051475}
   tooltipCard: {fileID: 9100000000000000017}
   nullTexture: {fileID: 2800000, guid: 1e0479d7f8a19744f9452f7e2dce0d50, type: 3}
+--- !u!65 &6424704084481441792
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 60305048291226597}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.0000001, y: 1.5, z: 0.1}
+  m_Center: {x: 0, y: 0.21, z: 0}
 --- !u!1 &137505235318177005
 GameObject:
   m_ObjectHideFlags: 0
@@ -597,6 +619,7 @@ GameObject:
   - component: {fileID: 909194386132709138}
   - component: {fileID: 5253972038694653149}
   - component: {fileID: 9116220418018222678}
+  - component: {fileID: 8545091313399257364}
   m_Layer: 8
   m_Name: Slot4
   m_TagString: Untagged
@@ -716,6 +739,27 @@ MonoBehaviour:
   ItemDescText: {fileID: 1894158591615705579}
   tooltipCard: {fileID: 9100000000000000035}
   nullTexture: {fileID: 2800000, guid: 1e0479d7f8a19744f9452f7e2dce0d50, type: 3}
+--- !u!65 &8545091313399257364
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 562842657674528610}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.0000001, y: 1.5, z: 0.1}
+  m_Center: {x: 0, y: 0.21, z: 0}
 --- !u!1 &682486205969312096
 GameObject:
   m_ObjectHideFlags: 0
@@ -1520,6 +1564,7 @@ GameObject:
   - component: {fileID: 7729939890805102648}
   - component: {fileID: 6367307663154533878}
   - component: {fileID: 6086292099541239365}
+  - component: {fileID: 4161261593356210830}
   m_Layer: 8
   m_Name: Slot5
   m_TagString: Untagged
@@ -1639,6 +1684,27 @@ MonoBehaviour:
   ItemDescText: {fileID: 1894158591615705579}
   tooltipCard: {fileID: 9100000000000000035}
   nullTexture: {fileID: 2800000, guid: 1e0479d7f8a19744f9452f7e2dce0d50, type: 3}
+--- !u!65 &4161261593356210830
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1734314849885351377}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.0000001, y: 1.5, z: 0.1}
+  m_Center: {x: 0, y: 0.21, z: 0}
 --- !u!1 &1802906905874622300
 GameObject:
   m_ObjectHideFlags: 0
@@ -2133,6 +2199,7 @@ GameObject:
   - component: {fileID: 3423172815746997865}
   - component: {fileID: 240235156331036480}
   - component: {fileID: 3523448105547768257}
+  - component: {fileID: 1467693099117274109}
   m_Layer: 8
   m_Name: Slot0
   m_TagString: Untagged
@@ -2252,6 +2319,27 @@ MonoBehaviour:
   ItemDescText: {fileID: 4806383805488728169}
   tooltipCard: {fileID: 9100000000000000053}
   nullTexture: {fileID: 2800000, guid: 1e0479d7f8a19744f9452f7e2dce0d50, type: 3}
+--- !u!65 &1467693099117274109
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2062285671081282391}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.0000001, y: 1.5, z: 0.1}
+  m_Center: {x: 0, y: 0.21, z: 0}
 --- !u!1 &2182660492437108946
 GameObject:
   m_ObjectHideFlags: 0
@@ -4793,6 +4881,7 @@ GameObject:
   - component: {fileID: 2955460153670572217}
   - component: {fileID: 6121647721691240705}
   - component: {fileID: 8499215094250084303}
+  - component: {fileID: 2651776644076374971}
   m_Layer: 8
   m_Name: Slot7
   m_TagString: Untagged
@@ -4912,6 +5001,27 @@ MonoBehaviour:
   ItemDescText: {fileID: 1035945816912571456}
   tooltipCard: {fileID: 9100000000000000071}
   nullTexture: {fileID: 2800000, guid: 1e0479d7f8a19744f9452f7e2dce0d50, type: 3}
+--- !u!65 &2651776644076374971
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4730042643001888636}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.0000001, y: 1.5, z: 0.1}
+  m_Center: {x: 0, y: 0.21, z: 0}
 --- !u!1 &5022090883330918905
 GameObject:
   m_ObjectHideFlags: 0
@@ -5229,6 +5339,7 @@ GameObject:
   - component: {fileID: 2529613805892369206}
   - component: {fileID: 8097116206433864069}
   - component: {fileID: 7030203957308711055}
+  - component: {fileID: 1497205711107378792}
   m_Layer: 8
   m_Name: Slot3
   m_TagString: Untagged
@@ -5348,6 +5459,27 @@ MonoBehaviour:
   ItemDescText: {fileID: 272921385807051475}
   tooltipCard: {fileID: 9100000000000000017}
   nullTexture: {fileID: 2800000, guid: 1e0479d7f8a19744f9452f7e2dce0d50, type: 3}
+--- !u!65 &1497205711107378792
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5490457477036809025}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.0000001, y: 1.5, z: 0.1}
+  m_Center: {x: 0, y: 0.21, z: 0}
 --- !u!1 &6042950641261048375
 GameObject:
   m_ObjectHideFlags: 0
@@ -5750,6 +5882,7 @@ GameObject:
   - component: {fileID: 433852180326104278}
   - component: {fileID: 4588732839871089080}
   - component: {fileID: 419962338375349989}
+  - component: {fileID: 8480818595866059983}
   m_Layer: 8
   m_Name: Slot6
   m_TagString: Untagged
@@ -5869,6 +6002,27 @@ MonoBehaviour:
   ItemDescText: {fileID: 1035945816912571456}
   tooltipCard: {fileID: 9100000000000000071}
   nullTexture: {fileID: 2800000, guid: 1e0479d7f8a19744f9452f7e2dce0d50, type: 3}
+--- !u!65 &8480818595866059983
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6768720558733059244}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.0000001, y: 1.5, z: 0.1}
+  m_Center: {x: 0, y: 0.21, z: 0}
 --- !u!1 &6837130850353513239
 GameObject:
   m_ObjectHideFlags: 0
@@ -6092,6 +6246,7 @@ GameObject:
   - component: {fileID: 5567393340751099755}
   - component: {fileID: 4229939287904448396}
   - component: {fileID: 5963429125084470637}
+  - component: {fileID: 3386598911015233593}
   m_Layer: 8
   m_Name: Slot1
   m_TagString: Untagged
@@ -6211,6 +6366,27 @@ MonoBehaviour:
   ItemDescText: {fileID: 4806383805488728169}
   tooltipCard: {fileID: 9100000000000000053}
   nullTexture: {fileID: 2800000, guid: 1e0479d7f8a19744f9452f7e2dce0d50, type: 3}
+--- !u!65 &3386598911015233593
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7146004800200906587}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.0000001, y: 1.5, z: 0.1}
+  m_Center: {x: 0, y: 0.21, z: 0}
 --- !u!1 &7321622165127898801
 GameObject:
   m_ObjectHideFlags: 0

@@ -48,9 +48,15 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 	public void CommitAttack(int baseDamage, IPlayerAction requester, bool automatic, Action<AttackCommand, bool> callback)
 	{
-		var cmd = new AttackCommand { attackerNum = requester.PlayerActNum, baseDamage = baseDamage,
-			isBasicAttack = true, turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex),
-			clientNonce = ++nextAttackNonce, automatic = automatic };
+		var cmd = new AttackCommand
+		{
+			attackerNum = requester.PlayerActNum,
+			baseDamage = baseDamage,
+			isBasicAttack = true,
+			turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex),
+			clientNonce = ++nextAttackNonce,
+			automatic = automatic
+		};
 		commitCallbacks[cmd.clientNonce] = callback;
 		photonView.RPC(nameof(RPC_CommitAttack), RpcTarget.MasterClient, JsonUtility.ToJson(cmd));
 	}
