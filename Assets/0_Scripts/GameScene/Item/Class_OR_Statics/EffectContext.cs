@@ -142,6 +142,11 @@ public class EffectContext
 	{
 		return PhotonPropertyHelper.GetPlayerProp<int>(actorNum, PlayerPropKeys.Energy);
 	}
+
+	public int GetPlayerMaxEng(int actorNum)
+	{
+		return PhotonPropertyHelper.GetPlayerProp<int>(actorNum, PlayerPropKeys.MaxEnergy);
+	}
 	public int GetPlayerEng(int playerNum, SimGameState state)
 	{
 		return playerNum == 1 ? state.p1Energy : state.p2Energy;

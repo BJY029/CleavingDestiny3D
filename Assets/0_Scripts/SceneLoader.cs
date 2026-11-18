@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using System.Threading;
 using System;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class SceneLoader : MonoBehaviour
 {
@@ -14,12 +15,26 @@ public class SceneLoader : MonoBehaviour
     public GameObject loadingPanel;
     public TextMeshProUGUI sceneLoadingText;
     public TextMeshProUGUI mainLoadingText;
-    public TextMeshProUGUI timer; public Button stopMatching;
+    public TextMeshProUGUI tipsText;
+    public TextMeshProUGUI timer;
+    public Button stopMatching;
 
     private const float DotDuration = 0.4f;
     private const float WaitDuration = 0.5f;
 
     private CancellationTokenSource dotsCancelToken;
+    private bool isLoadingCanvasActivated;
+
+    private Queue<int> randomTipNums = new Queue<int>();
+    [Header("Tip Settings")]
+    [SerializeField, Min(1)] private int tipsMinNum = 1;
+    [SerializeField, Min(1)] private int tipsMaxNum = 37;
+    [SerializeField, Min(1f)] private float duration = 5f;
+    private float elapsedTime;
+    private bool tipsInitialized;
+    private Language tipsLanguage;
+    private int lastTipNum = -1;
+
 
     private void Awake()
     {
@@ -32,7 +47,46 @@ public class SceneLoader : MonoBehaviour
         else if (Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+    }
+
+    private void FillQueueWithoutDup(int min, int max)
+    {
+        randomTipNums.Clear();
+
+        if (min < 1 || max < min)
+        {
+            Debug.LogWarning("[SceneLoader] 팁 번호 범위를 확인하세요.", this);
+            return;
+        }
+
+        List<int> tempNums = new List<int>();
+        var localization = LocalizationManager.Instance;
+        for (int i = min; i <= max; i++)
+        {
+            string key = $"TIP_ITEM_{i:D3}";
+            string text = localization.GetRawText(CSV_Type.MatchmakingTips, key);
+            if (!string.IsNullOrWhiteSpace(text) && text != key) tempNums.Add(i);
+            if (i == int.MaxValue) break;
+        }
+
+        for (int i = tempNums.Count - 1; i > 0; i--)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, i + 1);
+
+            int temp = tempNums[i];
+            tempNums[i] = tempNums[randomIndex];
+            tempNums[randomIndex] = temp;
+        }
+
+        // 새 묶음의 첫 팁이 직전 팁과 같은 경우에도 연속 중복을 피한다.
+        if (tempNums.Count > 1 && tempNums[0] == lastTipNum)
+        {
+            int swapIndex = UnityEngine.Random.Range(1, tempNums.Count);
+            (tempNums[0], tempNums[swapIndex]) = (tempNums[swapIndex], tempNums[0]);
+        }
+        foreach (int num in tempNums) randomTipNums.Enqueue(num);
     }
 
     private void OnEnable()
@@ -44,6 +98,70 @@ public class SceneLoader : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
         StopDotsAnimation();
+    }
+
+    private void Update()
+    {
+        UpdateTips();
+    }
+
+    private void UpdateTips()
+    {
+        if (!isLoadingCanvasActivated || tipsText == null) return;
+
+        var localization = LocalizationManager.Instance;
+        if (localization == null || !localization.IsLoaded)
+        {
+            tipsText.text = string.Empty;
+            tipsInitialized = false;
+            return;
+        }
+
+        // 최초 로딩 완료 또는 언어 변경 직후에는 기다리지 않고 첫 팁을 표시한다.
+        if (!tipsInitialized || tipsLanguage != localization.currentLanguage)
+        {
+            tipsInitialized = true;
+            tipsLanguage = localization.currentLanguage;
+            FillQueueWithoutDup(tipsMinNum, tipsMaxNum);
+            if (randomTipNums.Count == 0)
+            {
+                Debug.LogWarning("[SceneLoader] 표시할 팁이 없습니다. CSV 등록과 번호 범위를 확인하세요.", this);
+                lastTipNum = -1;
+                tipsText.text = string.Empty;
+                return;
+            }
+            ShowNextTip();
+            return;
+        }
+
+        if (randomTipNums.Count == 0 && lastTipNum < 0) return;
+        elapsedTime += Time.unscaledDeltaTime;
+        if (elapsedTime >= Mathf.Max(1f, duration)) ShowNextTip();
+    }
+
+    private void ShowNextTip()
+    {
+        elapsedTime = 0f;
+        if (randomTipNums.Count == 0) FillQueueWithoutDup(tipsMinNum, tipsMaxNum);
+        if (randomTipNums.Count == 0)
+        {
+            lastTipNum = -1;
+            tipsText.text = string.Empty;
+            return;
+        }
+
+        lastTipNum = randomTipNums.Dequeue();
+        tipsText.text = LocalizationManager.Instance.GetText(CSV_Type.MatchmakingTips, $"TIP_ITEM_{lastTipNum:D3}");
+    }
+
+    private void ResetTips()
+    {
+        isLoadingCanvasActivated = false;
+        tipsInitialized = false;
+        elapsedTime = 0f;
+        lastTipNum = -1;
+        randomTipNums.Clear();
+        if (tipsText != null) tipsText.text = string.Empty;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -61,6 +179,7 @@ public class SceneLoader : MonoBehaviour
     public void ShowLoadingUI(string overrideTextKey = null)
     {
         StopDotsAnimation();
+        ResetTips();
 
         if (loadingPanel != null)
         {
@@ -105,6 +224,9 @@ public class SceneLoader : MonoBehaviour
             stopMatching.gameObject.SetActive(true);
             stopMatching.interactable = true;
         }
+        isLoadingCanvasActivated = true;
+        if (tipsText != null) tipsText.gameObject.SetActive(true);
+        UpdateTips();
     }
 
     /// <summary>
@@ -113,6 +235,7 @@ public class SceneLoader : MonoBehaviour
     public void HideLoadingUI()
     {
         StopDotsAnimation();
+        ResetTips();
         if (mainLoadingText != null) mainLoadingText.text = string.Empty;
         if (sceneLoadingText != null)
         {

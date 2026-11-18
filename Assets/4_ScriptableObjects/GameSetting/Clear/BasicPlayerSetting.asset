@@ -24,7 +24,7 @@ MonoBehaviour:
   minAtkPow: 900
   initialEnergy: 50
   maxEnergy: 80
-  energyIncomePerDay: 5
+  energyIncomePerDay: 50
   carryOverEnergy: 0
   regenEnergyPerDay: 10
   commonWeight: 50

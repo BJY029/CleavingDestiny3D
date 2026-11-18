@@ -1154,7 +1154,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 					return;
 				}
 				int beforeEng = ctx.GetPlayerEng(actorNum);
-				int afterEng = beforeEng + eng;
+				int afterEng = Mathf.Min(beforeEng + eng, ctx.GetPlayerMaxEng(actorNum));
 				int deltaEng = afterEng - beforeEng;
 				//eng += ctx.GetPlayerEng(actorNum);
 

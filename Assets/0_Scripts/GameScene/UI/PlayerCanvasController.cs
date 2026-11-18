@@ -134,7 +134,6 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		InitTimer();
 	}
 
-
 	public override void OnEnable()
 	{
 		base.OnEnable();
@@ -195,6 +194,15 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		}
 		ProgressRing.fillAmount = duration > 0f ? Mathf.Clamp01(remainTime / duration) : 0f;
 		UpdateTimerWarning(remainTime);
+	}
+
+	public void SetItemInteractUI(bool active)
+	{
+		if (active && GameHelper.IsMyTurn())
+		{
+			ItemInteractUI.SetActive(true);
+		}
+		else ItemInteractUI.SetActive(false);
 	}
 
 	private void UpdateTimerWarning(float remaining)

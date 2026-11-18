@@ -168,7 +168,7 @@ public class WorldInventorySlot : MonoBehaviourPunCallbacks, ILookInteractable
 		InitItemInfos();
 		ToolTipPanel.SetActive(true);
 		PlayerCanvasController.Instance.SetTimerAlpha(0.2f, 1f);
-		PlayerCanvasController.Instance.ItemInteractUI.SetActive(true);
+		PlayerCanvasController.Instance.SetItemInteractUI(true);
 		GameCanvasController.Instance.SetDayWaveAlpha(0.2f, 1f);
 		//Highlight();
 	}
@@ -179,7 +179,7 @@ public class WorldInventorySlot : MonoBehaviourPunCallbacks, ILookInteractable
 		//if (!IsMine) return;
 		ToolTipPanel.SetActive(false);
 		PlayerCanvasController.Instance.SetTimerAlpha(1f, 1f);
-		PlayerCanvasController.Instance.ItemInteractUI.SetActive(false);
+		PlayerCanvasController.Instance.SetItemInteractUI(false);
 		GameCanvasController.Instance.SetDayWaveAlpha(1f, 1f);
 		//Highlight();
 	}
