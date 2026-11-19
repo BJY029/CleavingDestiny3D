@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -24,7 +23,8 @@ public class SceneBGMManager : MonoBehaviour
     [Tooltip("BGM이 등록되지 않은 씬에서 기존 BGM을 정지할지 여부")]
     [SerializeField] private bool stopBGMInUnregisteredScene = true;
 
-    private string _currentBGMId;
+    private AudioManager _audioManager;
+    private bool _started;
 
     private void Awake()
     {
@@ -39,17 +39,26 @@ public class SceneBGMManager : MonoBehaviour
 
     private void OnEnable()
     {
+        if (instance != this) return;
         SceneManager.sceneLoaded += OnSceneLoaded;
-        if (StoryCreditController.instance != null)
-            StoryCreditController.instance.onFinished += HandleStoryFinished;
+        StoryCreditController.PlaybackStateChanged += RefreshCurrentSceneBgm;
+        if (_started)
+            RefreshCurrentSceneBgm();
     }
 
+    private void Start()
+    {
+        _started = true;
+        OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
+    }
 
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
-        if (StoryCreditController.instance != null)
-            StoryCreditController.instance.onFinished -= HandleStoryFinished;
+        StoryCreditController.PlaybackStateChanged -= RefreshCurrentSceneBgm;
+        if (_audioManager != null)
+            _audioManager.OnAudioDataLoaded -= RefreshCurrentSceneBgm;
+        _audioManager = null;
     }
 
     private void OnDestroy()
@@ -58,38 +67,47 @@ public class SceneBGMManager : MonoBehaviour
             instance = null;
     }
 
-    private void HandleStoryFinished()
+    private void RefreshCurrentSceneBgm()
     {
+        if (instance != this || !isActiveAndEnabled) return;
+
+        var audioManager = AudioManager.Instance;
+        if (_audioManager != audioManager)
+        {
+            if (_audioManager != null)
+                _audioManager.OnAudioDataLoaded -= RefreshCurrentSceneBgm;
+            _audioManager = audioManager;
+            if (_audioManager != null)
+                _audioManager.OnAudioDataLoaded += RefreshCurrentSceneBgm;
+        }
+
         PlayBGMForScene(SceneManager.GetActiveScene());
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
     {
-
-        PlayBGMForScene(scene);
+        RefreshCurrentSceneBgm();
+        var sceneBgm = FindSceneBGMData(SceneManager.GetActiveScene().name);
+        if (sceneBgm == null || string.IsNullOrWhiteSpace(sceneBgm.bgmID))
+            HandleUnregisteredScene();
     }
 
     private void PlayBGMForScene(Scene scene)
     {
-        if (!GameManager.Instance.hasStoryPlayed)
+        var story = StoryCreditController.instance;
+        if (story != null && story.gameObject.scene == scene && story.isActiveAndEnabled
+            && story.IsBlockingSceneBgm)
             return;
 
         SceneBGMData sceneBGMData = FindSceneBGMData(scene.name);
 
         if (sceneBGMData == null || string.IsNullOrWhiteSpace(sceneBGMData.bgmID))
-        {
-            HandleUnregisteredScene();
-            return;
-        }
-
-        if (string.Equals(_currentBGMId, sceneBGMData.bgmID, StringComparison.Ordinal))
             return;
 
-        if (AudioManager.Instance == null)
+        if (_audioManager == null || _audioManager.IsBgmPlaying(sceneBGMData.bgmID))
             return;
 
-        AudioManager.Instance.PlayBgm(sceneBGMData.bgmID);
-        _currentBGMId = sceneBGMData.bgmID;
+        _audioManager.PlayBgm(sceneBGMData.bgmID);
     }
 
     private SceneBGMData FindSceneBGMData(string sceneName)
@@ -109,12 +127,8 @@ public class SceneBGMManager : MonoBehaviour
     {
         if (!stopBGMInUnregisteredScene) return;
 
-        if (string.IsNullOrEmpty(_currentBGMId)) return;
-
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.StopBgm();
-
-        _currentBGMId = null;
+        if (_audioManager != null)
+            _audioManager.StopBgm();
     }
 
 #if UNITY_EDITOR

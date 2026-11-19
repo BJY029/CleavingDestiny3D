@@ -53,6 +53,9 @@ public class AudioManager : MonoSingleton<AudioManager>
     private string _currentBgmId;
     public string CurrentBgmId => _currentBgmId;
     public string RequestedBgmId { get; private set; }
+    public bool IsBgmPlaying(string id) => bgmSource != null && bgmSource.isPlaying
+        && string.Equals(_currentBgmId, id, StringComparison.Ordinal)
+        && string.Equals(RequestedBgmId, id, StringComparison.Ordinal);
     private float _currentBgmBaseVolume = 1f;
 
     private readonly List<AudioSource> _audioSourcesPool = new();
@@ -330,6 +333,7 @@ public class AudioManager : MonoSingleton<AudioManager>
     public void StopBgmFadeOut(float fadeOutDuration = 1f)
     {
         CancelBgmTransition();
+        RequestedBgmId = null;
 
         _bgmTransitionCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
 
@@ -365,6 +369,7 @@ public class AudioManager : MonoSingleton<AudioManager>
     public void StopBgm()
     {
         CancelBgmTransition();
+        RequestedBgmId = null;
 
         bgmSource.Stop();
         bgmSource.clip = null;

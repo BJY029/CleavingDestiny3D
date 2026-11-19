@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Cysharp.Threading.Tasks;
 using Option.Element;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Option
 {
@@ -17,13 +18,14 @@ namespace Option
         [SerializeField] SliderWithTextSetting fovSetting;
         [SerializeField] ToggleSetting invertYSetting;
         [SerializeField] SliderWithTextSetting mouseSensitivitySetting;
+        [SerializeField] Button replayStoryCreditBtn;
 
         [Header("Check Panel")]
         [SerializeField] CheckPanel checkPanel;
 
         // private SettingData SettingData => OptionManager.Instance.settingData;
         private SettingData settingData;
-        
+
         List<Resolution> resolutions;
         FullScreenMode fullScreenMode = FullScreenMode.ExclusiveFullScreen;
         private bool _isInitialized = false;
@@ -33,7 +35,7 @@ namespace Option
         public void Initialize(SettingData newSettingData)
         {
             settingData = newSettingData;
-            
+
             double maxFps = 0;
 
             // 해상도 설정
@@ -110,6 +112,8 @@ namespace Option
                 fpsLimitSetting.AddListener(OnFpsLimitChanged);
                 vSyncSetting.AddListener(OnVSyncChanged);
                 languageSetting.AddListener(OnLanguageChanged);
+                if (replayStoryCreditBtn != null)
+                    replayStoryCreditBtn.onClick.AddListener(ReplayStoryCredit);
 
                 // FOV 설정
                 fovSetting.SetMinMax(60, 90);
@@ -395,6 +399,26 @@ namespace Option
         private void OnLanguageChanged(int index)
         {
             LocalizationManager.Instance.SetLanguage((Language)index);
+        }
+
+        private void Update()
+        {
+            if (replayStoryCreditBtn == null) return;
+            var story = StoryCreditController.instance;
+            replayStoryCreditBtn.interactable = story != null && story.isActiveAndEnabled && !story.IsPlaying;
+        }
+
+        private void ReplayStoryCredit()
+        {
+            var story = StoryCreditController.instance;
+            if (story == null || !story.isActiveAndEnabled || story.IsPlaying) return;
+            story.PlayStoryAsync(story.destroyCancellationToken, true).Forget();
+        }
+
+        private void OnDestroy()
+        {
+            if (replayStoryCreditBtn != null)
+                replayStoryCreditBtn.onClick.RemoveListener(ReplayStoryCredit);
         }
     }
 }
