@@ -86,6 +86,9 @@ public class SceneBGMManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
     {
+        // 추가 로딩되는 마을 씬의 BGM은 BgmStateController가 관리한다.
+        if (loadSceneMode == LoadSceneMode.Additive) return;
+
         RefreshCurrentSceneBgm();
         var sceneBgm = FindSceneBGMData(SceneManager.GetActiveScene().name);
         if (sceneBgm == null || string.IsNullOrWhiteSpace(sceneBgm.bgmID))

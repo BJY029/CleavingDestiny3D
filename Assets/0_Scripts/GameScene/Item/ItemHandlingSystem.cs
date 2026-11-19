@@ -363,6 +363,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 				else requestPlayer = player;
 			}
 
+
 			//임시, 1cost 도박 진행
 			if (targetPlayer != null)
 				BettingSystemController.instance.Master_StartBettingGame(requestPlayer.ActorNumber, targetPlayer.ActorNumber);
@@ -726,6 +727,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		if (!PhotonNetwork.IsMasterClient) return;
 		var ctx = new EffectContext(_rng, Debug.Log);
 		_damageResolver.ResolveWhenVillageStart(ctx);
+		_statusSystem.RemoveRemainingTurns_Zero();
 	}
 
 	public void InitDay()
@@ -1378,5 +1380,11 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		}
 
 		return targets;
+	}
+
+	[PunRPC]
+	public void RPC_ShowWarning(string textId)
+	{
+		PlayerCanvasController.Instance.SetWarningTextActive(textId);
 	}
 }

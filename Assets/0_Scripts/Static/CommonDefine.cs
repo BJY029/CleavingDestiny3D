@@ -95,6 +95,7 @@ public class UI_CSV
     public const string UI_LogWood_Result_Lose_Desc = "UI_LogWood_Result_Lose_Desc";
 
     public const string UI_Warning_Energy = "UI_Warning_Energy";
+    public const string UI_Warning_VillageHP = "UI_Warning_VillageHP";
     public const string UI_Warning_FullInv = "UI_Warning_FullInv";
     public const string UI_Warning_NotEnoughItem = "UI_Warning_NotEnoughItem";
     public const string UI_Warning_NotAvaiable = "UI_Warning_NotAvaiable";

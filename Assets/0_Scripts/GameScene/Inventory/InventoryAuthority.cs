@@ -82,6 +82,18 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			var slots = ItemInfoSerializer.Decode(PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(actor)), cap);
 			if (slots.Count(slot => !string.IsNullOrEmpty(slot.itemID)) <= 1) return "UI_ItemUse_NeedSacrifice";
 		}
+		if (item.itemId == "4006")
+		{
+			int requesterEngValue = PhotonPropertyHelper.GetPlayerProp<int>(actor, PlayerPropKeys.Energy);
+			if (requesterEngValue <= 0)
+				return UI_CSV.UI_Warning_Energy;
+		}
+		if (item.itemId == "4007")
+		{
+			int villageHP = PhotonPropertyHelper.GetPlayerProp<int>(actor, PlayerPropKeys.VillageHP);
+			if (villageHP <= 500)
+				return UI_CSV.UI_Warning_VillageHP;
+		}
 		return null;
 	}
 
@@ -578,6 +590,16 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			return;
 		}
 
+		//훔치는 Actor의 인벤토리 정보 역직렬화해서 가져오기
+		var TargetSlots = ItemInfoSerializer.Decode(ToInv, ToInvCap);
+
+		if (ItemInfoSerializer.isFullInventory(TargetSlots))
+		{
+			Debug.LogWarning("Item Insertion ERROR (Inventory Full");
+			photonView.RPC(nameof(RPC_ShowWarning), info.Sender, UI_CSV.UI_Warning_FullInv);
+			return;
+		}
+
 		//훔치는 아이템 가져오기
 		ItemSO item = ItemDB.Instance.Get(itemId);
 		//인벤토리 주인 Player 객체
@@ -602,10 +624,6 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		};
 		PhotonNetwork.CurrentRoom.SetCustomProperties(newProps);
 
-
-
-		//훔치는 Actor의 인벤토리 정보 역직렬화해서 가져오기
-		var TargetSlots = ItemInfoSerializer.Decode(ToInv, ToInvCap);
 
 		//훔치는 플레이어 아이템 인벤토리 첫 칸에 해당 아이템 삽입 시도하기
 		if (!ItemInfoSerializer.TryAddFirstEmpty(TargetSlots, (uniqueId, itemId)))
