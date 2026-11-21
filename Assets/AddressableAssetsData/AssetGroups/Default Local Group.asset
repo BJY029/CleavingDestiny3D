@@ -45,6 +45,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - ItemMaterial
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0eab8ae195344138a785e281f2e0284a
+    m_Address: Assets/Material/ItemIconMaterial/4004.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 113ff7bb90bfd704091a932682b4a8fb
     m_Address: Assets/Material/Item/1005.mat
     m_ReadOnly: 0
@@ -56,6 +62,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 17148efd82c7422d8f3c05b02502b3e5
+    m_Address: Assets/Material/ItemIconMaterial/1000.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 178df1ddfc6aea64fa7e79c2ef539ac2
     m_Address: Assets/Material/Item/5000.mat
@@ -93,6 +105,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - ItemTexture
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 22a0a216add74d2c828f662cab7b79c2
+    m_Address: Assets/Material/ItemIconMaterial/4002.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 22d2ad579550f394fbfa7283aae59279
     m_Address: Assets/Material/Item/4009.mat
     m_ReadOnly: 0
@@ -104,11 +122,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26137bd327d54b5c96b1ca096d2c7b04
+    m_Address: Assets/Material/ItemIconMaterial/2000.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 288c14db0cad6694880effbce4c21f40
     m_Address: Assets/Material/Item/4003.mat
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2a6dba1afc4e4e6d9b7f9d4a2d7f77c0
+    m_Address: Assets/Material/ItemIconMaterial/3001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2af2b9df912cc144594d06019ff2c59d
     m_Address: Assets/95_Textures/Items/1000.PNG
@@ -133,6 +163,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 39ce253df0d146ca860eb9691fbf79cc
+    m_Address: Assets/Material/ItemIconMaterial/4001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3e327ce420f8a404dab57c86d9f47c82
     m_Address: Assets/Material/Item/4008.mat
     m_ReadOnly: 0
@@ -145,17 +181,52 @@ MonoBehaviour:
     m_SerializedLabels:
     - ItemMaterial
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 49dc1039a9d047a19e1db7c2ad5baa2c
+    m_Address: Assets/Material/ItemIconMaterial/2003.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 507aeb79b30b41ed9f1bb11c397a6a8f
+    m_Address: Assets/Material/ItemIconMaterial/4006.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 528eb590ee2370a4e9dd23722ae64e9f
     m_Address: Assets/Material/Item/1003.mat
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemMaterial
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 563495f8dfe5403c9972395af993d478
+    m_Address: Assets/Material/ItemIconMaterial/4009.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 59869ebbeca4bd840a46a7613b1b58d4
     m_Address: Assets/95_Textures/Items/4001.PNG
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 59c5d282cc89416abc20bce7c13c5794
+    m_Address: Assets/Material/ItemIconMaterial/2001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5c00dd1fdd1a2404d8300fecae12d917
+    m_Address: I_ItemIcons
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5f24c02096e048d797f32fa5780aa682
+    m_Address: Assets/Material/ItemIconMaterial/1005.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5f7151868b243ac4b8cdce18a6c9e878
     m_Address: Assets/95_Textures/Items/3001.PNG
@@ -168,6 +239,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 641e13e0392d47129d74ee7c4acab98e
+    m_Address: Assets/Material/ItemIconMaterial/4008.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 657fb509543b7e64bb4de82dc7f6e353
     m_Address: Assets/Material/Item/4006.mat
@@ -193,6 +270,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - ItemTexture
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e6bb6b9485f4d698925d5438cf28e52
+    m_Address: Assets/Material/ItemIconMaterial/3002.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7ee987a79a69e4b47a5f09d34e099f53
     m_Address: Assets/95_Textures/Items/1004.PNG
     m_ReadOnly: 0
@@ -204,6 +287,12 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 81a46d3334f8479c8729b91a0306bffc
+    m_Address: Assets/Material/ItemIconMaterial/2002.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 82b97c18f696e5f4fb538ead3717dd06
     m_Address: Assets/95_Textures/Items/1003.PNG
@@ -259,11 +348,29 @@ MonoBehaviour:
     m_SerializedLabels:
     - ItemTexture
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ac4b6c8ff4a7469096277c7ae240a77b
+    m_Address: Assets/Material/ItemIconMaterial/3003.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af399cbcab7c48f4b32b73a9d3e9b47d
+    m_Address: Assets/Material/ItemIconMaterial/4000.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b045bd627fdf755488b36ab922070107
     m_Address: Assets/Material/Item/4000.mat
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b26f7a8b73bf4ff38093faae2cec7272
+    m_Address: Assets/Material/ItemIconMaterial/1003.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b368072df70f01942904a40fa337b5a0
     m_Address: Assets/95_Textures/Items/4005.PNG
@@ -283,11 +390,29 @@ MonoBehaviour:
     m_SerializedLabels:
     - ItemMaterial
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bb7a46c5e99f4c5e82ca122ba4fdb0eb
+    m_Address: Assets/Material/ItemIconMaterial/1002.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bba6add2852554b42bd521166ef6ce72
     m_Address: Assets/Material/Item/4002.mat
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bc556d1216dd417ebd5cc2ac6386b343
+    m_Address: Assets/Material/ItemIconMaterial/1001.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bd7f1f968d5c43688ac238e380b81182
+    m_Address: Assets/Material/ItemIconMaterial/5000.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: beb422545f9db9d438e77d10a06d2161
     m_Address: Assets/Material/Item/4007.mat
@@ -312,17 +437,41 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c293b1e6890842ba8717a86671cfe0e5
+    m_Address: Assets/Material/ItemIconMaterial/3000.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c56ada633f994294b9bdcf3bc219c8e8
     m_Address: Assets/Material/Item/2000.mat
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemMaterial
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ca2da05cdc014693a5ea8dec096246eb
+    m_Address: Assets/Material/ItemIconMaterial/4003.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cb8a04eb6d794cf39356259cc4701a6e
+    m_Address: Assets/Material/ItemIconMaterial/4005.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: cf7e60a923eee644688dd45121e331a6
     m_Address: Assets/95_Textures/Items/2002.PNG
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cfc18028e44c48428fa8ea3073331551
+    m_Address: Assets/Material/ItemIconMaterial/1006.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d2fba4f47136a9044b76532f77958267
     m_Address: Assets/95_Textures/Items/3000.PNG
@@ -353,6 +502,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - ItemTexture
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e3a55655caf546349a88a81bfdc90ae1
+    m_Address: Assets/Material/ItemIconMaterial/4007.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f9cbfd7bc6af4e0ea2e2c2fe9f46dc7b
+    m_Address: Assets/Material/ItemIconMaterial/1004.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - ItemIconMaterial
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fc69032082956d24f867febaf0848705
     m_Address: Assets/95_Textures/Items/1002.PNG

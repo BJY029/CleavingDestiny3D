@@ -36,7 +36,7 @@ public class ItemDB : MonoBehaviour
 
 		itemMat = new Dictionary<string, Material>();
 
-		Addressables.LoadAssetsAsync<Material>("ItemMaterial", null).Completed += OnAllMaterialLoaded;
+		Addressables.LoadAssetsAsync<Material>("ItemIconMaterial", null).Completed += OnAllMaterialLoaded;
 
 	}
 
