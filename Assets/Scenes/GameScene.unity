@@ -23128,7 +23128,8 @@ MonoBehaviour:
   characterSkinCatalog: {fileID: 11400000, guid: 1516d652d8652514d982d0b45207e36c, type: 2}
   enableQAStartingItems: 1
   qaStartingItems:
-  - {fileID: 11400000, guid: ff0b8a0d58b1fcb488a71b50d3879371, type: 2}
+  - {fileID: 11400000, guid: 69ab9529b9991a943b4a0410f5c81390, type: 2}
+  - {fileID: 11400000, guid: 0fc74dcb8904b364bb16e9e7957609c0, type: 2}
   targetTerrain: {fileID: 1483146311}
   heightOffset: 0.1
   LocalPlayerPC: {fileID: 0}
@@ -62548,19 +62549,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 1.5985219e-32
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: -2.4405384e-30
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 9.188e-41
+      value: 2.75568e-40
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 1.744874e-39
+      value: 3.7483e-41
       objectReference: {fileID: 0}
     - target: {fileID: 108655182436419188, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_Intensity

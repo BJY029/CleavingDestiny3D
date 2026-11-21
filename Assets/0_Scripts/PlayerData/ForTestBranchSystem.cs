@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class ForTestBranchSystem : MonoBehaviour
 {
+#if !UNITY_EDITOR
+    private void Awake()
+    {
+        gameObject.SetActive(false);
+    }
+#endif
+
     public void AddBranch500()
     {
 #if UNITY_EDITOR

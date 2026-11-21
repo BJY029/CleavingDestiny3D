@@ -274,7 +274,7 @@ MonoBehaviour:
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
   - id: 3002
-    clip: {fileID: 8300000, guid: 78607329a0f438145b15fd8aea5934e7, type: 3}
+    clip: {fileID: 8300000, guid: d77b409742d4fac48bc0538e14c20e9e, type: 3}
     randomClips: []
     useRandomClip: 0
     volume: 1
@@ -597,3 +597,12 @@ MonoBehaviour:
     useRandomPitch: 1
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 1
+  - id: Sacrifice
+    clip: {fileID: 8300000, guid: be7efa0b191055142851b43068c660bf, type: 3}
+    randomClips: []
+    useRandomClip: 0
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0

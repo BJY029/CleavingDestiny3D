@@ -652,6 +652,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 		//해당 아이템 삭제
 		InventoryAuthority.Instance.DeleteItemByUID(ActNum, UID);
+		AudioManager.Instance.PlaySfx2D("Sacrifice");
 	}
 
 	private int getRemainTurns(StatusSpec ss)
