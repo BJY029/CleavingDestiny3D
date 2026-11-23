@@ -23126,12 +23126,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
   characterSkinCatalog: {fileID: 11400000, guid: 1516d652d8652514d982d0b45207e36c, type: 2}
-  enableQAStartingItems: 1
-  qaStartingItems:
-  - {fileID: 11400000, guid: 6956f611ca989d746817ef79c2daa042, type: 2}
-  - {fileID: 11400000, guid: 32a0ac771362dbf4c83423ceda724bee, type: 2}
-  - {fileID: 11400000, guid: ddef8b6828049464ea061d945a5c702e, type: 2}
-  - {fileID: 11400000, guid: 88f39a2295ea84c4f98cd46806ab54af, type: 2}
+  enableQAStartingItems: 0
+  qaStartingItems: []
   targetTerrain: {fileID: 1483146311}
   heightOffset: 0.1
   LocalPlayerPC: {fileID: 0}
@@ -62551,19 +62547,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 2.7371721e+20
+      value: 1.5423301e+25
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.x
-      value: 7.144079e+31
+      value: 2.3534214e+20
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: 2.1685555e-10
+      value: 2.0531772e-19
       objectReference: {fileID: 0}
     - target: {fileID: 108505579623923364, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 13.955403
+      value: 1.3555903e-19
       objectReference: {fileID: 0}
     - target: {fileID: 108655182436419188, guid: 66bd18e21212b8c4ab51a96f918b3197, type: 3}
       propertyPath: m_Intensity

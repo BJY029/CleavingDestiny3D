@@ -264,7 +264,7 @@ public class StickGameController : MonoBehaviourPunCallbacks
         {
             Debug.Log($"turn order :  {i + 1} = player{turnOrder[i]}, length:{lengthOrder[i]}");
         }
-#if SOLO_PLAYER_FIRST
+#if UNITY_EDITOR && SOLO_PLAYER_FIRST
         DevLog.Log("<color=green>SOLO_PLAYER_FIRST is defined. Forcing Player to be first.</color>");
 
         // 플레이어가 첫번째가 되도록 강제 설정 (테스트용)
