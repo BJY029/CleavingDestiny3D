@@ -652,7 +652,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 
 		//해당 아이템 삭제
 		InventoryAuthority.Instance.DeleteItemByUID(ActNum, UID);
-		AudioManager.Instance.PlaySfx2D("Sacrifice");
+		photonView.RPC(nameof(RPC_Play2DSFX), RpcTarget.All, "Sacrifice");
 	}
 
 	private int getRemainTurns(StatusSpec ss)
@@ -1381,6 +1381,12 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		}
 
 		return targets;
+	}
+
+	[PunRPC]
+	public void RPC_Play2DSFX(string audioId)
+	{
+		AudioManager.Instance.PlaySfx2D("Sacrifice");
 	}
 
 	[PunRPC]

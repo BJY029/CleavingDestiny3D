@@ -102,6 +102,15 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         animator.SetFloat(HashSpeedZ, moveZ, 0.1f, deltaTime);
     }
 
+    // 입력 잠금 시 감쇠 없이 이동 애니메이션을 즉시 정지
+    public void ResetMoveVisuals()
+    {
+        if (animator == null) return;
+
+        animator.SetFloat(HashSpeedX, 0f);
+        animator.SetFloat(HashSpeedZ, 0f);
+    }
+
     public void UpdateCamera(Vector2 lookDelta)
     {
         // Sway 제거: 필요 시 시점 회전이나 추가 연출 확장용 빈 메서드 유지

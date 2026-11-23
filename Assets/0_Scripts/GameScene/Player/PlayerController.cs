@@ -344,7 +344,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
             ResetMotionState();
 
             // 애니메이션 즉시 정지
-            animationController?.UpdateMoveVisuals(0f, 0f, 0.1f);
+            animationController?.ResetMoveVisuals();
         }
         else
         {
