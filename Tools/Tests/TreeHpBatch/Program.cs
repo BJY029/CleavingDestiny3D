@@ -80,4 +80,47 @@ Check(sim.treeHP == 800 && PhotonPropertyHelper.Writes.Count == 0 && ctx.GetTree
 statuses.Statuses.Clear();
 resolver.ResolveWhenStartTurn(failingCtx, 1);
 Check(PhotonPropertyHelper.Writes.Count == 0, "context can start another batch after failure");
+// Multiplier previews must preserve status lifetimes and skip conversion triggers.
+var previewStatuses = new StatusSystem();
+var previewResolver = new DamageResolver(new GameEventBus(previewStatuses), previewStatuses);
+StatusInstance AttackStatus(string id, float multiplier, TagMask tags = TagMask.None) => new()
+{
+    ownerActorNum = 1,
+    remainingTurns = 2,
+    spec = new StatusSpec
+    {
+        statusId = id, triggers = TriggerMask.OnBeforeAttack,
+        triggerScope = TriggerScope.OwnerOnly, multiplier = multiplier,
+        tags = tags, consumeOnTrigger = true
+    }
+};
+float PreviewMultiplier() => previewResolver.PreviewAttackMultiplier(
+    new DamagePacket { attackerNum = 1, isBasicAttack = true }, ctx);
+var sharpen = AttackStatus("DMG_SHARPEN", 1.5f);
+var taunt = AttackStatus("GIM_TAUNT", 1.3f, TagMask.Negative);
+var curse = new StatusInstance
+{
+    ownerActorNum = 1, remainingTurns = 2,
+    spec = new StatusSpec
+    {
+        statusId = "GIM_CURSE", triggers = TriggerMask.OnDamageConvert,
+        triggerScope = TriggerScope.OwnerOnly, convertRate = -0.15f, tags = TagMask.Negative
+    }
+};
+previewStatuses.Statuses.AddRange(new[] { sharpen, taunt, curse });
+for (int i = 0; i < 3; i++)
+    Check(Math.Abs(PreviewMultiplier() - 1.95f) < 0.0001f, "preview includes active attack modifiers " + i);
+Check(taunt.remainingTurns == 2 && curse.remainingTurns == 2,
+    "repeated UI previews consume neither taunt nor curse");
+previewStatuses.Statuses.Remove(taunt);
+Check(Math.Abs(PreviewMultiplier() - 1.5f) < 0.0001f,
+    "after taunt removal preview preserves sharpen");
+var actualAttack = new DamagePacket { attackerNum = 1, isBasicAttack = true, baseDamage = 100 };
+previewResolver.Resolve(actualAttack, ctx);
+Check(actualAttack.finalDamage == 150, "actual attack matches remaining multiplier");
+Check(curse.remainingTurns == 0, "real attack still triggers curse normally");
+previewStatuses.Statuses.Clear();
+Check(PreviewMultiplier() == 1f, "no active modifiers resets preview to one");
+previewStatuses.Statuses.Add(AttackStatus("DMG_GREASED", 0f));
+Check(PreviewMultiplier() == 0f, "zero damage multiplier remains zero in preview");
 Console.WriteLine($"{passed} regression checks passed.");

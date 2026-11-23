@@ -68,7 +68,7 @@ public static class RoomPropKeys { public const string TreeHP = "TreeHP"; }
 public static class PlayerPropKeys
 {
     public const string VillageHP = "VillageHP", VillageBarrier = "VillageBarrier",
-        Energy = "Energy", BarrierConversionRate = "BarrierConversionRate", CarryOverEnergy = "CarryOverEnergy";
+        Energy = "Energy", MaxEnergy = "MaxEnergy", BarrierConversionRate = "BarrierConversionRate", CarryOverEnergy = "CarryOverEnergy";
 }
 public static class ItemPropKeys
 {

@@ -64,6 +64,19 @@ public class DamageResolver
         }, ctx, state);
     }
 
+    // UI multiplier previews must not run conversion triggers or consume statuses.
+    public float PreviewAttackMultiplier(DamagePacket dmg, EffectContext ctx)
+    {
+        _bus.publish(new GameEvent
+        {
+            type = TriggerMask.OnBeforeAttack,
+            actorNum = dmg.attackerNum,
+            payload = dmg
+        }, ctx, isPreview: true);
+
+        return dmg.overrideDamage == 0 ? 0f : dmg.multiplier;
+    }
+
     public (float dmgMultiRate, float dmgOverrideDmg, float BarrierConvRate) ResolveRatio(DamagePacket dmg, EffectContext ctx)
     {
         //공격 직전 트리거 발행

@@ -265,6 +265,16 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_UseLockPick), RpcTarget.MasterClient, actorNum);
 	}
 
+	public bool HasActiveStatus(int actorNum, string statusId)
+	{
+		foreach (var st in _statusSystem.ALL)
+		{
+			if (st.ownerActorNum == actorNum && st.remainingTurns > 0 && st.spec.statusId == statusId)
+				return true;
+		}
+		return false;
+	}
+
 	public bool HasDebuff(int actNum)
 	{
 		foreach (var st in _statusSystem.ALL)
@@ -753,10 +763,7 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 			convertRateOverride = -1f
 		};
 
-		var result = _damageResolver.ResolveRatio(dmg, ctx);
-		if (result.dmgOverrideDmg == 0) return 0;
-
-		return result.dmgMultiRate;
+		return _damageResolver.PreviewAttackMultiplier(dmg, ctx);
 	}
 
 	// public void OnTreeDamage()
@@ -1219,6 +1226,14 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 				}
 
 				int removedCount = _statusSystem.DispelByTags(actorNum, removeTags);
+				if (removedCount > 0)
+				{
+					float multiplier = GetCurrentDamageMultiplier(actorNum);
+					// AI actors have no Photon player; keep VFX refresh outside this UI-only check.
+					if (PlayerCanvasController.Instance != null && PhotonNetwork.CurrentRoom.GetPlayer(actorNum) != null)
+						PlayerCanvasController.Instance.UpdateDmgMulitValue(multiplier, actorNum);
+					ItemVFXController.Instance?.Master_RefreshStatusVFX(actorNum, multiplier);
+				}
 				ctx.Log?.Invoke($"[DispelStatusByTag] Player{actorNum}'s statuses removed. Tags: {removeTags}, Count: {removedCount}");
 				break;
 		}
