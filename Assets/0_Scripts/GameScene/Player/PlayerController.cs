@@ -540,7 +540,7 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
     private void HandleInteractFKeyDown()
     {
         if (!photonView.IsMine) return;
-
+        if ((isPreparingTreeCut || isLookingAtTree) && !CanInteractTree()) return;
 
         if (isPreparingTreeCut)
         {
@@ -577,6 +577,14 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         currentInteractable?.OnInteract(this);
 
+    }
+
+    private bool CanInteractTree()
+    {
+        if (!PhotonNetwork.InRoom) return true;
+        // 마지막 턴 종료 직후에는 밤 페이즈 설정 전에도 턴 Actor가 -1이 된다.
+        return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor) != -1
+            && PhotonPropertyHelper.GetRoomProp<GamePhaseValue>(RoomPropKeys.GamePhase) == GamePhaseValue.DAY;
     }
 
     // F 키를 뗐을 때 (Release Up) - 토글형으로 변경으로 인해 아무 작업도 수행하지 않음

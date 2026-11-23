@@ -273,6 +273,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	//타이머가 설정되면, 시작, 끝 시간을 받아와서 저장한다.
 	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
 	{
+		if (!CanShowHitText()) SetHitTextUnActive();
 		UpdateUnclaimedItemWarning();
 		if (propertiesThatChanged.ContainsKey(RoomPropKeys.PlayerTurnStartEndTime)
 			|| propertiesThatChanged.ContainsKey(RoomPropKeys.TurnTime))
@@ -352,9 +353,22 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	}
 
 
+	private bool CanShowHitText()
+	{
+		if (!PhotonNetwork.InRoom) return true;
+		// 마지막 턴 종료 직후에는 밤 페이즈 설정 전에도 턴 Actor가 -1이 된다.
+		return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor) != -1
+			&& PhotonPropertyHelper.GetRoomProp<GamePhaseValue>(RoomPropKeys.GamePhase) == GamePhaseValue.DAY;
+	}
+
 	//Hit text를 활성화 하는 함수
 	public void SetHitTextActive()
 	{
+		if (!CanShowHitText())
+		{
+			SetHitTextUnActive();
+			return;
+		}
 		if (HitTextObj == null || HitText == null) return;
 		if (!hitTextVisible)
 		{
