@@ -13,6 +13,33 @@ public class EffectContext
 	public DeterministicRng Rng { get; private set; }
 
 	public Action<string> Log { get; private set; }
+	private bool treeHpBatchActive;
+	private float treeHpBatchInitial;
+	private float treeHpBatchValue;
+
+	internal void BeginTreeHpBatch()
+	{
+		if (treeHpBatchActive) throw new InvalidOperationException("Tree HP batch already active.");
+		treeHpBatchInitial = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeHP);
+		treeHpBatchValue = treeHpBatchInitial;
+		treeHpBatchActive = true;
+	}
+
+	internal void CommitTreeHpBatch()
+	{
+		if (!treeHpBatchActive) return;
+		float finalHp = treeHpBatchValue;
+		bool changed = finalHp != treeHpBatchInitial;
+		CancelTreeHpBatch();
+		if (changed) SetTreeHP(finalHp);
+	}
+
+	internal void CancelTreeHpBatch()
+	{
+		treeHpBatchActive = false;
+		treeHpBatchInitial = 0f;
+		treeHpBatchValue = 0f;
+	}
 
 	public EffectContext(DeterministicRng rng, Action<string> log)
 	{
@@ -22,6 +49,7 @@ public class EffectContext
 
 	public float GetTreeHP()
 	{
+		if (treeHpBatchActive) return treeHpBatchValue;
 		return PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TreeHP);
 	}
 
@@ -38,6 +66,11 @@ public class EffectContext
 			return;
 		}
 
+		if (treeHpBatchActive)
+		{
+			treeHpBatchValue = newHP;
+			return;
+		}
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.TreeHP, newHP);
 	}
 
@@ -108,6 +141,11 @@ public class EffectContext
 	public int GetPlayerEng(int actorNum)
 	{
 		return PhotonPropertyHelper.GetPlayerProp<int>(actorNum, PlayerPropKeys.Energy);
+	}
+
+	public int GetPlayerMaxEng(int actorNum)
+	{
+		return PhotonPropertyHelper.GetPlayerProp<int>(actorNum, PlayerPropKeys.MaxEnergy);
 	}
 	public int GetPlayerEng(int playerNum, SimGameState state)
 	{

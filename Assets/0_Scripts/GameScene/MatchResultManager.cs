@@ -23,6 +23,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
     private bool hasStartedEndPresentation;
 
     [SerializeField] private GameEndedCanvasController gameEndedCanvasController;
+    [SerializeField] private CanvasGroup GameCanvasCG;
 
 
     void Awake()
@@ -258,6 +259,7 @@ public class MatchResultManager : MonoBehaviourPunCallbacks
 
         hasStartedEndPresentation = true;
 
+        GameCanvasCG.alpha = 0;
         if (TimeManager.instance != null) TimeManager.instance.AbortTurnTimer();
 
         AIController[] aiControllers = UnityEngine.Object.FindObjectsByType<AIController>(FindObjectsInactive.Include, FindObjectsSortMode.None);

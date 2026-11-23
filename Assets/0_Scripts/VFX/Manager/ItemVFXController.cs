@@ -21,6 +21,14 @@ public class ItemVFXController : MonoBehaviourPun
 
     private readonly Dictionary<(VFXType, int), EffectInstance> activeEffects = new();
 
+    // All statuses whose items currently share the axe PowerUP effect, including damage reductions.
+    private static readonly HashSet<string> PowerUpStatusIds = new()
+    {
+        "DMG_SHARPEN", "DMG_DULL", "DMG_DOUBLE", "DMG_RUSTY", "DMG_GREASED", "GIM_TAUNT"
+    };
+
+    private int curPowerUpVFXCnt;
+
     private void Awake()
     {
         if (Instance == null || Instance == this) Instance = this;
@@ -115,6 +123,33 @@ public class ItemVFXController : MonoBehaviourPun
         }
     }
 
+    public void Master_RefreshStatusVFX(int actorNum, float multiplier)
+    {
+        if (!PhotonNetwork.IsMasterClient || ItemHandlingSystem.instance == null) return;
+
+        bool hasPowerUpStatus = false;
+        foreach (string statusId in PowerUpStatusIds)
+        {
+            if (!ItemHandlingSystem.instance.HasActiveStatus(actorNum, statusId)) continue;
+            hasPowerUpStatus = true;
+            break;
+        }
+
+        if (hasPowerUpStatus)
+        {
+            bool isAI = GameManager.Instance.isSoloPlay && actorNum == PlayerManager.Instance.AIActNum;
+            if (isAI) AIMode_PlayItemVFX(VFXType.PowerUP, actorNum, multiplier);
+            else photonView.RPC(nameof(Client_PlayItemVFX), RpcTarget.All, VFXType.PowerUP, actorNum, multiplier);
+        }
+        else
+        {
+            Master_StopItemVFX(VFXType.PowerUP, actorNum);
+        }
+
+        if (!ItemHandlingSystem.instance.HasActiveStatus(actorNum, "GIM_CURSE"))
+            Master_StopItemVFX(VFXType.PlayerCurse, actorNum);
+    }
+
     public void Master_ResetTurnVFX(int actorNum)
     {
         photonView.RPC(nameof(RPC_Master_ResetTurnVFX), RpcTarget.MasterClient, actorNum);
@@ -173,6 +208,7 @@ public class ItemVFXController : MonoBehaviourPun
                 }
 
                 PlayOrUpdateVFX(vfxType, actorNum, "PowerUp", pc.EffectPoints.Axe, colorValue);
+                curPowerUpVFXCnt++;
                 break;
             case VFXType.PlayerPurifying:
                 if (pc.EffectPoints.Foot == null)
@@ -229,6 +265,7 @@ public class ItemVFXController : MonoBehaviourPun
                     return;
                 }
 
+                curPowerUpVFXCnt++;
                 PlayOrUpdateVFX(vfxType, aiNum, "PowerUp", ac.EffectPoints.Axe, colorValue);
                 break;
             case VFXType.PlayerPurifying:
@@ -239,6 +276,8 @@ public class ItemVFXController : MonoBehaviourPun
                 }
 
                 GameVFXManager.Instance.Play("Purifying", ac.EffectPoints.Foot, 1);
+
+
                 break;
             case VFXType.PlayerCurse:
                 if (ac.EffectPoints.Foot == null)
@@ -294,12 +333,10 @@ public class ItemVFXController : MonoBehaviourPun
 
     private void StopItemVFX(VFXType vfxType, int actorNum)
     {
-        Debug.LogWarning("Stopping Effect");
         (VFXType, int) key = (vfxType, actorNum);
 
         if (!activeEffects.TryGetValue(key, out EffectInstance instance))
         {
-            Debug.LogWarning($"[ItemVFXController] There is no {vfxType.ToString()} in DIC");
             return;
         }
 

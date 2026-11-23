@@ -52,6 +52,10 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     private string _currentBgmId;
     public string CurrentBgmId => _currentBgmId;
+    public string RequestedBgmId { get; private set; }
+    public bool IsBgmPlaying(string id) => bgmSource != null && bgmSource.isPlaying
+        && string.Equals(_currentBgmId, id, StringComparison.Ordinal)
+        && string.Equals(RequestedBgmId, id, StringComparison.Ordinal);
     private float _currentBgmBaseVolume = 1f;
 
     private readonly List<AudioSource> _audioSourcesPool = new();
@@ -158,11 +162,12 @@ public class AudioManager : MonoSingleton<AudioManager>
         StartBgmTransition(id, data.clip, data.volume, data.pitch, 0, true, 0f, fadeDuration);
     }
 
-    public void PlayTemporaryBgm(string id, float fadeOutDuration = 0.5f, float fadeInDuration = 0.5f, bool resumePreviousPosition = true)
+    public bool PlayTemporaryBgm(string id, float fadeOutDuration = 0.5f, float fadeInDuration = 0.5f, bool resumePreviousPosition = true)
     {
-        if (!TryGetData(id, out AudioData data)) return;
+        if (!TryGetData(id, out AudioData data)) return false;
+        if (data.clip == null || bgmSource == null) return false;
 
-        if (string.Equals(_currentBgmId, id, StringComparison.Ordinal)) return;
+        if (string.Equals(_currentBgmId, id, StringComparison.Ordinal)) return false;
 
         if (bgmSource.clip != null)
         {
@@ -171,6 +176,7 @@ public class AudioManager : MonoSingleton<AudioManager>
         }
 
         StartBgmTransition(id, data.clip, data.volume, data.pitch, 0, true, fadeOutDuration, fadeInDuration);
+        return _bgmHistory.Count > 0;
     }
 
     public void ChangeBgm(string id, float fadeOutDuration = 0.5f, float fadeInDuration = 0.5f)
@@ -231,6 +237,8 @@ public class AudioManager : MonoSingleton<AudioManager>
     {
         if (clip == null)
             return;
+
+        RequestedBgmId = id;
 
         CancelBgmTransition();
 
@@ -325,6 +333,7 @@ public class AudioManager : MonoSingleton<AudioManager>
     public void StopBgmFadeOut(float fadeOutDuration = 1f)
     {
         CancelBgmTransition();
+        RequestedBgmId = null;
 
         _bgmTransitionCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
 
@@ -360,6 +369,7 @@ public class AudioManager : MonoSingleton<AudioManager>
     public void StopBgm()
     {
         CancelBgmTransition();
+        RequestedBgmId = null;
 
         bgmSource.Stop();
         bgmSource.clip = null;

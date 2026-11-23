@@ -1,6 +1,28 @@
 // Offline collaborators for the actual production shop sources linked by the project.
 // No Unity session, account, network requests, purchases, or player saves are used.
 using System.Reflection;
+using Microsoft.VisualBasic.FileIO;
+
+public enum CSV_Type { Shop }
+public sealed class LocalizationManager
+{
+    public static LocalizationManager Instance { get; set; } = new();
+    private readonly Dictionary<string, string> texts = new();
+    public LocalizationManager()
+    {
+        using var parser = new TextFieldParser(Path.Combine(AppContext.BaseDirectory, "Shop_CSV.csv"));
+        parser.SetDelimiters(",");
+        parser.HasFieldsEnclosedInQuotes = true;
+        parser.ReadFields();
+        while (!parser.EndOfData)
+        {
+            var row = parser.ReadFields();
+            if (row.Length >= 2) texts[row[0]] = row[1];
+        }
+    }
+    public string GetText(CSV_Type type, string id) => texts.TryGetValue(id, out var text)
+        ? text : throw new InvalidOperationException("Missing Shop CSV key: " + id);
+}
 
 namespace UnityEngine
 {

@@ -48,6 +48,7 @@ public static class ShopFlow
         public readonly Button Retry = new();
         public Fixture()
         {
+            LocalizationManager.Instance = new();
             PlayerProfile.Reset(); Items.Clear(); SaveManager.Saves = 0;
             UGSManager.Instance = Server;
             Server.Prices["axe_iron"] = new("sticks", 1200);

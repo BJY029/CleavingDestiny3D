@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using System.Threading;
 using System;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class SceneLoader : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class SceneLoader : MonoBehaviour
     public GameObject loadingPanel;
     public TextMeshProUGUI sceneLoadingText;
     public TextMeshProUGUI mainLoadingText;
+    public TextMeshProUGUI tipsText;
     public TextMeshProUGUI timer;
     public Button stopMatching;
 
@@ -21,8 +23,18 @@ public class SceneLoader : MonoBehaviour
     private const float WaitDuration = 0.5f;
 
     private CancellationTokenSource dotsCancelToken;
-    private bool isAnimating = false;
-    private string currentLoadingKey = UI_CSV.UI_Load_Loading;
+    private bool isLoadingCanvasActivated;
+
+    private Queue<int> randomTipNums = new Queue<int>();
+    [Header("Tip Settings")]
+    [SerializeField, Min(1)] private int tipsMinNum = 1;
+    [SerializeField, Min(1)] private int tipsMaxNum = 37;
+    [SerializeField, Min(1f)] private float duration = 5f;
+    private float elapsedTime;
+    private bool tipsInitialized;
+    private Language tipsLanguage;
+    private int lastTipNum = -1;
+
 
     private void Awake()
     {
@@ -30,15 +42,51 @@ public class SceneLoader : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            if (loadingPanel != null)
-            {
-                loadingPanel.SetActive(false);
-            }
+            HideLoadingUI();
         }
         else if (Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+    }
+
+    private void FillQueueWithoutDup(int min, int max)
+    {
+        randomTipNums.Clear();
+
+        if (min < 1 || max < min)
+        {
+            Debug.LogWarning("[SceneLoader] 팁 번호 범위를 확인하세요.", this);
+            return;
+        }
+
+        List<int> tempNums = new List<int>();
+        var localization = LocalizationManager.Instance;
+        for (int i = min; i <= max; i++)
+        {
+            string key = $"TIP_ITEM_{i:D3}";
+            string text = localization.GetRawText(CSV_Type.MatchmakingTips, key);
+            if (!string.IsNullOrWhiteSpace(text) && text != key) tempNums.Add(i);
+            if (i == int.MaxValue) break;
+        }
+
+        for (int i = tempNums.Count - 1; i > 0; i--)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, i + 1);
+
+            int temp = tempNums[i];
+            tempNums[i] = tempNums[randomIndex];
+            tempNums[randomIndex] = temp;
+        }
+
+        // 새 묶음의 첫 팁이 직전 팁과 같은 경우에도 연속 중복을 피한다.
+        if (tempNums.Count > 1 && tempNums[0] == lastTipNum)
+        {
+            int swapIndex = UnityEngine.Random.Range(1, tempNums.Count);
+            (tempNums[0], tempNums[swapIndex]) = (tempNums[swapIndex], tempNums[0]);
+        }
+        foreach (int num in tempNums) randomTipNums.Enqueue(num);
     }
 
     private void OnEnable()
@@ -52,8 +100,75 @@ public class SceneLoader : MonoBehaviour
         StopDotsAnimation();
     }
 
+    private void Update()
+    {
+        UpdateTips();
+    }
+
+    private void UpdateTips()
+    {
+        if (!isLoadingCanvasActivated || tipsText == null) return;
+
+        var localization = LocalizationManager.Instance;
+        if (localization == null || !localization.IsLoaded)
+        {
+            tipsText.text = string.Empty;
+            tipsInitialized = false;
+            return;
+        }
+
+        // 최초 로딩 완료 또는 언어 변경 직후에는 기다리지 않고 첫 팁을 표시한다.
+        if (!tipsInitialized || tipsLanguage != localization.currentLanguage)
+        {
+            tipsInitialized = true;
+            tipsLanguage = localization.currentLanguage;
+            FillQueueWithoutDup(tipsMinNum, tipsMaxNum);
+            if (randomTipNums.Count == 0)
+            {
+                Debug.LogWarning("[SceneLoader] 표시할 팁이 없습니다. CSV 등록과 번호 범위를 확인하세요.", this);
+                lastTipNum = -1;
+                tipsText.text = string.Empty;
+                return;
+            }
+            ShowNextTip();
+            return;
+        }
+
+        if (randomTipNums.Count == 0 && lastTipNum < 0) return;
+        elapsedTime += Time.unscaledDeltaTime;
+        if (elapsedTime >= Mathf.Max(1f, duration)) ShowNextTip();
+    }
+
+    private void ShowNextTip()
+    {
+        elapsedTime = 0f;
+        if (randomTipNums.Count == 0) FillQueueWithoutDup(tipsMinNum, tipsMaxNum);
+        if (randomTipNums.Count == 0)
+        {
+            lastTipNum = -1;
+            tipsText.text = string.Empty;
+            return;
+        }
+
+        lastTipNum = randomTipNums.Dequeue();
+        tipsText.text = LocalizationManager.Instance.GetText(CSV_Type.MatchmakingTips, $"TIP_ITEM_{lastTipNum:D3}");
+    }
+
+    private void ResetTips()
+    {
+        isLoadingCanvasActivated = false;
+        tipsInitialized = false;
+        elapsedTime = 0f;
+        lastTipNum = -1;
+        randomTipNums.Clear();
+        if (tipsText != null) tipsText.text = string.Empty;
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        if (Instance != this) return;
+        if (mode == LoadSceneMode.Single && scene.name == CommonDefine.LOBBYSCENE)
+            FadeCanvas.Instance?.SetFade(false);
         // 씬 로드가 완료되면 로딩창을 비활성화합니다.
         HideLoadingUI();
     }
@@ -63,12 +178,18 @@ public class SceneLoader : MonoBehaviour
     /// </summary>
     public void ShowLoadingUI(string overrideTextKey = null)
     {
-        currentLoadingKey = overrideTextKey;
+        StopDotsAnimation();
+        ResetTips();
 
         if (loadingPanel != null)
         {
             loadingPanel.SetActive(true);
+            loadingPanel.transform.localScale = Vector3.one;
         }
+        SetTimerVisible(false);
+        if (stopMatching != null) stopMatching.gameObject.SetActive(false);
+        if (sceneLoadingText != null) sceneLoadingText.gameObject.SetActive(true);
+        if (mainLoadingText != null) mainLoadingText.gameObject.SetActive(true);
 
         // overrideTextKey가 지정되었을 때만 mainLoadingText의 내용을 업데이트합니다.
         if (mainLoadingText != null && !string.IsNullOrEmpty(overrideTextKey))
@@ -82,10 +203,30 @@ public class SceneLoader : MonoBehaviour
                 mainLoadingText.text = overrideTextKey;
             }
         }
-        
-        StopDotsAnimation();
-        dotsCancelToken = new CancellationTokenSource();
+
+        dotsCancelToken = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
         StartDotsAnimation(dotsCancelToken.Token).Forget();
+    }
+
+    // The persistent panel is reused; restore every child changed by scene loading.
+    public void ShowMatchmakingUI()
+    {
+        HideLoadingUI();
+        if (loadingPanel != null)
+        {
+            loadingPanel.transform.localScale = Vector3.one;
+            loadingPanel.SetActive(true);
+        }
+        if (mainLoadingText != null) mainLoadingText.gameObject.SetActive(true);
+        SetTimerVisible(true);
+        if (stopMatching != null)
+        {
+            stopMatching.gameObject.SetActive(true);
+            stopMatching.interactable = true;
+        }
+        isLoadingCanvasActivated = true;
+        if (tipsText != null) tipsText.gameObject.SetActive(true);
+        UpdateTips();
     }
 
     /// <summary>
@@ -94,10 +235,29 @@ public class SceneLoader : MonoBehaviour
     public void HideLoadingUI()
     {
         StopDotsAnimation();
+        ResetTips();
+        if (mainLoadingText != null) mainLoadingText.text = string.Empty;
+        if (sceneLoadingText != null)
+        {
+            sceneLoadingText.text = string.Empty;
+            sceneLoadingText.gameObject.SetActive(false);
+        }
+        if (timer != null) timer.text = "00:00";
         if (loadingPanel != null)
         {
             loadingPanel.SetActive(false);
         }
+    }
+
+    private void SetTimerVisible(bool visible)
+    {
+        if (timer == null) return;
+        Transform group = timer.transform;
+        // TimerBG and its text form one group directly under the shared loading panel.
+        if (loadingPanel != null && group.IsChildOf(loadingPanel.transform))
+            while (group.parent != loadingPanel.transform) group = group.parent;
+        group.gameObject.SetActive(visible);
+        if (visible) timer.gameObject.SetActive(true);
     }
 
     private void StopDotsAnimation()
@@ -108,14 +268,12 @@ public class SceneLoader : MonoBehaviour
             dotsCancelToken.Dispose();
             dotsCancelToken = null;
         }
-        isAnimating = false;
     }
 
     private async UniTask StartDotsAnimation(CancellationToken token)
     {
-        isAnimating = true;
         string originText = "";
-        
+
         // 보조 로딩 텍스트는 언제나 일반 로딩("로딩 중") 텍스트를 기준으로 점 애니메이션을 수행합니다.
         if (LocalizationManager.Instance != null)
         {
@@ -131,7 +289,7 @@ public class SceneLoader : MonoBehaviour
 
         try
         {
-            while (!token.IsCancellationRequested && isAnimating)
+            while (!token.IsCancellationRequested)
             {
                 if (sceneLoadingText != null)
                 {
@@ -144,13 +302,6 @@ public class SceneLoader : MonoBehaviour
         catch (OperationCanceledException)
         {
             // 의도된 취소 처리
-        }
-        finally
-        {
-            if (sceneLoadingText != null)
-            {
-                sceneLoadingText.text = originText + "...Done!";
-            }
         }
     }
 

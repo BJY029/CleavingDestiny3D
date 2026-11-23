@@ -2202,6 +2202,7 @@ GameObject:
   - component: {fileID: 4834535236659821649}
   - component: {fileID: 362681463761835145}
   - component: {fileID: 6344620432579065039}
+  - component: {fileID: 7388326742360046736}
   m_Layer: 9
   m_Name: green_knight
   m_TagString: Untagged
@@ -2320,7 +2321,7 @@ MonoBehaviour:
   _mainCamera: {fileID: 4535526037277648668}
   firstPersonObjects: {fileID: 5710577179344129549}
   mouseSensitivity: 0.1
-  TopClamp: 35
+  TopClamp: 60
   BottomClamp: -80
   targetTerrain: {fileID: 0}
   terrainHeightOffset: 0.05
@@ -2448,6 +2449,18 @@ MonoBehaviour:
   m_SynchronizeLayers:
   - SynchronizeType: 2
     LayerIndex: 0
+--- !u!114 &7388326742360046736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8052557426497456523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffc2dfd8720f1be4194df7616813a083, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerFootsteps
 --- !u!1 &8310367784488857303
 GameObject:
   m_ObjectHideFlags: 0

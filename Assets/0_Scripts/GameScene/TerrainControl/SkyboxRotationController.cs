@@ -14,6 +14,7 @@ public class SkyboxRotationController : MonoBehaviour
 
     private void Awake()
     {
+        if (!enabled) return;
         Material currentSkybox = RenderSettings.skybox;
 
         if (currentSkybox == null)

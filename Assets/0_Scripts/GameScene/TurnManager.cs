@@ -122,66 +122,44 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	}
 
 	//모든 클라이언트의 마을 데미지 로직이 완료되었는지 확인하는 함수
-	public void PlayerDamageChecker(int attackerNum)
+	private readonly System.Collections.Generic.HashSet<int> attackAcknowledgments = new();
+	private int acknowledgmentTurn = -1;
+	private int completedAttackTurn = -1;
+
+	public override void OnLeftRoom()
 	{
-		photonView.RPC(nameof(RPC_PlayerDamageChecker), RpcTarget.MasterClient, attackerNum);
+		attackAcknowledgments.Clear();
+		acknowledgmentTurn = completedAttackTurn = -1;
+	}
+
+	public void PlayerDamageChecker(int attackerNum, int turnIndex, int nonce)
+	{
+		photonView.RPC(nameof(RPC_PlayerDamageChecker), RpcTarget.MasterClient, attackerNum, turnIndex, nonce);
 	}
 
 	[PunRPC]
-	public void RPC_PlayerDamageChecker(int attackerNum)
+	private void RPC_PlayerDamageChecker(int attackerNum, int turnIndex, int nonce, PhotonMessageInfo info)
 	{
-		//MasterClient만 수행
 		if (!IsInitializer()) return;
-
-		if (MatchResultManager.Instance.TryResolveResultByTreeHP())
+		var state = ItemHandlingSystem.instance.AttackState;
+		var command = new AttackCommand { attackerNum = attackerNum, turnIndex = turnIndex, clientNonce = nonce };
+		if (!state.Applied || !state.Matches(command) || completedAttackTurn == turnIndex ||
+			turnIndex != PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex)) return;
+		if (acknowledgmentTurn != turnIndex)
 		{
-			Debug.Log("Match End By Tree HP 0");
-			return;
+			acknowledgmentTurn = turnIndex;
+			attackAcknowledgments.Clear();
 		}
-
-		//모든 플레이어의 데미지 처리가 완료되었는지 확인한다.
-		if (PlayerHitCheck())
-		{
-			Debug.Log("All Player Hit Succeed");
-			//RPC로 모든 플레이어에게 턴 변경 요청을 보낸다.
-			photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, attackerNum);
-			//마을 데미지 플래그 초기화
-			ResetAllPlayersHitState();
-		}
+		attackAcknowledgments.Add(info.Sender.ActorNumber);
+		// AI results are applied synchronously on the master; humans acknowledge their own result.
+		if (!PhotonNetwork.PlayerList.All(p => attackAcknowledgments.Contains(p.ActorNumber))) return;
+		completedAttackTurn = turnIndex;
+		if (MatchResultManager.Instance.TryResolveResultByTreeHP()) return;
+		Debug.Log($"[Attack] Complete turn={turnIndex} actor={attackerNum} request={nonce}");
+		photonView.RPC(nameof(RPC_RequestChangeTurn), RpcTarget.All, attackerNum, turnIndex, nonce);
+		ResetAllPlayersHitState();
 	}
 
-	//모든 플레이어의 VDamageProcessCompleted 프로퍼티를 검사하여 반환하는 함수
-	private bool PlayerHitCheck()
-	{
-		bool isPlayerAllHit = PhotonNetwork.PlayerList.All(p => p.CustomProperties.TryGetValue(PlayerPropKeys.PDamageProcessCompleted, out var v) && (bool)v);
-		if (!isPlayerAllHit) return false;
-
-		//싱글 플레이 모드인 경우
-		if (GameManager.Instance.isSoloPlay)
-		{
-			//room 프로퍼티 가져와서
-			var roomProps = PhotonNetwork.CurrentRoom.CustomProperties;
-			foreach (var kvp in PlayerManager.Instance.Players)
-			{
-				//ai 플레이어 찾고
-				int actNum = kvp.Value.actorNumber;
-				Player p = PhotonNetwork.CurrentRoom.GetPlayer(actNum);
-
-				if (p == null)  //p == ai 플레이어
-				{
-					string aiKey = $"{PlayerPropKeys.PDamageProcessCompleted}_{actNum}";
-					//프로퍼티 값 확인
-					if (!roomProps.TryGetValue(aiKey, out var v) || !(bool)v)
-					{
-						return false;
-					}
-				}
-			}
-		}
-		return true;
-	}
-
-	//모든 플레이어의 VDamageProcessCompleted 프로퍼티를 초기화 하는 함수
 	public void ResetAllPlayersHitState()
 	{
 		// 권한 체크 (방장만 실행)
@@ -201,8 +179,11 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	}
 
 	[PunRPC]
-	private void RPC_RequestChangeTurn(int requesterActorNumber, PhotonMessageInfo info)
+	private void RPC_RequestChangeTurn(int requesterActorNumber, int turnIndex, int nonce, PhotonMessageInfo info)
 	{
+		if (!info.Sender.IsMasterClient || turnIndex != PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex)) return;
+		if (!ItemHandlingSystem.instance.AttackState.Matches(new AttackCommand {
+			attackerNum = requesterActorNumber, turnIndex = turnIndex, clientNonce = nonce })) return;
 		//그러나 실제로 턴 변경 관련 처리를 하는 플레이어는 한명이며, 이는 가장 낮은 Actor Number를 가진 플레이어다.
 		if (!IsInitializer()) return;
 

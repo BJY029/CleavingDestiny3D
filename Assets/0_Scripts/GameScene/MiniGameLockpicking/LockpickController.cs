@@ -23,6 +23,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
     private int SpinDirection = 1;
     //게임 진행 여부
     private bool isGameActive = false;
+    private bool ownsTemporaryBgm;
     //남은 Lock 수
     private int currentRemainingLocks = 0;
 
@@ -107,6 +108,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
     {
         isGameActive = false;
         gameObj.SetActive(false);
+        InitGameInfo();
     }
 
     //미니게임 시작 함수
@@ -121,7 +123,8 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
         SpinDirection = 1; // 방향 초기화
         SetRandomTarget(); // 첫 타겟 설정
 
-        AudioManager.Instance.PlayTemporaryBgm("Gear");
+        if (!ownsTemporaryBgm)
+            ownsTemporaryBgm = AudioManager.Instance.PlayTemporaryBgm("Gear");
     }
 
     //체크 포인트를 랜덤 위치에 생성하는 함수
@@ -220,7 +223,12 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
         IB = null;
         Requester = null;
         TargetBarrierOwnerActNum = -1;
-        AudioManager.Instance.RestorePreviousBgm();
+        if (ownsTemporaryBgm)
+        {
+            ownsTemporaryBgm = false;
+            if (AudioManager.Instance.RequestedBgmId == "Gear")
+                AudioManager.Instance.RestorePreviousBgm();
+        }
     }
     //MasterClient의 최종 처리(문 열기 처리)
     [PunRPC]

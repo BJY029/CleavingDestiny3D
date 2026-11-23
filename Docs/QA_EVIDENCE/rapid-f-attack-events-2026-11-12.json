@@ -1,0 +1,53 @@
+{
+  "scenarios": [
+    {
+      "name": "same-frame double F",
+      "turn": 3
+    },
+    {
+      "name": "50ms second F plus eight extra F presses",
+      "turn": 5
+    },
+    {
+      "name": "500ms normal double F",
+      "turn": 7
+    },
+    {
+      "name": "missing animation exit",
+      "turn": 9
+    }
+  ],
+  "events": [
+    "[Attack] Commit turn=1 actor=1 request=1 reason=accepted received=69.621 deadline=-1.000",
+    "[Attack] Apply turn=1 actor=1 request=1",
+    "[Attack] Complete turn=1 actor=1 request=1",
+    "[Attack] Commit turn=2 actor=1000 request=2 reason=accepted received=84.813 deadline=110.008",
+    "[Attack] Apply turn=2 actor=1000 request=2",
+    "[Attack] Complete turn=2 actor=1000 request=2",
+    "[Attack] Commit turn=3 actor=1 request=3 reason=accepted received=101.752 deadline=125.438",
+    "[Attack] Apply turn=3 actor=1 request=3",
+    "[Attack] Complete turn=3 actor=1 request=3",
+    "[Attack] Commit turn=4 actor=1000 request=4 reason=accepted received=117.660 deadline=142.347",
+    "[Attack] Apply turn=4 actor=1000 request=4",
+    "[Attack] Complete turn=4 actor=1000 request=4",
+    "[Attack] Commit turn=5 actor=1 request=5 reason=accepted received=118.385 deadline=158.327",
+    "[Attack] Apply turn=5 actor=1 request=5",
+    "[Attack] Complete turn=5 actor=1 request=5",
+    "[Attack] Commit turn=6 actor=1000 request=6 reason=accepted received=134.403 deadline=158.929",
+    "[Attack] Apply turn=6 actor=1000 request=6",
+    "[Attack] Complete turn=6 actor=1000 request=6",
+    "[Attack] Commit turn=7 actor=1 request=7 reason=accepted received=145.489 deadline=184.977",
+    "[Attack] Apply turn=7 actor=1 request=7",
+    "[Attack] Complete turn=7 actor=1 request=7",
+    "[Attack] Commit turn=8 actor=1000 request=8 reason=accepted received=161.181 deadline=185.869",
+    "[Attack] Apply turn=8 actor=1000 request=8",
+    "[Attack] Complete turn=8 actor=1000 request=8",
+    "[Attack] Commit turn=9 actor=1 request=9 reason=accepted received=161.799 deadline=201.799",
+    "[Attack] Apply turn=9 actor=1 request=9",
+    "[Attack] Complete turn=9 actor=1 request=9",
+    "[PlayerController] Strike animation did not finish; releasing tree attack lock.",
+    "[Attack] Commit turn=10 actor=1000 request=10 reason=accepted received=176.512 deadline=202.403",
+    "[Attack] Apply turn=10 actor=1000 request=10",
+    "[Attack] Complete turn=10 actor=1000 request=10"
+  ]
+}

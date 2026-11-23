@@ -152,6 +152,10 @@ namespace Option
         private InputActionRebindingExtensions.RebindingOperation _rebindOperation;
         private KeyBindItem _currentRebindingItem;
         private Action _cancelMenuAction;
+        private InputAction _rebindAction;
+        private int _rebindBindingIndex;
+        private InputBinding _originalBinding;
+        private bool _actionWasEnabled;
 
         private void Awake()
         {
@@ -247,6 +251,10 @@ namespace Option
             if (targetIndex < 0 || targetIndex >= action.bindings.Count) return;
 
             _currentRebindingItem = item;
+            _rebindAction = action;
+            _rebindBindingIndex = targetIndex;
+            _originalBinding = action.bindings[targetIndex];
+            _actionWasEnabled = action.enabled;
             item.element.SetListening(true);
 
             // ESC 메뉴 뒤로가기 스택에 취소 액션 등록 (ESC 누르면 메뉴가 닫히지 않고 리바인딩만 취소)
@@ -256,6 +264,8 @@ namespace Option
 
             _rebindOperation = action.PerformInteractiveRebinding(targetIndex)
                 .WithControlsExcluding("Mouse") // 마우스 클릭/이동으로 오작동 방지
+                .WithControlsExcluding("<Keyboard>/anyKey")
+                .WithControlsExcluding("<Keyboard>/escape")
                 .WithCancelingThrough("<Keyboard>/escape") // ESC 누르면 취소
                 .OnMatchWaitForAnother(0.1f)
                 .OnComplete(operation =>
@@ -264,7 +274,7 @@ namespace Option
                 })
                 .OnCancel(operation =>
                 {
-                    CancelRebinding();
+                    CleanupRebinding(operation, false);
                 });
 
             _rebindOperation.Start();
@@ -272,47 +282,42 @@ namespace Option
 
         private void FinishRebinding(KeyBindItem item, InputAction action, int targetIndex, InputActionRebindingExtensions.RebindingOperation operation)
         {
-            action.Enable();
-            operation?.Dispose();
-            _rebindOperation = null;
-
-            KeyInteractManager.Instance?.RemoveMenuAction(_cancelMenuAction);
-
-            string keyString = GetCleanDisplayString(action, targetIndex);
-            item.element.SetKeyBind(keyString);
-            item.element.SetListening(false);
-
-            _currentRebindingItem = null;
-
-            SaveRebinds();
+            CleanupRebinding(operation, true);
         }
 
         public void CancelRebinding()
         {
-            if (_rebindOperation != null)
-            {
-                _rebindOperation.Cancel();
-                _rebindOperation.Dispose();
-                _rebindOperation = null;
-            }
-
-            KeyInteractManager.Instance?.RemoveMenuAction(_cancelMenuAction);
-
-            if (_currentRebindingItem != null)
-            {
-                var action = _currentRebindingItem.GetAction();
-                action?.Enable();
-
-                int targetIndex = _currentRebindingItem.GetEffectiveBindingIndex();
-                string keyString = GetCleanDisplayString(action, targetIndex);
-
-                _currentRebindingItem.element?.SetKeyBind(keyString);
-                _currentRebindingItem.element?.SetListening(false);
-                _currentRebindingItem = null;
-            }
+            var operation = _rebindOperation;
+            if (operation == null) return;
+            // Cancel invokes OnCancel synchronously. The callback owns disposal.
+            operation.Cancel();
+            if (ReferenceEquals(_rebindOperation, operation)) CleanupRebinding(operation, false);
         }
 
-        private void SaveRebinds()
+        private void CleanupRebinding(InputActionRebindingExtensions.RebindingOperation operation, bool completed)
+        {
+            if (!ReferenceEquals(_rebindOperation, operation) || operation == null) return;
+            _rebindOperation = null;
+            var item = _currentRebindingItem;
+            var action = _rebindAction;
+            _currentRebindingItem = null;
+            _rebindAction = null;
+            operation.Dispose();
+            KeyInteractManager.Instance?.RemoveMenuAction(_cancelMenuAction);
+            if (!completed)
+            {
+                action.RemoveBindingOverride(_rebindBindingIndex);
+                action.ApplyBindingOverride(_rebindBindingIndex, _originalBinding);
+            }
+            // Save while the action is still available to the standalone fallback.
+            if (completed) SaveRebinds(action);
+            if (_actionWasEnabled) action.Enable();
+            else action.Disable();
+            item?.element?.SetKeyBind(GetCleanDisplayString(action, _rebindBindingIndex));
+            item?.element?.SetListening(false);
+        }
+
+        private void SaveRebinds(InputAction reboundAction = null)
         {
             if (_settingData == null) return;
 
@@ -323,7 +328,7 @@ namespace Option
             }
             else
             {
-                var action = _currentRebindingItem?.GetAction();
+                var action = reboundAction ?? _currentRebindingItem?.GetAction();
                 if (action != null && action.actionMap != null && action.actionMap.asset != null)
                 {
                     rebindsJson = action.actionMap.asset.SaveBindingOverridesAsJson();

@@ -31,14 +31,14 @@ DESC_DMG_DULL,이번 턴에 가하는 데미지가 20% 감소합니다.,Decrease
 DESC_DMG_DOUBLE,한 턴에 두 번의 공격 효과를 적용합니다.,Executes two slash attacks in a single turn.
 DESC_DMG_RUSTY,이번 턴에 가하는 데미지가 50% 감소합니다.,Decreases damage dealt this turn by 50%.
 DESC_DMG_GREASED,이번 턴의 기본 공격 데미지가 0이 됩니다.,Sets base attack damage to 0 for this turn.
-DESC_DMG_TERMITE,오늘 하루 동안 매 턴마다 나무에게 20~150의 방어 무시 피해를 입힙니다.,Deals 20-150 true damage to the Tree every turn for the duration of the day.
+DESC_DMG_TERMITE,오늘 하루 동안 매 턴 시작 때마다 나무에게 20~150의 피해를 입힙니다.,Deals 20-150 damage to the Tree at the start of every turn for the duration of the day.
 DESC_DMG_BLIND,이번 턴에 나무에게 20 또는 2000의 랜덤 데미지를 입힙니다.,Deals a random amount of damage (20 or 2000) to the Tree this turn.
 DESC_DMG_COMBO,콤보를 수행하여 성공시 250%의 데미지를 나무에게 입힙니다.,Perform a combo to deal 250% damage to the tree upon success."
 DESC_DEF_RESIN,마을 축제를 열어 마을 방어력을 250 증가시킵니다.,Hold a village festival to increase Village Defense by 250.
 DESC_DEF_SILVER,이번 턴에 나무에게 입힌 데미지의 100%를 방어력으로 전환합니다.,Converts 100% of damage dealt to the Tree into Defense this turn.
 DESC_DEF_SACRIFICE,"아이템을 희생하여 나무의 공격력을 감소시킵니다. (등급에 따라 감소율 상이, 웨이브당 1회)","Sacrifices an item to reduce the Tree's Attack Power. (Effect varies by rarity, once per wave)"
 DESC_DEF_SIPHON,상대 마을 방어력의 30%를 즉시 강탈하여 내 마을 방어력에 추가합니다.,Immediately steals 30% of the enemy village's defense and adds it to your own defense.
-DESC_REC_SAP,나무의 체력(HP)을 200 회복합니다.,Restores 200 HP to the Tree.
+DESC_REC_SAP,나무의 체력(HP)을 1000 회복합니다.,Restores 1000 HP to the Tree.
 DESC_REC_MIRACLE,"미션을 시작합니다. 성공 시 나무 체력을 2000 회복하는 0코스트 신약을 획득합니다. (게임 중 1회)","Starts a mission. If successful, obtain a 0-cost potion that heals the Tree for 2000 HP. (Once per game)"
 DESC_REC_BREW,즉시 기력을 3 회복합니다.,Instantly restores 3 Energy.
 DESC_REC_RESERVE,이번 웨이브에 남은 기력을 다음 턴으로 이월합니다.,Carries over any unused Energy from this wave to the next turn.

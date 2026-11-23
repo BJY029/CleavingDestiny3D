@@ -1,6 +1,6 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 
 public class ItemOfferCanvasController : MonoBehaviour
@@ -30,7 +30,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 	{
 		//선택하는 시간이 아닌 경우 감지 안함
 		if (!isChoosingPhase) return;
-		
+
 		bool isTabPressed = KeyInteractManager.Instance != null && KeyInteractManager.Instance.InputActions != null
 			? KeyInteractManager.Instance.InputActions.Player.Tab.WasPressedThisFrame()
 			: (Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame);
@@ -42,6 +42,14 @@ public class ItemOfferCanvasController : MonoBehaviour
 				//패널을 연다.
 				ToggleOfferPanel();
 		}
+
+		if (playGlow)
+		{
+			float alpha = (Mathf.Sin(Time.time * blinkSpeed) + 1f) / 2f;
+			Color color = OpenCloseGlow.color;
+			color.a = alpha;
+			OpenCloseGlow.color = color;
+		}
 	}
 
 	[Header("Prefabs for each selection")]
@@ -52,8 +60,13 @@ public class ItemOfferCanvasController : MonoBehaviour
 	public GameObject OpenCloseText;
 	public GameObject TitleText;
 
+	[Header("Glow UI")]
+	public Image OpenCloseGlow;
+	public float blinkSpeed = 3.0f;
+
 	//현재 상태 명시
 	private bool isChoosingPhase = false;
+	private bool playGlow = false;
 	//PlayerController에서 사용될 움직임 제한용 플래그
 	[HideInInspector]
 	public bool isOfferPanelOpened = false;
@@ -114,6 +127,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 		//OffersPanel.SetActive(true);
 		//선택 Phase 임을 명시
 		isChoosingPhase = true;
+		playGlow = true;
 		//움직임 제한용 플래그
 		//isOfferPanelOpened = true;
 	}
@@ -148,7 +162,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 			//움직임 활성화
 			isOfferPanelOpened = false;
 		}
-
+		playGlow = false;
 	}
 
 	public void Close()
@@ -169,6 +183,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 		}
 
 		isChoosingPhase = false;
+		playGlow = false;
 	}
 
 

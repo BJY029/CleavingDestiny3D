@@ -24,6 +24,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	public TextMeshProUGUI BarrierValue;
 	public TextMeshProUGUI TreeMultValue;
 	public TextMeshProUGUI MyTurnText;
+	public GameObject ItemInteractUI;
 	public CanvasGroup HitTextObj;
 
 	[SerializeField] private GameObject gaugeRoot;
@@ -120,6 +121,7 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		unclaimedWarningPosition = InitializeTweenUI(unclaimedItemWarningObj, out unclaimedWarningRect);
 		MissionPanel.SetActive(false);
 		BranchInteractObj.SetActive(false);
+		ItemInteractUI.SetActive(false);
 		MyTurnText.gameObject.SetActive(false);
 		CloseGauge();
 		if (HitText != null) HitText.text = "";
@@ -132,10 +134,10 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		InitTimer();
 	}
 
-
 	public override void OnEnable()
 	{
 		base.OnEnable();
+		RefreshTurnTimerFromRoomState();
 
 		GameSessionData.OnBranchCountChanged += UpdateBranchCount;
 		UpdateBranchCount(GameSessionData.CollectedBranchCount);
@@ -194,6 +196,15 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		UpdateTimerWarning(remainTime);
 	}
 
+	public void SetItemInteractUI(bool active)
+	{
+		if (active && GameHelper.IsMyTurn())
+		{
+			ItemInteractUI.SetActive(true);
+		}
+		else ItemInteractUI.SetActive(false);
+	}
+
 	private void UpdateTimerWarning(float remaining)
 	{
 		if (remaining <= 0f || remaining > 10f)
@@ -242,23 +253,32 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		BranchCount.text = count.ToString();
 	}
 
+	private void RefreshTurnTimerFromRoomState()
+	{
+		if (!PhotonNetwork.InRoom) return;
+
+		// 비활성 중에는 Photon 콜백을 받지 못하므로 현재 방의 시간으로 복구한다.
+		var props = PhotonNetwork.CurrentRoom.CustomProperties;
+		if (props.TryGetValue(RoomPropKeys.PlayerTurnStartEndTime, out var value)
+			&& value is Vector2 times)
+		{
+			_startTime = times.x;
+			_endTime = times.y;
+			_lastTimerSec = -1;
+		}
+
+		duration = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TurnTime);
+	}
+
 	//타이머가 설정되면, 시작, 끝 시간을 받아와서 저장한다.
 	public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
 	{
+		if (!CanShowHitText()) SetHitTextUnActive();
 		UpdateUnclaimedItemWarning();
-		if (propertiesThatChanged.TryGetValue(RoomPropKeys.PlayerTurnStartEndTime, out var value))
+		if (propertiesThatChanged.ContainsKey(RoomPropKeys.PlayerTurnStartEndTime)
+			|| propertiesThatChanged.ContainsKey(RoomPropKeys.TurnTime))
 		{
-			if (value is Vector2 times)
-			{
-				_startTime = times.x;
-				_endTime = times.y;
-				duration = PhotonPropertyHelper.GetRoomProp<float>(RoomPropKeys.TurnTime);
-			}
-		}
-
-		if (propertiesThatChanged.TryGetValue(RoomPropKeys.TurnTime, out var time))
-		{
-			duration = (float)time;
+			RefreshTurnTimerFromRoomState();
 		}
 	}
 
@@ -333,9 +353,22 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 	}
 
 
+	private bool CanShowHitText()
+	{
+		if (!PhotonNetwork.InRoom) return true;
+		// 마지막 턴 종료 직후에는 밤 페이즈 설정 전에도 턴 Actor가 -1이 된다.
+		return PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.CurrentTurnActor) != -1
+			&& PhotonPropertyHelper.GetRoomProp<GamePhaseValue>(RoomPropKeys.GamePhase) == GamePhaseValue.DAY;
+	}
+
 	//Hit text를 활성화 하는 함수
 	public void SetHitTextActive()
 	{
+		if (!CanShowHitText())
+		{
+			SetHitTextUnActive();
+			return;
+		}
 		if (HitTextObj == null || HitText == null) return;
 		if (!hitTextVisible)
 		{
@@ -365,6 +398,12 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		if (!hitTextVisible || HitTextObj == null) return;
 		hitTextVisible = false;
 		hitTextTween.Stop();
+		if (Mathf.Approximately(HitTextObj.alpha, 0f))
+		{
+			HitTextObj.gameObject.SetActive(false);
+			HitText.text = "";
+			return;
+		}
 		hitTextTween = Sequence.Create(useUnscaledTime: true)
 			.Group(Tween.Alpha(HitTextObj, 0f, warningHideDuration, Ease.InOutSine))
 			.OnComplete(this, controller =>
@@ -403,6 +442,11 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		}
 		else
 		{
+			if (Mathf.Approximately(unclaimedItemWarningObj.alpha, 0f))
+			{
+				unclaimedItemWarningObj.gameObject.SetActive(false);
+				return;
+			}
 			unclaimedWarningTween = Sequence.Create(useUnscaledTime: true)
 				.Group(Tween.Alpha(unclaimedItemWarningObj, 0f, warningHideDuration, Ease.InOutSine))
 				.OnComplete(unclaimedItemWarningObj, group => group.gameObject.SetActive(false));
@@ -439,11 +483,12 @@ public class PlayerCanvasController : MonoBehaviourPunCallbacks
 		if (!group.gameObject.activeSelf && rect != null)
 			rect.anchoredPosition = position + Vector2.down * warningSlideDistance;
 		group.gameObject.SetActive(true);
-		return Sequence.Create(useUnscaledTime: true)
-			.Group(Tween.Alpha(group, 1f, warningShowDuration, Ease.InOutSine))
-			.Group(rect != null
-				? Tween.UIAnchoredPositionY(rect, position.y, warningShowDuration, Ease.OutBack)
-				: default);
+		var sequence = Sequence.Create(useUnscaledTime: true);
+		if (!Mathf.Approximately(group.alpha, 1f))
+			sequence.Group(Tween.Alpha(group, 1f, warningShowDuration, Ease.InOutSine));
+		if (rect != null && !Mathf.Approximately(rect.anchoredPosition.y, position.y))
+			sequence.Group(Tween.UIAnchoredPositionY(rect, position.y, warningShowDuration, Ease.OutBack));
+		return sequence;
 	}
 
 	public void PopUpItemNotify(string itemId, Player player)

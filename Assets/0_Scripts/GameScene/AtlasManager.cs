@@ -16,7 +16,7 @@ public class AtlasManager : MonoBehaviour
 		if (instance == null) instance = this;
 		else Destroy(gameObject);
 
-		Addressables.LoadAssetAsync<SpriteAtlas>("ItemIcons").Completed += OnAtlasLoaded;
+		Addressables.LoadAssetAsync<SpriteAtlas>("I_ItemIcons").Completed += OnAtlasLoaded;
 	}
 
 	private void OnAtlasLoaded(AsyncOperationHandle<SpriteAtlas> handle)

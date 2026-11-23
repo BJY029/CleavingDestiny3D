@@ -159,6 +159,9 @@ MonoBehaviour:
   - RPC_ClearItemUsage
   - RPC_RecordItemUsage
   - RPC_ShowItemUseWarning
+  - RPC_AttackCommitted
+  - RPC_CommitAttack
+  - RPC_Play2DSFX
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

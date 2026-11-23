@@ -18,6 +18,12 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 	[SerializeField] private CharacterSkinCatalogSO characterSkinCatalog;
 	private const float CharacterWalletTimeoutSeconds = 10f;
 
+	[Header("QA 시작 아이템")]
+	[Tooltip("MasterClient 설정을 사용하여 게임 시작 시 모든 플레이어(AI 포함)에게 지급합니다.")]
+	[SerializeField] private bool enableQAStartingItems;
+	[Tooltip("목록 순서대로 빈 슬롯에 지급합니다. 같은 아이템을 여러 번 넣을 수 있습니다.")]
+	[SerializeField] private List<ItemSO> qaStartingItems = new();
+
 	[SerializeField] private Terrain targetTerrain;
 	[SerializeField] private float heightOffset = 0.1f;
 
@@ -150,8 +156,47 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 			{ GameStartRoomKeys.PhaseDuration, 3d}
 		};
 
+		AppendQAStartingItems(properties, turnOrder);
 		PhotonNetwork.CurrentRoom.SetCustomProperties(properties);
 		TurnManager.Instance.setOfferGeneratedFromOutsied(true);
+	}
+
+	private void AppendQAStartingItems(ExitGames.Client.Photon.Hashtable properties, int[] actors)
+	{
+		if (!PhotonNetwork.IsMasterClient || !enableQAStartingItems || qaStartingItems.Count == 0) return;
+
+		var validItems = new List<ItemSO>();
+		foreach (var item in qaStartingItems)
+		{
+			if (item == null || string.IsNullOrEmpty(item.itemId) || ItemDB.Instance.Get(item.itemId) == null)
+			{
+				Debug.LogWarning("[QA Starting Items] 비어 있거나 ItemDB에 등록되지 않은 아이템을 건너뜁니다.", this);
+				continue;
+			}
+			validItems.Add(item);
+		}
+		if (validItems.Count == 0) return;
+
+		// 서버 반영을 기다리며 반복 지급하지 않고, 양쪽 인벤토리와 UID를 한 번에 갱신한다.
+		int nextUid = Mathf.Max(1, PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.NEXT_UID));
+		foreach (int actor in actors.Distinct())
+		{
+			int capacity = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(actor));
+			string inventory = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(actor));
+			var slots = ItemInfoSerializer.Decode(inventory, capacity);
+			int added = 0;
+			foreach (var item in validItems)
+			{
+				if (!ItemInfoSerializer.TryAddFirstEmpty(slots, (nextUid, item.itemId))) break;
+				nextUid++;
+				added++;
+			}
+			properties[ItemPropKeys.INV(actor)] = ItemInfoSerializer.Encode(slots);
+			Debug.Log($"[QA Starting Items] Actor {actor}: {added}개 지급", this);
+			if (added < validItems.Count)
+				Debug.LogWarning($"[QA Starting Items] Actor {actor}: 슬롯 부족으로 {validItems.Count - added}개를 지급하지 못했습니다.", this);
+		}
+		properties[ItemPropKeys.NEXT_UID] = nextUid;
 	}
 
 
@@ -210,9 +255,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		InitPlayersInfo();
 		SpawnPlayersOnCircle();
 
+		PlayerStatus.Instance.ApplyVillageVFXBase();
 		InitPlayerProps();
 		if (IsInitializer()) InitAIProps();
-		PlayerStatus.Instance.ApplyVillageVFXBase();
 
 		yield return curtainCoroutine;
 
@@ -221,15 +266,15 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
 		int myActNum = PhotonNetwork.LocalPlayer.ActorNumber;
 
-        var spawningRoom = PhotonNetwork.CurrentRoom;
-        string playerPrefabPath = CharacterSpawnResolver.DefaultPrefabPath;
-        yield return ResolveCharacterPrefabForSpawn(path => playerPrefabPath = path);
-        if (!isActiveAndEnabled || !PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom != spawningRoom)
-        {
-            IsPreparing = false;
-            yield break;
-        }
-        GameObject spawnPlayer = PhotonNetwork.Instantiate(playerPrefabPath, spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
+		var spawningRoom = PhotonNetwork.CurrentRoom;
+		string playerPrefabPath = CharacterSpawnResolver.DefaultPrefabPath;
+		yield return ResolveCharacterPrefabForSpawn(path => playerPrefabPath = path);
+		if (!isActiveAndEnabled || !PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom != spawningRoom)
+		{
+			IsPreparing = false;
+			yield break;
+		}
+		GameObject spawnPlayer = PhotonNetwork.Instantiate(playerPrefabPath, spawnPos[myActNum - 1], spawnRot[myActNum - 1]);
 		PlayerController pc = spawnPlayer.GetComponent<PlayerController>();
 		LocalPlayerPC = pc;
 		pc.PlayerActNum = myActNum;
@@ -263,60 +308,60 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 		PhotonPropertyHelper.SetPlayerProp(PhotonNetwork.LocalPlayer.ActorNumber, PlayerPropKeys.IsReady, true);
 	}
 
-    // Select once per spawn. A late wallet response never replaces a live player.
-    private IEnumerator ResolveCharacterPrefabForSpawn(Action<string> select)
-    {
-        SaveManager.Initialize();
-        string fallback = CharacterSpawnResolver.DefaultPrefabPath;
-        if (characterSkinCatalog == null || characterSkinCatalog.DefaultSkin == null)
-        {
-            Debug.LogWarning("[CharacterSpawn] Missing catalog/default; using Player1.");
-            select(fallback);
-            yield break;
-        }
-        if (CharacterSpawnResolver.TryGetPrefabPath(characterSkinCatalog.DefaultSkin, out string defaultPath))
-            fallback = defaultPath;
-        else Debug.LogWarning("[CharacterSpawn] Invalid default prefab; using Player1.");
-        select(fallback);
-        string selectedId = PlayerProfile.EquippedCharacterSkinId;
-        if (string.IsNullOrEmpty(selectedId) || selectedId == characterSkinCatalog.DefaultSkin.SkinId)
-            yield break;
+	// Select once per spawn. A late wallet response never replaces a live player.
+	private IEnumerator ResolveCharacterPrefabForSpawn(Action<string> select)
+	{
+		SaveManager.Initialize();
+		string fallback = CharacterSpawnResolver.DefaultPrefabPath;
+		if (characterSkinCatalog == null || characterSkinCatalog.DefaultSkin == null)
+		{
+			Debug.LogWarning("[CharacterSpawn] Missing catalog/default; using Player1.");
+			select(fallback);
+			yield break;
+		}
+		if (CharacterSpawnResolver.TryGetPrefabPath(characterSkinCatalog.DefaultSkin, out string defaultPath))
+			fallback = defaultPath;
+		else Debug.LogWarning("[CharacterSpawn] Invalid default prefab; using Player1.");
+		select(fallback);
+		string selectedId = PlayerProfile.EquippedCharacterSkinId;
+		if (string.IsNullOrEmpty(selectedId) || selectedId == characterSkinCatalog.DefaultSkin.SkinId)
+			yield break;
 
-        var originalRoom = PhotonNetwork.CurrentRoom;
-        UGSManager wallet = UGSManager.Instance;
-        Task refresh;
-        try { refresh = wallet.LoadPlayerData().AsTask(); }
-        catch (Exception error)
-        {
-            Debug.LogWarning($"[CharacterSpawn] Wallet refresh failed; using default. {error.Message}");
-            yield break;
-        }
-        // Observe faults even if the coroutine times out or its player is destroyed.
-        _ = refresh.ContinueWith(task => { _ = task.Exception; }, TaskContinuationOptions.OnlyOnFaulted);
-        float deadline = Time.realtimeSinceStartup + CharacterWalletTimeoutSeconds;
-        while (!refresh.IsCompleted && Time.realtimeSinceStartup < deadline)
-        {
-            if (!isActiveAndEnabled || !PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom != originalRoom) yield break;
-            yield return null;
-        }
-        if (!isActiveAndEnabled || !PhotonNetwork.InRoom) yield break;
-        if (!refresh.IsCompleted || refresh.IsFaulted || refresh.IsCanceled)
-        {
-            Debug.LogWarning("[CharacterSpawn] Wallet unavailable or timed out; using default this match. Saved selection retained.");
-            yield break;
-        }
+		var originalRoom = PhotonNetwork.CurrentRoom;
+		UGSManager wallet = UGSManager.Instance;
+		Task refresh;
+		try { refresh = wallet.LoadPlayerData().AsTask(); }
+		catch (Exception error)
+		{
+			Debug.LogWarning($"[CharacterSpawn] Wallet refresh failed; using default. {error.Message}");
+			yield break;
+		}
+		// Observe faults even if the coroutine times out or its player is destroyed.
+		_ = refresh.ContinueWith(task => { _ = task.Exception; }, TaskContinuationOptions.OnlyOnFaulted);
+		float deadline = Time.realtimeSinceStartup + CharacterWalletTimeoutSeconds;
+		while (!refresh.IsCompleted && Time.realtimeSinceStartup < deadline)
+		{
+			if (!isActiveAndEnabled || !PhotonNetwork.InRoom || PhotonNetwork.CurrentRoom != originalRoom) yield break;
+			yield return null;
+		}
+		if (!isActiveAndEnabled || !PhotonNetwork.InRoom) yield break;
+		if (!refresh.IsCompleted || refresh.IsFaulted || refresh.IsCanceled)
+		{
+			Debug.LogWarning("[CharacterSpawn] Wallet unavailable or timed out; using default this match. Saved selection retained.");
+			yield break;
+		}
 
-        // Only a successful authoritative read may repair the saved selection.
-        PlayerProfile.ApplyCharacterOwnership(characterSkinCatalog, wallet.OwnedItems);
-        SaveManager.Save();
-        if (!PlayerProfile.OwnsCharacterSkin(selectedId) || !characterSkinCatalog.TryGetSkin(selectedId, out CharacterSkinSO skin))
-        {
-            Debug.LogWarning("[CharacterSpawn] Selected character is not owned or registered; using default.");
-            yield break;
-        }
-        if (CharacterSpawnResolver.TryGetPrefabPath(skin, out string path)) select(path);
-        else Debug.LogWarning($"[CharacterSpawn] Invalid player prefab for {selectedId}; using default this match.");
-    }
+		// Only a successful authoritative read may repair the saved selection.
+		PlayerProfile.ApplyCharacterOwnership(characterSkinCatalog, wallet.OwnedItems);
+		SaveManager.Save();
+		if (!PlayerProfile.OwnsCharacterSkin(selectedId) || !characterSkinCatalog.TryGetSkin(selectedId, out CharacterSkinSO skin))
+		{
+			Debug.LogWarning("[CharacterSpawn] Selected character is not owned or registered; using default.");
+			yield break;
+		}
+		if (CharacterSpawnResolver.TryGetPrefabPath(skin, out string path)) select(path);
+		else Debug.LogWarning($"[CharacterSpawn] Invalid player prefab for {selectedId}; using default this match.");
+	}
 
 	//Masterclient가(즉 싱글 모드의 로컬 플레이어) AI 스폰 수행
 	private void TrySpawnAI()

@@ -54,10 +54,11 @@ public static class StatusBehaviours
                 if (!dmg.isBasicAttack) return;
 
                 //데미지 고정 덮어쓰기
-                dmg.overrideDamage = 0;
+                //dmg.overrideDamage = 0;
+                dmg.multiplier *= 0;
 
                 //디버그 로그로 임시 실행
-                ctx.Log?.Invoke($"[Status] DMG_GREASED overriedDamage = 0");
+                ctx.Log?.Invoke("[Status] DMG_GREASED multiplier = 0");
                 return;
             //흰개미 아이템
             case "DMG_TERMITE":
@@ -148,7 +149,7 @@ public static class StatusBehaviours
                 if (e.type != TriggerMask.OnDamageConvert) return;
 
                 if (dmg.attackerNum != st.ownerActorNum) return;
-                if (dmg.convertRateOverride >= 0f) return;
+                //if (dmg.convertRateOverride >= 0f) return;
 
                 float delta = st.spec.convertRate;
                 dmg.convertRateDelta += delta;

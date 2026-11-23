@@ -45,7 +45,9 @@ public class DamageResolver
             baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum);
         else
             baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum, state);
-        float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate + dmg.convertRateDelta;
+        //float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate + dmg.convertRateDelta;
+        baseRate = (dmg.convertRateOverride > 0) ? dmg.convertRateOverride : baseRate;
+        float rate = baseRate + dmg.convertRateDelta;
         rate = Mathf.Clamp01(rate);
         if (state != null) state.SetPlayerBarConRate(dmg.attackerNum, rate);
 
@@ -60,6 +62,19 @@ public class DamageResolver
             actorNum = dmg.attackerNum,
             payload = dmg
         }, ctx, state);
+    }
+
+    // UI multiplier previews must not run conversion triggers or consume statuses.
+    public float PreviewAttackMultiplier(DamagePacket dmg, EffectContext ctx)
+    {
+        _bus.publish(new GameEvent
+        {
+            type = TriggerMask.OnBeforeAttack,
+            actorNum = dmg.attackerNum,
+            payload = dmg
+        }, ctx, isPreview: true);
+
+        return dmg.overrideDamage == 0 ? 0f : dmg.multiplier;
     }
 
     public (float dmgMultiRate, float dmgOverrideDmg, float BarrierConvRate) ResolveRatio(DamagePacket dmg, EffectContext ctx)
@@ -89,12 +104,23 @@ public class DamageResolver
 
     public void ResolveWhenStartTurn(EffectContext ctx, int currentActNum)
     {
-        _bus.publish(new GameEvent
+        // Share one HP snapshot across statuses; Photon properties update asynchronously.
+        ctx.BeginTreeHpBatch();
+        try
         {
-            type = TriggerMask.OnTurnStart,
-            actorNum = currentActNum,
-            payload = null
-        }, ctx);
+            _bus.publish(new GameEvent
+            {
+                type = TriggerMask.OnTurnStart,
+                actorNum = currentActNum,
+                payload = null
+            }, ctx);
+            ctx.CommitTreeHpBatch();
+        }
+        catch
+        {
+            ctx.CancelTreeHpBatch();
+            throw;
+        }
     }
 
     public void ResolveWhenVillageStart(EffectContext ctx)

@@ -47,6 +47,9 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
     private IAnimNotify animNotify;
     [SerializeField] bool isAI = false;
+    private bool strikeQueued;
+    private int queuedTurnIndex;
+    private int queuedNonce;
 
     MaterialPropertyBlock itemMpb;
 
@@ -99,6 +102,15 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         animator.SetFloat(HashSpeedZ, moveZ, 0.1f, deltaTime);
     }
 
+    // 입력 잠금 시 감쇠 없이 이동 애니메이션을 즉시 정지
+    public void ResetMoveVisuals()
+    {
+        if (animator == null) return;
+
+        animator.SetFloat(HashSpeedX, 0f);
+        animator.SetFloat(HashSpeedZ, 0f);
+    }
+
     public void UpdateCamera(Vector2 lookDelta)
     {
         // Sway 제거: 필요 시 시점 회전이나 추가 연출 확장용 빈 메서드 유지
@@ -108,7 +120,7 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     public void PlayHitAnimation()
     {
         // 전체(타인 화면 포함 및 로컬): 애니메이션 트리거
-        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All);
+        BroadcastCommittedHit();
     }
 
     // 준비 자세 애니메이션 실행 (F Key Down 시점에 호출)
@@ -129,13 +141,24 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     public void PlayStrikeAnimation()
     {
         // 전체(타인 화면 포함): 애니메이션 트리거
-        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All);
+        BroadcastCommittedHit();
+    }
+
+    private void BroadcastCommittedHit()
+    {
+        var attack = isAI ? aiController.PendingAttack : playerController.PendingAttack;
+        photonView.RPC(nameof(RPC_PlayHit), RpcTarget.All, attack.turnIndex, attack.clientNonce);
     }
 
     [PunRPC]
     private void RPC_SetHitReady(bool isReady)
     {
         if (animator == null) return;
+        if (!isReady)
+        {
+            strikeQueued = false;
+            animator.ResetTrigger(HashHit);
+        }
         animator.SetBool(HashHitReady, isReady);
     }
 
@@ -143,25 +166,39 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
     [SerializeField] private float playerHitSoundDelay = 0.35f; // 플레이어 타격음 및 임팩트 지연 시간 (초)
 
     [PunRPC]
-    private void RPC_PlayHit()
+    private void RPC_PlayHit(int turnIndex, int nonce)
     {
         if (animator == null) return;
-        animator.SetBool(HashHitReady, false); // 타격 시 준비 상태 해제
+        queuedTurnIndex = turnIndex;
+        queuedNonce = nonce;
+        strikeQueued = true;
+        // A fast second F can arrive before Idle has entered HitReady_Start.
+        // Keep the path to that state open until the strike state consumes Hit.
+        animator.SetBool(HashHitReady, true);
         animator.ResetTrigger(HashHit);
         animator.SetTrigger(HashHit);
+    }
+
+    public void OnStrikeAnimationEntered(int stateKey)
+    {
+        if (stateKey != 1 || !strikeQueued) return;
+        strikeQueued = false;
+        animator.SetBool(HashHitReady, false);
+        int turnIndex = queuedTurnIndex;
+        int nonce = queuedNonce;
 
         if (isAI)
         {
-            PlayAIImpactAsync().Forget();
+            PlayAIImpactAsync(turnIndex, nonce).Forget();
         }
         else
         {
             // 플레이어: 3인칭 타격 애니메이션의 도끼 타격 타이밍에 맞춰 소리 및 타격 이펙트 재생
-            PlayPlayerImpactAsync().Forget();
+            PlayPlayerImpactAsync(turnIndex, nonce).Forget();
         }
     }
 
-    private async UniTaskVoid PlayPlayerImpactAsync()
+    private async UniTaskVoid PlayPlayerImpactAsync(int turnIndex, int nonce)
     {
         try
         {
@@ -169,10 +206,11 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         }
         catch (OperationCanceledException) { return; }
 
+        if (!IsImpactCurrent(turnIndex, nonce)) return;
         FirstPersonAxeHit();
     }
 
-    private async UniTaskVoid PlayAIImpactAsync()
+    private async UniTaskVoid PlayAIImpactAsync(int turnIndex, int nonce)
     {
         try
         {
@@ -181,10 +219,22 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
         }
         catch (OperationCanceledException) { return; }
 
+        if (!IsImpactCurrent(turnIndex, nonce)) return;
         PlayLocalTreeHitEffect();
         PlayLocalHitSound();
 
         aiController?.RequestAttackAtImpact();
+    }
+
+    private bool IsImpactCurrent(int turnIndex, int nonce)
+    {
+        if (!isActiveAndEnabled || !PhotonNetwork.InRoom ||
+            PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) != turnIndex ||
+            PhotonPropertyHelper.GetRoomProp<GamePhaseValue>(RoomPropKeys.GamePhase) == GamePhaseValue.END) return false;
+        // Remote characters only play presentation; the owning controller sends damage.
+        if (!isAI && !photonView.IsMine) return true;
+        var attack = isAI ? aiController.PendingAttack : playerController.PendingAttack;
+        return attack.turnIndex == turnIndex && attack.clientNonce == nonce;
     }
 
     // 애니메이션 이벤트로부터 호출되는 함수

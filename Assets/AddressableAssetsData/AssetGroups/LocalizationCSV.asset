@@ -39,6 +39,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - Localization
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 913e4cb7c82b40e4a9975210d0af2335
+    m_Address: Assets/Localization/MatchmakingTips_CSV.csv
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Localization
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 95b7c6f8556b767449884d48239910bd
     m_Address: Assets/Localization/Tutorial_CSV.csv
     m_ReadOnly: 0

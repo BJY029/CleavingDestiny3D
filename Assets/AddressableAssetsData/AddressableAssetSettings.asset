@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: a73ca08e28b5a9d49ad795928e719c77
   m_currentHash:
     serializedVersion: 2
-    Hash: dc1c0a176434698b7c74fc2516e35e53
+    Hash: 15f2d11830ee6960d9413e4db1acd949
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_CatalogRequestsTimeout: 0
@@ -106,6 +106,7 @@ MonoBehaviour:
     - ItemTexture
     - ItemMaterial
     - AudioData
+    - ItemIconMaterial
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 4d37cadbf4148b142a1e69f1c435389b, type: 2}

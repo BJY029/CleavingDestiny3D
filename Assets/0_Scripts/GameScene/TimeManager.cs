@@ -26,6 +26,7 @@ public class TimeManager : MonoBehaviourPunCallbacks
     //시작, 끝 시간
     private double _startTime;
     private double _endTime;
+    public double AttackDeadline => _endTime;
     //타이머 요청자
     private Player Requester;
 
@@ -89,6 +90,7 @@ public class TimeManager : MonoBehaviourPunCallbacks
     //타이머가 끝나서 턴을 넘기는 함수(MasterClient가 호출함)
     private void EndTurnLogic()
     {
+        if (!ItemHandlingSystem.instance.ReserveTimeoutAttack()) return;
         //타이머 비활성화 설정
         TurnTimerActivated = false;
         TurnTimerPaused = false;
@@ -105,7 +107,8 @@ public class TimeManager : MonoBehaviourPunCallbacks
         if (currentTurnPlayer != null)
         {
             Debug.Log($"[TimeManager] Auto Turn End → Actor {currentTurnPlayer.ActorNumber}");
-            photonView.RPC(nameof(RPC_RequesterTurnEnded), currentTurnPlayer);
+            photonView.RPC(nameof(RPC_RequesterTurnEnded), currentTurnPlayer,
+                PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex));
         }
         else if (GameManager.Instance.isSoloPlay)
         {
@@ -179,6 +182,8 @@ public class TimeManager : MonoBehaviourPunCallbacks
     private void Master_ResumeMainTurnTimerAfterMiniGame()
     {
         if (!PhotonNetwork.IsMasterClient) return;
+        ItemHandlingSystem.instance.SyncAttackTurn();
+        if (ItemHandlingSystem.instance.AttackState.Committed || ItemHandlingSystem.instance.AttackState.Expired) return;
         if (!TurnTimerPaused) return;
         if (_pausedRemainingTime <= 0d) return;
 
@@ -216,6 +221,11 @@ public class TimeManager : MonoBehaviourPunCallbacks
     public void RPC_StartTurnTimer(PhotonMessageInfo info)
     {
         if (!PhotonNetwork.IsMasterClient) return;
+        int actor = GameHelper.getCurrentTurnActorNum();
+        if (info.Sender.ActorNumber != actor &&
+            !(info.Sender.IsMasterClient && GameManager.Instance.isSoloPlay && PlayerManager.Instance.AIPlayerObj.ContainsKey(actor))) return;
+        ItemHandlingSystem.instance.SyncAttackTurn();
+        if (ItemHandlingSystem.instance.AttackState.Committed || ItemHandlingSystem.instance.AttackState.Expired || TurnTimerActivated) return;
 
         //요청자의 ActNum을 받아서 저장한다.
         Requester = PhotonNetwork.CurrentRoom.GetPlayer(info.Sender.ActorNumber);
@@ -268,9 +278,10 @@ public class TimeManager : MonoBehaviourPunCallbacks
 
     //타이머 요청자가 실행하는 타이머 종료 함수
     [PunRPC]
-    public void RPC_RequesterTurnEnded(PhotonMessageInfo info)
+    public void RPC_RequesterTurnEnded(int turnIndex, PhotonMessageInfo info)
     {
         if (!info.Sender.IsMasterClient) return;
+        if (turnIndex != PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex) || !GameHelper.IsMyTurn()) return;
         //PlayerManager에서 요청자의 플레이어 오브젝트를 받아온다.
         if (PlayerManager.Instance.LocalPlayerObj == null)
         {
@@ -285,39 +296,51 @@ public class TimeManager : MonoBehaviourPunCallbacks
     //턴 종료 및 턴 넘기기 로직
     public async UniTask ProcessPlayerTurnEndByTimer_Async()
     {
+        if (ForceToHit) return;
+        int turnIndex = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
         ForceToHit = true;
-        //TODO : 플레이어 이동
-        //플레이어 번호
-        int actNum = PhotonNetwork.LocalPlayer.ActorNumber;
-        //플레이어 오브젝트
-        GameObject PlayerObj = PlayerManager.Instance.LocalPlayerObj;
-        //플레이어 이동 위치 및 회전 정보
-        Vector3 des = PlayerManager.Instance.hitPos[actNum - 1];
-        Quaternion rot = PlayerManager.Instance.spawnRot[actNum - 1];
-
-        InitGameUIs();
-        //플레이어의 PlayerController 컴포넌트
-        PlayerController pc = PlayerObj.GetComponent<PlayerController>();
-
-        //FadeIn
-        await FadeCanvas.Instance.FadeInAsync(1f);
-
-        //플레이어 순간이동
-        if (PlayerObj != null)
+        try
         {
-            TeleportPlayer(PlayerObj, des, rot);
-            pc?.ResetCameraToForward();
+            //TODO : 플레이어 이동
+            //플레이어 번호
+            int actNum = PhotonNetwork.LocalPlayer.ActorNumber;
+            //플레이어 오브젝트
+            GameObject PlayerObj = PlayerManager.Instance.LocalPlayerObj;
+            //플레이어 이동 위치 및 회전 정보
+            Vector3 des = PlayerManager.Instance.hitPos[actNum - 1];
+            Quaternion rot = PlayerManager.Instance.spawnRot[actNum - 1];
+
+            InitGameUIs();
+            //플레이어의 PlayerController 컴포넌트
+            PlayerController pc = PlayerObj.GetComponent<PlayerController>();
+
+            //FadeIn
+            await FadeCanvas.Instance.FadeInAsync(1f);
+            if (!IsTimeoutTurnCurrent(turnIndex)) return;
+
+            //플레이어 순간이동
+            if (PlayerObj != null)
+            {
+                TeleportPlayer(PlayerObj, des, rot);
+                pc?.ResetCameraToForward();
+            }
+
+            //FadeOut
+            await FadeCanvas.Instance.FadeOutAsync(1f);
+            if (!IsTimeoutTurnCurrent(turnIndex)) return;
+
+            // 턴 넘기기 시도 (준비 모션 -> 무작위 게이지 타격 자동 수행)
+            if (pc != null)
+                pc.AutoTriggerRandomGaugeStrike();
+
         }
-
-        //FadeOut
-        await FadeCanvas.Instance.FadeOutAsync(1f);
-
-        // 턴 넘기기 시도 (준비 모션 -> 무작위 게이지 타격 자동 수행)
-        if (pc != null)
-            pc.AutoTriggerRandomGaugeStrike();
-
-        ForceToHit = false;
+        finally { ForceToHit = false; }
     }
+
+    private bool IsTimeoutTurnCurrent(int turnIndex) => PhotonNetwork.InRoom
+        && turnIndex == PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex)
+        && GameHelper.IsMyTurn()
+        && PhotonPropertyHelper.GetRoomProp<GamePhaseValue>(RoomPropKeys.GamePhase) == GamePhaseValue.DAY;
 
     private void InitGameUIs()
     {

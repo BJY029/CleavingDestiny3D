@@ -274,7 +274,7 @@ MonoBehaviour:
     pitchRange: {x: 0.9, y: 1.1}
     is3D: 0
   - id: 3002
-    clip: {fileID: 8300000, guid: 78607329a0f438145b15fd8aea5934e7, type: 3}
+    clip: {fileID: 8300000, guid: d77b409742d4fac48bc0538e14c20e9e, type: 3}
     randomClips: []
     useRandomClip: 0
     volume: 1
@@ -578,6 +578,29 @@ MonoBehaviour:
     - {fileID: 8300000, guid: fec458693a5738b44a1c6e105abdeee0, type: 3}
     - {fileID: 8300000, guid: 881d8007ba72cee429d8cfb9363a8e84, type: 3}
     useRandomClip: 1
+    volume: 1
+    pitch: 1
+    useRandomPitch: 0
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 0
+  - id: PlayFootsteps
+    clip: {fileID: 0}
+    randomClips:
+    - {fileID: 8300000, guid: 2ef91f5c7edc0074bb99d042fe3f7d3b, type: 3}
+    - {fileID: 8300000, guid: 1e6bfa2109cb4c1408f0a6a1c56f9697, type: 3}
+    - {fileID: 8300000, guid: 2642e0c720713d64cb030f19f8ed6f42, type: 3}
+    - {fileID: 8300000, guid: 93fdb416ed8c76243b89a31b853056ff, type: 3}
+    - {fileID: 8300000, guid: f1273463ceee15d4684809e060a67060, type: 3}
+    useRandomClip: 1
+    volume: 1
+    pitch: 1
+    useRandomPitch: 1
+    pitchRange: {x: 0.9, y: 1.1}
+    is3D: 1
+  - id: Sacrifice
+    clip: {fileID: 8300000, guid: be7efa0b191055142851b43068c660bf, type: 3}
+    randomClips: []
+    useRandomClip: 0
     volume: 1
     pitch: 1
     useRandomPitch: 0

@@ -1,0 +1,29 @@
+﻿PASS loading locks actions
+PASS local SO price never displayed
+PASS deduplicates requests and cards; skips null catalog entries
+PASS reuses the wallet prepared at startup
+PASS server price and existing currency
+PASS insufficient balance blocks purchase
+PASS exact balance allows purchase
+PASS uses server currency instead of forcing sticks
+PASS missing price disables sale
+PASS rejects items outside local catalog
+PASS load failure exposes retry
+PASS retry recovers load and refreshes server wallet
+PASS purchase locks repeated clicks and equip
+PASS purchase owns item without auto equip
+PASS owned card hides price and shows ownership
+PASS equip saves and updates equipped label
+PASS purchase response: already_owned
+PASS purchase response: insufficient_funds
+PASS purchase response: skin_not_found
+PASS lost purchase response recovery: owned
+PASS lost purchase response recovery: not_owned
+PASS lost purchase response recovery: offline
+PASS failed reconciliation locks shop
+PASS close and reopen during load restarts once without duplicate cards
+PASS stale purchase cannot overwrite reopened tab; fresh load reconciles
+PASS opening and reopening prepared shop needs no wallet request
+PASS explicit retry still refreshes wallet
+PASS unprepared wallet is fetched and shop stays locked until ready
+28 checks passed; no network, purchases or player-save writes.
