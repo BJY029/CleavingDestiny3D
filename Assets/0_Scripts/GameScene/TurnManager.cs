@@ -77,6 +77,9 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	//}
 
 	private bool IsInitializer() => PhotonNetwork.IsMasterClient;
+	private bool HasMatchEnded =>
+		(MatchResultManager.Instance != null && MatchResultManager.Instance._isResultResolved)
+		|| PhotonPropertyHelper.GetRoomProp<GamePhaseValue>(RoomPropKeys.GamePhase) == GamePhaseValue.END;
 
 	public void NewTurnStart()
 	{
@@ -140,7 +143,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	[PunRPC]
 	private void RPC_PlayerDamageChecker(int attackerNum, int turnIndex, int nonce, PhotonMessageInfo info)
 	{
-		if (!IsInitializer()) return;
+		if (!IsInitializer() || HasMatchEnded) return;
 		var state = ItemHandlingSystem.instance.AttackState;
 		var command = new AttackCommand { attackerNum = attackerNum, turnIndex = turnIndex, clientNonce = nonce };
 		if (!state.Applied || !state.Matches(command) || completedAttackTurn == turnIndex ||
@@ -260,7 +263,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	//턴 전환 함수
 	private void ChangeToNextTurn(bool finishDay = false)
 	{
-		if (!IsInitializer()) return;
+		if (!IsInitializer() || HasMatchEnded) return;
+		if (MatchResultManager.Instance.TryResolveResultByTreeHP()) return;
 
 		if (!firstHitHappened)
 		{
@@ -352,7 +356,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	public void TreeActionProcess()
 	{
-		if (!PhotonNetwork.IsMasterClient) return;
+		if (!PhotonNetwork.IsMasterClient || HasMatchEnded) return;
 		//TreeActionProcess가 실행중일때 중복 호출 막기
 		if (_isTreeActionRunning) return;
 
@@ -362,40 +366,49 @@ public class TurnManager : MonoBehaviourPunCallbacks
 
 	IEnumerator TreeAction()
 	{
-		int curH = WeatherMakerTimeController.instance.GetCurHTime();
-		photonView.RPC(nameof(RPC_PlayTimeFlow), RpcTarget.All, curH, 22, timeChangeDelay);
-		yield return new WaitForSecondsRealtime(timeChangeDelay + 0.3f);
-
-		//싱글 플래이 모드라면, 바로 마을 모드 진입
-		if (IsSinglePlayer)
+		try
 		{
-			ItemHandlingSystem.instance.OnVillageStart();
-		}
-		else
-		{
-			int currentActionID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-			_villageShieldProcessDone = -1;
+			if (HasMatchEnded) yield break;
+			int curH = WeatherMakerTimeController.instance.GetCurHTime();
+			photonView.RPC(nameof(RPC_PlayTimeFlow), RpcTarget.All, curH, 22, timeChangeDelay);
+			yield return new WaitForSecondsRealtime(timeChangeDelay + 0.3f);
+			if (HasMatchEnded) yield break;
 
-			photonView.RPC(nameof(RPC_RequestVillageShileldProcess), RpcTarget.MasterClient, currentActionID);
-
-			float timeout = 5f;
-			while (currentActionID != _villageShieldProcessDone && timeout > 0)
+			//싱글 플래이 모드라면, 바로 마을 모드 진입
+			if (IsSinglePlayer)
 			{
-				timeout -= Time.deltaTime;
-				yield return null;
+				ItemHandlingSystem.instance.OnVillageStart();
 			}
-			if (timeout <= 0f)
-				Debug.LogWarning("TreeAction RPC Timeout! 강제로 다음 페이즈로 넘어갑니다.");
+			else
+			{
+				int currentActionID = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+				_villageShieldProcessDone = -1;
 
+				photonView.RPC(nameof(RPC_RequestVillageShileldProcess), RpcTarget.MasterClient, currentActionID);
+
+				float timeout = 5f;
+				while (currentActionID != _villageShieldProcessDone && timeout > 0)
+				{
+					if (HasMatchEnded) yield break;
+					timeout -= Time.deltaTime;
+					yield return null;
+				}
+				if (timeout <= 0f)
+					Debug.LogWarning("TreeAction RPC Timeout! 강제로 다음 페이즈로 넘어갑니다.");
+
+			}
+			StartVillageUpgradePhase();
 		}
-		StartVillageUpgradePhase();
-		_isTreeActionRunning = false;
+		finally
+		{
+			_isTreeActionRunning = false;
+		}
 	}
 
 	[PunRPC]
 	private void RPC_RequestVillageShileldProcess(int actionId, PhotonMessageInfo info)
 	{
-		if (!PhotonNetwork.IsMasterClient) return;
+		if (!PhotonNetwork.IsMasterClient || HasMatchEnded) return;
 
 		ItemHandlingSystem.instance.OnVillageStart();
 
@@ -430,7 +443,7 @@ public class TurnManager : MonoBehaviourPunCallbacks
 	public void StartVillageUpgradePhase()
 	{
 		//제일 낮은 순서번호의 플레이어만 초기화 수행
-		if (!IsInitializer()) return;
+		if (!IsInitializer() || HasMatchEnded) return;
 
 		PhotonPropertyHelper.SetRoomProp(RoomPropKeys.GamePhase, GamePhaseValue.NIGHT_VILLAGE);
 		//'하루'의 길이를 가진 아이템을 삭제한다.
