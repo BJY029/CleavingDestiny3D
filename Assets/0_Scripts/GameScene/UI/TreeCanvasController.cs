@@ -16,6 +16,11 @@ public class TreeCanvasController : MonoBehaviour
 
 	public void UpdateTreeHP(float maxTreeHP, float curTreeHP)
 	{
+		// Room properties may not have arrived when the master initializes the UI.
+		// A NaN slider value can leave its fill transform corrupted even after HP arrives.
+		if (maxTreeHP <= 0f || float.IsNaN(maxTreeHP) || float.IsInfinity(maxTreeHP)
+			|| float.IsNaN(curTreeHP) || float.IsInfinity(curTreeHP)) return;
+
 		TreeHPSlider.value = curTreeHP / maxTreeHP;
 		TreeHP.text = curTreeHP.ToString();
 	}
