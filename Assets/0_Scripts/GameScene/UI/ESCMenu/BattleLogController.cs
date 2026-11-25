@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Photon.Pun;
 using Potan.CoreUtils;
 using TMPro;
@@ -48,6 +48,7 @@ public class BattleLogController : MonoSceneSingleton<BattleLogController>
 
     public TextMeshProUGUI battleLogText;
     [SerializeField] private ScrollRect battleLogScrollRect;
+    [SerializeField] private bool showHitDamageLog = false;
 
     private readonly StringBuilder battleLogBuilder = new(4096);
     private bool textDirty;
@@ -91,12 +92,17 @@ public class BattleLogController : MonoSceneSingleton<BattleLogController>
     public static void AddHitLog(string playerName, float damage, float barrierDamage = 0f)
     {
         BattleLogController controller = Instance;
+        if (!controller.showHitDamageLog) return;
         controller.Append(BattleLogType.Hit, playerName, damage);
         if (barrierDamage > 0f) controller.Append(BattleLogType.Hit_Barrier, barrierDamage, true);
     }
 
-    public static void AddHitBarrierLog(float barrierDamage) =>
-        Instance.Append(BattleLogType.Hit_Barrier, barrierDamage, true);
+    public static void AddHitBarrierLog(float barrierDamage)
+    {
+        BattleLogController controller = Instance;
+        if (!controller.showHitDamageLog) return;
+        controller.Append(BattleLogType.Hit_Barrier, barrierDamage, true);
+    }
 
     public static void AddItemLog(string playerName, string itemName, float energyCost = -1f, float remainingEnergy = 0f)
     {
@@ -145,6 +151,7 @@ public class BattleLogController : MonoSceneSingleton<BattleLogController>
 
     private void Append(BattleLogType type, string arg0, string arg1)
     {
+        if (!showHitDamageLog && (type == BattleLogType.Hit || type == BattleLogType.Hit_Barrier)) return;
         BeginLog();
         AppendTwo(GetTemplate(type), arg0, arg1);
         EndLog();
