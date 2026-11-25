@@ -79,6 +79,9 @@ public class AIInventoryManager : AILogicModule
                 if (item.itemCost > energyBudeget && item.itemCost > 0) continue;
                 //필터링 : 제약 조건(턴 당 1회 등)에 걸리면 패스
                 if (!ItemHandlingSystem.instance.CheckItemAvaiable(brain.MyActorNum, item.itemId)) continue;
+                //필터링 : 기타 사용 불가 사유(중복 강화 잠금장치 등)에 걸리면 패스
+                if (InventoryAuthority.Instance != null &&
+                    InventoryAuthority.Instance.GetItemUseBlockReason(brain.MyActorNum, item, out _) != null) continue;
 
 
                 //  4. 아이템 점수 계산(아이템 선택 로직과 동일한 알고리즘)

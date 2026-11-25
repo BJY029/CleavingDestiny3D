@@ -82,6 +82,8 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 			var slots = ItemInfoSerializer.Decode(PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(actor)), cap);
 			if (slots.Count(slot => !string.IsNullOrEmpty(slot.itemID)) <= 1) return "UI_ItemUse_NeedSacrifice";
 		}
+		if (item.itemId == "4001" && PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.REINFORCED_LOCK(actor)))
+			return "UI_ItemUse_ReinforcedLockActive";
 		if (item.itemId == "4006")
 		{
 			int requesterEngValue = PhotonPropertyHelper.GetPlayerProp<int>(actor, PlayerPropKeys.Energy);

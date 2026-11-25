@@ -8,6 +8,7 @@ public class AIItemActionManager : AILogicModule
     [Header("AI 락픽 피지컬 세팅")]
     public float baseLockPassRate = 0.8f;
     public float baseLockDuration = 1.0f;
+    [SerializeField, Range(0.1f, 1f)] private float reinforcedLockPassRateMultiplier = 0.5f;
 
     [Tooltip("아이템을 사용하기 위한 최소 점수 조건")]
     public float usageThreshold = 50f;
@@ -85,10 +86,19 @@ public class AIItemActionManager : AILogicModule
             //내부적으로 멤버 변수들만 초기화함
             inv.InvBarrier.OnInteract(gameObject.GetComponent<AIController>());
         }
+        int oppActNum = PhotonNetwork.LocalPlayer.ActorNumber;
         //상대방 인벤토리 락 수 
         int extraLocks = context.OppLockCnt;
         //상대방 락수에 기반한 락픽 성공 확률 계산
         float finalSuccessProbability = Mathf.Pow(baseLockPassRate, extraLocks);
+
+        bool isReinforced = PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.REINFORCED_LOCK(oppActNum));
+        if (isReinforced)
+        {
+            finalSuccessProbability *= reinforcedLockPassRateMultiplier;
+            PhotonPropertyHelper.SetRoomProp(ItemPropKeys.REINFORCED_LOCK(oppActNum), false);
+            Debug.Log("[AI] 상대 강화 잠금장치 적용 -> 락픽 성공률 감소 및 소모");
+        }
         //0.0~1.0 사이의 난수 뽑기
         float roll = UnityEngine.Random.value;
 

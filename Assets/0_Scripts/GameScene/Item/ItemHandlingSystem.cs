@@ -331,9 +331,8 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		}
 		if (item.itemId == "4001")
 		{
-			var ctx = new EffectContext(_rng, Debug.Log);
-			ctx.AddPlayerLockCount(actorNum);
-			ctx.Log?.Invoke($"[ItemLockPick] Player{actorNum}'s Lock added");
+			PhotonPropertyHelper.SetRoomProp(ItemPropKeys.REINFORCED_LOCK(actorNum), true);
+			Debug.Log($"[ItemReinforcedLock] Player{actorNum}'s Reinforced Lock activated");
 			return;
 		}
 		//If Smoke Item
