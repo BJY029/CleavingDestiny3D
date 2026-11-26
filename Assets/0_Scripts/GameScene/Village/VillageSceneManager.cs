@@ -40,6 +40,7 @@ public class VillageSceneManager : MonoBehaviourPunCallbacks
     {
         // MasterClient만 타이머를 체크해 마을 페이즈일 때 타이머가 다 진행되면 페이즈 종료
         if (!IsMasterAndPhase()) return;
+        if (GameManager.Instance != null && GameManager.Instance.isTutorial) return;
 
         if ((float)PhotonNetwork.Time >= _endTime)
         {

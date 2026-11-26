@@ -66,6 +66,8 @@ public class ItemOfferCanvasController : MonoBehaviour
 
 	//현재 상태 명시
 	private bool isChoosingPhase = false;
+	public bool IsChoosingPhase => isChoosingPhase;
+	public static event System.Action<string> OnOfferItemSelected;
 	private bool playGlow = false;
 	//PlayerController에서 사용될 움직임 제한용 플래그
 	[HideInInspector]
@@ -199,6 +201,7 @@ public class ItemOfferCanvasController : MonoBehaviour
 		}
 
 		InventoryAuthority.Instance.RequestTakeOffer(itemId);
+		OnOfferItemSelected?.Invoke(itemId);
 	}
 
 	//제한 시간이 모두 지나버린 경우

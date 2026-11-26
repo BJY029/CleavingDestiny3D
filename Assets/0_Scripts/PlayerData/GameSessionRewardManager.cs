@@ -35,6 +35,7 @@ public static class GameSessionRewardManager
 
     public static async void ConfirmRewards(int loserActorNumber)
     {
+        if (GameManager.Instance != null && GameManager.Instance.isTutorial) return;
         if (IsRewardConfirmed || isSubmitting) return;
         request ??= new UGSManager.RewardRequest
         {

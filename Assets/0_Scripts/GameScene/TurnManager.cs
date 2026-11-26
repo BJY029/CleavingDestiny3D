@@ -269,7 +269,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		if (!firstHitHappened)
 		{
 			firstHitHappened = true;
-			pickUpBranchSpawner.StartSpawnLoop(false);
+			bool spawnImmediately = GameManager.Instance != null && GameManager.Instance.isTutorial;
+			pickUpBranchSpawner.StartSpawnLoop(spawnImmediately);
 		}
 
 		//턴 정보를 담은 리스트를 불러온다.

@@ -122,6 +122,7 @@ public class MatchController : MonoBehaviourPunCallbacks
 		{
 			isStartingSolo = false;
 			GameManager.Instance.isSoloPlay = false;
+			GameManager.Instance.isTutorial = false;
 		}
 
 		//현재 방에 들어와있다면 방에서 나간다.
