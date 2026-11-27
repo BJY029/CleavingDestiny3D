@@ -27,7 +27,6 @@ public class TutorialGuideController : MonoBehaviourPunCallbacks
         DayTreeBlockedWarning,
         DayGoToTent,
         DayEnergyGuide,
-        DayUseBlockedWarning,
         DayEnergySkipAttack,
         DayCanAttack,
         DayWaitOpponent,
@@ -174,11 +173,7 @@ public class TutorialGuideController : MonoBehaviourPunCallbacks
         if (!enabled || _treeAttackUnlocked) return;
 
         AudioManager.Instance?.PlaySfx2D("ui_button");
-
-        if (_hasAcquiredFirstItem)
-            SetStep(TutorialStep.DayUseBlockedWarning);
-        else
-            SetStep(TutorialStep.DayTreeBlockedWarning);
+        SetStep(TutorialStep.DayTreeBlockedWarning);
     }
 
     private void SyncInitialState()
@@ -311,6 +306,7 @@ public class TutorialGuideController : MonoBehaviourPunCallbacks
         if (_hasAcquiredFirstItem) return;
 
         _hasAcquiredFirstItem = true;
+        _treeAttackUnlocked = true;
 
         if (_hasLookedAtTentItem)
             SetStep(TutorialStep.DayEnergyGuide);
@@ -511,22 +507,15 @@ public class TutorialGuideController : MonoBehaviourPunCallbacks
 
             case TutorialStep.DayGoToTent:
                 ShowBanner(
-                    GetLocalized("Stage_DayGoToTent_Title", "빨간색 천막 · 아이템 사용"),
-                    GetLocalized("Stage_DayGoToTent_Desc", "빨간색 천막 안의 아이템 앞으로 이동해 사용해 보세요! (아이템 사용 전에는 나무를 공격할 수 없습니다)")
+                    GetLocalized("Stage_DayGoToTent_Title", "빨간색 천막 · 자유 행동"),
+                    GetLocalized("Stage_DayGoToTent_Desc", "획득한 아이템은 빨간색 천막 안에 있습니다. 아이템을 사용하거나, 쓰지 않고 바로 나무를 공격해도 됩니다!")
                 );
                 break;
 
             case TutorialStep.DayEnergyGuide:
                 ShowBanner(
                     GetLocalized("Stage_DayEnergy_Title", "기력 · 아이템 사용"),
-                    GetLocalized("Stage_DayEnergy_Desc", "아이템 사용과 나무 공격에는 기력이 소모됩니다. 하단 기력을 확인하고 F키로 아이템을 사용하세요!")
-                );
-                break;
-
-            case TutorialStep.DayUseBlockedWarning:
-                ShowBanner(
-                    GetLocalized("Stage_DayUseBlocked_Title", "아이템을 먼저 사용하세요!"),
-                    GetLocalized("Stage_DayUseBlocked_Desc", "아직 나무를 공격할 수 없습니다! 빨간색 천막에서 먼저 아이템을 사용하세요.")
+                    GetLocalized("Stage_DayEnergy_Desc", "아이템 사용과 나무 공격에는 기력이 소모됩니다. 하단 기력을 확인하고 원하면 F키로 아이템을 사용해 보세요!")
                 );
                 break;
 
