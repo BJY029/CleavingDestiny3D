@@ -44,6 +44,7 @@ namespace Village.Outside
         private CinemachineBrain brain;
         private bool _isTransitioning = false;
         public bool IsOutsideActive { get; private set; } = false;
+        public static event System.Action<bool> OnOutsideStateChangedGlobal;
         private System.Action _returnToVillageAction;
         [SerializeField] private VillageBuildingManager villageBuildingManager;
         [SerializeField] private Button readyButton;
@@ -214,6 +215,7 @@ namespace Village.Outside
 
                 await fadeTask;
                 IsOutsideActive = true;
+                OnOutsideStateChangedGlobal?.Invoke(true);
                 KeyInteractManager.Instance?.PushMenuAction(_returnToVillageAction);
             }
             finally
@@ -227,6 +229,7 @@ namespace Village.Outside
             if (_isTransitioning || !IsOutsideActive) return;
             _isTransitioning = true;
             IsOutsideActive = false;
+            OnOutsideStateChangedGlobal?.Invoke(false);
             KeyInteractManager.Instance?.RemoveMenuAction(_returnToVillageAction);
 
             compassBuilding?.PlayExitSound();

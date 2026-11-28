@@ -250,11 +250,23 @@ public class PlayerAnimationController : MonoBehaviourPun, IAnimNotify
 
         Vector3 hitPos = axeTransform != null ? axeTransform.position :
             (TreeStatus.Instance != null ? TreeStatus.Instance.transform.position : transform.position + transform.forward);
+        Quaternion hitRot = Quaternion.LookRotation(-transform.forward);
 
         // 타격 이펙트 및 대미지 요청 (로컬 플레이어)
         if (photonView.IsMine)
         {
-            VFXManager.Instance.PlayPredefinedEffect(VFXManager.VFXIndex.Hit_Tree, hitPos);
+            if (playerCamera != null && Physics.Raycast(
+                playerCamera.transform.position,
+                playerCamera.transform.forward,
+                out RaycastHit treeHit,
+                6f,
+                LayerMask.GetMask("Tree")))
+            {
+                hitPos = treeHit.point + treeHit.normal * 0.1f;
+                hitRot = Quaternion.LookRotation(treeHit.normal);
+            }
+
+            VFXManager.Instance.PlayPredefinedEffect(VFXManager.VFXIndex.Hit_Tree, hitPos, hitRot);
 
             DamageTextManager.instance?.CacheLocalHitPoint(hitPos);
 

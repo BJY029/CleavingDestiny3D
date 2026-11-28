@@ -16,7 +16,7 @@ NAME_REC_MIRACLE,신약 개발,Miracle Cure Project
 NAME_REC_BREW,기력 회복주,Vitality Brew
 NAME_REC_RESERVE,기력 이월,Energy Reserve
 NAME_GIM_LOCKPICK,락픽,Lockpick
-NAME_GIM_DOUBLELOCK,이중 잠금 장치,Double Lock
+NAME_GIM_DOUBLELOCK,강화 잠금장치,Reinforced Lock
 NAME_GIM_SMOKE,불 지피기,Smoke Screen
 NAME_GIM_TAUNT,"쫄?" 시전,Provocation
 NAME_GIM_SPY,흰개미 첩자,Termite Spy
@@ -43,8 +43,8 @@ DESC_REC_MIRACLE,"미션을 시작합니다. 성공 시 나무 체력을 2000 �
 DESC_REC_BREW,즉시 기력을 3 회복합니다.,Instantly restores 3 Energy.
 DESC_REC_RESERVE,이번 웨이브에 남은 기력을 다음 턴으로 이월합니다.,Carries over any unused Energy from this wave to the next turn.
 DESC_GIM_LOCKPICK,자물쇠 따기 미니게임 성공 시 상대의 아이템 1개를 훔칠 수 있습니다.,Steals a item from the opponent if the lockpicking minigame is successful.
-DESC_GIM_DOUBLELOCK,"상자에 추가 잠금 장치를 설치합니다. (락픽 사용 시 n번 성공 필요)","Installs an extra lock. (Opponent must succeed n times when using Lockpick)"
-DESC_GIM_SMOKE,짙은 연기로 시야를 가려 이번 턴에 나무에게 주는 데미지를 숨깁니다.,Blocks vision to hide damage dealt to trees this turn.
+DESC_GIM_DOUBLELOCK,"다음 상대의 락픽 난이도를 크게 높입니다.","Greatly increases the difficulty of the opponent's next lockpicking."
+DESC_GIM_SMOKE,짙은 연기로 시야를 가려 밤이 되기 전까지 모든 플레이어에게 나무의 체력바를 숨깁니다.,Blocks vision to hide the Tree's HP bar from all players until night.
 DESC_GIM_TAUNT,상대를 도발하여 다음 턴 상대의 데미지를 30% 강화시킵니다.,Taunts the opponent increasing their damage by 30% next turn.
 DESC_GIM_SPY,오늘 밤 상대 마을의 방어력을 30% 깎습니다.,Reduces the enemy Village's Defense by 30% tonight.
 DESC_GIM_CURSE,상대방의 공격 데미지 대비 방어력 전환 효율을 일시적으로 낮춥니다.,Temporarily reduces the opponent's damage-to-defense conversion rate.

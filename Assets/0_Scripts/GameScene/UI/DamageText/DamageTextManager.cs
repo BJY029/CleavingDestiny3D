@@ -10,6 +10,7 @@ public class DamageTextManager : MonoBehaviourPun
         else Destroy(gameObject);
     }
 
+    [SerializeField] private bool showDamageText = false;
     [SerializeField] private DamageTextWorld damageTextPrefab;
     public GameObject TreeCenter;
     [SerializeField] private float othersTextRadius = 1.6f;
@@ -28,13 +29,18 @@ public class DamageTextManager : MonoBehaviourPun
 
     public void ShowHiddenDamage()
     {
+        if (!showDamageText) return;
         ShowDamageNearTree(-1);
     }
 
 
     public void ShowResolveDamage(int finalDaamge, bool isLocalAttacker)
     {
-        if (finalDaamge < 0) return;
+        if (!showDamageText || finalDaamge < 0)
+        {
+            cachedLocalHitPoint = null;
+            return;
+        }
 
         if (isLocalAttacker && cachedLocalHitPoint.HasValue)
         {
@@ -48,6 +54,7 @@ public class DamageTextManager : MonoBehaviourPun
 
     public void ShowDamage(int damage, Vector3 hitPoint)
     {
+        if (!showDamageText) return;
         Vector3 offset = new Vector3(
             Random.Range(-0.2f, 0.2f), Random.Range(0.3f, 0.5f), Random.Range(-0.2f, 0.2f)
         );
@@ -59,7 +66,7 @@ public class DamageTextManager : MonoBehaviourPun
 
     public void ShowDamageNearTree(int damage)
     {
-        if (TreeCenter == null) return;
+        if (!showDamageText || TreeCenter == null) return;
 
         Vector3 treePos = TreeCenter.transform.position;
         Vector3 direction;

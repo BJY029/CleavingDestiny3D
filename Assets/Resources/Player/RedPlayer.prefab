@@ -268,8 +268,8 @@ MonoBehaviour:
   itemTransform: {fileID: 7593112117256954171}
   itemMeshRenderer: {fileID: 2925049052088104681}
   itemUsePoint:
-    position: {x: 0, y: 0, z: 2}
-    rotation: {x: 0, y: 0, z: 0, w: 0}
+    position: {x: 0, y: 0, z: 0.8}
+    rotation: {x: 0, y: 0, z: 0, w: 1}
   leftHandTarget: {fileID: 1521040492538912185}
   leftHandRotOffset: {x: 0, y: 0, z: 90}
   leftHandWeight: 1

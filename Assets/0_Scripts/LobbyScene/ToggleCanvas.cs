@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class ToggleCanvas : MonoBehaviour
@@ -9,6 +10,13 @@ public class ToggleCanvas : MonoBehaviour
     [Header("Button")]
     [SerializeField] private Button openBtn;
     [SerializeField] private Button closeBtn;
+
+    [Header("Events")]
+    [SerializeField] private UnityEvent onOpened;
+    [SerializeField] private UnityEvent onClosed;
+
+    public UnityEvent OnOpened => onOpened;
+    public UnityEvent OnClosed => onClosed;
 
     private void Start()
     {
@@ -28,12 +36,18 @@ public class ToggleCanvas : MonoBehaviour
 
     public void Open()
     {
-        if (!mainWindow.activeSelf) mainWindow.SetActive(true);
+        if (mainWindow.activeSelf) return;
+
+        mainWindow.SetActive(true);
+        onOpened?.Invoke();
     }
 
     public void Close()
     {
-        if (mainWindow.activeSelf) mainWindow.SetActive(false);
+        if (!mainWindow.activeSelf) return;
+
+        mainWindow.SetActive(false);
+        onClosed?.Invoke();
     }
 
     private void PlayButtonClickSound()

@@ -24,6 +24,7 @@ public class LobbyConnectController : MonoBehaviourPunCallbacks
 		if (GameManager.Instance != null)
 		{
 			GameManager.Instance.isSoloPlay = false;
+			GameManager.Instance.isTutorial = false;
 		}
 
 		Connect();

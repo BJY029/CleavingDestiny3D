@@ -45,6 +45,7 @@ namespace Village.Building
         public bool IsBuildingOpen => currentBuildingUI != null;
         public VillageType? ActiveBuildingType => _currentBuilding?.buildingType;
         public event System.Action<VillageType?> OnActiveBuildingChanged;
+        public static event System.Action<VillageType?> OnBuildingChangedGlobal;
 
         // 프리팹(Key)과 생성된 인스턴스(Value)를 매핑하여 관리하는 캐시
         private Dictionary<VillageBuildingUI, VillageBuildingUI> _uiInstanceCache = new Dictionary<VillageBuildingUI, VillageBuildingUI>();
@@ -177,6 +178,7 @@ namespace Village.Building
                 var oldUI = currentBuildingUI;
                 _currentBuilding = targetBuilding;
                 OnActiveBuildingChanged?.Invoke(ActiveBuildingType);
+                OnBuildingChangedGlobal?.Invoke(ActiveBuildingType);
                 Vector3 targetCameraPos = targetBuilding.cameraFocusPoint.position + new Vector3(0, 0, -5);
 
                 // 타겟 UI 인스턴스 가져오기 (없으면 새로 생성)
@@ -256,6 +258,7 @@ namespace Village.Building
 
             _currentBuilding = building;
             OnActiveBuildingChanged?.Invoke(ActiveBuildingType);
+            OnBuildingChangedGlobal?.Invoke(ActiveBuildingType);
 
             // 재사용된 UI에 현재 클릭된 건물의 타입 데이터를 새로 주입 (중요)
             currentBuildingUI.SetBuildingUI(building.buildingType);
@@ -287,6 +290,7 @@ namespace Village.Building
             _currentBuilding?.PlayExitSound();
             _currentBuilding = null;
             OnActiveBuildingChanged?.Invoke(null);
+            OnBuildingChangedGlobal?.Invoke(null);
             KeyInteractManager.Instance?.RemoveMenuAction(_exitBuildingAction);
             KeyInteractManager.Instance?.SetMenuInputEnabled(false);
             foreach (var building in villageBuildings)

@@ -90,6 +90,9 @@ public class GameStarter : MonoBehaviourPunCallbacks
         switch (currentPhase)
         {
             case GameStartPhase.MapIntroduction:
+                if (GameManager.Instance != null && GameManager.Instance.isTutorial)
+                    break;
+
                 if (now >= phaseStartTime + PhaseDuration)
                 {
                     SetPhase(GameStartPhase.TurnSelection);
@@ -103,6 +106,12 @@ public class GameStarter : MonoBehaviourPunCallbacks
                     SetPhase(GameStartPhase.MainGame);
                 break;
         }
+    }
+
+    public void CompleteTutorialMapIntroduction()
+    {
+        if (currentPhase != GameStartPhase.MapIntroduction) return;
+        SetPhase(GameStartPhase.TurnSelection);
     }
 
     private void SetPhase(GameStartPhase phase, double duration = 0d)

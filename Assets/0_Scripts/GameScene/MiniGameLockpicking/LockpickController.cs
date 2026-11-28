@@ -19,6 +19,17 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
     //성공 감지 범위
     [Range(5f, 30f)]
     public float SuccessAngleRange = 15f;
+
+    [Header("Reinforced Lock Settings")]
+    [SerializeField] private float reinforcedSpeedMultiplier = 1.8f;
+    [SerializeField, Range(0.25f, 1f)] private float reinforcedTargetScale = 0.5f;
+
+    private float currentRotationSpeed;
+    private float currentSuccessAngleRange;
+    private Vector2 baseTargetSizeDelta;
+    private Vector2 baseTargetPivot;
+    private bool hasTargetZoneDefaults;
+
     //회전 방향(-1 | 1)
     private int SpinDirection = 1;
     //게임 진행 여부
@@ -42,7 +53,29 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
 
         DescText = gameObj.GetComponentInChildren<TextMeshProUGUI>();
         DescText.text = LocalizationManager.Instance.GetText(CSV_Type.UI, UI_CSV.UI_PlayerSpace);
+        CacheTargetZoneDefaults();
+        currentRotationSpeed = rotationSpeed;
+        currentSuccessAngleRange = SuccessAngleRange;
         gameObj.SetActive(false);
+    }
+
+    private void CacheTargetZoneDefaults()
+    {
+        if (hasTargetZoneDefaults || targetZoneRect == null) return;
+        baseTargetSizeDelta = targetZoneRect.sizeDelta;
+        baseTargetPivot = targetZoneRect.pivot;
+        hasTargetZoneDefaults = true;
+    }
+
+    private void ApplyTargetZoneScale(float scale)
+    {
+        if (targetZoneRect == null) return;
+        CacheTargetZoneDefaults();
+
+        float safeScale = Mathf.Max(0.1f, scale);
+        targetZoneRect.sizeDelta = baseTargetSizeDelta * safeScale;
+        float pivotOffsetY = (0.5f - baseTargetPivot.y) / safeScale;
+        targetZoneRect.pivot = new Vector2(baseTargetPivot.x, 0.5f - pivotOffsetY);
     }
 
     void Update()
@@ -50,7 +83,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
         if (!isGameActive) return;
 
         //게임 진행 시, 바늘을 지속적으로 회전시킨다.
-        needleRect.Rotate(0, 0, -rotationSpeed * SpinDirection * Time.deltaTime);
+        needleRect.Rotate(0, 0, -currentRotationSpeed * SpinDirection * Time.deltaTime);
     }
 
     //게임 시작시 함수
@@ -59,13 +92,18 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
         TargetBarrierOwnerActNum = ActorNumber;
         //특정 플레이어의 Lock 수를 가져온다.
         int LockCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.LOCKCNT(ActorNumber));
+        bool isReinforced = PhotonPropertyHelper.GetRoomProp<bool>(ItemPropKeys.REINFORCED_LOCK(ActorNumber));
+        if (isReinforced)
+        {
+            photonView.RPC(nameof(RPC_ConsumeReinforcedLock), RpcTarget.MasterClient, ActorNumber);
+        }
         Debug.Log(LockCnt);
         //UI 활성화
         gameObj.SetActive(true);
         //게임 시작 플래그 설정
         isGameActive = true;
         //Mini 게임 시작
-        StartMinigame(LockCnt);
+        StartMinigame(LockCnt, isReinforced);
 
         //잠금 해제를 당하는 인벤토리 베리어
         IB = ib;
@@ -112,10 +150,14 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
     }
 
     //미니게임 시작 함수
-    public void StartMinigame(int requiredUnlockCount)
+    public void StartMinigame(int requiredUnlockCount, bool isReinforced = false)
     {
         //현재 남은 Lock 수 가져오기
         currentRemainingLocks = requiredUnlockCount;
+        currentRotationSpeed = isReinforced ? rotationSpeed * reinforcedSpeedMultiplier : rotationSpeed;
+        currentSuccessAngleRange = isReinforced ? SuccessAngleRange * reinforcedTargetScale : SuccessAngleRange;
+        ApplyTargetZoneScale(isReinforced ? reinforcedTargetScale : 1f);
+
         //게임 플래그 설정
         isGameActive = true;
         gameObj.SetActive(true);
@@ -145,7 +187,7 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
         float angleDiff = Quaternion.Angle(needleRot, targetRot);
 
         //클라이언트에서 즉시 성공/실패 판정
-        if (angleDiff <= SuccessAngleRange)
+        if (angleDiff <= currentSuccessAngleRange)
         {
             Debug.Log("Hit! Next Stage.");
             AudioManager.Instance.PlaySfx2D("Lock_Click");
@@ -230,6 +272,13 @@ public class LockpickController : MonoBehaviourPunCallbacks, IMinigameInteractab
                 AudioManager.Instance.RestorePreviousBgm();
         }
     }
+    [PunRPC]
+    private void RPC_ConsumeReinforcedLock(int actorNumber)
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        PhotonPropertyHelper.SetRoomProp(ItemPropKeys.REINFORCED_LOCK(actorNumber), false);
+    }
+
     //MasterClient의 최종 처리(문 열기 처리)
     [PunRPC]
     private void RPC_NotifyUnlockSuccess(int actorNumber)

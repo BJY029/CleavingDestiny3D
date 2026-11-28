@@ -1,8 +1,8 @@
 ID,KR,EN
-UI_ItemTooltip_Common,일반,Common
-UI_ItemTooltip_Hero,영웅,Hero
-UI_ItemTooltip_Rare,희귀,Rare
-UI_ItemTooltip_Legendary,전설,Legendary
+UI_ItemTooltip_Common,Common,Common
+UI_ItemTooltip_Hero,Hero,Hero
+UI_ItemTooltip_Rare,Rare,Rare
+UI_ItemTooltip_Legendary,Legendary,Legendary
 UI_ItemTooltip_Energy,소모 기력  {0},Energy cost  {0}
 UI_Status_TurnEnd,효과를 받은 플레이어의 턴 종료 시 종료,Expires at the end of the affected player's turn.
 UI_Status_TurnEndsRemaining,효과를 받은 플레이어의 턴이 {0}번 끝나면 종료,Expires after {0} more turn endings of the affected player.
@@ -20,6 +20,7 @@ UI_ItemUse_DayUsed,오늘 이미 사용했습니다.,Already used today.
 UI_ItemUse_GameUsed,이번 게임에서 이미 사용했습니다.,Already used this match.
 UI_ItemUse_NoTarget,사용할 수 있는 대상이 없습니다.,No valid target is available.
 UI_ItemUse_NeedSacrifice,희생할 다른 아이템이 필요합니다.,Another item is required as a sacrifice.
+UI_ItemUse_ReinforcedLockActive,이미 강화 잠금장치가 적용되어 있습니다.,Reinforced Lock is already active.
 UI_PWF_CreateRoom,방 만들기,Create Room
 UI_PWF_JoinRoom,참가,Join
 UI_PWF_CodePlaceholder,초대코드 입력...,Enter invite code...

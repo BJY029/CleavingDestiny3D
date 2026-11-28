@@ -36,6 +36,9 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 	private void InitRoomProps()
 	{
 		var roomSet = GameManager.Instance.roomDefaultSetting;
+		bool isTutorial = GameManager.Instance != null && GameManager.Instance.isTutorial;
+		float turnTime = isTutorial ? Mathf.Max(roomSet.turnTime, 300f) : roomSet.turnTime;
+		float villagePhaseTime = isTutorial ? Mathf.Max(roomSet.villagePhaseTime, 300f) : roomSet.villagePhaseTime;
 
 		GenerateRoomSeed();
 		var ht = new ExitGames.Client.Photon.Hashtable
@@ -47,14 +50,14 @@ public class GameRoomManager : MonoBehaviourPunCallbacks
 				{ RoomPropKeys.CurrentDay,  roomSet.startDay},
 				{ RoomPropKeys.CurrentTurn, roomSet.initialTurn},
 				{ RoomPropKeys.TurnIndex,   roomSet.initialTurnIndex },
-				{ RoomPropKeys.TurnTime,    roomSet.turnTime},
+				{ RoomPropKeys.TurnTime,    turnTime},
 				{ RoomPropKeys.GamePhase,   roomSet.initialPhase },
 				{ RoomPropKeys.MaxWaveCnt,  roomSet.maxWave },
 				{ RoomPropKeys.CurrentWave, roomSet.initialWave},
 				{ RoomPropKeys.IsVillageUpgradePhase, false },
 				{ RoomPropKeys.IsTreeBulkDamage, false},
 				{ ItemPropKeys.NEXT_UID,    roomSet.initialUID },
-				{ RoomPropKeys.VillagePhaseTime, roomSet.villagePhaseTime },
+				{ RoomPropKeys.VillagePhaseTime, villagePhaseTime },
 				{ RoomPropKeys.MatchLoserActor, roomSet.LoserActNum},
 				{ RoomPropKeys.MatchResultReason, roomSet.MatchEndReason},
 				{ RoomPropKeys.MatchResolveTurnIndex, roomSet.ResolvedTurnIdx},

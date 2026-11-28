@@ -69,8 +69,9 @@ public class FirstPersonTweenAnimator : MonoBehaviour
         actionSequence = Sequence.Create()
             .Group(Tween.LocalPosition(itemTransform, itemUsePoint.position, 0.5f, Ease.InOutQuad))
             .Group(Tween.LocalRotation(itemTransform, itemUsePoint.rotation, 0.5f, Ease.InOutQuad))
+            .Group(Tween.Scale(itemTransform, Vector3.one * 0.5f, 0.5f, Ease.InOutQuad))
 
-            .Chain(Tween.Scale(itemTransform, Vector3.one * 1.5f, 0.4f, Ease.OutBack))
+            .Chain(Tween.Scale(itemTransform, Vector3.one * 0.7f, 0.4f, Ease.OutBack))
             .Group(Tween.ShakeLocalRotation(itemTransform, new Vector3(0, 15f, 0), 0.4f))
             .Chain(Tween.Scale(itemTransform, Vector3.zero, 0.4f, Ease.InBack))
             .OnComplete(() =>

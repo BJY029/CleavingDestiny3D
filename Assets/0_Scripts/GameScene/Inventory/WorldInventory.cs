@@ -7,17 +7,18 @@ using UnityEngine;
 
 public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCallback
 {
-	//ÀÎº¥Åä¸® ¼ÒÀ¯ÀÚ Á¤º¸
+	//ì¸ë²¤í† ë¦¬ ì†Œìœ ì ì •ë³´
 	int owner = -1;
+	public int OwnerActorNumber => owner;
 	public InventoryBarrier InvBarrier;
 	public GameObject NewDrugPosion;
-	//ÇØ´ç ÀÎº¥Åä¸®ÀÇ ½½·Ôµé 
+	//í•´ë‹¹ ì¸ë²¤í† ë¦¬ì˜ ìŠ¬ë¡¯ë“¤ 
 	[SerializeField] private List<WorldInventorySlot> slots = new();
 
 	private void Awake()
 	{
 		NewDrugPosion.SetActive(false);
-		//ÀÚ½Ä ¿ÀºêÁ§Æ®¿¡¼­ ½½·Ô Ã£¾Æ¼­ ¸®½ºÆ®¿¡ »ğÀÔ
+		//ìì‹ ì˜¤ë¸Œì íŠ¸ì—ì„œ ìŠ¬ë¡¯ ì°¾ì•„ì„œ ë¦¬ìŠ¤íŠ¸ì— ì‚½ì…
 		slots = GetComponentsInChildren<WorldInventorySlot>(true)
 			.OrderBy(s => s.slotIndex).ToList();
 	}
@@ -25,74 +26,74 @@ public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCal
 
 	// private void Start()
 	// {
-	// 	//ÀÎº¥Åä¸® ¼ÒÀ¯ÀÚ ÃÊ±âÈ­
+	// 	//ì¸ë²¤í† ë¦¬ ì†Œìœ ì ì´ˆê¸°í™”
 	// 	owner = photonView.OwnerActorNr;
-	// 	//½½·Ô ÃÊ±âÈ­
+	// 	//ìŠ¬ë¡¯ ì´ˆê¸°í™”
 	// 	RefreshInv();
 	// }
 
 	public void OnPhotonInstantiate(PhotonMessageInfo info)
 	{
-		//ÇÃ·¹ÀÌ¾î °íÀ¯ ¹øÈ£¸¦ ÃÊ±âÈ­ ÇÑ´Ù.
-		//¸¸¾à »ı¼º½Ã ³Ñ¾î¿Â Ãß°¡ Á¤º¸°¡ ÀÖ´Â °æ¿ì
+		//í”Œë ˆì´ì–´ ê³ ìœ  ë²ˆí˜¸ë¥¼ ì´ˆê¸°í™” í•œë‹¤.
+		//ë§Œì•½ ìƒì„±ì‹œ ë„˜ì–´ì˜¨ ì¶”ê°€ ì •ë³´ê°€ ìˆëŠ” ê²½ìš°
 		if (info.photonView.InstantiationData != null && info.photonView.InstantiationData.Length > 0)
 		{
 			owner = (int)info.photonView.InstantiationData[0];
 		}
-		else//Ãß°¡ Á¤º¸°¡ ¾ø´Â °æ¿ì(½ÇÁ¦ ÇÃ·¹ÀÌ¾î)
+		else//ì¶”ê°€ ì •ë³´ê°€ ì—†ëŠ” ê²½ìš°(ì‹¤ì œ í”Œë ˆì´ì–´)
 		{
 			owner = photonView.OwnerActorNr;
 		}
 
-		//ÀÎº¥Åä¸® ÁÖÀÎ ¼³Á¤
+		//ì¸ë²¤í† ë¦¬ ì£¼ì¸ ì„¤ì •
 		InvBarrier.owner = owner;
-		//½½·Ô ÃÊ±âÈ­
+		//ìŠ¬ë¡¯ ì´ˆê¸°í™”
 		RefreshInv();
 	}
 
 	public override void OnRoomPropertiesUpdate(Hashtable propertiesThatChanged)
 	{
-		//¼ÒÀ¯ÀÚ°¡ ¾Æ´Ï¸é Ã³¸® ¾ÈÇÔ
+		//ì†Œìœ ìê°€ ì•„ë‹ˆë©´ ì²˜ë¦¬ ì•ˆí•¨
 		if (owner <= 0) return;
 
-		//¼ÒÀ¯ÀÚÀÇ ÀÎº¥Åä¸® Á¤º¸
+		//ì†Œìœ ìì˜ ì¸ë²¤í† ë¦¬ ì •ë³´
 		string invKey = ItemPropKeys.INV(owner);
 		string capKey = ItemPropKeys.INV_CAPACITY(owner);
 
-		//¼ÒÀ¯ÀÚÀÇ ÀÎº¥Åä¸® Á¤º¸°¡ º¯°æµÈ °æ¿ì
+		//ì†Œìœ ìì˜ ì¸ë²¤í† ë¦¬ ì •ë³´ê°€ ë³€ê²½ëœ ê²½ìš°
 		if (propertiesThatChanged.ContainsKey(invKey) || propertiesThatChanged.ContainsKey(capKey))
 		{
-			//½½·Ô ÃÊ±âÈ­
+			//ìŠ¬ë¡¯ ì´ˆê¸°í™”
 			RefreshInv();
 		}
 	}
 
-	//½½·ÔÀ» ÃÖ½Å Á¤º¸·Î ¾÷µ¥ÀÌÆ® ÇÏ´Â ÇÔ¼ö
+	//ìŠ¬ë¡¯ì„ ìµœì‹  ì •ë³´ë¡œ ì—…ë°ì´íŠ¸ í•˜ëŠ” í•¨ìˆ˜
 	public void RefreshInv()
 	{
-		//ÀÎº¥Åä¸® ÁÖÀÎÀÌ ¾Æ´Ñ °æ¿ì ¼öÇà ¾ÈÇÔ
+		//ì¸ë²¤í† ë¦¬ ì£¼ì¸ì´ ì•„ë‹Œ ê²½ìš° ìˆ˜í–‰ ì•ˆí•¨
 		if (owner <= 0) return;
 
-		//³» actor ¹øÈ£¿¡ ÇØ´çµÇ´Â INV Á¤º¸ °¡Á®¿À±â
+		//ë‚´ actor ë²ˆí˜¸ì— í•´ë‹¹ë˜ëŠ” INV ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 		int capacity = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(owner));
 		string invStr = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(owner));
 
-		//ÀÎº¥Åä¸® ½½·Ô °¡Á®¿À±â
+		//ì¸ë²¤í† ë¦¬ ìŠ¬ë¡¯ ê°€ì ¸ì˜¤ê¸°
 		var invSlots = ItemInfoSerializer.Decode(invStr, capacity);
 
-		//È®Àå¼º °í·Á
+		//í™•ì¥ì„± ê³ ë ¤
 		int n = Mathf.Min(slots.Count, capacity);
 
-		//°¢ ÀÎº¥Åä¸® ½½·Ô ¼³Á¤
+		//ê° ì¸ë²¤í† ë¦¬ ìŠ¬ë¡¯ ì„¤ì •
 		for (int i = 0; i < n; i++)
 		{
-			//ÇØ´ç ¾ÆÀÌÅÛ Á¤º¸ °¡Á®¿À±â
+			//í•´ë‹¹ ì•„ì´í…œ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 			ItemSO item = ItemDB.Instance.Get(invSlots[i].itemID);
-			//½½·Ô Á¤º¸ ¼³Á¤(owner Á¤º¸µµ ÇÔ²² ³Ñ±ä´Ù.)
+			//ìŠ¬ë¡¯ ì •ë³´ ì„¤ì •(owner ì •ë³´ë„ í•¨ê»˜ ë„˜ê¸´ë‹¤.)
 			slots[i].SetSlot(item, owner);
 		}
 
-		// (È®Àå¼º °í·Á)³²Àº ½½·Ô ºñ¿ì±â
+		// (í™•ì¥ì„± ê³ ë ¤)ë‚¨ì€ ìŠ¬ë¡¯ ë¹„ìš°ê¸°
 		for (int i = n; i < slots.Count; i++)
 			slots[i].SetSlot(null, owner);
 	}
@@ -107,12 +108,12 @@ public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCal
 		return cnt;
 	}
 
-	//AI Àü¿ë ¾ÆÀÌÅÛ »ç¿ë ÇÔ¼ö
+	//AI ì „ìš© ì•„ì´í…œ ì‚¬ìš© í•¨ìˆ˜
 	public void InteractSlotByAI(AIController player, ItemSO item)
 	{
 		foreach (var slot in slots)
 		{
-			//ai°¡ »ç¿ëÇÑ ¾ÆÀÌÅÛÀÌ ÀÎº¥Åä¸® ³»¿¡ Á¸ÀçÇÏ¸é »ç¿ë ½Ç½Ã
+			//aiê°€ ì‚¬ìš©í•œ ì•„ì´í…œì´ ì¸ë²¤í† ë¦¬ ë‚´ì— ì¡´ì¬í•˜ë©´ ì‚¬ìš© ì‹¤ì‹œ
 			if (slot.currentItem == item)
 			{
 				slot.OnInteract(player);

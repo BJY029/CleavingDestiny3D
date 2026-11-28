@@ -410,7 +410,8 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
         || ItemSelectionController.instance.IsItemSelectionActivated
         || SettingCanvasController.instance.IsSettingPanelOpened
         || BettingSystemController.instance.BettingSystemActivated
-        || (GuideBookUIController.Instance != null && GuideBookUIController.Instance.IsOpen))
+        || (GuideBookUIController.Instance != null && GuideBookUIController.Instance.IsOpen)
+        || (TutorialGuideController.Instance != null && TutorialGuideController.Instance.IsModalOpen))
         {
             // 메뉴를 닫으면 같은 대상을 보고 있어도 OnLookEnter가 다시 실행되도록 한다.
             if (currentInteractable != null)
@@ -560,6 +561,12 @@ public class PlayerController : MonoBehaviourPun, IPlayerAction, IAnimNotify
 
         if (isLookingAtTree && !WhileAnimation)
         {
+            if (TutorialGuideController.Instance != null && !TutorialGuideController.Instance.CanAttackTree)
+            {
+                TutorialGuideController.Instance.NotifyTreeAttackBlocked();
+                return;
+            }
+
             _treeCutStartedFrame = Time.frameCount;
             isPreparingTreeCut = true;
             WhileAnimation = true; // 차징 중 움직임 잠금

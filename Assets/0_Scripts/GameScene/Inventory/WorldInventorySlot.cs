@@ -7,6 +7,9 @@ using TMPro;
 
 public class WorldInventorySlot : MonoBehaviourPunCallbacks, ILookInteractable
 {
+	public static event System.Action OnLocalPlayerLookedAtOwnItem;
+	public static event System.Action OnLocalPlayerUsedItem;
+	public static event System.Action<string> OnLocalPlayerItemUseBlocked;
 	//해당 인벤토리 슬롯 소유자
 	private int ownerActor;
 
@@ -170,6 +173,8 @@ public class WorldInventorySlot : MonoBehaviourPunCallbacks, ILookInteractable
 		PlayerCanvasController.Instance.SetTimerAlpha(0.2f, 1f);
 		PlayerCanvasController.Instance.SetItemInteractUI(true);
 		GameCanvasController.Instance.SetDayWaveAlpha(0.2f, 1f);
+		if (playerCtrl != null && IsMine(ActNum))
+			OnLocalPlayerLookedAtOwnItem?.Invoke();
 		//Highlight();
 	}
 
@@ -218,7 +223,11 @@ public class WorldInventorySlot : MonoBehaviourPunCallbacks, ILookInteractable
 		string reason = InventoryAuthority.Instance.GetItemUseBlockReason(ActNum, currentItem, out int missingEnergy);
 		if (reason != null)
 		{
-			if (playerCtrl != null) InventoryAuthority.Instance.ShowItemUseWarning(reason, missingEnergy);
+			if (playerCtrl != null)
+			{
+				InventoryAuthority.Instance.ShowItemUseWarning(reason, missingEnergy);
+				OnLocalPlayerItemUseBlocked?.Invoke(reason);
+			}
 			RefreshTooltip();
 			return;
 		}
@@ -229,6 +238,7 @@ public class WorldInventorySlot : MonoBehaviourPunCallbacks, ILookInteractable
 		if (playerCtrl != null)
 		{
 			playerCtrl.PlayUseItemAnimation(transform, currentItem.itemClass, ItemDB.Instance.GetMat(currentItem.itemId).mainTexture);
+			OnLocalPlayerUsedItem?.Invoke();
 		}
 		InventoryAuthority.Instance.RequestUseItem(slotIndex, ActNum, this);
 

@@ -67,6 +67,8 @@ public class TimeManager : MonoBehaviourPunCallbacks
 
         if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient)
         {
+            if (GameManager.Instance != null && GameManager.Instance.isTutorial) return;
+
             if (PhotonNetwork.Time >= _endTime)
             {
                 EndTurnLogic();

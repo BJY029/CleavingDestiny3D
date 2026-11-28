@@ -63,6 +63,7 @@ public class GameExitHandler : MonoBehaviourPunCallbacks
         if (GameManager.Instance != null)
         {
             GameManager.Instance.isSoloPlay = false;
+            GameManager.Instance.isTutorial = false;
             GameManager.Instance.nextScene = CommonDefine.LOBBYSCENE;
         }
         if (WeatherMakerAudioBridge.HasInstance)

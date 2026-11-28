@@ -331,17 +331,14 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		}
 		if (item.itemId == "4001")
 		{
-			var ctx = new EffectContext(_rng, Debug.Log);
-			ctx.AddPlayerLockCount(actorNum);
-			ctx.Log?.Invoke($"[ItemLockPick] Player{actorNum}'s Lock added");
+			PhotonPropertyHelper.SetRoomProp(ItemPropKeys.REINFORCED_LOCK(actorNum), true);
+			Debug.Log($"[ItemReinforcedLock] Player{actorNum}'s Reinforced Lock activated");
 			return;
 		}
 		//If Smoke Item
 		if (item.itemId == "4002")
 		{
-			var ctx = new EffectContext(_rng, Debug.Log);
-			ctx.SetHideDmgTrigger(actorNum);
-			ctx.Log?.Invoke($"[ItemSmoke] Player{actorNum}'s Activate Smoke(Hide Dmg)");
+			photonView.RPC(nameof(RPC_SetTreeHPHidden), RpcTarget.All, true);
 
 			//AddStatus에 정의된 해당 아이템 정보를 가져온다.
 			StatusSpec ss = item.effects[0].statusSpce;
@@ -730,7 +727,14 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		if (!PhotonNetwork.IsMasterClient) return;
 		//아이템 사용 길이가 '하루'에 속하는 아이템을 statusSystem에서 삭제하는 함수 실행
 		_statusSystem.RemoveAllByDuration(DurationType.UntilWaveEnd);
+		photonView.RPC(nameof(RPC_SetTreeHPHidden), RpcTarget.All, false);
 		ClearUsedDayItem();
+	}
+
+	[PunRPC]
+	private void RPC_SetTreeHPHidden(bool hidden)
+	{
+		TreeCanvasController.Instance?.SetTreeHPHidden(hidden);
 	}
 
 	public void OnVillageStart()

@@ -5,6 +5,9 @@ public class VFXManager : MonoSceneSingleton<VFXManager>
 {
     private ParticleSystem cachedItemPS;
 
+    [Header("Item Explosion")]
+    [SerializeField] private Material itemExplosionMaterial;
+
     public ParticleSystem[] predefinedEffects; // 미리 만들어진 타격 효과들
 
     public enum VFXIndex
@@ -64,19 +67,23 @@ public class VFXManager : MonoSceneSingleton<VFXManager>
         );
         colorModule.color = alphaGradient;
 
-        Shader particleShader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
-        if (particleShader == null) particleShader = Shader.Find("Particles/Standard Unlit");
-        if (particleShader == null) particleShader = Shader.Find("Sprites/Default");
+        Material mat = itemExplosionMaterial;
+        if (mat == null)
+        {
+            Shader particleShader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (particleShader == null) particleShader = Shader.Find("Particles/Standard Unlit");
+            if (particleShader == null) particleShader = Shader.Find("Sprites/Default");
 
-        Material mat = new Material(particleShader);
-        if (mat.HasProperty("_BaseMap")) mat.SetTexture("_BaseMap", Texture2D.whiteTexture);
-        if (mat.HasProperty("_MainTex")) mat.mainTexture = Texture2D.whiteTexture;
+            mat = new Material(particleShader);
+            if (mat.HasProperty("_BaseMap")) mat.SetTexture("_BaseMap", Texture2D.whiteTexture);
+            if (mat.HasProperty("_MainTex")) mat.mainTexture = Texture2D.whiteTexture;
+        }
 
         var renderer = cachedItemPS.GetComponent<ParticleSystemRenderer>();
         renderer.material = mat;
     }
 
-    public void PlayPredefinedEffect(VFXIndex effect, Vector3 position)
+    public void PlayPredefinedEffect(VFXIndex effect, Vector3 position, Quaternion? rotation = null)
     {
         int index = (int)effect;
         if (index < 0 || index >= predefinedEffects.Length)
@@ -85,10 +92,19 @@ public class VFXManager : MonoSceneSingleton<VFXManager>
             return;
         }
 
+        ParticleSystem ps = predefinedEffects[index];
+        if (ps == null)
+        {
+            Debug.LogWarning($"Predefined effect at index {index} is null");
+            return;
+        }
+
         // 생성된 효과를 위치에 배치하고 재생
         // 프리팹이 아니라 생성된 파티클 시스템이므로, 위치만 이동시키고 재생하면 됩니다.
-        cachedItemPS.transform.position = position;
-        cachedItemPS.Play();
+        ps.transform.position = position;
+        if (rotation.HasValue) ps.transform.rotation = rotation.Value;
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        ps.Play(true);
     }
 
     // 외부에서 아이템을 사용할 때마다 호출하는 함수
