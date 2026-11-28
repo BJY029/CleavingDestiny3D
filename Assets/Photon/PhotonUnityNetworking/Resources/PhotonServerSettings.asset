@@ -162,6 +162,8 @@ MonoBehaviour:
   - RPC_AttackCommitted
   - RPC_CommitAttack
   - RPC_Play2DSFX
+  - RPC_SetTreeHPHidden
+  - RPC_ConsumeReinforcedLock
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

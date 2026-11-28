@@ -1706,6 +1706,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AIItemActionManager
   baseLockPassRate: 0.8
   baseLockDuration: 1
+  reinforcedLockPassRateMultiplier: 0.5
   usageThreshold: 50
 --- !u!114 &2525082739635730769
 MonoBehaviour:
