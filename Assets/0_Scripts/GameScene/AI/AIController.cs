@@ -249,6 +249,11 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
             await aiBrain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_HIT, token);
 #if UNITY_EDITOR
             await AIQAActionControl.CheckpointAsync(this, AIQAPhase.BeforeAttack, token);
+            if (AIQAActionControl.NeedsFinalInventory(PlayerActNum))
+            {
+                await aiBrain.InventoryManager.ProcessInventoryAsync(token);
+                await aiBrain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_HIT, token);
+            }
 #endif
 
             token.ThrowIfCancellationRequested();

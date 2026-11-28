@@ -139,6 +139,72 @@ public static class AIQAOfferOverrides
 }
 
 [Serializable]
+public sealed class AIQAOfferSkipRule
+{
+    public bool enabled;
+    public bool repeat;
+    public int turnIndex = -1;
+
+    public bool IsDue(int turn, bool consumed, string offer) => enabled && (repeat || !consumed) &&
+        (turnIndex < 0 || turnIndex == turn) && !string.IsNullOrWhiteSpace(offer) && offer != ERROR.FULL_INV.ToString();
+}
+
+public static class AIQAOfferSkipSelection
+{
+    private const string Key = "CleavingDestiny.AIQA.Offer.SkipSelection";
+    private static object room;
+    public static AIQAOfferSkipRule GetRule()
+    {
+        string json = SessionState.GetString(Key, "");
+        return string.IsNullOrEmpty(json) ? new AIQAOfferSkipRule() : JsonUtility.FromJson<AIQAOfferSkipRule>(json);
+    }
+
+    public static string Status => SessionState.GetString(Key + ".Status", "비활성");
+
+    public static void SetRule(AIQAOfferSkipRule rule)
+    {
+        SessionState.SetString(Key, JsonUtility.ToJson(rule));
+        ResetConsumption();
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void OnPlayStarted()
+    {
+        room = null;
+        ResetConsumption();
+    }
+
+    private static void ResetConsumption()
+    {
+        SessionState.SetBool(Key + ".Consumed", false);
+        SessionState.SetString(Key + ".Status", GetRule().enabled ? "예약됨 — AI 제안 선택 직전에 적용" : "비활성");
+    }
+
+    public static ExitGames.Client.Photon.Hashtable CreateSkipUpdate(int actor) => new()
+    {
+        { ItemPropKeys.OFFER(actor), "" }
+    };
+
+    public static bool TrySkip(int actor, int turn, string offer)
+    {
+        if (!AIQAActionControl.IsCurrent(actor, turn)) return false;
+        if (room != null && !ReferenceEquals(room, PhotonNetwork.CurrentRoom)) ResetConsumption();
+        room = PhotonNetwork.CurrentRoom;
+        var rule = GetRule();
+        if (!rule.IsDue(turn, SessionState.GetBool(Key + ".Consumed", false), offer) ||
+            PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.OFFER(actor)) != offer) return false;
+        // End only this offer. Do not insert an item, allocate a UID or change inventory/energy.
+        if (!PhotonNetwork.CurrentRoom.SetCustomProperties(CreateSkipUpdate(actor))) return false;
+        if (!rule.repeat) SessionState.SetBool(Key + ".Consumed", true);
+        string message = $"Actor {actor} / Turn {turn}: QA 강제 미선택 — {offer} / 아이템 획득 없이 다음 행동 진행";
+        SessionState.SetString(Key + ".Status", message + (rule.repeat ? " / 반복 예약 유지" : " / 1회 적용 완료"));
+        AIQADiagnostics.Skipped(actor, "제안 선택", message);
+        Debug.Log("[AI QA ItemOffer] " + message);
+        return true;
+    }
+}
+
+[Serializable]
 public sealed class AIQACandidate
 {
     public string itemId;

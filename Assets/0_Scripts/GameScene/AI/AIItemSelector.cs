@@ -27,7 +27,14 @@ public class AIItemSelector : AILogicModule
             Debug.LogWarning("AI Player's Inv is FULL!!");
             return;
         }
+#if UNITY_EDITOR
+        int qaTurn = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
+#endif
         await UniTask.Delay(AIThinkDelay_ms, cancellationToken: token);
+#if UNITY_EDITOR
+        token.ThrowIfCancellationRequested();
+        if (AIQAOfferSkipSelection.TrySkip(brain.MyActorNum, qaTurn, offerString)) return;
+#endif
 
         //  1. 스냅샷 생성
         AIContext context = brain.GetCurAIStat(brain.MyActorNum);

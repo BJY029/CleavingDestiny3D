@@ -37,6 +37,7 @@ public class AIInventoryManager : AILogicModule
 #if UNITY_EDITOR
         await AIQAActionControl.CheckpointAsync(GetComponent<AIController>(),
             afterSecondSteal ? AIQAPhase.SecondInventoryReady : AIQAPhase.InventoryReady, token);
+        if (AIQAActionControl.SkipNaturalInventory(brain.MyActorNum)) return;
 #endif
         //이동 끝난 후
         Debug.Log($"[AI {brain.MyActorNum}] 인벤토리 아이템 사용 판단 시작");
@@ -592,6 +593,7 @@ public class AIInventoryManager : AILogicModule
                 foreach (var slot in slots)
                 {
                     if (slot.uniqueId <= 0 || slot.uniqueId == usedUid) continue;
+                    if (AIQAActionControl.ShouldReserveItem(slot.itemID, slot.uniqueId)) continue;
                     ItemSO candidate = ItemDB.Instance.Get(slot.itemID);
                     if (candidate == null) continue;
                     float score = EvaluateSacrificeItem(candidate, context);

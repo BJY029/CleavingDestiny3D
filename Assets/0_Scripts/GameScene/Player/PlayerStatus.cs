@@ -397,6 +397,7 @@ public class PlayerStatus : MonoBehaviourPunCallbacks
 		float cumulativeReceived = PhotonPropertyHelper.GetPlayerProp<float>(aiNumber, PlayerPropKeys.CumulativeDamageReceived, 0f);
 		cumulativeReceived += damage;
 		PhotonPropertyHelper.SetPlayerProp(aiNumber, PlayerPropKeys.CumulativeDamageReceived, cumulativeReceived);
+		InitTreeAtkMultRate(aiNumber);
 
 		TurnManager.Instance.TreeDamageChecker();
 	}

@@ -70,6 +70,25 @@ public static class AIQAToolChecks
             Check(AIQADiagnostics.Begin(2, "test", default) == null, "disabled monitor does not allocate a decision", passed);
             Check(JsonUtility.ToJson(UnityEngine.Random.state) == JsonUtility.ToJson(random),
                 "offer resolution and diagnostic formatting do not consume Unity random", passed);
+            var skip = new AIQAOfferSkipRule { enabled = true };
+            Check(skip.IsDue(12, false, "1000|1002|3000") && !skip.IsDue(12, true, "1000|1002|3000"),
+                "skip selection defaults to the next available offer only", passed);
+            Check(!skip.IsDue(12, false, "") && !skip.IsDue(12, false, ERROR.FULL_INV.ToString()),
+                "empty or full inventory offer does not consume a skip", passed);
+            skip.repeat = true;
+            Check(skip.IsDue(13, true, "1000|1002|3000"), "repeated skip applies to later offers", passed);
+            skip.turnIndex = 15;
+            Check(!skip.IsDue(14, false, "1000") && skip.IsDue(15, false, "1000") && !skip.IsDue(16, false, "1000"),
+                "skip honors the exact TurnIndex", passed);
+            skip.enabled = false;
+            Check(!skip.IsDue(15, false, "1000"), "disabled skip preserves normal selection", passed);
+            var skipCopy = JsonUtility.FromJson<AIQAOfferSkipRule>(JsonUtility.ToJson(skip));
+            Check(!skipCopy.enabled && skipCopy.repeat && skipCopy.turnIndex == 15,
+                "skip settings survive session JSON", passed);
+            var update = AIQAOfferSkipSelection.CreateSkipUpdate(2);
+            Check(update.Count == 1 && (string)update[ItemPropKeys.OFFER(2)] == "" &&
+                !update.ContainsKey(ItemPropKeys.INV(2)) && !update.ContainsKey(ItemPropKeys.NEXT_UID),
+                "skipping ends only the offer without allocating UID or modifying inventory", passed);
         }
         finally
         {

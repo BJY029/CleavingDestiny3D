@@ -76,6 +76,7 @@ public sealed class AIQAItemOfferWindow : EditorWindow
 {
     private AIQAOfferRule human;
     private AIQAOfferRule ai;
+    private AIQAOfferSkipRule skipSelection;
     private string search = "";
     private Vector2 scroll;
 
@@ -87,6 +88,7 @@ public sealed class AIQAItemOfferWindow : EditorWindow
         minSize = new Vector2(540, 560);
         human = AIQAOfferOverrides.GetRule(false);
         ai = AIQAOfferOverrides.GetRule(true);
+        skipSelection = AIQAOfferSkipSelection.GetRule();
     }
 
     private void OnInspectorUpdate() => Repaint();
@@ -106,6 +108,7 @@ public sealed class AIQAItemOfferWindow : EditorWindow
         scroll = EditorGUILayout.BeginScrollView(scroll);
         DrawRule(false, "사람 플레이어", human);
         DrawRule(true, "AI 플레이어", ai);
+        DrawSkipSelection();
         EditorGUILayout.Space();
         DrawLiveOffer();
         EditorGUILayout.LabelField("최근 지정 기록 (최대 50개)", EditorStyles.boldLabel);
@@ -158,6 +161,29 @@ public sealed class AIQAItemOfferWindow : EditorWindow
         {
             string offer = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.OFFER(actor));
             EditorGUILayout.LabelField($"Actor {actor}", string.IsNullOrEmpty(offer) ? "없음 / 선택 완료" : offer);
+        }
+    }
+
+    private void DrawSkipSelection()
+    {
+        using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+        {
+            EditorGUILayout.LabelField("AI 제안 선택 제어", EditorStyles.boldLabel);
+            skipSelection.enabled = EditorGUILayout.Toggle("AI 선택 안 함", skipSelection.enabled);
+            skipSelection.repeat = EditorGUILayout.Toggle("매번 선택 건너뛰기", skipSelection.repeat);
+            bool specificTurn = EditorGUILayout.Toggle("특정 TurnIndex만", skipSelection.turnIndex >= 0);
+            skipSelection.turnIndex = specificTurn ? Mathf.Max(0, EditorGUILayout.IntField("TurnIndex", Mathf.Max(0, skipSelection.turnIndex))) : -1;
+            EditorGUILayout.HelpBox("아이템 지정과 독립적으로 적용합니다. 기본은 다음 AI 제안 선택 1회 생략입니다.\n이미 제공됐어도 AI가 아직 선택하지 않았다면 적용할 수 있습니다. 아이템 획득 없이 다음 행동으로 진행하며 만석·빈 제안은 예약을 소모하지 않습니다.", MessageType.Info);
+            EditorGUILayout.LabelField("미선택 예약 상태", AIQAOfferSkipSelection.Status, EditorStyles.wordWrappedLabel);
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("미선택 설정 저장 / 다시 예약")) AIQAOfferSkipSelection.SetRule(skipSelection);
+                if (GUILayout.Button("미선택 해제"))
+                {
+                    skipSelection.enabled = false;
+                    AIQAOfferSkipSelection.SetRule(skipSelection);
+                }
+            }
         }
     }
 }
