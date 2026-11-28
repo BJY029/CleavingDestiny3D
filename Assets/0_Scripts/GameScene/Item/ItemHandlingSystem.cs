@@ -753,6 +753,10 @@ public class ItemHandlingSystem : MonoBehaviourPunCallbacks
 		ClearUsedTurnItem();
 	}
 
+#if UNITY_EDITOR
+	public System.Collections.Generic.IEnumerable<StatusInstance> GetQAStatuses() => _statusSystem?.ALL;
+#endif
+
 	public float GetCurrentDamageMultiplier(int actorNum, bool isBasicAttack = true)
 	{
 		var ctx = new EffectContext(_rng, Debug.Log);

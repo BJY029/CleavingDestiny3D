@@ -295,7 +295,6 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		int nextIndex = (currentIndex + 1) % TurnOrder.Length;
 		int nextActor = TurnOrder[nextIndex];
 		int turnIndex = currentTurnIndex + 1;
-		string offerStr = OfferAuthority.Instance.MakeOfferForTurn(nextActor, turnIndex);
 
 
 		//만약 모든 턴을 돌고 한 웨이브가 끝난 경우
@@ -333,6 +332,8 @@ public class TurnManager : MonoBehaviourPunCallbacks
 		//턴 변경 관련 처리를 한 번만 수행하기 위해 다음과 같은 RPC로 변수 초기화
 		//photonView.RPC(nameof(TurnChanedInvoked), RpcTarget.All);
 
+		// Generate only for a turn that will actually start; a day-end preview must not consume a QA reservation.
+		string offerStr = OfferAuthority.Instance.MakeOfferForTurn(nextActor, turnIndex);
 		//프로퍼티를 한번에 업데이트 한다.
 		var ht = new ExitGames.Client.Photon.Hashtable
 		{

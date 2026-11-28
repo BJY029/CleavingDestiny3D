@@ -21,6 +21,9 @@ public class AIItemSelector : AILogicModule
         //인벤토리 꽉 찬 경우 선택 실행 안함
         if (string.Equals(offerString, ERROR.FULL_INV.ToString()))
         {
+#if UNITY_EDITOR
+            AIQADiagnostics.Skipped(brain.MyActorNum, "제안 선택", "인벤토리 만석 — 제안 선택 생략");
+#endif
             Debug.LogWarning("AI Player's Inv is FULL!!");
             return;
         }
@@ -28,12 +31,16 @@ public class AIItemSelector : AILogicModule
 
         //  1. 스냅샷 생성
         AIContext context = brain.GetCurAIStat(brain.MyActorNum);
+#if UNITY_EDITOR
+        var qaDecision = AIQADiagnostics.Begin(brain.MyActorNum, "제안 선택", context);
+        int qaSelected = -1;
+#endif
 
         ItemSO bestItem = null;
         float highestScore = -9999f;
 
         Debug.Log(offerString);
-        var ItemList = offerString.Split("|");
+        var ItemList = (offerString ?? "").Split("|");
         if (ItemList == null)
         {
             Debug.LogError("Item Offer is NULL!");
@@ -46,21 +53,33 @@ public class AIItemSelector : AILogicModule
             ItemSO item = ItemDB.Instance.Get(itemId);
             if (item == null)
             {
+#if UNITY_EDITOR
+                qaDecision?.candidates.Add(new AIQACandidate { itemId = itemId, reason = "ItemDB에 없는 ID" });
+#endif
                 Debug.LogError("Item is null");
                 continue;
             }
 
             float score = EvaluateItemWithCurves(item, context);
+#if UNITY_EDITOR
+            if (qaDecision != null) qaDecision.Score(qaDecision.Add(item), score);
+#endif
             Debug.Log($"[AI {brain.MyActorNum}] {item.displayName_ID} 평가 점수(Curve) : {score:F1}");
 
             if (score > highestScore)
             {
                 highestScore = score;
                 bestItem = item;
+#if UNITY_EDITOR
+                if (qaDecision != null) qaSelected = qaDecision.candidates.Count - 1;
+#endif
             }
         }
 
-        InsertItemToInv(bestItem, context);
+#if UNITY_EDITOR
+        AIQADiagnostics.Publish(qaDecision, qaSelected);
+#endif
+        if (bestItem != null) InsertItemToInv(bestItem, context);
     }
 
     private void InsertItemToInv(ItemSO item, AIContext ctx)

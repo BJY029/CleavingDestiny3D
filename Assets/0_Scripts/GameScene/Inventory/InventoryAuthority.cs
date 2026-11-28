@@ -478,6 +478,9 @@ public class InventoryAuthority : MonoBehaviourPunCallbacks
 		photonView.RPC(nameof(RPC_LogItemUsed), RpcTarget.All, requestActor, item.itemId,
 			(float)item.itemCost, (float)(playerEng - item.itemCost));
 		NotifyItemUsedForNewDrugMission(requestActor, item);
+#if UNITY_EDITOR
+		AIQAActionControl.NotifyItemApplied(requestActor, uniqueId, item.itemId);
+#endif
 	}
 
 	[PunRPC]

@@ -46,6 +46,9 @@ public class DamageResolver
         else
             baseRate = ctx.GetBarrierConversionRate(dmg.attackerNum, state);
         //float rate = (dmg.convertRateOverride >= 0) ? dmg.convertRateOverride : baseRate + dmg.convertRateDelta;
+#if UNITY_EDITOR
+        float qaBaseConversionRate = baseRate;
+#endif
         baseRate = (dmg.convertRateOverride > 0) ? dmg.convertRateOverride : baseRate;
         float rate = baseRate + dmg.convertRateDelta;
         rate = Mathf.Clamp01(rate);
@@ -62,6 +65,17 @@ public class DamageResolver
             actorNum = dmg.attackerNum,
             payload = dmg
         }, ctx, state);
+#if UNITY_EDITOR
+        if (state == null && AIQADiagnostics.CaptureEnabled)
+            AIQADiagnostics.RecordCombat(dmg.attackerNum, "실제 공격 결과", "실제 피해 계산에서 확정한 값 (시뮬레이션 제외)",
+                new AIQAResolvedAttack
+                {
+                    originalDamage = dmg.baseDamage, overrideDamage = dmg.overrideDamage, multiplier = dmg.multiplier,
+                    baseConversionRate = qaBaseConversionRate, conversionOverride = dmg.convertRateOverride,
+                    conversionDelta = dmg.convertRateDelta, conversionRate = rate, finalDamage = dmg.finalDamage,
+                    convertedBarrier = dmg.convertedToBarrier, basicAttack = dmg.isBasicAttack
+                });
+#endif
     }
 
     // UI multiplier previews must not run conversion triggers or consume statuses.

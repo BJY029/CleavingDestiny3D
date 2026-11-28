@@ -123,6 +123,17 @@ public class WorldInventory : MonoBehaviourPunCallbacks, IPunInstantiateMagicCal
 		Debug.Log($"[AI {player.PlayerActNum}] Inventory Interact ERROR");
 	}
 
+#if UNITY_EDITOR
+	public bool TryInteractSlotForQA(AIController player, int slotIndex, ItemSO expectedItem)
+	{
+		if (player == null || owner != player.PlayerActNum) return false;
+		var slot = slots.FirstOrDefault(s => s.slotIndex == slotIndex);
+		if (slot == null || slot.currentItem != expectedItem) return false;
+		slot.OnInteract(player);
+		return true;
+	}
+#endif
+
 	public void InteractSlotForStealByAI(AIController player, ItemSO item)
 	{
 		foreach (var slot in slots)

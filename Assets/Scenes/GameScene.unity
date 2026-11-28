@@ -24211,8 +24211,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
   characterSkinCatalog: {fileID: 11400000, guid: 1516d652d8652514d982d0b45207e36c, type: 2}
-  enableQAStartingItems: 0
-  qaStartingItems: []
+  enableQAStartingItems: 1
+  qaStartingItems:
+  - {fileID: 11400000, guid: 88f39a2295ea84c4f98cd46806ab54af, type: 2}
   targetTerrain: {fileID: 1483146311}
   heightOffset: 0.1
   LocalPlayerPC: {fileID: 0}

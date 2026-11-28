@@ -2,6 +2,7 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 
+[System.Serializable]
 public struct AIContext
 {
     public int curEnergy;
@@ -138,6 +139,13 @@ public class AIBrain : MonoBehaviourPunCallbacks
     public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable Changed)
     {
         string attachedKey = $"_{MyActorNum}";
+#if UNITY_EDITOR
+        if (Changed.ContainsKey(PlayerPropKeys.TreeAtkMulti + attachedKey) ||
+            Changed.ContainsKey(PlayerPropKeys.VillageBarrier + attachedKey) ||
+            Changed.ContainsKey(PlayerPropKeys.BarrierArmor + attachedKey) ||
+            Changed.ContainsKey(PlayerPropKeys.BarrierConversionRate + attachedKey))
+            AIQADiagnostics.RecordCombat(MyActorNum, "전투 수치 반영", "AI 룸 프로퍼티 변경 반영 시점");
+#endif
 
         bool hasEnergy = Changed.TryGetValue(PlayerPropKeys.Energy + attachedKey, out var eng);
         bool hasMaxEnergy = Changed.TryGetValue(PlayerPropKeys.MaxEnergy + attachedKey, out var Meng);

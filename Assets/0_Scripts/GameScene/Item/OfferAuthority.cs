@@ -169,6 +169,13 @@ public class OfferAuthority : MonoBehaviourPunCallbacks
 			PhotonPropertyHelper.GetPlayerProp<float>(turnActor, PlayerPropKeys.Item_LegendaryWeight)
 		);
 
+#if UNITY_EDITOR
+		var qaAllowedItems = items.Where(item => item != null && item.itemWeight > 0 && !float.IsInfinity(item.itemWeight) &&
+			playerWeights.GetWeight(item.itemClass) > 0 && !float.IsInfinity(playerWeights.GetWeight(item.itemClass))).ToList();
+		if (AIQAOfferOverrides.TryGetOffer(turnActor, turnIndex, ItemDB.Instance.GetItemsList(), qaAllowedItems, out string qaOffer))
+			return qaOffer;
+#endif
+
 		Pick(randSeed, items, in playerWeights, 3, currentOffer);
 
 		return string.Join("|", currentOffer);

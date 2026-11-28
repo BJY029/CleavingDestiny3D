@@ -207,16 +207,21 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
 
         try
         {
-            string myOfferKey = ItemPropKeys.OFFER(PlayerActNum);
-            string offerStr = PhotonPropertyHelper.GetRoomProp<string>(myOfferKey);
-
             //일정 시간 딜레이 준 후
             await UniTask.Delay(500, cancellationToken: token);
+#if UNITY_EDITOR
+            await AIQAActionControl.CheckpointAsync(this, AIQAPhase.BeforeOffer, token);
+#endif
+            string myOfferKey = ItemPropKeys.OFFER(PlayerActNum);
+            string offerStr = PhotonPropertyHelper.GetRoomProp<string>(myOfferKey);
 
             //아이템 선택 로직 수행
             await aiBrain.ItemSelector.ChooseItemAsync(offerStr, token);
 
             //임시 코드(Lockpick 연산 수행)
+#if UNITY_EDITOR
+            await AIQAActionControl.CheckpointAsync(this, AIQAPhase.BeforeFirstSteal, token);
+#endif
             await aiBrain.ItemActionManager.ProcessLockpickItem(token);
 
             //일정 시간 딜레이 준 후
@@ -228,13 +233,23 @@ public class AIController : MonoBehaviour, IPlayerAction, IAnimNotify, IPunInsta
             await UniTask.Delay(500, cancellationToken: token);
 
             //임시 코드(Lockpick 연산 수행)
-            if (await aiBrain.ItemActionManager.ProcessLockpickItem(token))
+#if UNITY_EDITOR
+            await AIQAActionControl.CheckpointAsync(this, AIQAPhase.BeforeSecondSteal, token);
+#endif
+            bool secondStealSucceeded = await aiBrain.ItemActionManager.ProcessLockpickItem(token);
+#if UNITY_EDITOR
+            await AIQAActionControl.CheckpointAsync(this, AIQAPhase.AfterSecondSteal, token);
+#endif
+            if (secondStealSucceeded)
             {
-                await aiBrain.InventoryManager.ProcessInventoryAsync(token);
+                await aiBrain.InventoryManager.ProcessInventoryAsync(token, true);
             }
 
             //Hit 위치로 이동
             await aiBrain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_HIT, token);
+#if UNITY_EDITOR
+            await AIQAActionControl.CheckpointAsync(this, AIQAPhase.BeforeAttack, token);
+#endif
 
             token.ThrowIfCancellationRequested();
 

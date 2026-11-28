@@ -30,10 +30,14 @@ public class AIInventoryManager : AILogicModule
     int SacrificeUID;
 
 
-    public async UniTask ProcessInventoryAsync(CancellationToken token)
+    public async UniTask ProcessInventoryAsync(CancellationToken token, bool afterSecondSteal = false)
     {
         //NevMesh를 통해 이동 명령 보내기(비동기 처리)
         await brain.aINevMeshController.MoveToLocationAsync(LocationCommand.MY_INV, token);
+#if UNITY_EDITOR
+        await AIQAActionControl.CheckpointAsync(GetComponent<AIController>(),
+            afterSecondSteal ? AIQAPhase.SecondInventoryReady : AIQAPhase.InventoryReady, token);
+#endif
         //이동 끝난 후
         Debug.Log($"[AI {brain.MyActorNum}] 인벤토리 아이템 사용 판단 시작");
 
@@ -64,6 +68,10 @@ public class AIInventoryManager : AILogicModule
 
             ItemSO bestItemToUse = null;
             float highestScore = usageThreshold;
+#if UNITY_EDITOR
+            var qaDecision = AIQADiagnostics.Begin(brain.MyActorNum, "인벤토리 사용", context, energyBudeget, usageThreshold);
+            int qaSelected = -1;
+#endif
 
             //인벤토리를 돌아본다.
             foreach (var slot in InvSlots)
@@ -71,24 +79,62 @@ public class AIInventoryManager : AILogicModule
                 //Debug.Log($"{slot.itemID}");
                 ItemSO item = ItemDB.Instance.Get(slot.itemID);
                 if (item == null) continue;
+#if UNITY_EDITOR
+                var qaRow = qaDecision?.Add(item, slot.uniqueId);
+                if (AIQAActionControl.ShouldReserveItem(item.itemId, slot.uniqueId))
+                {
+                    if (qaRow != null) qaRow.reason = "QA 사용 예약으로 보관 — 자연 판단 시험에서는 예약을 해제하세요";
+                    continue;
+                }
+#endif
 
 
                 //필터링 : 기력 부족으로 아예 사용 불가하면 패스
-                if (item.itemCost > context.curEnergy) continue;
+                if (item.itemCost > context.curEnergy)
+                {
+#if UNITY_EDITOR
+                    if (qaRow != null) qaRow.reason = $"기력 부족: 비용 {item.itemCost} > 기력 {context.curEnergy}";
+#endif
+                    continue;
+                }
                 //필터링 : 위기 사항이 아닌데 이번 예산 기력을 넘어가면 pass, 기력 사용량이 0이면 통과
-                if (item.itemCost > energyBudeget && item.itemCost > 0) continue;
+                if (item.itemCost > energyBudeget && item.itemCost > 0)
+                {
+#if UNITY_EDITOR
+                    if (qaRow != null) qaRow.reason = $"예산 초과: 비용 {item.itemCost} > 예산 {energyBudeget}";
+#endif
+                    continue;
+                }
                 //필터링 : 제약 조건(턴 당 1회 등)에 걸리면 패스
-                if (!ItemHandlingSystem.instance.CheckItemAvaiable(brain.MyActorNum, item.itemId)) continue;
+                string usageBlock = ItemHandlingSystem.instance.GetItemUsageBlockReason(brain.MyActorNum, item.itemId);
+                if (usageBlock != null)
+                {
+#if UNITY_EDITOR
+                    if (qaRow != null) qaRow.reason = "사용 제한: " + usageBlock;
+#endif
+                    continue;
+                }
                 //필터링 : 기타 사용 불가 사유(중복 강화 잠금장치 등)에 걸리면 패스
-                if (InventoryAuthority.Instance != null &&
-                    InventoryAuthority.Instance.GetItemUseBlockReason(brain.MyActorNum, item, out _) != null) continue;
+                string authorityBlock = InventoryAuthority.Instance == null ? null :
+                    InventoryAuthority.Instance.GetItemUseBlockReason(brain.MyActorNum, item, out _);
+                if (authorityBlock != null)
+                {
+#if UNITY_EDITOR
+                    if (qaRow != null) qaRow.reason = "사용 불가: " + authorityBlock;
+#endif
+                    continue;
+                }
 
 
                 //  4. 아이템 점수 계산(아이템 선택 로직과 동일한 알고리즘)
                 // 예외 상황에 대한 처리 필요(희생 아이템인데 보유 아이템이 1개뿐인 경우 등)
-                float score = EvaluateUtilityCurves(item, context);
-                score += EvaluateGimmicks(item, context);
-                score += EvaluateDispelItem(item, context);
+                float utility = EvaluateUtilityCurves(item, context);
+                float gimmick = EvaluateGimmicks(item, context);
+                float dispel = EvaluateDispelItem(item, context);
+                float score = utility + gimmick + dispel;
+#if UNITY_EDITOR
+                if (qaDecision != null) qaDecision.Score(qaRow, score, $"효용 {utility:F2} / 기믹 {gimmick:F2} / 정화 {dispel:F2}");
+#endif
 
                 //for check
                 // if (item.itemId == "4003") score += 30000;
@@ -101,9 +147,15 @@ public class AIInventoryManager : AILogicModule
                 {
                     highestScore = score;
                     bestItemToUse = item;
+#if UNITY_EDITOR
+                    if (qaDecision != null) qaSelected = qaDecision.candidates.Count - 1;
+#endif
                 }
             }
 
+#if UNITY_EDITOR
+            AIQADiagnostics.Publish(qaDecision, qaSelected);
+#endif
             if (bestItemToUse != null)
             {
                 Debug.Log($"[AI {brain.MyActorNum}] '{bestItemToUse.displayName_ID}' 사용! (점수 : {highestScore:F1}, 아이템 기력: {bestItemToUse.itemCost}");
@@ -334,6 +386,9 @@ public class AIInventoryManager : AILogicModule
                 firstSacrficeItem = true;
                 continue;
             }
+#if UNITY_EDITOR
+            if (AIQAActionControl.ShouldReserveItem(item.itemId, slot.uniqueId)) continue;
+#endif
             float utility = EvaluateSacrificeItem(item, context);
 
             if (utility < lowerUtility)
@@ -498,6 +553,98 @@ public class AIInventoryManager : AILogicModule
         }
         await UniTask.Delay(1000, cancellationToken: token);
     }
+
+#if UNITY_EDITOR
+    public static int FindOwnedQAItemIndex((int uniqueId, string itemID)[] slots, string itemId, int uid)
+    {
+        if (slots == null || string.IsNullOrEmpty(itemId)) return -1;
+        return System.Array.FindIndex(slots, s => s.uniqueId > 0 && s.itemID == itemId && (uid <= 0 || s.uniqueId == uid));
+    }
+
+    // Only decision scoring/budget are bypassed. The ordinary slot -> authority path still validates use.
+    public async UniTask<AIQAUseResult> TryUseForQAAsync(string itemId, int uid, int sacrificeUid, CancellationToken token)
+    {
+        int actor = brain.MyActorNum;
+        int turn = PhotonPropertyHelper.GetRoomProp<int>(RoomPropKeys.TurnIndex);
+        if (!AIQAActionControl.IsCurrent(actor, turn)) return AIQAUseResult.Rejected("현재 AI 낮 턴이 아님");
+        if (ItemDB.Instance == null || InventoryAuthority.Instance == null || AIInv == null)
+            return AIQAUseResult.Rejected("인벤토리 또는 권한 시스템 준비 안 됨");
+        ItemSO item = ItemDB.Instance.Get(itemId);
+        if (item == null) return AIQAUseResult.Rejected("등록되지 않은 아이템");
+        string block = InventoryAuthority.Instance.GetItemUseBlockReason(actor, item, out int missing);
+        if (block != null) return AIQAUseResult.Rejected($"{block} (부족 기력 {missing})");
+
+        int cap = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(actor));
+        string inv = PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(actor));
+        var slots = ItemInfoSerializer.Decode(inv, cap);
+        int index = FindOwnedQAItemIndex(slots, itemId, uid);
+        if (index < 0) return AIQAUseResult.Rejected("AI가 해당 아이템/UID를 보유하지 않음 (자동 지급하지 않음)");
+        int usedUid = slots[index].uniqueId;
+
+        if (itemId == "2002")
+        {
+            if (sacrificeUid > 0 && !System.Array.Exists(slots, s => s.uniqueId == sacrificeUid && s.uniqueId != usedUid && !string.IsNullOrEmpty(s.itemID)))
+                return AIQAUseResult.Rejected("제물 UID가 없거나 사용 본체와 같음");
+            if (sacrificeUid <= 0)
+            {
+                float lowest = float.PositiveInfinity;
+                var context = brain.GetCurAIStat(actor);
+                foreach (var slot in slots)
+                {
+                    if (slot.uniqueId <= 0 || slot.uniqueId == usedUid) continue;
+                    ItemSO candidate = ItemDB.Instance.Get(slot.itemID);
+                    if (candidate == null) continue;
+                    float score = EvaluateSacrificeItem(candidate, context);
+                    if (score < lowest) { lowest = score; sacrificeUid = slot.uniqueId; }
+                }
+            }
+            if (sacrificeUid <= 0) return AIQAUseResult.Rejected("유효한 제물 없음");
+        }
+
+        bool applied = false;
+        System.Action<int, int, string> onApplied = (a, u, id) =>
+        {
+            if (a == actor && u == usedUid && id == itemId) applied = true;
+        };
+        AIQAActionControl.ItemApplied += onApplied;
+        try
+        {
+            token.ThrowIfCancellationRequested();
+            if (!AIInv.TryInteractSlotForQA(GetComponent<AIController>(), index, item))
+                return AIQAUseResult.Rejected("월드 슬롯과 실제 인벤토리가 일치하지 않음");
+            float deadline = Time.realtimeSinceStartup + 5f;
+            while (!applied && Time.realtimeSinceStartup < deadline)
+            {
+                token.ThrowIfCancellationRequested();
+                if (!AIQAActionControl.IsCurrent(actor, turn))
+                    return new AIQAUseResult { uniqueId = usedUid, message = "요청 후 턴/경기 변경 — 완료 확인 불가, 자동 재시도 안 함" };
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+            }
+            if (!applied) return new AIQAUseResult { uniqueId = usedUid, message = "요청 후 5초 내 권한 처리 완료 확인 불가 — 자동 재시도 안 함" };
+            token.ThrowIfCancellationRequested();
+            if (!AIQAActionControl.IsCurrent(actor, turn))
+                return new AIQAUseResult { uniqueId = usedUid, message = "사용 처리 후 턴/경기 변경 — 후속 처리 중단" };
+            if (itemId == "2002") ItemHandlingSystem.instance.ProcessSacrificeItem(actor, sacrificeUid);
+
+            // Confirm authoritative removal as well as the effect callback; do not report a request as success.
+            deadline = Time.realtimeSinceStartup + 5f;
+            while (Time.realtimeSinceStartup < deadline)
+            {
+                token.ThrowIfCancellationRequested();
+                if (!AIQAActionControl.IsCurrent(actor, turn)) break;
+                var latest = ItemInfoSerializer.Decode(PhotonPropertyHelper.GetRoomProp<string>(ItemPropKeys.INV(actor)), cap);
+                bool usedRemoved = !System.Array.Exists(latest, s => s.uniqueId == usedUid);
+                bool sacrificeRemoved = itemId != "2002" || !System.Array.Exists(latest, s => s.uniqueId == sacrificeUid);
+                if (usedRemoved && sacrificeRemoved)
+                    return new AIQAUseResult { confirmed = true, uniqueId = usedUid,
+                        message = $"사용 확인 / UID {usedUid}" + (itemId == "2002" ? $" / 제물 UID {sacrificeUid}" : "") };
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+            }
+            return new AIQAUseResult { uniqueId = usedUid, message = "효과 처리 알림 수신, UID 소모 완료 확인 불가 — 자동 재시도 안 함" };
+        }
+        finally { AIQAActionControl.ItemApplied -= onApplied; }
+    }
+#endif
 
     private bool IsDispelItem(ItemSO item)
     {

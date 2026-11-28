@@ -18,7 +18,14 @@ public class AIItemActionManager : AILogicModule
         //AI 스탯 불러오기
         AIContext context = brain.GetCurAIStat(brain.MyActorNum);
         //락픽 사용 가능한 상태인지 확인
-        if (!CheckLockpickPossible(context)) return false;
+        if (!CheckLockpickPossible(context, out string blockReason))
+        {
+#if UNITY_EDITOR
+            var blocked = AIQADiagnostics.Begin(brain.MyActorNum, "훔치기", context, threshold: usageThreshold);
+            AIQADiagnostics.Publish(blocked, summary: blockReason);
+#endif
+            return false;
+        }
 
         //가져올만한 아이템 계산
         ItemSO item = GetBestItemInOppInv(context);
@@ -52,11 +59,12 @@ public class AIItemActionManager : AILogicModule
 
 
     //락픽 사용이 가능한지 판단하는 함수
-    private bool CheckLockpickPossible(AIContext context)
+    private bool CheckLockpickPossible(AIContext context, out string reason)
     {
+        reason = null;
         //AI 플레이어 락픽 개수 카운트
         int lockpickCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.LOCKPICK(brain.MyActorNum));
-        if (lockpickCnt <= 0) return false;
+        if (lockpickCnt <= 0) { reason = "락픽 없음"; return false; }
 
         //각 플레이어 인벤토리 내 아이템 개수 기반 판단
         int AIItemInvMaxCnt = PhotonPropertyHelper.GetRoomProp<int>(ItemPropKeys.INV_CAPACITY(brain.MyActorNum));
@@ -65,10 +73,12 @@ public class AIItemActionManager : AILogicModule
 
         if (AIItemsCnt == -1)
         {
+            reason = "AI 인벤토리 개수 조회 실패";
             Debug.LogError("AI Inv Cnt Error");
             return false;
         }
-        if (AIItemsCnt >= AIItemInvMaxCnt || OppItemsCnt <= 0) return false;
+        if (AIItemsCnt >= AIItemInvMaxCnt) { reason = "AI 인벤토리 만석"; return false; }
+        if (OppItemsCnt <= 0) { reason = "상대 아이템 없음"; return false; }
 
         return true;
     }
@@ -127,25 +137,59 @@ public class AIItemActionManager : AILogicModule
 
         ItemSO bestItem = null;
         float highestScore = usageThreshold;
+#if UNITY_EDITOR
+        var qaDecision = AIQADiagnostics.Begin(brain.MyActorNum, "훔치기", context, threshold: usageThreshold);
+        int qaSelected = -1;
+#endif
         //인벤토리를 돌아본다.
         foreach (var slot in InvSlots)
         {
             //Debug.Log($"{slot.itemID}");
             ItemSO item = ItemDB.Instance.Get(slot.itemID);
             if (item == null) continue;
+#if UNITY_EDITOR
+            var qaRow = qaDecision?.Add(item, slot.uniqueId);
+#endif
 
             //필터링 : 기력 부족으로 아예 사용 불가하면 패스
-            if (item.itemCost > context.curEnergy) continue;
+            if (item.itemCost > context.curEnergy)
+            {
+#if UNITY_EDITOR
+                if (qaRow != null) qaRow.reason = $"기력 부족: 비용 {item.itemCost} > 기력 {context.curEnergy}";
+#endif
+                continue;
+            }
             //필터링 : 위기 사항이 아닌데 이번 예산 기력을 넘어가면 pass, 기력 사용량이 0이면 통과
-            if (item.itemCost > brain.InventoryManager.CalcEnergyBudget(context) && item.itemCost > 0) continue;
+            int budget = brain.InventoryManager.CalcEnergyBudget(context);
+#if UNITY_EDITOR
+            if (qaDecision != null) qaDecision.budget = budget;
+#endif
+            if (item.itemCost > budget && item.itemCost > 0)
+            {
+#if UNITY_EDITOR
+                if (qaRow != null) qaRow.reason = $"예산 초과: 비용 {item.itemCost} > 예산 {budget}";
+#endif
+                continue;
+            }
             //필터링 : 제약 조건(턴 당 1회 등)에 걸리면 패스
-            if (!ItemHandlingSystem.instance.CheckItemAvaiable(brain.MyActorNum, item.itemId)) continue;
+            string usageBlock = ItemHandlingSystem.instance.GetItemUsageBlockReason(brain.MyActorNum, item.itemId);
+            if (usageBlock != null)
+            {
+#if UNITY_EDITOR
+                if (qaRow != null) qaRow.reason = "사용 제한: " + usageBlock;
+#endif
+                continue;
+            }
 
 
             // 아이템 점수 계산(아이템 선택 로직과 동일한 알고리즘)
             // 예외 상황에 대한 처리 필요(희생 아이템인데 보유 아이템이 1개뿐인 경우 등)
-            float score = brain.InventoryManager.EvaluateUtilityCurves(item, context);
-            score += brain.InventoryManager.EvaluateGimmicks(item, context);
+            float utility = brain.InventoryManager.EvaluateUtilityCurves(item, context);
+            float gimmick = brain.InventoryManager.EvaluateGimmicks(item, context);
+            float score = utility + gimmick;
+#if UNITY_EDITOR
+            if (qaDecision != null) qaDecision.Score(qaRow, score, $"효용 {utility:F2} / 기믹 {gimmick:F2} (훔치기에는 정화 추가 평가 없음)");
+#endif
 
             //if (item.itemId == "3003") score += 10000;
 
@@ -155,9 +199,15 @@ public class AIItemActionManager : AILogicModule
             {
                 highestScore = score;
                 bestItem = item;
+#if UNITY_EDITOR
+                if (qaDecision != null) qaSelected = qaDecision.candidates.Count - 1;
+#endif
             }
         }
 
+#if UNITY_EDITOR
+        AIQADiagnostics.Publish(qaDecision, qaSelected, bestItem == null ? "훔칠 후보 없음" : "훔칠 대상 선택 — 락픽 성공·이전 결과와 별도");
+#endif
         return bestItem;
     }
 
